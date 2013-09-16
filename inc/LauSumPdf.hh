@@ -1,0 +1,106 @@
+
+// Copyright University of Warwick 2006 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauSumPdf.hh
+    \brief File containing declaration of LauSumPdf class.
+*/
+
+/*! \class LauSumPdf
+    \brief Class for defining a PDF that is the sum of two other PDFs.
+
+    Class that allows the user to define PDF that is the sum of two other PDFs. 
+    The relative fraction of the two PDFs is user-defined and can be a free parameter.
+*/
+
+#ifndef LAU_SUM_PDF
+#define LAU_SUM_PDF
+
+#include "Rtypes.h"
+
+#include "LauAbsPdf.hh"
+
+class LauParameter;
+
+
+class LauSumPdf : public LauAbsPdf {
+
+	public:
+		//! Constructor
+		/*!
+		    \param [in] pdf1 the first PDF
+		    \param [in] pdf2 the second PDF
+		    \param [in] frac1 the fractional contribution of the first PDF to the final PDF
+		*/
+		LauSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2, LauParameter* frac1);
+
+		//! Destructor
+		virtual ~LauSumPdf();
+
+		//! Copy constructor
+		LauSumPdf(const LauSumPdf& other);
+
+		//! Returns the number of input variables
+		/*! 
+		    \return the number of input variables
+		*/
+		UInt_t nInputVars() const {return pdf1_->nInputVars();}
+
+		//! Boolean for the DP dependence of PDFs in the sum
+		/*!
+		    \return DP dependence of PDF
+		*/
+		virtual Bool_t isDPDependent() const {return (pdf1_->isDPDependent() || pdf2_->isDPDependent());}
+
+		//! Cache information from data
+		/*!
+		    \param [in] inputData the input data 
+		*/
+		virtual void cacheInfo(const LauFitDataTree& inputData);
+
+		//! Calculate the likelihood (and intermediate info) for a given abscissa
+		/*!
+		    \param [in] abscissas the values of the abscissa(s)
+		*/
+		virtual void calcLikelihoodInfo(const LauAbscissas& abscissas);
+		
+		//! Calculate the likelihood (and intermediate info) for a given event number
+		/*!
+		    \param [in] iEvt event number
+		*/
+		virtual void calcLikelihoodInfo(UInt_t iEvt);
+
+		//! Check that PDF is positive
+		virtual void checkPositiveness();
+
+		//! Calculate the normalisation
+		virtual void calcNorm();
+		
+		//! Calculate the PDF height
+		/*!
+		    \param [in] kinematics the current DP kinematics
+		*/
+		virtual void calcPDFHeight( const LauKinematics* kinematics );
+
+	protected:
+
+	private:
+		//! First PDF
+		LauAbsPdf* pdf1_;
+
+		//! Second PDF
+		LauAbsPdf* pdf2_;
+
+		//! Fractional contribution of first PDF to the final PDF
+		LauParameter* frac_;
+
+		ClassDef(LauSumPdf,0) // Define the sum PDF
+};
+
+#endif

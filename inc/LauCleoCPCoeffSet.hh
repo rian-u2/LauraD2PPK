@@ -1,0 +1,163 @@
+
+// Copyright University of Warwick 2006 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauCleoCPCoeffSet.hh
+    \brief File containing declaration of LauCleoCPCoeffSet class.
+*/
+
+/*! \class LauCleoCPCoeffSet
+    \brief Class for defining a complex coefficient using the Cleo CP convention.
+
+    Holds a set of real values that define the complex coefficient of an amplitude component.
+    The amplitude has the form (a +/- b) * exp( i*(delta +/- phi) ) where
+    a is the average magnitude,
+    b is the asymmetric magnitude,
+    delta is the strong phase and
+    phi is the weak phase.
+    TODO - add reference
+*/
+
+#ifndef LAU_CLEOCP_COEFF_SET
+#define LAU_CLEOCP_COEFF_SET
+
+#include <iosfwd>
+#include <vector>
+
+#include "Rtypes.h"
+
+#include "LauAbsCoeffSet.hh"
+#include "LauParameter.hh"
+
+class LauComplex;
+
+
+class LauCleoCPCoeffSet : public LauAbsCoeffSet {
+
+	public:
+		//! Constructor
+		/*!
+		    \param [in] compName the name of the coefficient set
+		    \param [in] a the magnitude a
+		    \param [in] delta the strong phase
+		    \param [in] b the magnitude b
+		    \param [in] phi the weak phase
+		    \param [in] aFixed whether a is fixed
+		    \param [in] deltaFixed whether delta is fixed
+		    \param [in] bFixed whether b is fixed
+		    \param [in] phiFixed whether phi is fixed
+		*/
+		LauCleoCPCoeffSet(const TString& compName, Double_t a, Double_t delta, Double_t b, Double_t phi,
+				Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed);
+
+		//! Destructor
+		virtual ~LauCleoCPCoeffSet(){}
+
+		//! Retrieve the parameters of the coefficient, e.g. so that they can be loaded into a fit
+		/*!
+		    \return the parameters of the coefficient
+		*/
+		virtual std::vector<LauParameter*> getParameters();
+
+		//! Print the column headings for a results table
+		/*!
+                    \param [out] stream the stream to print to
+		*/
+		virtual void printTableHeading(std::ostream& stream);
+		
+		//! Print the parameters of the complex coefficient as a row in the results table
+		/*!
+                    \param [out] stream the stream to print to
+		*/
+		virtual void printTableRow(std::ostream& stream);
+
+		//! Randomise the starting values of the parameters for a fit
+		virtual void randomiseInitValues();
+
+		//! Make sure values are in "standard" ranges, e.g. phases should be between -pi and pi
+		virtual void finaliseValues();
+
+		//! Retrieve the complex coefficient for a particle
+		/*!
+		    \return the complex coefficient for a particle
+		*/
+		virtual LauComplex particleCoeff();
+
+		//! Retrieve the complex coefficient for an antiparticle
+		/*!
+		    \return the complex coefficient for an antiparticle
+		*/
+		virtual LauComplex antiparticleCoeff();
+
+		//! Set the parameters based on the complex coefficients for particles and antiparticles
+		/*!
+		    \param [in] coeff the complex coefficient for a particle
+		    \param [in] coeffBar the complex coefficient for an antiparticle
+		*/
+		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar );
+
+		//! Calculate the CP asymmetry
+		/*!
+		    \return the CP asymmetry
+		*/
+		virtual LauParameter acp();
+
+		//! Create a clone of the coefficient set
+		/*!
+		    \param [in] newName the clone's name
+		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		    \return a clone of the coefficient set
+		*/
+		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0);
+
+	protected:
+		//! Copy constructor
+		/*!
+		    This creates cloned parameters, not copies.
+		    \param [in] rhs the coefficient to clone
+		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		*/
+		LauCleoCPCoeffSet(const LauCleoCPCoeffSet& rhs, Double_t constFactor = 1.0);
+
+		//! Copy assignment operator
+		/*!
+		    This creates cloned parameters, not copies.
+		    \param [in] rhs the coefficient to clone
+		*/
+		LauCleoCPCoeffSet& operator=(const LauCleoCPCoeffSet& rhs);
+
+
+	private:
+		//! The minimum allowed value for magnitudes
+		Double_t minMag_;
+		//! The maximum allowed value for magnitudes
+		Double_t maxMag_;
+		//! The minimum allowed value for phases
+		Double_t minPhase_;
+		//! The maximum allowed value for phases
+		Double_t maxPhase_;
+
+		// the actual fit parameters
+		// (need to be pointers so they can be cloned)
+		//! The magnitude a
+		LauParameter* a_;
+		//! The magnitude b
+		LauParameter* b_;
+		//! The strong phase
+		LauParameter* delta_;
+		//! The weak phase
+		LauParameter* phi_;
+
+		//! The CP asymmetry
+		LauParameter acp_;
+
+		ClassDef(LauCleoCPCoeffSet, 0)
+};
+
+#endif

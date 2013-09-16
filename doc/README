@@ -1,0 +1,76 @@
+/////////////////////////////////////////////////////////
+///                                                   ///
+///       README of the Laura++ package               ///
+///                                                   ///
+/// Contact: Tom Latham (laura@projects.hepforge.org) ///
+///                                                   ///
+/////////////////////////////////////////////////////////
+
+			Introduction
+			------------
+
+This package is a C++ development of LAURA, the FORTRAN "Likelihood Analysis
+Unofficial RooFitDalitz Alternative" code written by Paul Harrison for
+performing Dalitz plot analyses of 3-body decays of B mesons at BaBar.
+This C++ version was originally developed by John Back and is now mainly
+developed by Tom Latham with continuting contributions from John Back and
+others.
+
+			Building the Code
+			-----------------
+
+The package depends only on ROOT.  Before building the code, it is necessary
+that either the ROOTSYS environment variable be set or that the root-config
+program be in the PATH.
+
+To build the shared library:
+
+cd Laura++
+make
+
+A shared library will be created in the lib sub-directory:
+
+lib/libLaura++.so
+
+
+			Examples and Documentation
+			--------------------------
+
+Example code is included in the examples directory.
+
+To build the example code:
+cd examples
+make
+
+To build the online doxygen documentation just run doxygen in the top level
+Laura++ directory and then load the index.html file found in doxygen/html.
+
+A quick-start guide and further documentation are being worked on.
+
+Please contact Tom Latham (laura@projects.hepforge.org) with any questions.
+
+
+			Authors and Contributors
+			------------------------
+
+As mentioned in the Introduction above, the authors of the package are:
+
+Thomas Latham
+John Back
+Paul Harrison
+
+The authors would also like to thank the following people for their invaluable
+contributions:
+
+Sian Morgan
+Pablo del Amo Sanchez
+Jelena Ilic
+Eugenia Puccio
+Mark Whitehead
+Daniel Craik
+Rafael Coutinho
+Charlotte Wallace
+
+Many thanks also go to numerous members of the BaBar and LHCb collaborations
+for their helpful input. 
+

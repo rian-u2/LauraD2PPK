@@ -1,0 +1,159 @@
+
+// Copyright University of Warwick 2006 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauCartesianCPCoeffSet.hh
+    \brief File containing declaration of LauCartesianCPCoeffSet class.
+*/
+
+/*! \class LauCartesianCPCoeffSet
+    \brief Class for defining a complex coefficient using the Cartesian CP convention.
+
+    Holds a set of real values that define the complex coefficient of an amplitude component.
+    The amplitude has the form x +/- delta_x + i * ( y +/- delta_y ).
+*/
+
+#ifndef LAU_CARTESIANCP_COEFF_SET
+#define LAU_CARTESIANCP_COEFF_SET
+
+#include <iosfwd>
+#include <vector>
+
+#include "Rtypes.h"
+
+#include "LauAbsCoeffSet.hh"
+#include "LauParameter.hh"
+
+class LauComplex;
+
+
+class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
+
+	public:
+		//! Constructor
+		/*!
+		    \param [in] compName the name of the coefficient set
+		    \param [in] x the average real part
+		    \param [in] y the average imaginary part
+		    \param [in] deltaX the asymmetric real part
+		    \param [in] deltaY the asymmetric imaginary part
+		    \param [in] xFixed whether x is fixed
+		    \param [in] yFixed whether y is fixed
+		    \param [in] deltaXFixed whether deltaX is fixed
+		    \param [in] deltaYFixed whether deltaY is fixed
+		    \param [in] deltaXSecondStage whether deltaX should be floated only in the second stage of the fit
+		    \param [in] deltaYSecondStage whether deltaY should be floated only in the second stage of the fit
+		*/
+		LauCartesianCPCoeffSet(const TString& compName, Double_t x, Double_t y, Double_t deltaX, Double_t deltaY,
+				Bool_t xFixed, Bool_t yFixed, Bool_t deltaXFixed, Bool_t deltaYFixed, Bool_t deltaXSecondStage = kFALSE, Bool_t deltaYSecondStage = kFALSE);
+
+		//! Destructor
+		virtual ~LauCartesianCPCoeffSet(){}
+	
+		//! Retrieve the parameters of the coefficient, e.g. so that they can be loaded into a fit
+		/*!
+		    \return the parameters of the coefficient
+		*/
+		virtual std::vector<LauParameter*> getParameters();
+
+		//! Print the column headings for a results table
+		/*!
+                    \param [out] stream the stream to print to
+		*/
+		virtual void printTableHeading(std::ostream& stream);
+
+		//! Print the parameters of the complex coefficient as a row in the results table
+		/*!
+                    \param [out] stream the stream to print to
+		*/
+		virtual void printTableRow(std::ostream& stream);
+
+		//! Randomise the starting values of the parameters for a fit
+		virtual void randomiseInitValues();
+
+		//! Make sure values are in "standard" ranges, e.g. phases should be between -pi and pi
+		virtual void finaliseValues();
+
+		//! Retrieve the complex coefficient for a particle
+		/*!
+		    \return the complex coefficient for a particle
+		*/
+		virtual LauComplex particleCoeff();
+
+		//! Retrieve the complex coefficient for an antiparticle
+		/*!
+		    \return the complex coefficient for an antiparticle
+		*/
+		virtual LauComplex antiparticleCoeff();
+
+		//! Set the parameters based on the complex coefficients for particles and antiparticles
+		/*!
+		    \param [in] coeff the complex coefficient for a particle
+		    \param [in] coeffBar the complex coefficient for an antiparticle
+		*/
+		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar );
+
+		//! Calculate the CP asymmetry
+		/*!
+		    \return the CP asymmetry
+		*/
+		virtual LauParameter acp();
+
+		//! Create a clone of the coefficient set
+		/*!
+		    \param [in] newName the clone's name
+		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		    \return a clone of the coefficient set
+		*/
+		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0);
+
+	protected:
+		//! Copy constructor
+		/*!
+		    This creates cloned parameters, not copies.
+		    \param [in] rhs the coefficient to clone
+		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		*/
+		LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs, Double_t constFactor = 1.0);
+
+		//! Copy assignment operator
+		/*!
+		    This creates cloned parameters, not copies.
+		    \param [in] rhs the coefficient to clone
+		*/
+		LauCartesianCPCoeffSet& operator=(const LauCartesianCPCoeffSet& rhs);
+
+	private:
+		//! The minimum allowed value for the average parts
+		Double_t minPar_;
+		//! The maximum allowed value for the average parts
+		Double_t maxPar_;
+		//! The minimum allowed value for the asymmetric parts
+		Double_t minDeltaPar_;
+		//! The maximum allowed value for the asymmetric parts
+		Double_t maxDeltaPar_;
+
+		// the actual fit parameters
+		// (need to be pointers so they can be cloned)
+		//! The average real part
+		LauParameter* x_;
+		//! The average imaginary part
+		LauParameter* y_;
+		//! The asymmetric real part
+		LauParameter* deltaX_;
+		//! The asymmetric imaginary part
+		LauParameter* deltaY_;
+
+		//! The CP asymmetry
+		LauParameter acp_;
+
+		ClassDef(LauCartesianCPCoeffSet, 0)
+};
+
+#endif

@@ -1,0 +1,3 @@
+outFile.root dataHist
+outFile.root fitHist
+20 20 1.0

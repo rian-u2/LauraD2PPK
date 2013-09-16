@@ -1,0 +1,16 @@
+# File for pi-pi K-matrix S-wave amplitude. 
+# Coeffs from [hep-ex]0804.2089, table I, page 10 (RHS).
+# First, define the indices of the phase-space channels defined by
+# the LauKMatrixPropagator::KMatrixChannel enum
+1 2 3 4 5
+# Next, define the bare pole mass and coupling constants g^{alpha}_j
+0.65100 0.22889 -0.55377 0.0 -0.39899 -0.34639
+1.20360 0.94128 0.55095 0.0 0.39065 0.31503
+1.55817 0.36856 0.23888 0.55639 0.18340 0.18681
+1.21000 0.33650 0.40907 0.85679 0.19906 -0.00984
+1.82206 0.18171 -0.17558 -0.79658 -0.00355 0.22358
+# Next, define the scattering f_{1j} constants
+0.23399 0.15044 -0.20545 0.32825 0.35412
+# Finally, define the "Adler-zero" constants
+# mSq0 s0Scatt s0prod sA sA0
+1.0 -3.92637 -3.0 1.0 -0.15

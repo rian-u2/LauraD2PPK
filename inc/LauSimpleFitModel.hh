@@ -1,0 +1,483 @@
+
+// Copyright University of Warwick 2004 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauSimpleFitModel.hh
+    \brief File containing declaration of LauSimpleFitModel class.
+*/
+
+/*! \class LauSimpleFitModel
+    \brief Define a Dalitz plot according to the isobar model.
+
+    A class that allows the user to define a three-body B meson
+    Dalitz plot according to the isobar model, i.e. defining a set of resonances
+    that have complex amplitudes that can interfere with each other.
+*/
+
+#ifndef LAU_SIMPLE_FIT_MODEL
+#define LAU_SIMPLE_FIT_MODEL
+
+#include <vector>
+
+#include "TString.h"
+
+#include "LauAbsFitModel.hh"
+#include "LauParameter.hh"
+
+class TH2;
+class LauAbsBkgndDPModel;
+class LauAbsCoeffSet;
+class LauAbsDPDynamics;
+class LauAbsPdf;
+class LauEffModel;
+class LauEmbeddedData;
+class LauKinematics;
+class LauScfMap;
+
+
+class LauSimpleFitModel : public LauAbsFitModel {
+
+	public:
+		//! Constructor
+		/*! 
+			\param [in] sigDPModel the signal DP model
+		*/	
+		explicit LauSimpleFitModel(LauAbsDPDynamics* sigDPModel);
+
+		//! Destructor
+		virtual ~LauSimpleFitModel();
+
+		//! Set the signal event yield
+		/*!
+			\param [in] nSigEvents the number of signal events
+			\param [in] fixSigEvents the option to fix the number of signal events
+		*/	
+		virtual void setNSigEvents(Double_t nSigEvents, Bool_t fixSigEvents = kFALSE);
+
+		//! Set the background event yield(s)
+		/*!
+			\param [in] bkgndClass the name of the background class
+			\param [in] nBkgndEvents the number of background events
+			\param [in] fixBkgndEvents the option to fix the number of background events
+		*/	
+		virtual void setNBkgndEvents(const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents = kFALSE);
+
+		//! Set the background DP models
+		/*!
+			\param [in] bkgndClass the name of the background class
+			\param [in] bkgndModel the DP model of the background
+		*/
+		void setBkgndDPModel(const TString& bkgndClass, LauAbsBkgndDPModel* bkgndModel);
+
+		//! Split the signal component into well-reconstructed and mis-reconstructed parts
+		/*!
+		  	The nomenclature used here is TM (truth-matched) and SCF (self cross feed)
+			In this option, the SCF fraction is DP-dependent
+			Can also optionally provide a smearing matrix to smear the SCF DP PDF
+
+			\param [in] dpHisto the DP histogram of the SCF fraction value
+			\param [in] upperHalf whether this histogram is only in the upper half of a symmetric DP
+			\param [in] scfMap the (optional) smearing matrix
+		*/
+		void splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf = kFALSE, LauScfMap* scfMap = 0 );
+
+		//! Split the signal component into well reconstructed and mis-reconstructed parts
+		/*!
+		  	The nomenclature used here is TM (truth-matched) and SCF (self cross feed)
+			In this option, the SCF fraction is a single global number
+
+			\param [in] scfFrac the SCF fraction value
+			\param [in] fixed whether the SCF fraction is fixed or floated in the fit
+		*/
+		void splitSignalComponent( Double_t scfFrac, Bool_t fixed );
+
+		//! Determine whether we are splitting the signal into TM and SCF parts
+		Bool_t useSCF() const { return useSCF_; }
+
+		//! Determine whether the SCF fraction is DP-dependent
+		Bool_t useSCFHist() const { return useSCFHist_; }
+
+		//! Determine if we are smearing the SCF DP PDF
+		Bool_t smearSCFDP() const { return (scfMap_ != 0); }
+
+		//! Set the signal PDF for a given variable
+		/*!
+			\param [in] pdf the PDF to be added to the signal model
+		*/	
+		void setSignalPdf(LauAbsPdf* pdf);
+
+		//! Set the SCF PDF for a given variable
+		/*!
+			\param [in] pdf the PDF to be added to the SCF model
+		*/	
+		void setSCFPdf(LauAbsPdf* pdf);
+
+		//! Set the background PDF
+		/*!
+			\param [in] bkgndClass the name of the background class
+			\param [in] pdf the PDF to be added to the background model
+		*/	
+		void setBkgndPdf(const TString& bkgndClass, LauAbsPdf* pdf);
+
+		//! Embed full simulation events for the signal, rather than generating toy from the PDFs
+		/*!
+			\param [in] fileName the name of the file containing SP events
+			\param [in] treeName the name of the tree 
+			\param [in] reuseEventsWithinEnsemble
+			\param [in] reuseEventsWithinExperiment
+			\param [in] useReweighting
+		*/	
+		void embedSignal(const TString& fileName, const TString& treeName,
+				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE,
+				Bool_t useReweighting = kFALSE);
+
+		//! Embed full simulation events for the given background class, rather than generating toy from the PDFs
+		/*!
+			\param [in] bkgndClass the name of the background class
+			\param [in] fileName the name of the file containing SP events
+			\param [in] treeName the name of the tree 
+			\param [in] reuseEventsWithinEnsemble
+			\param [in] reuseEventsWithinExperiment
+		*/	
+		void embedBkgnd(const TString& bkgndClass, const TString& fileName, const TString& treeName,
+				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE);
+
+		//! Set the DP amplitude coefficients
+		/*!
+			\param [in] coeffSet the set of coefficients 
+		*/	
+		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet);
+
+		//! Weight events based on the DP model
+		/*!
+			\param [in] dataFileName the name of the data file
+			\param [in] dataTreeName the name of the data tree
+		*/	
+		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName );
+
+	protected:
+		//! Define a map to be used to store a category name and numbers
+		typedef std::map< TString, std::pair<Int_t,Double_t> > LauGenInfo;
+
+		//! Typedef for a vector of background DP models
+		typedef std::vector<LauAbsBkgndDPModel*> LauBkgndDPModelList;
+
+		//! Typedef for a vector of background PDFs
+		typedef std::vector<LauPdfList> LauBkgndPdfsList;
+
+		//! Typedef for a vector of background yields
+		typedef std::vector<LauParameter> LauBkgndYieldList;
+
+		//! Typedef for a vector of embedded data objects
+		typedef std::vector<LauEmbeddedData*> LauBkgndEmbDataList;
+
+		//! Typedef for a vector of booleans to flag if events are reused
+		typedef std::vector<Bool_t> LauBkgndReuseEventsList;
+
+		//! Initialise the fit
+		virtual void initialise();
+
+		//! Initialise the signal DP model
+		virtual void initialiseDPModels();
+
+		//! Update the coefficients
+		virtual void updateCoeffs();
+
+		//! Toy MC generation and fitting overloaded functions
+		virtual Bool_t genExpt();
+
+		//! Calculate things that depend on the fit parameters
+		//! after they have been updated by Minuit
+		virtual void propagateParUpdates();
+
+		//! Read in the input fit data variables, e.g. m13Sq and m23Sq
+		virtual void cacheInputFitVars();
+
+		//! Check the initial fit parameters
+		virtual void checkInitFitParams();
+
+		//! Get the fit results and store them
+		/*!
+			\param [in] tablePrefixName prefix for the name of the output file
+		*/	
+		virtual void finaliseFitResults(const TString& tablePrefixName);
+
+		//! Print the fit fractions, total DP rate and mean efficiency
+		/*!
+			\param [out] output the output to be printed 
+		*/	
+		virtual void printFitFractions(std::ostream& output);
+
+		//! Write the fit results in latex table format
+		/*! 
+			\param [in] outputFile the name of the output file
+		*/	
+		virtual void writeOutTable(const TString& outputFile);
+
+		//! Store the per event likelihood values
+                virtual void storePerEvtLlhds();
+
+		// Methods to do with calculating the likelihood functions
+		// and manipulating the fitting parameters.
+		//! Get the total likelihood for each event
+		/*!
+			\param [in] iEvt the event number 
+		*/	
+		virtual Double_t getTotEvtLikelihood(UInt_t iEvt);
+
+		//! Calculate the signal and background likelihoods for the DP for a given event
+		/*!
+			\param [in] iEvt the event number 
+		*/	
+		virtual void getEvtDPLikelihood(UInt_t iEvt);
+
+		//! Calculate the SCF likelihood for the DP for a given event
+		/*!
+			\param [in] iEvt the event number 
+		*/	
+		virtual Double_t getEvtSCFDPLikelihood(UInt_t iEvt);
+
+		//! Determine the signal and background likelihood for the extra variables for a given event
+		/*!
+			\param [in] iEvt the event number 
+		*/	
+		virtual void getEvtExtraLikelihoods(UInt_t iEvt);
+
+		//! Get the total number of events
+		/*!
+			\return the total number of events
+		*/	
+		virtual Double_t getEventSum() const;
+		
+		//! Set the fit parameters for the DP model
+		void setSignalDPParameters();
+
+		//! Set the fit parameters for the extra PDFs
+		void setExtraPdfParameters();
+
+		//! Set the initial yields
+		void setFitNEvents();
+
+		//! Set-up other parameters that are derived from the fit results, e.g. fit fractions
+		void setExtraNtupleVars();
+
+		//! Randomise the initial fit parameters
+		void randomiseInitFitPars();
+
+		//! Define the length of the background vectors
+		virtual void setupBkgndVectors();
+
+		//! Determine the number of events to generate for each hypothesis
+		LauGenInfo eventsToGenerate();
+
+		//! Generate signal event
+		Bool_t generateSignalEvent();
+
+		//! Generate background event
+		/*!
+			\param [in] bkgndID ID number of the background class
+		*/	
+		Bool_t generateBkgndEvent(UInt_t bkgndID);
+
+		//! Setup the required ntuple branches
+		void setupGenNtupleBranches();
+
+		//! Store all of the DP information 
+		void setDPBranchValues();
+
+		//! Generate from the extra PDFs
+		/*! 
+			\param [in] extraPdfs the list of extra PDFs
+			\param [in] embeddedData the embedded data sample
+		*/	
+		void generateExtraPdfValues(LauPdfList* extraPdfs, LauEmbeddedData* embeddedData);
+
+		//! Add sPlot branches for the extra PDFs
+		/*!
+			\param [in] extraPdfs the list of extra PDFs
+			\param [in] prefix the list of prefixes for the branch names
+		*/	
+		void addSPlotNtupleBranches(const LauPdfList* extraPdfs, const TString& prefix);
+
+		//! Set the branches for the sPlot ntuple with extra PDFs
+		/*!
+			\param [in] extraPdfs the list of extra PDFs
+			\param [in] prefix the list of prefixes for the branch names
+			\param [in] iEvt the event number
+		*/	
+		Double_t setSPlotNtupleBranchValues(LauPdfList* extraPdfs, const TString& prefix, UInt_t iEvt);
+
+		//! Update the signal events after Minuit sets background parameters
+		void updateSigEvents();
+
+		//! Add branches to store experiment number and the event number within the experiment
+		virtual void setupSPlotNtupleBranches();
+
+		//! Returns the names of all variables in the fit
+		virtual LauSPlot::NameSet variableNames() const;
+
+		//! Returns the names and yields of species that are free in the fit
+		virtual LauSPlot::NumbMap freeSpeciesNames() const;
+
+		//! Returns the names and yields of species that are fixed in the fit
+		virtual LauSPlot::NumbMap fixdSpeciesNames() const;
+
+		//! Returns the species and variables for all 2D PDFs in the fit
+		virtual LauSPlot::TwoDMap twodimPDFs() const;
+
+		//! Check if the signal is split into well-reconstructed and mis-reconstructed types
+		virtual Bool_t splitSignal() const {return this->useSCF();}
+
+		//! Check if the mis-reconstructed signal is to be smeared in the DP
+		virtual Bool_t scfDPSmear() const {return (scfMap_ != 0);}
+
+		//! We'll be caching the DP amplitudes and efficiencies of the centres of the true bins.
+		//! To do so, we attach some fake points at the end of inputData, the number of the entry
+		//! minus the total number of events corresponding to the number of the histogram for that
+		//! given true bin in the LauScfMap object. (What this means is that when Laura is provided with
+		//! the LauScfMap object by the user, it's the latter who has to make sure that it contains the
+		//! right number of histograms and in exactly the right order!)
+		/*!
+			\param [in] inputData the fit data 
+		*/	
+		void appendBinCentres( LauFitDataTree* inputData );
+
+	private:
+		//! The signal Dalitz plot model
+		LauAbsDPDynamics* sigDPModel_;
+
+		//! The background Dalitz Plot model
+		LauBkgndDPModelList bkgndDPModels_;
+
+		//! The Dalitz plot kinematics object
+		LauKinematics *kinematics_;
+
+		//! The signal PDFs
+		LauPdfList signalPdfs_;
+
+		//! The SCF PDFs
+		LauPdfList scfPdfs_;
+
+		//! The background PDFs
+		LauBkgndPdfsList bkgndPdfs_;
+
+		//! Background boolean
+		Bool_t usingBkgnd_;
+
+		//! Number of signal components
+		UInt_t nSigComp_;
+
+		//! Number of signal DP parameters
+		UInt_t nSigDPPar_; 
+
+		//! Number of extra PDF parameters
+		UInt_t nExtraPdfPar_; 
+
+		//! Number of parameters
+		UInt_t nNormPar_;
+
+		//! Magnitudes and Phases
+		std::vector<LauAbsCoeffSet*> coeffPars_;
+
+		//! Fit fractions
+		LauParArray fitFrac_;
+
+		//! The mean efficiency
+		LauParameter meanEff_;
+
+		//! The average DP rate
+		LauParameter dpRate_;
+
+		//! Signal yield
+		LauParameter signalEvents_;
+
+		//! Background yield(s)
+		LauBkgndYieldList bkgndEvents_;
+
+		//! Is the signal split into TM and SCF
+		Bool_t useSCF_;
+
+		//! Is the SCF fraction DP-dependent
+		Bool_t useSCFHist_;
+
+		//! The (global) SCF fraction parameter
+		LauParameter scfFrac_;
+
+		//! The histogram giving the DP-dependence of the SCF fraction
+		LauEffModel* scfFracHist_;
+
+		//! The smearing matrix for the SCF DP PDF
+		LauScfMap* scfMap_;
+
+		//! The cached values of the SCF fraction for each event
+		std::vector<Double_t> recoSCFFracs_;
+
+		//! The cached values of the SCF fraction for each bin centre
+		std::vector<Double_t> fakeSCFFracs_;
+
+		//! The cached values of the sqDP jacobians for each event
+		std::vector<Double_t> recoJacobians_;
+
+		//! The cached values of the sqDP jacobians for each true bin
+		std::vector<Double_t> fakeJacobians_;
+
+		//! Run choice variables
+		Bool_t compareFitData_;
+
+		//! The complex coefficients
+		std::vector<LauComplex> coeffs_;
+
+		// Embedding SP events
+		//! The signal event tree 
+		LauEmbeddedData* signalTree_;
+
+		//! The background event tree
+		LauBkgndEmbDataList bkgndTree_;
+
+		//! Boolean to reuse signal events
+		Bool_t reuseSignal_;
+
+		//! Boolean to use reweighting
+		Bool_t useReweighting_;
+
+		//! Vector of booleans to reuse background events
+		LauBkgndReuseEventsList reuseBkgnd_;
+
+		//! Signal likelihood value
+		Double_t sigDPLike_;
+
+		//! SCF likelihood value
+		Double_t scfDPLike_;
+
+		//! Background likelihood value(s)
+		std::vector<Double_t> bkgndDPLike_;
+
+		//! Signal likelihood from extra PDFs
+		Double_t sigExtraLike_;
+
+		//! SCF likelihood from extra PDFs
+		Double_t scfExtraLike_;
+
+		//! Background likelihood value(s) from extra PDFs
+		std::vector<Double_t> bkgndExtraLike_;
+
+		//! Total signal likelihood
+		Double_t sigTotalLike_;
+
+		//! Total SCF likelihood
+		Double_t scfTotalLike_;
+
+		//! Total background likelihood(s)
+		std::vector<Double_t> bkgndTotalLike_;
+
+		ClassDef(LauSimpleFitModel,0) // Total fit/ToyMC model
+
+};
+
+#endif

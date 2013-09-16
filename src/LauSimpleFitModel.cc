@@ -1,0 +1,2041 @@
+
+// Copyright University of Warwick 2004 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauSimpleFitModel.cc
+    \brief File containing implementation of LauSimpleFitModel class.
+*/
+
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::setprecision;
+
+#include "TFile.h"
+#include "TH2.h"
+#include "TMinuit.h"
+#include "TRandom.h"
+#include "TSystem.h"
+#include "TVirtualFitter.h"
+
+#include "LauAbsBkgndDPModel.hh"
+#include "LauAbsCoeffSet.hh"
+#include "LauAbsDPDynamics.hh"
+#include "LauAbsPdf.hh"
+#include "LauComplex.hh"
+#include "LauConstants.hh"
+#include "LauDaughters.hh"
+#include "LauEmbeddedData.hh"
+#include "LauEffModel.hh"
+#include "LauFitNtuple.hh"
+#include "LauGenNtuple.hh"
+#include "LauKinematics.hh"
+#include "LauPrint.hh"
+#include "LauRandom.hh"
+#include "LauScfMap.hh"
+#include "LauSimpleFitModel.hh"
+
+ClassImp(LauSimpleFitModel)
+
+
+LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
+	sigDPModel_(sigModel),
+	kinematics_(sigModel ? sigModel->getKinematics() : 0),
+	usingBkgnd_(kFALSE),
+	nSigComp_(0),
+	nSigDPPar_(0),
+	nExtraPdfPar_(0),
+	nNormPar_(0),
+	meanEff_("meanEff",0.0,0.0,1.0),
+	dpRate_("dpRate",0.0,0.0,100.0),
+	signalEvents_("signalEvents",1.0,0.0,1.0),
+	useSCF_(kFALSE),
+	useSCFHist_(kFALSE),
+	scfFrac_("scfFrac",0.0,0.0,1.0),
+	scfFracHist_(0),
+	scfMap_(0),
+	compareFitData_(kFALSE),
+	signalTree_(0),
+	reuseSignal_(kFALSE),
+        useReweighting_(kFALSE),
+	sigDPLike_(0.0),
+	scfDPLike_(0.0),
+	sigExtraLike_(0.0),
+	scfExtraLike_(0.0),
+	sigTotalLike_(0.0),
+	scfTotalLike_(0.0)
+{
+}
+
+LauSimpleFitModel::~LauSimpleFitModel()
+{
+	delete signalTree_;
+	for (LauBkgndEmbDataList::iterator iter = bkgndTree_.begin(); iter != bkgndTree_.end(); ++iter) {
+		delete (*iter);
+	}
+	delete scfFracHist_;
+}
+
+void LauSimpleFitModel::setupBkgndVectors()
+{
+	UInt_t nBkgnds = this->nBkgndClasses();
+	bkgndDPModels_.resize( nBkgnds );
+	bkgndPdfs_.resize( nBkgnds );
+	bkgndEvents_.resize( nBkgnds );
+	bkgndTree_.resize( nBkgnds );
+	reuseBkgnd_.resize( nBkgnds );
+	bkgndDPLike_.resize( nBkgnds );
+	bkgndExtraLike_.resize( nBkgnds );
+	bkgndTotalLike_.resize( nBkgnds );
+}
+
+void LauSimpleFitModel::setNSigEvents(Double_t nSigEvents, Bool_t fixSigEvents)
+{
+	signalEvents_.range(-2.0*(TMath::Abs(nSigEvents)+1.0), 2.0*(TMath::Abs(nSigEvents)+1.0));
+	signalEvents_.value(nSigEvents);
+	signalEvents_.initValue(nSigEvents);
+	signalEvents_.genValue(nSigEvents);
+	signalEvents_.fixed(fixSigEvents);
+}
+
+void LauSimpleFitModel::setNBkgndEvents(const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents)
+{
+	if ( ! this->validBkgndClass( bkgndClass ) ) {
+		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		return;
+	}
+
+	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+
+	bkgndEvents_[bkgndID].name( bkgndClass+"Events" );
+	bkgndEvents_[bkgndID].range(-2.0*(TMath::Abs(nBkgndEvents)+1.0), 2.0*(TMath::Abs(nBkgndEvents)+1.0));
+	bkgndEvents_[bkgndID].value(nBkgndEvents);
+	bkgndEvents_[bkgndID].initValue(nBkgndEvents);
+	bkgndEvents_[bkgndID].genValue(nBkgndEvents);
+	bkgndEvents_[bkgndID].fixed(fixBkgndEvents);
+}
+
+void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )
+{
+	if ( useSCF_ == kTRUE ) {
+		cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << endl;
+		return;
+	}
+
+	if ( dpHisto == 0 ) {
+		cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : The histogram pointer is null." << endl;
+		return;
+	}
+
+	LauDaughters* daughters = sigDPModel_->getDaughters();
+	scfFracHist_ = new LauEffModel( daughters, 0 );
+	scfFracHist_->setEffHisto( dpHisto, kTRUE, kFALSE, 0.0, 0.0, upperHalf, daughters->squareDP() );
+
+	scfMap_ = scfMap;
+
+	useSCF_ = kTRUE;
+	useSCFHist_ = kTRUE;
+}
+
+void LauSimpleFitModel::splitSignalComponent( Double_t scfFrac, Bool_t fixed )
+{
+	if ( useSCF_ == kTRUE ) {
+		cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << endl;
+		return;
+	}
+
+	scfFrac_.range( 0.0, 1.0 );
+	scfFrac_.value( scfFrac ); scfFrac_.initValue( scfFrac ); scfFrac_.genValue( scfFrac );
+	scfFrac_.fixed( fixed );
+
+	useSCF_ = kTRUE;
+	useSCFHist_ = kFALSE;
+}
+
+void LauSimpleFitModel::setBkgndDPModel(const TString& bkgndClass, LauAbsBkgndDPModel* bkgndDPModel)
+{
+	if (bkgndDPModel == 0) {
+		cerr << "ERROR in LauSimpleFitModel::setBkgndDPModel : The model pointer is null." << endl;
+		return;
+	}
+
+	// check that this background name is valid
+	if ( ! this->validBkgndClass( bkgndClass ) ) {
+		cerr << "ERROR in LauSimpleFitModel::setBkgndDPModel : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		return;
+	}
+
+	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+	bkgndDPModels_[bkgndID] = bkgndDPModel;
+
+	usingBkgnd_ = kTRUE;
+}
+
+void LauSimpleFitModel::setSignalPdf(LauAbsPdf* pdf)
+{
+	if (pdf==0) {
+		cerr << "ERROR in LauSimpleFitModel::setSignalPdf : The PDF pointer is null." << endl;
+		return;
+	}
+	signalPdfs_.push_back(pdf);
+}
+
+void LauSimpleFitModel::setSCFPdf(LauAbsPdf* pdf)
+{
+	if (pdf==0) {
+		cerr << "ERROR in LauSimpleFitModel::setSCFPdf : The PDF pointer is null." << endl;
+		return;
+	}
+	scfPdfs_.push_back(pdf);
+}
+
+void LauSimpleFitModel::setBkgndPdf(const TString& bkgndClass, LauAbsPdf* pdf)
+{
+	if (pdf == 0) {
+		cerr << "ERROR in LauSimpleFitModel::setBkgndPdf : The PDF pointer is null." << endl;
+		return;
+	}
+
+	// check that this background name is valid
+	if ( ! this->validBkgndClass( bkgndClass ) ) {
+		cerr << "ERROR in LauSimpleFitModel::setBkgndPdf : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		return;
+	}
+
+	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+	bkgndPdfs_[bkgndID].push_back(pdf);
+
+	usingBkgnd_ = kTRUE;
+}
+
+void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
+{
+	// Is there a component called compName in the signal model?
+	TString compName(coeffSet->name());
+	Bool_t ok = sigDPModel_->hasResonance(compName);
+	if (!ok) {
+		cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Signal DP model doesn't contain component \"" << compName << "\"." << endl;
+		return;
+	}
+
+	// Do we already have it in our list of names?
+	for (std::vector<LauAbsCoeffSet*>::const_iterator iter = coeffPars_.begin(); iter != coeffPars_.end(); ++iter) {
+		if ((*iter)->name() == compName) {
+			cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << endl;
+			return;
+		}
+	}
+
+	coeffSet->index(nSigComp_);
+	coeffPars_.push_back(coeffSet);
+
+	++nSigComp_;
+
+	cout << "Added coefficients for component \"" << compName << "\" to the fit model." << endl;
+}
+
+
+void LauSimpleFitModel::initialise()
+{
+	// First of all check that, we have all the Dalitz-plot models
+
+	if (this->useDP()) {
+		if ( sigDPModel_ == 0 ) {
+			cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to the signal DP model is null.\n";
+			cerr << "                                       : Removing the Dalitz Plot from the model." << endl;
+			this->useDP(kFALSE);
+		}
+		if ( usingBkgnd_ ) {
+			for (LauBkgndDPModelList::const_iterator dpmodel_iter = bkgndDPModels_.begin(); dpmodel_iter != bkgndDPModels_.end(); ++dpmodel_iter ) {
+				if ( (*dpmodel_iter) == 0 ) {
+					cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to one of the background DP models is null.\n";
+					cerr << "                                       : Removing the Dalitz Plot from the model." << endl;
+					this->useDP(kFALSE);
+					break;
+				}
+			}
+		}
+	}
+
+	// Next check that, if a given component is being used we've got the
+	// right number of PDFs for all the variables involved
+	// TODO - should probably check variable names and so on as well
+
+	UInt_t nsigpdfvars(0);
+	for ( LauPdfList::const_iterator pdf_iter = signalPdfs_.begin(); pdf_iter != signalPdfs_.end(); ++pdf_iter ) {
+		std::vector<TString> varNames = (*pdf_iter)->varNames();
+		for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+			if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+				++nsigpdfvars;
+			}
+		}
+	}
+	if (useSCF_) {
+		UInt_t nscfpdfvars(0);
+		for ( LauPdfList::const_iterator pdf_iter = scfPdfs_.begin(); pdf_iter != scfPdfs_.end(); ++pdf_iter ) {
+			std::vector<TString> varNames = (*pdf_iter)->varNames();
+			for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+				if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+					++nscfpdfvars;
+				}
+			}
+		}
+		if (nscfpdfvars != nsigpdfvars) {
+			cerr << "ERROR in LauSimpleFitModel::initialise : There are " << nsigpdfvars << " TM signal PDF variables but " << nscfpdfvars << " SCF signal PDF variables." << endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
+	if (usingBkgnd_) {
+		for (LauBkgndPdfsList::const_iterator bgclass_iter = bkgndPdfs_.begin(); bgclass_iter != bkgndPdfs_.end(); ++bgclass_iter) {
+			UInt_t nbkgndpdfvars(0);
+			const LauPdfList& pdfList = (*bgclass_iter);
+			for ( LauPdfList::const_iterator pdf_iter = pdfList.begin(); pdf_iter != pdfList.end(); ++pdf_iter ) {
+				std::vector<TString> varNames = (*pdf_iter)->varNames();
+				for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+					if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+						++nbkgndpdfvars;
+					}
+				}
+			}
+			if (nbkgndpdfvars != nsigpdfvars) {
+				cerr << "ERROR in LauSimpleFitModel::initialise : There are " << nsigpdfvars << " signal PDF variables but " << nbkgndpdfvars << " bkgnd PDF variables." << endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+		}
+	}
+
+	// Clear the vectors of parameter information so we can start from scratch
+	this->clearFitParVectors();
+
+	// Set the fit parameters for signal and background models
+	this->setSignalDPParameters();
+
+	// Set the fit parameters for the various extra PDFs
+	this->setExtraPdfParameters();
+
+	// Set the initial bg and signal events
+	this->setFitNEvents();
+
+	// Check that we have the expected number of fit variables
+	const LauParameterPList& fitVars = this->fitPars();
+	if (fitVars.size() != (nSigDPPar_ + nExtraPdfPar_ + nNormPar_)) {
+		cerr << "ERROR in LauSimpleFitModel::initialise : Number of fit parameters not of expected size." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	// From the initial parameter values calculate the coefficients
+	// so they can be passed to the signal model
+	this->updateCoeffs();
+
+	// Initialisation
+	if (this->useDP() == kTRUE) {
+		this->initialiseDPModels();
+	}
+
+	if (!this->useDP() && signalPdfs_.empty()) {
+		cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	this->setExtraNtupleVars();
+}
+
+void LauSimpleFitModel::initialiseDPModels()
+{
+	cout << "Initialising signal DP model" << endl;
+	sigDPModel_->initialise(coeffs_);
+
+	if (usingBkgnd_ == kTRUE) {
+		for (LauBkgndDPModelList::iterator iter = bkgndDPModels_.begin(); iter != bkgndDPModels_.end(); ++iter) {
+			(*iter)->initialise();
+		}
+	}
+}
+
+void LauSimpleFitModel::setSignalDPParameters()
+{
+	// Set the fit parameters for the signal model.
+
+	nSigDPPar_ = 0;
+	if ( ! this->useDP() ) {
+		return;
+	}
+
+	cout << "INFO in LauSimpleFitModel::setSignalDPParameters : Setting the initial fit parameters for the signal DP model." << endl;
+
+	// Need to check that the number of components we have and that the dynamics has matches up
+	UInt_t nAmp = sigDPModel_->getnAmp();
+	if (nAmp != nSigComp_) {
+		cerr << "ERROR in LauSimpleFitModel::setSignalDPParameters : Number of signal DP components with magnitude and phase set not right." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	
+	// Place signal model parameters in vector of fit variables
+	LauParameterPList& fitVars = this->fitPars();
+	for (UInt_t i = 0; i < nSigComp_; i++) {
+		LauParameterPList pars = coeffPars_[i]->getParameters();
+		for (LauParameterPList::iterator iter = pars.begin(); iter != pars.end(); ++iter) {
+			if ( !(*iter)->clone() ) {
+				fitVars.push_back(*iter);
+				++nSigDPPar_;
+			}
+		}
+	}
+}
+
+void LauSimpleFitModel::setExtraPdfParameters()
+{
+	// Include all the parameters of the various PDFs in the fit
+	// NB all of them are passed to the fit, even though some have been fixed through parameter.fixed(kTRUE)
+	// With the new "cloned parameter" scheme only "original" parameters are passed to the fit.
+	// Their clones are updated automatically when the originals are updated.
+
+	nExtraPdfPar_ = 0;
+
+	nExtraPdfPar_ += this->addFitParameters(signalPdfs_);
+
+	if (useSCF_ == kTRUE) {
+		nExtraPdfPar_ += this->addFitParameters(scfPdfs_);
+	}
+
+	if (usingBkgnd_ == kTRUE) {
+		for (LauBkgndPdfsList::iterator iter = bkgndPdfs_.begin(); iter != bkgndPdfs_.end(); ++iter) {
+			nExtraPdfPar_ += this->addFitParameters(*iter);
+		}
+	}
+}
+
+void LauSimpleFitModel::setFitNEvents()
+{
+	nNormPar_ = 0;
+
+	// initialise the total number of events to be the sum of all the hypotheses
+	Double_t nTotEvts = signalEvents_.value();
+	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
+		nTotEvts += iter->value();
+	}
+	this->eventsPerExpt(TMath::FloorNint(nTotEvts));
+
+	LauParameterPList& fitVars = this->fitPars();
+
+	// if doing an extended ML fit add the number of signal events into the fit parameters
+	if (this->doEMLFit()) {
+		cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for signal and background components..." << endl;
+		// add the signal events to the list of fit parameters
+		fitVars.push_back(&signalEvents_);
+		++nNormPar_;
+	} else {
+		cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for background components (and hence signal)..." << endl;
+	}
+
+	if (useSCF_ && !useSCFHist_) {
+		fitVars.push_back(&scfFrac_);
+		++nNormPar_;
+	}
+
+	if (usingBkgnd_ == kTRUE) {
+		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
+			LauParameter& parameter = (*iter);
+			fitVars.push_back(&parameter);
+			++nNormPar_;
+		}
+	}
+}
+
+void LauSimpleFitModel::setExtraNtupleVars()
+{
+	// Set-up other parameters derived from the fit results, e.g. fit fractions.
+	if (this->useDP() != kTRUE) {
+		return;
+	}
+
+	// First clear the vectors so we start from scratch
+	this->clearExtraVarVectors();
+
+	LauParameterList& extraVars = this->extraPars();
+
+	// Add a fit fraction for each signal component
+	fitFrac_ = sigDPModel_->getFitFractions();
+	if (fitFrac_.size() != nSigComp_) {
+		cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFrac_.size() << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	for (UInt_t i(0); i<nSigComp_; ++i) {
+		if (fitFrac_[i].size() != nSigComp_) {
+			cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFrac_[i].size() << endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
+
+	for (UInt_t i = 0; i < nSigComp_; i++) {
+		for (UInt_t j = i; j < nSigComp_; j++) {
+			extraVars.push_back(fitFrac_[i][j]);
+		}
+	}
+
+	// Store any extra parameters/quantities from the DP model (e.g. K-matrix total fit fractions)
+	std::vector<LauParameter> extraParams = sigDPModel_->getExtraParameters();
+	std::vector<LauParameter>::iterator extraIter;
+	for (extraIter = extraParams.begin(); extraIter != extraParams.end(); ++extraIter) {
+		LauParameter extraParameter = (*extraIter);
+		extraVars.push_back(extraParameter);
+	}
+
+	// Now add in the DP efficiency value
+	Double_t initMeanEff = sigDPModel_->getMeanEff().initValue();
+	meanEff_.value(initMeanEff); meanEff_.initValue(initMeanEff); meanEff_.genValue(initMeanEff);
+	extraVars.push_back(meanEff_);
+
+	// Also add in the DP rate
+	Double_t initDPRate = sigDPModel_->getDPRate().initValue();
+	dpRate_.value(initDPRate); dpRate_.initValue(initDPRate); dpRate_.genValue(initDPRate);
+	extraVars.push_back(dpRate_);
+}
+
+void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
+{
+	// Retrieve parameters from the fit results for calculations and toy generation
+	// and eventually store these in output root ntuples/text files
+
+	// Now take the fit parameters and update them as necessary
+	// e.g. to make mag > 0.0 and phase in the right range.
+	// This function will also calculate any other values, such as the
+	// fit fractions, using any errors provided by fitParErrors as appropriate.
+	// Also obtain the pull values: (measured - generated)/(average error)
+
+	if (this->useDP() == kTRUE) {
+		for (UInt_t i = 0; i < nSigComp_; i++) {
+			// Check whether we have mag > 0.0, and phase in the right range
+			coeffPars_[i]->finaliseValues();
+		}
+	}
+
+	// update the pulls on the events
+	if (this->doEMLFit()) {
+		signalEvents_.updatePull();
+	}
+	if (useSCF_ && !useSCFHist_) {
+		scfFrac_.updatePull();
+	}
+	if (usingBkgnd_ == kTRUE) {
+		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
+			iter->updatePull();
+		}
+	}
+
+	// Update the pulls on all the extra PDFs' parameters
+	this->updateFitParameters(signalPdfs_);
+	if (useSCF_ == kTRUE) {
+		this->updateFitParameters(scfPdfs_);
+	}
+	if (usingBkgnd_ == kTRUE) {
+		for (LauBkgndPdfsList::iterator iter = bkgndPdfs_.begin(); iter != bkgndPdfs_.end(); ++iter) {
+			this->updateFitParameters(*iter);
+		}
+	}
+
+	// Fill the fit results to the ntuple for current experiment
+
+	// update the coefficients and then calculate the fit fractions
+	if (this->useDP() == kTRUE) {
+		this->updateCoeffs();
+		sigDPModel_->updateCoeffs(coeffs_);
+		sigDPModel_->calcExtraInfo();
+
+		LauParArray fitFrac = sigDPModel_->getFitFractions();
+		if (fitFrac.size() != nSigComp_) {
+			cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFrac.size() << endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			if (fitFrac[i].size() != nSigComp_) {
+				cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFrac[i].size() << endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+		}
+
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			for (UInt_t j(i); j<nSigComp_; ++j) {
+				fitFrac_[i][j].value(fitFrac[i][j].value());
+			}
+		}
+
+		meanEff_.value(sigDPModel_->getMeanEff().value());
+		dpRate_.value(sigDPModel_->getDPRate().value());
+
+		this->clearExtraVarVectors();
+		LauParameterList& extraVars = this->extraPars();
+
+		// Then store the final fit parameters, and any extra parameters for
+		// the signal model (e.g. fit fractions)
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			for (UInt_t j(i); j<nSigComp_; ++j) {
+				extraVars.push_back(fitFrac_[i][j]);
+			}
+		}
+
+		// Store any extra parameters/quantities from the DP model (e.g. K-matrix total fit fractions)
+		std::vector<LauParameter> extraParams = sigDPModel_->getExtraParameters();
+		std::vector<LauParameter>::iterator extraIter;
+		for (extraIter = extraParams.begin(); extraIter != extraParams.end(); ++extraIter) {
+		        LauParameter extraParameter = (*extraIter);
+			extraVars.push_back(extraParameter);
+		}		
+
+		// Now add in the DP efficiency value
+		extraVars.push_back(meanEff_);
+
+		// Also add in the DP rate
+		extraVars.push_back(dpRate_);
+
+		this->printFitFractions(cout);
+	}
+
+	const LauParameterPList& fitVars = this->fitPars();
+	const LauParameterList& extraVars = this->extraPars();
+	LauFitNtuple* ntuple = this->fitNtuple();
+	ntuple->storeParsAndErrors(fitVars, extraVars);
+
+	// find out the correlation matrix for the parameters
+	ntuple->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus());
+
+	// Fill the data into ntuple
+	ntuple->updateFitNtuple();
+
+	// Print out the partial fit fractions, phases and the 
+	// averaged efficiency, reweighted by the dynamics (and anything else)
+	if (this->writeLatexTable()) {
+		TString sigOutFileName(tablePrefixName);
+		sigOutFileName += "_"; sigOutFileName += this->iExpt(); sigOutFileName += "Expt.tex";
+		this->writeOutTable(sigOutFileName);
+	}
+}
+
+void LauSimpleFitModel::printFitFractions(std::ostream& output)
+{
+	// Print out Fit Fractions, total DP rate and mean efficiency
+	for (UInt_t i = 0; i < nSigComp_; i++) {
+		output << "FitFraction for component " << i << " (" << coeffPars_[i]->name() << ") = " << fitFrac_[i][i] << endl;
+	}
+	output << "Overall DP rate (integral of matrix element squared) = " << dpRate_ << endl;
+	output << "Average efficiency weighted by whole DP dynamics = " << meanEff_ << endl;
+}
+
+void LauSimpleFitModel::writeOutTable(const TString& outputFile)
+{
+	// Write out the results of the fit to a tex-readable table
+	// TODO - need to include the yields in this table
+	std::ofstream fout(outputFile);
+	LauPrint print;
+
+	cout << "Writing out results of the fit to the tex file " << outputFile << endl;
+
+	if (this->useDP() == kTRUE) {
+		// print the fit coefficients in one table
+		coeffPars_.front()->printTableHeading(fout);
+		for (UInt_t i = 0; i < nSigComp_; i++) {
+			coeffPars_[i]->printTableRow(fout);
+		}
+		fout << "\\hline" << endl;
+		fout << "\\end{tabular}" << endl << endl;
+
+		// print the fit fractions in another
+		fout << "\\begin{tabular}{|l|c|}" << endl;
+		fout << "\\hline" << endl;
+		fout << "Component & FitFraction \\\\" << endl;
+		fout << "\\hline" << endl;
+		Double_t fitFracSum(0.0);
+		for (UInt_t i = 0; i < nSigComp_; i++) {
+			TString resName = coeffPars_[i]->name();
+			resName = resName.ReplaceAll("_", "\\_");
+			fout << resName << "  &  $";
+			Double_t fitFrac = fitFrac_[i][i].value();
+			fitFracSum += fitFrac;
+			print.printFormat(fout, fitFrac);
+			fout << "$ \\\\" << endl;
+		}
+		fout << "\\hline" << endl;
+
+		// Also print out sum of fit fractions
+		fout << "Fit Fraction Sum  &  $";
+		print.printFormat(fout, fitFracSum);
+		fout << "$ \\\\" << endl;
+		fout << "\\hline" << endl;
+
+		fout << "DP rate  &  $";
+		print.printFormat(fout, dpRate_.value());
+		fout << "$ \\\\" << endl;
+		fout << "\\hline" << endl;
+
+		fout << "$< \\varepsilon >$  &  $";
+		print.printFormat(fout, meanEff_.value());
+		fout << "$ \\\\" << endl;
+		fout << "\\hline" << endl;
+		fout << "\\end{tabular}" << endl << endl;
+	}
+
+	if (!signalPdfs_.empty()) {
+		fout << "\\begin{tabular}{|l|c|}" << endl;
+		fout << "\\hline" << endl;
+		if (useSCF_ == kTRUE) {
+			fout << "\\Extra TM Signal PDFs' Parameters: & \\\\" << endl;
+		} else {
+			fout << "\\Extra Signal PDFs' Parameters: & \\\\" << endl;
+		}
+		this->printFitParameters(signalPdfs_, fout);
+		if (useSCF_ == kTRUE && !scfPdfs_.empty()) {
+			fout << "\\hline" << endl;
+			fout << "\\Extra SCF Signal PDFs' Parameters: & \\\\" << endl;
+			this->printFitParameters(scfPdfs_, fout);
+		}
+		if (usingBkgnd_ == kTRUE && !bkgndPdfs_.empty()) {
+			fout << "\\hline" << endl;
+			fout << "\\Extra Background PDFs' Parameters: & \\\\" << endl;
+			for (LauBkgndPdfsList::const_iterator iter = bkgndPdfs_.begin(); iter != bkgndPdfs_.end(); ++iter) {
+				this->printFitParameters(*iter, fout);
+			}
+		}
+		fout << "\\hline \n\\end{tabular}" << endl << endl;
+	}
+}
+
+void LauSimpleFitModel::checkInitFitParams()
+{
+	// Update the number of signal events to be total-sum(background events)
+	this->updateSigEvents();
+
+	// Check whether we want to have randomised initial fit parameters for the signal model
+	if (this->useRandomInitFitPars() == kTRUE) {
+		cout << "Setting random parameters for the signal DP model" << endl;
+		this->randomiseInitFitPars();
+	}
+}
+
+void LauSimpleFitModel::randomiseInitFitPars()
+{
+	// Only randomise those parameters that are not fixed!
+	cout << "Randomising the initial fit magnitudes and phases of the resonances..." << endl;
+
+	for (UInt_t i = 0; i < nSigComp_; i++) {
+		coeffPars_[i]->randomiseInitValues();
+	}
+}
+
+LauSimpleFitModel::LauGenInfo LauSimpleFitModel::eventsToGenerate()
+{
+	// Determine the number of events to generate for each hypothesis
+	// If we're smearing then smear each one individually
+
+	LauGenInfo nEvtsGen;
+
+	// Signal
+	Double_t evtWeight(1.0);
+	Int_t nEvts = TMath::FloorNint(signalEvents_.genValue());
+	if ( nEvts < 0 ) {
+		evtWeight = -1.0;
+		nEvts = TMath::Abs( nEvts );
+	}
+	if (this->doPoissonSmearing()) {
+		nEvts = LauRandom::randomFun()->Poisson(nEvts);
+	}
+	nEvtsGen["signal"] = std::make_pair( nEvts, evtWeight );
+
+	// Backgrounds
+	const UInt_t nBkgnds = this->nBkgndClasses();
+	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+		const TString& bkgndClass = this->bkgndClassName(bkgndID);
+		const LauParameter& evtsPar = bkgndEvents_[bkgndID];
+		evtWeight = 1.0;
+		nEvts = TMath::FloorNint( evtsPar.genValue() );
+		if ( nEvts < 0 ) {
+			evtWeight = -1.0;
+			nEvts = TMath::Abs( nEvts );
+		}
+		if (this->doPoissonSmearing()) {
+			nEvts = LauRandom::randomFun()->Poisson(nEvts);
+		}
+		nEvtsGen[bkgndClass] = std::make_pair( nEvts, evtWeight );
+	}
+
+	return nEvtsGen;
+}
+
+Bool_t LauSimpleFitModel::genExpt()
+{
+	// Routine to generate toy Monte Carlo events according to the various models we have defined.
+
+	// Determine the number of events to generate for each hypothesis
+	LauGenInfo nEvts = this->eventsToGenerate();
+
+	Bool_t genOK(kTRUE);
+	Int_t evtNum(0);
+
+	const UInt_t nBkgnds = this->nBkgndClasses();
+	std::vector<TString> bkgndClassNames(nBkgnds);
+	std::vector<TString> bkgndClassNamesGen(nBkgnds);
+	for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+		TString name( this->bkgndClassName(iBkgnd) );
+		bkgndClassNames[iBkgnd] = name;
+		bkgndClassNamesGen[iBkgnd] = "gen"+name;
+	}
+
+	const Bool_t storeSCFTruthInfo = ( useSCF_ || ( this->enableEmbedding() && signalTree_ != 0 && signalTree_->haveBranch("mcMatch") ) );
+
+	// Loop over the hypotheses and generate the requested number of events for each one
+	for (LauGenInfo::const_iterator iter = nEvts.begin(); iter != nEvts.end(); ++iter) {
+
+		const TString& type(iter->first);
+		Int_t nEvtsGen( iter->second.first );
+		Double_t evtWeight( iter->second.second );
+
+		for (Int_t iEvt(0); iEvt<nEvtsGen; ++iEvt) {
+
+			this->setGenNtupleDoubleBranchValue( "evtWeight", evtWeight );
+
+			if (type == "signal") {
+				this->setGenNtupleIntegerBranchValue("genSig",1);
+				for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+					this->setGenNtupleIntegerBranchValue( bkgndClassNamesGen[iBkgnd], 0 );
+				}
+				genOK = this->generateSignalEvent();
+			} else {
+				this->setGenNtupleIntegerBranchValue("genSig",0);
+				if ( storeSCFTruthInfo ) {
+					this->setGenNtupleIntegerBranchValue("genTMSig",0);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",0);
+				}
+				UInt_t bkgndID(0);
+				for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+					Int_t gen(0);
+					if ( bkgndClassNames[iBkgnd] == type ) {
+						gen = 1;
+						bkgndID = iBkgnd;
+					}
+					this->setGenNtupleIntegerBranchValue( bkgndClassNamesGen[iBkgnd], gen );
+				}
+				genOK = this->generateBkgndEvent(bkgndID);
+			}
+
+			if (!genOK) {
+				// If there was a problem with the generation then break out and return.
+				// The problem model will have adjusted itself so that all should be OK next time.
+				break;
+			}
+
+			if (this->useDP() == kTRUE) {
+				this->setDPBranchValues();
+			}
+
+			// Store the event number (within this experiment)
+			this->setGenNtupleIntegerBranchValue("iEvtWithinExpt",evtNum);
+			// and then increment it
+			++evtNum;
+
+			this->fillGenNtupleBranches();
+			if (iEvt%500 == 0) {
+				cout << "INFO in LauSimpleFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << endl;
+			}
+		}
+
+		if (!genOK) {
+			break;
+		}
+	}
+
+	if (this->useDP() && genOK) {
+
+		sigDPModel_->checkToyMC(kTRUE,kTRUE);
+
+		// Get the fit fractions if they're to be written into the latex table
+		if (this->writeLatexTable()) {
+			LauParArray fitFrac = sigDPModel_->getFitFractions();
+			if (fitFrac.size() != nSigComp_) {
+				cerr << "ERROR in LauSimpleFitModel::genExpt : Fit Fraction array of unexpected dimension: " << fitFrac.size() << endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+			for (UInt_t i(0); i<nSigComp_; ++i) {
+				if (fitFrac[i].size() != nSigComp_) {
+					cerr << "ERROR in LauSimpleFitModel::genExpt : Fit Fraction array of unexpected dimension: " << fitFrac[i].size() << endl;
+					gSystem->Exit(EXIT_FAILURE);
+				}
+			}
+
+			for (UInt_t i(0); i<nSigComp_; ++i) {
+				for (UInt_t j = i; j < nSigComp_; j++) {
+					fitFrac_[i][j].value(fitFrac[i][j].value());
+				}
+			}
+			meanEff_.value(sigDPModel_->getMeanEff().value());
+			dpRate_.value(sigDPModel_->getDPRate().value());
+		}
+	}
+
+	// If we're reusing embedded events or if the generation is being
+	// reset then clear the lists of used events
+	if (reuseSignal_ || !genOK) {
+		if (signalTree_) {
+			signalTree_->clearUsedList();
+		}
+	}
+	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+		LauEmbeddedData* data = bkgndTree_[bkgndID];
+		if (reuseBkgnd_[bkgndID] || !genOK) {
+			if (data) {
+				data->clearUsedList();
+			}
+		}
+	}
+
+	return genOK;
+}
+
+Bool_t LauSimpleFitModel::generateSignalEvent()
+{
+	// Generate signal event
+	Bool_t genOK(kTRUE);
+	Bool_t genSCF(kFALSE);
+
+	if (this->useDP()) {
+		if (this->enableEmbedding() && signalTree_) {
+		        if (useReweighting_) {
+		                // Select a (random) event from the generated data. Then store the
+			        // reconstructed DP co-ords, together with other pdf information,
+		                // as the embedded data.
+		                genOK = signalTree_->getReweightedEvent(sigDPModel_);
+			} else {
+
+			        signalTree_->getEmbeddedEvent(kinematics_);
+			}
+			if (signalTree_->haveBranch("mcMatch")) {
+				Int_t match = static_cast<Int_t>(signalTree_->getValue("mcMatch"));
+				if (match) {
+					this->setGenNtupleIntegerBranchValue("genTMSig",1);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",0);
+					genSCF = kFALSE;
+				} else {
+					this->setGenNtupleIntegerBranchValue("genTMSig",0);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",1);
+					genSCF = kTRUE;
+				}
+			}
+		} else {
+			genOK = sigDPModel_->generate();
+			if ( genOK && useSCF_ ) {
+				Double_t frac(0.0);
+				if ( useSCFHist_ ) {
+					frac = scfFracHist_->calcEfficiency( kinematics_ );
+				} else {
+					frac = scfFrac_.genValue();
+				}
+				if ( frac < LauRandom::randomFun()->Rndm() ) {
+					this->setGenNtupleIntegerBranchValue("genTMSig",1);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",0);
+					genSCF = kFALSE;
+				} else {
+					this->setGenNtupleIntegerBranchValue("genTMSig",0);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",1);
+					genSCF = kTRUE;
+
+					// Optionally smear the DP position
+					// of the SCF event
+					if ( scfMap_ != 0 ) {
+						Double_t xCoord(0.0), yCoord(0.0);
+						if ( kinematics_->squareDP() ) {
+							xCoord = kinematics_->getmPrime();
+							yCoord = kinematics_->getThetaPrime();
+						} else {
+							xCoord = kinematics_->getm13Sq();
+							yCoord = kinematics_->getm23Sq();
+						}
+
+						// Find the bin number where this event is generated
+						Int_t binNo = scfMap_->binNumber( xCoord, yCoord );
+
+						// Retrieve the migration histogram
+						TH2* histo = scfMap_->trueHist( binNo );
+
+						LauEffModel * effModel = sigDPModel_->getEffModel();
+						do {
+							// Get a random point from the histogram
+							histo->GetRandom2( xCoord, yCoord );
+
+							// Update the kinematics
+							if ( kinematics_->squareDP() ) {
+								kinematics_->updateSqDPKinematics( xCoord, yCoord );
+							} else {
+								kinematics_->updateKinematics( xCoord, yCoord );
+							}
+						} while ( ! effModel->passVeto( kinematics_ ) );
+					}
+				}
+			}
+		}
+	} else {
+		if (this->enableEmbedding() && signalTree_) {
+			signalTree_->getEmbeddedEvent(0);
+			if (signalTree_->haveBranch("mcMatch")) {
+				Int_t match = static_cast<Int_t>(signalTree_->getValue("mcMatch"));
+				if (match) {
+					this->setGenNtupleIntegerBranchValue("genTMSig",1);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",0);
+					genSCF = kFALSE;
+				} else {
+					this->setGenNtupleIntegerBranchValue("genTMSig",0);
+					this->setGenNtupleIntegerBranchValue("genSCFSig",1);
+					genSCF = kTRUE;
+				}
+			}
+		} else if ( useSCF_ ) {
+			Double_t frac = scfFrac_.genValue();
+			if ( frac < LauRandom::randomFun()->Rndm() ) {
+				this->setGenNtupleIntegerBranchValue("genTMSig",1);
+				this->setGenNtupleIntegerBranchValue("genSCFSig",0);
+				genSCF = kFALSE;
+			} else {
+				this->setGenNtupleIntegerBranchValue("genTMSig",0);
+				this->setGenNtupleIntegerBranchValue("genSCFSig",1);
+				genSCF = kTRUE;
+			}
+		}
+	}
+	if (genOK) {
+		if ( useSCF_ ) {
+			if ( genSCF ) {
+				this->generateExtraPdfValues(&scfPdfs_, signalTree_);
+			} else {
+				this->generateExtraPdfValues(&signalPdfs_, signalTree_);
+			}
+		} else {
+			this->generateExtraPdfValues(&signalPdfs_, signalTree_);
+		}
+	}
+	// Check for problems with the embedding
+	if (this->enableEmbedding() && signalTree_ && (signalTree_->nEvents() == signalTree_->nUsedEvents())) {
+		cerr << "WARNING in LauSimpleFitModel::generateSignalEvent : Source of embedded signal events used up, clearing the list of used events." << endl;
+		signalTree_->clearUsedList();
+	}
+	return genOK;
+}
+
+Bool_t LauSimpleFitModel::generateBkgndEvent(UInt_t bkgndID)
+{
+	// Generate background event
+	Bool_t genOK(kTRUE);
+
+	LauAbsBkgndDPModel* model = bkgndDPModels_[bkgndID];
+	LauEmbeddedData* embeddedData(0);
+	if (this->enableEmbedding()) {
+		embeddedData = bkgndTree_[bkgndID];
+	}
+	LauPdfList* extraPdfs = &bkgndPdfs_[bkgndID];
+	if (this->useDP()) {
+		if (embeddedData) {
+			embeddedData->getEmbeddedEvent(kinematics_);
+		} else {
+			if (model == 0) {
+				cerr << "ERROR in LauSimpleFitModel::generateBkgndEvent : Can't find the DP model for background class \"" << this->bkgndClassName(bkgndID) << "\"." << endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+			genOK = model->generate();
+		}
+	} else {
+		if (embeddedData) {
+			embeddedData->getEmbeddedEvent(0);
+		}
+	}
+	if (genOK) {
+		this->generateExtraPdfValues(extraPdfs, embeddedData);
+	}
+	// Check for problems with the embedding
+	if (embeddedData && (embeddedData->nEvents() == embeddedData->nUsedEvents())) {
+		cerr << "WARNING in LauSimpleFitModel::generateBkgndEvent : Source of embedded " << this->bkgndClassName(bkgndID) << " events used up, clearing the list of used events." << endl;
+		embeddedData->clearUsedList();
+	}
+	return genOK;
+}
+
+void LauSimpleFitModel::setupGenNtupleBranches()
+{
+	// Setup the required ntuple branches
+	this->addGenNtupleDoubleBranch("evtWeight");
+	this->addGenNtupleIntegerBranch("genSig");
+	if ( useSCF_ || ( this->enableEmbedding() && signalTree_ != 0 && signalTree_->haveBranch("mcMatch") ) ) {
+		this->addGenNtupleIntegerBranch("genTMSig");
+		this->addGenNtupleIntegerBranch("genSCFSig");
+	}
+	const UInt_t nBkgnds = this->nBkgndClasses();
+	for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+		TString name( this->bkgndClassName(iBkgnd) );
+		name.Prepend("gen");
+		this->addGenNtupleIntegerBranch(name);
+	}
+	if (this->useDP() == kTRUE) {
+		this->addGenNtupleDoubleBranch("m12");
+		this->addGenNtupleDoubleBranch("m23");
+		this->addGenNtupleDoubleBranch("m13");
+		this->addGenNtupleDoubleBranch("m12Sq");
+		this->addGenNtupleDoubleBranch("m23Sq");
+		this->addGenNtupleDoubleBranch("m13Sq");
+		this->addGenNtupleDoubleBranch("cosHel12");
+		this->addGenNtupleDoubleBranch("cosHel23");
+		this->addGenNtupleDoubleBranch("cosHel13");
+		if (kinematics_->squareDP()) {
+			this->addGenNtupleDoubleBranch("mPrime");
+			this->addGenNtupleDoubleBranch("thPrime");
+		}
+	}
+	for (LauPdfList::const_iterator pdf_iter = signalPdfs_.begin(); pdf_iter != signalPdfs_.end(); ++pdf_iter) {
+		std::vector<TString> varNames = (*pdf_iter)->varNames();
+		for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+			if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+				this->addGenNtupleDoubleBranch( (*var_iter) );
+			}
+		}
+	}
+}
+
+void LauSimpleFitModel::setDPBranchValues()
+{
+	// Store all the DP information
+	this->setGenNtupleDoubleBranchValue("m12", kinematics_->getm12());
+	this->setGenNtupleDoubleBranchValue("m23", kinematics_->getm23());
+	this->setGenNtupleDoubleBranchValue("m13", kinematics_->getm13());
+	this->setGenNtupleDoubleBranchValue("m12Sq", kinematics_->getm12Sq());
+	this->setGenNtupleDoubleBranchValue("m23Sq", kinematics_->getm23Sq());
+	this->setGenNtupleDoubleBranchValue("m13Sq", kinematics_->getm13Sq());
+	this->setGenNtupleDoubleBranchValue("cosHel12", kinematics_->getc12());
+	this->setGenNtupleDoubleBranchValue("cosHel23", kinematics_->getc23());
+	this->setGenNtupleDoubleBranchValue("cosHel13", kinematics_->getc13());
+	if (kinematics_->squareDP()) {
+		this->setGenNtupleDoubleBranchValue("mPrime", kinematics_->getmPrime());
+		this->setGenNtupleDoubleBranchValue("thPrime", kinematics_->getThetaPrime());
+	}
+}
+
+void LauSimpleFitModel::generateExtraPdfValues(LauPdfList* extraPdfs, LauEmbeddedData* embeddedData)
+{
+	// Generate from the extra PDFs
+	if (extraPdfs) {
+		for (LauPdfList::iterator pdf_iter = extraPdfs->begin(); pdf_iter != extraPdfs->end(); ++pdf_iter) {
+			LauFitData genValues;
+			if (embeddedData) {
+				genValues = embeddedData->getValues( (*pdf_iter)->varNames() );
+			} else {
+				genValues = (*pdf_iter)->generate(kinematics_);
+			}
+			for ( LauFitData::const_iterator var_iter = genValues.begin(); var_iter != genValues.end(); ++var_iter ) {
+				TString varName = var_iter->first;
+				if ( varName != "m13Sq" && varName != "m23Sq" ) {
+					Double_t value = var_iter->second;
+					this->setGenNtupleDoubleBranchValue(varName,value);
+				}
+			}
+		}
+	}
+}
+
+void LauSimpleFitModel::propagateParUpdates()
+{
+	// Update the total normalisation for the signal likelihood
+	if (this->useDP() == kTRUE) {
+		this->updateCoeffs();
+		sigDPModel_->updateCoeffs(coeffs_);
+	}
+
+	// Update the signal events from the background events if not doing an extended fit
+	if ( !this->doEMLFit() && !signalEvents_.fixed() ) {
+		this->updateSigEvents();
+	}
+}
+
+void LauSimpleFitModel::updateSigEvents()
+{
+	// The background parameters will have been set from Minuit.
+	// We need to update the signal events using these.
+	Double_t nTotEvts = this->eventsPerExpt();
+
+	signalEvents_.range(-2.0*nTotEvts,2.0*nTotEvts);
+	for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
+		(*iter).range(-2.0*nTotEvts,2.0*nTotEvts);
+	}
+
+	if ( signalEvents_.fixed() ) {
+		return;
+	}
+
+	// Subtract background events (if any) from signal.
+	Double_t signalEvents = nTotEvts;
+	if ( usingBkgnd_ == kTRUE ) {
+		for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
+			signalEvents -= (*iter);
+		}
+	}
+	signalEvents_.value(signalEvents);
+}
+
+void LauSimpleFitModel::cacheInputFitVars()
+{
+	// Fill the internal data trees of the signal and backgrond models.
+
+	LauFitDataTree* inputFitData = this->fitData();
+
+	// First the Dalitz plot variables (m_ij^2)
+	if (this->useDP() == kTRUE) {
+
+		// need to append SCF smearing bins before caching DP amplitudes
+		if ( scfMap_ != 0 ) {
+			this->appendBinCentres( inputFitData );
+		}
+		sigDPModel_->fillDataTree(*inputFitData);
+
+		if (usingBkgnd_ == kTRUE) {
+			for (LauBkgndDPModelList::iterator iter = bkgndDPModels_.begin(); iter != bkgndDPModels_.end(); ++iter) {
+				(*iter)->fillDataTree(*inputFitData);
+			}
+		}
+	}
+
+	// ...and then the extra PDFs
+	this->cacheInfo(signalPdfs_, *inputFitData);
+	this->cacheInfo(scfPdfs_, *inputFitData);
+	for (LauBkgndPdfsList::iterator iter = bkgndPdfs_.begin(); iter != bkgndPdfs_.end(); ++iter) {
+		this->cacheInfo((*iter), *inputFitData);
+	}
+
+	// and finally the SCF fractions and jacobians
+	if ( useSCF_ && useSCFHist_ ) {
+		if ( !inputFitData->haveBranch( "m13Sq" )  || !inputFitData->haveBranch( "m23Sq" ) ) {
+			cerr << "ERROR in LauSimpleFitModel::cacheInputFitVars : Input data does not contain DP branches and so can't cache the SCF fraction." << endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+
+		UInt_t nEvents = inputFitData->nEvents();
+		recoSCFFracs_.clear();
+		recoSCFFracs_.reserve( nEvents );
+		if ( kinematics_->squareDP() ) {
+			recoJacobians_.clear();
+			recoJacobians_.reserve( nEvents );
+		}
+		for (UInt_t iEvt = 0; iEvt < nEvents; iEvt++) {
+			const LauFitData& dataValues = inputFitData->getData(iEvt);
+			LauFitData::const_iterator m13_iter = dataValues.find("m13Sq");
+			LauFitData::const_iterator m23_iter = dataValues.find("m23Sq");
+			kinematics_->updateKinematics( m13_iter->second, m23_iter->second );
+			Double_t scfFrac = scfFracHist_->calcEfficiency( kinematics_ );
+			recoSCFFracs_.push_back( scfFrac );
+			if ( kinematics_->squareDP() ) {
+				recoJacobians_.push_back( kinematics_->calcSqDPJacobian() );
+			}
+		}
+	}
+}
+
+void LauSimpleFitModel::appendBinCentres( LauFitDataTree* inputData )
+{
+	// We'll be caching the DP amplitudes and efficiencies of the centres of the true bins.
+	// To do so, we attach some fake points at the end of inputData, the number of the entry
+	// minus the total number of events corresponding to the number of the histogram for that
+	// given true bin in the LauScfMap object. (What this means is that when Laura is provided with
+	// the LauScfMap object by the user, it's the latter who has to make sure that it contains the
+	// right number of histograms and in exactly the right order!) 
+
+	// Get the x and y co-ordinates of the bin centres
+	std::vector<Double_t> binCentresXCoords;
+	std::vector<Double_t> binCentresYCoords;
+	scfMap_->listBinCentres(binCentresXCoords, binCentresYCoords);
+
+	// The SCF histograms could be in square Dalitz plot histograms.
+	// The dynamics takes normal Dalitz plot coords, so we might have to convert them back.
+	Bool_t sqDP = kinematics_->squareDP();
+	UInt_t nBins = binCentresXCoords.size();
+	fakeSCFFracs_.clear();
+	fakeSCFFracs_.reserve( nBins );
+	if ( sqDP ) {
+		fakeJacobians_.clear();
+		fakeJacobians_.reserve( nBins );
+	}
+
+	for (UInt_t iBin = 0; iBin < nBins; ++iBin) {
+
+		if ( sqDP ) {
+			kinematics_->updateSqDPKinematics(binCentresXCoords[iBin],binCentresYCoords[iBin]);
+			binCentresXCoords[iBin] = kinematics_->getm13Sq();
+			binCentresYCoords[iBin] = kinematics_->getm23Sq();
+			fakeJacobians_.push_back( kinematics_->calcSqDPJacobian() );
+		} else {
+			kinematics_->updateKinematics(binCentresXCoords[iBin],binCentresYCoords[iBin]);
+		}
+
+		fakeSCFFracs_.push_back( scfFracHist_->calcEfficiency( kinematics_ ) );
+	}
+
+	// Set up inputFitVars_ object to hold the fake events
+	inputData->appendFakePoints(binCentresXCoords,binCentresYCoords);
+}
+
+Double_t LauSimpleFitModel::getTotEvtLikelihood(UInt_t iEvt)
+{
+	// Get the DP likelihood for signal and backgrounds
+	this->getEvtDPLikelihood(iEvt);
+
+	// Get the combined extra PDFs likelihood for signal and backgrounds
+	this->getEvtExtraLikelihoods(iEvt);
+
+	// If appropriate, combine the TM and SCF likelihoods
+	Double_t sigLike = sigDPLike_ * sigExtraLike_;
+	if ( useSCF_ ) {
+		Double_t scfFrac(0.0);
+		if (useSCFHist_) {
+			scfFrac = recoSCFFracs_[iEvt];
+		} else {
+			scfFrac = scfFrac_.value();
+		}
+		sigLike *= (1.0 - scfFrac);
+		if ( (scfMap_ != 0) && (this->useDP() == kTRUE) ) {
+			// if we're smearing the SCF DP PDF then the SCF frac
+			// is already included in the SCF DP likelihood
+			sigLike += (scfDPLike_ * scfExtraLike_);
+		} else {
+			sigLike += (scfFrac * scfDPLike_ * scfExtraLike_);
+		}
+	}
+
+	// Construct the total event likelihood
+	Double_t likelihood = signalEvents_ * sigLike;
+	const UInt_t nBkgnds = this->nBkgndClasses();
+	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+		likelihood += (bkgndEvents_[bkgndID] * bkgndDPLike_[bkgndID] * bkgndExtraLike_[bkgndID]);
+	}
+
+	return likelihood;
+}
+
+Double_t LauSimpleFitModel::getEventSum() const
+{
+	Double_t eventSum(0.0);
+	eventSum += signalEvents_;
+	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
+		eventSum += (*iter);
+	}
+	return eventSum;
+}
+
+void LauSimpleFitModel::getEvtDPLikelihood(UInt_t iEvt)
+{
+	// Function to return the signal and background likelihoods for the
+	// Dalitz plot for the given event evtNo.
+
+	if (this->useDP() == kTRUE) {
+		sigDPModel_->calcLikelihoodInfo(iEvt);
+		sigDPLike_ = sigDPModel_->getEvtLikelihood();
+
+		if ( useSCF_ == kTRUE ) {
+			if ( scfMap_ == 0 ) {
+				// we're not smearing the SCF DP position
+				// so the likelihood is the same as the TM
+				scfDPLike_ = sigDPLike_;
+			} else {
+				// calculate the smeared SCF DP likelihood
+				scfDPLike_ = this->getEvtSCFDPLikelihood(iEvt);
+			}
+		}
+
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+			if (usingBkgnd_ == kTRUE) {
+				bkgndDPLike_[bkgndID] = bkgndDPModels_[bkgndID]->getLikelihood(iEvt);
+			} else {
+				bkgndDPLike_[bkgndID] = 0.0;
+			}
+		}
+	} else {
+		// There's always going to be a term in the likelihood for the
+		// signal, so we'd better not zero it.
+		sigDPLike_ = 1.0;
+		scfDPLike_ = 1.0;
+
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+			if (usingBkgnd_ == kTRUE) {
+				bkgndDPLike_[bkgndID] = 1.0;
+			} else {
+				bkgndDPLike_[bkgndID] = 0.0;
+			}
+		}
+	}
+}
+
+Double_t LauSimpleFitModel::getEvtSCFDPLikelihood(UInt_t iEvt)
+{
+	Double_t scfDPLike(0.0);
+
+	Double_t recoJacobian(1.0);
+	Double_t xCoord(0.0);
+	Double_t yCoord(0.0);
+	Bool_t squareDP = kinematics_->squareDP();
+	if ( squareDP ) {
+		xCoord = sigDPModel_->getEvtmPrime();
+		yCoord = sigDPModel_->getEvtthPrime();
+		recoJacobian = recoJacobians_[iEvt];
+	} else {
+		xCoord = sigDPModel_->getEvtm13Sq();
+		yCoord = sigDPModel_->getEvtm23Sq();
+	}
+
+	// Find the bin that our reco event falls in
+	Int_t recoBin = scfMap_->binNumber( xCoord, yCoord );
+
+	// Find out which true Bins contribute to the given reco bin
+	const std::vector<Int_t>* trueBins = scfMap_->trueBins(recoBin);
+
+	Int_t nDataEvents = this->eventsPerExpt();
+
+	// Loop over the true bins
+	for (std::vector<Int_t>::const_iterator iter = trueBins->begin(); iter != trueBins->end(); ++iter)
+	{
+		Int_t trueBin = (*iter);
+
+		// prob of a true event in the given true bin migrating to the reco bin
+		Double_t pRecoGivenTrue =  scfMap_->prob( recoBin, trueBin );
+
+		// We've cached the DP amplitudes and the efficiency for the
+		// true bin centres, just after the data points
+		sigDPModel_->calcLikelihoodInfo( nDataEvents + trueBin );
+		Double_t pTrue = sigDPModel_->getEvtLikelihood();
+
+		// Get the cached SCF fraction (and jacobian if we're using the square DP)
+		Double_t scfFraction = fakeSCFFracs_[ trueBin ];
+		Double_t jacobian(1.0);
+		if ( squareDP ) {
+			jacobian = fakeJacobians_[ trueBin ];
+		}
+
+		scfDPLike += pTrue * jacobian * scfFraction * pRecoGivenTrue;
+
+	}
+
+	// Divide by the reco jacobian
+	scfDPLike /= recoJacobian;
+
+	return scfDPLike;
+}
+
+void LauSimpleFitModel::getEvtExtraLikelihoods(UInt_t iEvt)
+{
+	// Function to return the signal and background likelihoods for the
+	// extra variables for the given event evtNo.
+
+	sigExtraLike_ = 1.0;
+
+	for (LauPdfList::iterator iter = signalPdfs_.begin(); iter != signalPdfs_.end(); ++iter) {
+		(*iter)->calcLikelihoodInfo(iEvt);
+		sigExtraLike_ *= (*iter)->getLikelihood();
+	}
+	if (useSCF_) {
+		scfExtraLike_ = 1.0;
+		for (LauPdfList::iterator iter = scfPdfs_.begin(); iter != scfPdfs_.end(); ++iter) {
+			(*iter)->calcLikelihoodInfo(iEvt);
+			scfExtraLike_ *= (*iter)->getLikelihood();
+		}
+	}
+
+	const UInt_t nBkgnds = this->nBkgndClasses();
+	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+		if (usingBkgnd_) {
+			bkgndExtraLike_[bkgndID] = 1.0;
+			LauPdfList& pdfList = bkgndPdfs_[bkgndID];
+			for (LauPdfList::iterator pdf_iter = pdfList.begin(); pdf_iter != pdfList.end(); ++pdf_iter) {
+				(*pdf_iter)->calcLikelihoodInfo(iEvt);
+				bkgndExtraLike_[bkgndID] *= (*pdf_iter)->getLikelihood();
+			}
+		} else {
+			bkgndExtraLike_[bkgndID] = 0.0;
+		}
+	}
+}
+
+void LauSimpleFitModel::updateCoeffs() 
+{
+	coeffs_.clear();
+	coeffs_.reserve(nSigComp_);
+	for (UInt_t i = 0; i < nSigComp_; i++) {
+		coeffs_.push_back(coeffPars_[i]->particleCoeff());
+	}
+}
+
+void LauSimpleFitModel::setupSPlotNtupleBranches()
+{
+	// add branches for storing the experiment number and the number of
+	// the event within the current experiment
+	this->addSPlotNtupleIntegerBranch("iExpt");
+	this->addSPlotNtupleIntegerBranch("iEvtWithinExpt");
+
+	// Store the efficiency of the event (for inclusive BF calculations).
+	if (this->storeDPEff()) {
+		this->addSPlotNtupleDoubleBranch("efficiency");
+		if ( sigDPModel_->usingScfModel() ) {
+			this->addSPlotNtupleDoubleBranch("scffraction");
+		}
+	}
+
+	// Store the total event likelihood for each species.
+	if (useSCF_) {
+		this->addSPlotNtupleDoubleBranch("sigTMTotalLike");
+		this->addSPlotNtupleDoubleBranch("sigSCFTotalLike");
+		this->addSPlotNtupleDoubleBranch("sigSCFFrac");
+	} else {
+		this->addSPlotNtupleDoubleBranch("sigTotalLike");
+	}
+	if (usingBkgnd_) {
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+			TString name( this->bkgndClassName(iBkgnd) );
+			name += "TotalLike";
+			this->addSPlotNtupleDoubleBranch(name);
+		}
+	}
+
+	// Store the DP likelihoods
+	if (this->useDP()) {
+		if (useSCF_) {
+			this->addSPlotNtupleDoubleBranch("sigTMDPLike");
+			this->addSPlotNtupleDoubleBranch("sigSCFDPLike");
+		} else {
+			this->addSPlotNtupleDoubleBranch("sigDPLike");
+		}
+		if (usingBkgnd_) {
+			const UInt_t nBkgnds = this->nBkgndClasses();
+			for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+				TString name( this->bkgndClassName(iBkgnd) );
+				name += "DPLike";
+				this->addSPlotNtupleDoubleBranch(name);
+			}
+		}
+	}
+
+	// Store the likelihoods for each extra PDF
+	if (useSCF_) {
+		this->addSPlotNtupleBranches(&signalPdfs_, "sigTM");
+		this->addSPlotNtupleBranches(&scfPdfs_, "sigSCF");
+	} else {
+		this->addSPlotNtupleBranches(&signalPdfs_, "sig");
+	}
+	if (usingBkgnd_) {
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
+			const LauPdfList* pdfList = &(bkgndPdfs_[iBkgnd]);
+			this->addSPlotNtupleBranches(pdfList, bkgndClass);
+		}
+	}
+}
+
+void LauSimpleFitModel::addSPlotNtupleBranches(const LauPdfList* extraPdfs, const TString& prefix)
+{
+	if (extraPdfs) {
+		// Loop through each of the PDFs
+		for (LauPdfList::const_iterator pdf_iter = extraPdfs->begin(); pdf_iter != extraPdfs->end(); ++pdf_iter) {
+
+			// Count the number of input variables that are not
+			// DP variables (used in the case where there is DP
+			// dependence for e.g. MVA)
+			UInt_t nVars(0);
+			std::vector<TString> varNames = (*pdf_iter)->varNames();
+			for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+				if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+					++nVars;
+				}
+			}
+
+			if ( nVars == 1 ) {
+				// If the PDF only has one variable then
+				// simply add one branch for that variable
+				TString varName = (*pdf_iter)->varName();
+				TString name(prefix);
+				name += varName;
+				name += "Like";
+				this->addSPlotNtupleDoubleBranch(name);
+			} else if ( nVars == 2 ) {
+				// If the PDF has two variables then we
+				// need a branch for them both together and
+				// branches for each
+				TString allVars("");
+				for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+					allVars += (*var_iter);
+					TString name(prefix);
+					name += (*var_iter);
+					name += "Like";
+					this->addSPlotNtupleDoubleBranch(name);
+				}
+				TString name(prefix);
+				name += allVars;
+				name += "Like";
+				this->addSPlotNtupleDoubleBranch(name);
+			} else {
+				cerr << "WARNING in LauSimpleFitModel::addSPlotNtupleBranches : Can't yet deal with 3D PDFs." << endl;
+			}
+		}
+	}
+}
+
+Double_t LauSimpleFitModel::setSPlotNtupleBranchValues(LauPdfList* extraPdfs, const TString& prefix, UInt_t iEvt)
+{
+	// Store the PDF value for each variable in the list
+	Double_t totalLike(1.0);
+	Double_t extraLike(0.0);
+	if (extraPdfs) {
+		for (LauPdfList::iterator pdf_iter = extraPdfs->begin(); pdf_iter != extraPdfs->end(); ++pdf_iter) {
+
+			// calculate the likelihood for this event
+			(*pdf_iter)->calcLikelihoodInfo(iEvt);
+			extraLike = (*pdf_iter)->getLikelihood();
+			totalLike *= extraLike;
+
+			// Count the number of input variables that are not
+			// DP variables (used in the case where there is DP
+			// dependence for e.g. MVA)
+			UInt_t nVars(0);
+			std::vector<TString> varNames = (*pdf_iter)->varNames();
+			for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+				if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+					++nVars;
+				}
+			}
+
+			if ( nVars == 1 ) {
+				// If the PDF only has one variable then
+				// simply store the value for that variable
+				TString varName = (*pdf_iter)->varName();
+				TString name(prefix);
+				name += varName;
+				name += "Like";
+				this->setSPlotNtupleDoubleBranchValue(name, extraLike);
+			} else if ( nVars == 2 ) {
+				// If the PDF has two variables then we
+				// store the value for them both together
+				// and for each on their own
+				TString allVars("");
+				for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+					allVars += (*var_iter);
+					TString name(prefix);
+					name += (*var_iter);
+					name += "Like";
+					Double_t indivLike = (*pdf_iter)->getLikelihood( (*var_iter) );
+					this->setSPlotNtupleDoubleBranchValue(name, indivLike);
+				}
+				TString name(prefix);
+				name += allVars;
+				name += "Like";
+				this->setSPlotNtupleDoubleBranchValue(name, extraLike);
+			} else {
+				cerr << "WARNING in LauSimpleFitModel::setSPlotNtupleBranchValues : Can't yet deal with 3D PDFs." << endl;
+			}
+		}
+	}
+	return totalLike;
+}
+
+LauSPlot::NameSet LauSimpleFitModel::variableNames() const
+{
+	LauSPlot::NameSet nameSet;
+	if (this->useDP()) {
+		nameSet.insert("DP");
+	}
+	// Loop through all the signal PDFs
+	for (LauPdfList::const_iterator pdf_iter = signalPdfs_.begin(); pdf_iter != signalPdfs_.end(); ++pdf_iter) {
+		// Loop over the variables involved in each PDF
+		std::vector<TString> varNames = (*pdf_iter)->varNames();
+		for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+			// If they are not DP coordinates then add them
+			if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+				nameSet.insert( (*var_iter) );
+			}
+		}
+	}
+	return nameSet;
+}
+
+LauSPlot::NumbMap LauSimpleFitModel::freeSpeciesNames() const
+{
+	LauSPlot::NumbMap numbMap;
+	if (!signalEvents_.fixed() && this->doEMLFit()) {
+		numbMap["sig"] = signalEvents_.genValue();
+	}
+	if ( usingBkgnd_ ) {
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
+			const LauParameter& par = bkgndEvents_[iBkgnd];
+			if (!par.fixed()) {
+				numbMap[bkgndClass] = par.genValue();
+			}
+		}
+	}
+	return numbMap;
+}
+
+LauSPlot::NumbMap LauSimpleFitModel::fixdSpeciesNames() const
+{
+	LauSPlot::NumbMap numbMap;
+	if (signalEvents_.fixed() && this->doEMLFit()) {
+		numbMap["sig"] = signalEvents_.genValue();
+	}
+	if ( usingBkgnd_ ) {
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
+			const LauParameter& par = bkgndEvents_[iBkgnd];
+			if (par.fixed()) {
+				numbMap[bkgndClass] = par.genValue();
+			}
+		}
+	}
+	return numbMap;
+}
+
+LauSPlot::TwoDMap LauSimpleFitModel::twodimPDFs() const
+{
+	LauSPlot::TwoDMap twodimMap;
+
+	for (LauPdfList::const_iterator pdf_iter = signalPdfs_.begin(); pdf_iter != signalPdfs_.end(); ++pdf_iter) {
+		// Count the number of input variables that are not DP variables
+		UInt_t nVars(0);
+		std::vector<TString> varNames = (*pdf_iter)->varNames();
+		for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+			if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+				++nVars;
+			}
+		}
+		if ( nVars == 2 ) {
+			if (useSCF_) {
+				twodimMap.insert( std::make_pair( "sigTM", std::make_pair( varNames[0], varNames[1] ) ) );
+			} else {
+				twodimMap.insert( std::make_pair( "sig", std::make_pair( varNames[0], varNames[1] ) ) );
+			}
+		}
+	}
+
+	if ( useSCF_ ) {
+		for (LauPdfList::const_iterator pdf_iter = scfPdfs_.begin(); pdf_iter != scfPdfs_.end(); ++pdf_iter) {
+			// Count the number of input variables that are not DP variables
+			UInt_t nVars(0);
+			std::vector<TString> varNames = (*pdf_iter)->varNames();
+			for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+				if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+					++nVars;
+				}
+			}
+			if ( nVars == 2 ) {
+				twodimMap.insert( std::make_pair( "sigSCF", std::make_pair( varNames[0], varNames[1] ) ) );
+			}
+		}
+	}
+
+	if (usingBkgnd_) {
+		const UInt_t nBkgnds = this->nBkgndClasses();
+		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
+			const LauPdfList& pdfList = bkgndPdfs_[iBkgnd];
+			for (LauPdfList::const_iterator pdf_iter = pdfList.begin(); pdf_iter != pdfList.end(); ++pdf_iter) {
+				// Count the number of input variables that are not DP variables
+				UInt_t nVars(0);
+				std::vector<TString> varNames = (*pdf_iter)->varNames();
+				for ( std::vector<TString>::const_iterator var_iter = varNames.begin(); var_iter != varNames.end(); ++var_iter ) {
+					if ( (*var_iter) != "m13Sq" && (*var_iter) != "m23Sq" ) {
+						++nVars;
+					}
+				}
+				if ( nVars == 2 ) {
+					twodimMap.insert( std::make_pair( bkgndClass, std::make_pair( varNames[0], varNames[1] ) ) );
+				}
+			}
+		}
+	}
+
+	return twodimMap;
+}
+
+void LauSimpleFitModel::storePerEvtLlhds()
+{
+	cout << "Storing per-event likelihood values..." << endl;
+
+	// if we've not been using the DP model then we need to cache all
+	// the info here so that we can get the efficiency from it
+
+	LauFitDataTree* inputFitData = this->fitData();
+
+	if (!this->useDP() && this->storeDPEff()) {
+		sigDPModel_->initialise(coeffs_);
+		sigDPModel_->fillDataTree(*inputFitData);
+	}
+
+	UInt_t evtsPerExpt(this->eventsPerExpt());
+
+	for (UInt_t iEvt = 0; iEvt < evtsPerExpt; ++iEvt) {
+
+		this->setSPlotNtupleIntegerBranchValue("iExpt",this->iExpt());
+		this->setSPlotNtupleIntegerBranchValue("iEvtWithinExpt",iEvt);
+
+		// the DP information
+		this->getEvtDPLikelihood(iEvt);
+		if (this->storeDPEff()) {
+			if (!this->useDP()) {
+				sigDPModel_->calcLikelihoodInfo(iEvt);
+			}
+			this->setSPlotNtupleDoubleBranchValue("efficiency",sigDPModel_->getEvtEff());
+			if ( sigDPModel_->usingScfModel() ) {
+				this->setSPlotNtupleDoubleBranchValue("scffraction",sigDPModel_->getEvtScfFraction());
+			}
+		}
+		if (this->useDP()) {
+			sigTotalLike_ = sigDPLike_;
+			if (useSCF_) {
+				scfTotalLike_ = scfDPLike_;
+				this->setSPlotNtupleDoubleBranchValue("sigTMDPLike",sigDPLike_);
+				this->setSPlotNtupleDoubleBranchValue("sigSCFDPLike",scfDPLike_);
+			} else {
+				this->setSPlotNtupleDoubleBranchValue("sigDPLike",sigDPLike_);
+			}
+			if (usingBkgnd_) {
+				const UInt_t nBkgnds = this->nBkgndClasses();
+				for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+					TString name = this->bkgndClassName(iBkgnd);
+					name += "DPLike";
+					this->setSPlotNtupleDoubleBranchValue(name,bkgndDPLike_[iBkgnd]);
+				}
+			}
+		} else {
+			sigTotalLike_ = 1.0;
+			if (useSCF_) {
+				scfTotalLike_ = 1.0;
+			}
+			if (usingBkgnd_) {
+				const UInt_t nBkgnds = this->nBkgndClasses();
+				for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+					bkgndTotalLike_[iBkgnd] = 1.0;
+				}
+			}
+		}
+
+		// the signal PDF values
+		if ( useSCF_ ) {
+			sigTotalLike_ *= this->setSPlotNtupleBranchValues(&signalPdfs_, "sigTM", iEvt);
+			scfTotalLike_ *= this->setSPlotNtupleBranchValues(&scfPdfs_, "sigSCF", iEvt);
+		} else {
+			sigTotalLike_ *= this->setSPlotNtupleBranchValues(&signalPdfs_, "sig", iEvt);
+		}
+
+		// the background PDF values
+		if (usingBkgnd_) {
+			const UInt_t nBkgnds = this->nBkgndClasses();
+			for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+				const TString& bkgndClass = this->bkgndClassName(iBkgnd);
+				LauPdfList& pdfs = bkgndPdfs_[iBkgnd];
+				bkgndTotalLike_[iBkgnd] *= this->setSPlotNtupleBranchValues(&(pdfs), bkgndClass, iEvt);
+			}
+		}
+
+		// the total likelihoods
+		if (useSCF_) {
+			Double_t scfFrac(0.0);
+			if ( useSCFHist_ ) {
+				scfFrac = recoSCFFracs_[iEvt];
+			} else {
+				scfFrac = scfFrac_.value();
+			}
+			this->setSPlotNtupleDoubleBranchValue("sigSCFFrac",scfFrac);
+			sigTotalLike_ *= ( 1.0 - scfFrac );
+			if ( scfMap_ == 0 ) {
+				scfTotalLike_ *= scfFrac;
+			}
+			this->setSPlotNtupleDoubleBranchValue("sigTMTotalLike",sigTotalLike_);
+			this->setSPlotNtupleDoubleBranchValue("sigSCFTotalLike",scfTotalLike_);
+		} else {
+			this->setSPlotNtupleDoubleBranchValue("sigTotalLike",sigTotalLike_);
+		}
+		if (usingBkgnd_) {
+			const UInt_t nBkgnds = this->nBkgndClasses();
+			for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
+				TString name = this->bkgndClassName(iBkgnd);
+				name += "TotalLike";
+				this->setSPlotNtupleDoubleBranchValue(name,bkgndTotalLike_[iBkgnd]);
+			}
+		}
+		// fill the tree
+		this->fillSPlotNtupleBranches();
+	}
+	cout << "Finished storing per-event likelihood values." << endl;
+}
+
+void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& treeName,
+				 Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
+				 Bool_t useReweighting)
+{
+	if (signalTree_) {
+		cerr << "ERROR in LauSimpleFitModel::embedSignal : Already embedding signal from a file." << endl;
+		return;
+	}
+
+	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
+		cerr << "WARNING in LauSimpleFitModel::embedSignal : Conflicting options provided, will not reuse events at all." << endl;
+		reuseEventsWithinExperiment = kFALSE;
+	}
+
+	signalTree_ = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);
+
+	Bool_t dataOK = signalTree_->findBranches();
+	if (!dataOK) {
+		delete signalTree_; signalTree_ = 0;
+		cerr << "ERROR in LauSimpleFitModel::embedSignal : Problem creating data tree for embedding." << endl;
+		return;
+	}
+
+	reuseSignal_ = reuseEventsWithinEnsemble;
+	useReweighting_ = useReweighting;
+
+	if (this->enableEmbedding() == kFALSE) {
+		this->enableEmbedding(kTRUE);
+	}
+}
+
+void LauSimpleFitModel::embedBkgnd(const TString& bkgndClass, const TString& fileName, const TString& treeName,
+		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment)
+{
+	if ( ! this->validBkgndClass( bkgndClass ) ) {
+		cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		cerr << "                                       : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		return;
+	}
+
+	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+
+	if (bkgndTree_[bkgndID]) {
+		cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Already embedding background from a file." << endl;
+		return;
+	}
+
+	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
+		cerr << "WARNING in LauSimpleFitModel::embedBkgnd : Conflicting options provided, will not reuse events at all." << endl;
+		reuseEventsWithinExperiment = kFALSE;
+	}
+
+	bkgndTree_[bkgndID] = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);
+
+	Bool_t dataOK = bkgndTree_[bkgndID]->findBranches();
+	if (!dataOK) {
+		delete bkgndTree_[bkgndID]; bkgndTree_[bkgndID] = 0;
+		cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Problem creating data tree for embedding." << endl;
+		return;
+	}
+
+	reuseBkgnd_[bkgndID] = reuseEventsWithinEnsemble;
+
+	if (this->enableEmbedding() == kFALSE) {
+		this->enableEmbedding(kTRUE);
+	}
+}
+
+void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString& dataTreeName )
+{
+	// Routine to provide weights for events that are uniformly distributed
+	// in the DP (or square DP) so as to reproduce the given DP model
+
+	if ( kinematics_->squareDP() ) {
+		std::cout << "INFO in LauSimpleFitModel::weightEvents : will create weights assuming events were generated flat in the square DP" << std::endl;
+	} else {
+		std::cout << "INFO in LauSimpleFitModel::weightEvents : will create weights assuming events were generated flat in phase space" << std::endl;
+	}
+
+	// This reads in the given dataFile and creates an input
+	// fit data tree that stores them for all events and experiments.
+	Bool_t dataOK = this->cacheFitData(dataFileName,dataTreeName);
+	if (!dataOK) {
+		std::cerr << "ERROR in LauSimpleFitModel::weightEvents : Problem caching the data." << std::endl;
+		return;
+	}
+
+	LauFitDataTree* inputFitData = this->fitData();
+
+	if ( ! inputFitData->haveBranch( "m13Sq_MC" ) || ! inputFitData->haveBranch( "m23Sq_MC" ) ) {
+		std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Cannot find MC truth DP coordinate branches in supplied data, aborting." << std::endl;
+		return;
+	}
+
+	// Create the ntuple to hold the DP weights
+	TString weightsFileName( dataFileName );
+	Ssiz_t index = weightsFileName.Last('.');
+	weightsFileName.Insert( index, "_DPweights" );
+	LauGenNtuple * weightsTuple = new LauGenNtuple( weightsFileName, dataTreeName );
+	weightsTuple->addIntegerBranch("iExpt");
+	weightsTuple->addIntegerBranch("iEvtWithinExpt");
+	weightsTuple->addDoubleBranch("dpModelWeight");
+
+	UInt_t iExpmt = this->iExpt();
+	UInt_t nExpmt = this->nExpt();
+	UInt_t firstExpmt = this->firstExpt();
+	for (iExpmt = firstExpmt; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
+
+		inputFitData->readExperimentData(iExpmt);
+		UInt_t nEvents = inputFitData->nEvents();
+
+		if (nEvents < 1) {
+			std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Zero events in experiment " << iExpmt << ", skipping..." << std::endl;
+			continue;
+		}
+
+		weightsTuple->setIntegerBranchValue( "iExpt", iExpmt );
+
+		// Calculate and store the weights for the events in this experiment
+		for ( UInt_t iEvent(0); iEvent < nEvents; ++iEvent ) {
+
+			weightsTuple->setIntegerBranchValue( "iEvtWithinExpt", iEvent );
+
+			const LauFitData& evtData = inputFitData->getData( iEvent );
+
+			Double_t m13Sq_MC = evtData.find("m13Sq_MC")->second;
+			Double_t m23Sq_MC = evtData.find("m23Sq_MC")->second;
+
+			Double_t dpModelWeight(0.0);
+
+			if ( kinematics_->withinDPLimits( m13Sq_MC, m23Sq_MC ) ) {
+
+				kinematics_->updateKinematics( m13Sq_MC, m23Sq_MC );
+				dpModelWeight = sigDPModel_->getEventWeight();
+
+				if ( kinematics_->squareDP() ) {
+					dpModelWeight *= kinematics_->calcSqDPJacobian();
+				}
+
+				if (LauAbsDPDynamics::GenOK != sigDPModel_->checkToyMC(kTRUE,kFALSE)) {
+					std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
+					delete weightsTuple;
+					return;
+				}
+			}
+
+			weightsTuple->setDoubleBranchValue( "dpModelWeight", dpModelWeight );
+			weightsTuple->fillBranches();
+		}
+
+	}
+
+	weightsTuple->buildIndex( "iExpt", "iEvtWithinExpt" );
+	weightsTuple->addFriendTree(dataFileName, dataTreeName);
+	weightsTuple->writeOutGenResults();
+
+	delete weightsTuple;
+}
+

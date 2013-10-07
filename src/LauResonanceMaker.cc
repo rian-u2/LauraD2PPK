@@ -186,12 +186,30 @@ void LauResonanceMaker::createResonanceVector()
 	// D(3400)
 	resInfo_.push_back(LauResonanceInfo("D0(3400)",      3.4,   0.15,   0,     0          ));
 
+	// excited strange charm states             name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)
+	// Ds*
+	resInfo_.push_back(LauResonanceInfo("Ds*+",       2.1123,    0.002,   1,    +1          ));
+	resInfo_.push_back(LauResonanceInfo("Ds*-",       2.1123,    0.002,   1,    -1          ));
+	// Ds0*(2317)
+	resInfo_.push_back(LauResonanceInfo("Ds0*+(2317)",       2.3178,    0.004,   0,    +1          ));
+	resInfo_.push_back(LauResonanceInfo("Ds0*-(2317)",       2.3178,    0.004,   0,    -1          ));
+	// Ds2*(2573)
+	resInfo_.push_back(LauResonanceInfo("Ds2*+(2573)",       2.5719,    0.017,   2,    +1          ));
+	resInfo_.push_back(LauResonanceInfo("Ds2*-(2573)",       2.5719,    0.017,   2,    -1          ));
+	// Ds1*(2700)
+	resInfo_.push_back(LauResonanceInfo("Ds1*+(2700)",       2.709,    0.125,   1,    +1          ));
+	resInfo_.push_back(LauResonanceInfo("Ds1*-(2700)",       2.709,    0.125,   1,    -1          ));
+
 	// excited bottom states
 	// B*
 	resInfo_.push_back(LauResonanceInfo("B*0",           5.3252,   0.00,    1,     0          ));
 	resInfo_.push_back(LauResonanceInfo("B*+",           5.3250,   0.00,    1,    +1          ));
 	resInfo_.push_back(LauResonanceInfo("B*-",           5.3250,   0.00,    1,    -1          ));
 
+	// excited strange bottom states
+	// Bs*
+	resInfo_.push_back(LauResonanceInfo("Bs*0",          5.4154,   0.00,    1,    0          ));
+	
 	// nonresonant models               name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)
 	// Phase-space nonresonant model
 	resInfo_.push_back(LauResonanceInfo("NonReson",      0.0,      0.0,     0,     0          ));

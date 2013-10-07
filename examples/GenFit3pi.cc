@@ -135,9 +135,8 @@ int main( int argc, char** argv )
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	Int_t nSigEvents = 486;
-	Bool_t fixNSigEvents = kFALSE;
-	fitModel->setNSigEvents(nSigEvents, fixNSigEvents);
+	LauParameter * nSigEvents = new LauParameter("nSigEvents",500.0,-1000.0,1000.0,kFALSE);
+	fitModel->setNSigEvents(nSigEvents);
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
@@ -147,10 +146,9 @@ int main( int argc, char** argv )
 	// (example syntax given in commented-out section)
 	//std::vector<TString> bkgndNames(1);
 	//bkgndNames[0] = "qqbar";
+	//LauParameter* nBkgndEvents = new LauParameter("qqbar",500.0,-1000.0,1000.0,kFALSE);
 	//fitModel->setBkgndClassNames( bkgndNames );
-	//Double_t nBgEvents = 1212;
-	//Bool_t fixBGEvents = kTRUE;
-	//fitModel->setNBkgndEvents( "qqbar", nBgEvents, fixNBgEvents );
+	//fitModel->setNBkgndEvents( *nBkgndEvents );
 	//TString qqFileName("histoFiles/offResDP.root");
 	//TFile* qqFile = TFile::Open(qqFileName.Data(), "read");
 	//TH2* qqDP = dynamic_cast<TH2*>(qqFile->Get("AllmTheta")); // m', theta'

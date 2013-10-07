@@ -78,7 +78,9 @@ int main(const int argc, const  char ** argv) {
   Bool_t fixSigEvents = kTRUE;
   Int_t nExpt = 1;
   Int_t firstExpt = 0;
-  fitModel->setNSigEvents(nSigEvents, fixSigEvents);
+
+  LauParameter * nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixSigEvents);
+  fitModel->setNSigEvents(nSig);
   fitModel->setNExpts(nExpt, firstExpt);
 
   // Do not calculate asymmetric errors

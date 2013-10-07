@@ -9,8 +9,8 @@
 // Paul Harrison
 
 /*! \file LauSimpleFitModel.cc
-    \brief File containing implementation of LauSimpleFitModel class.
-*/
+  \brief File containing implementation of LauSimpleFitModel class.
+ */
 
 #include <iostream>
 #include <iomanip>
@@ -47,7 +47,7 @@ using std::setprecision;
 ClassImp(LauSimpleFitModel)
 
 
-LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
+	LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
 	sigDPModel_(sigModel),
 	kinematics_(sigModel ? sigModel->getKinematics() : 0),
 	usingBkgnd_(kFALSE),
@@ -57,7 +57,8 @@ LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitMode
 	nNormPar_(0),
 	meanEff_("meanEff",0.0,0.0,1.0),
 	dpRate_("dpRate",0.0,0.0,100.0),
-	signalEvents_("signalEvents",1.0,0.0,1.0),
+	//signalEvents_("signalEvents",1.0,0.0,1.0),
+	signalEvents_(0),
 	useSCF_(kFALSE),
 	useSCFHist_(kFALSE),
 	scfFrac_("scfFrac",0.0,0.0,1.0),
@@ -66,7 +67,7 @@ LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitMode
 	compareFitData_(kFALSE),
 	signalTree_(0),
 	reuseSignal_(kFALSE),
-        useReweighting_(kFALSE),
+	useReweighting_(kFALSE),
 	sigDPLike_(0.0),
 	scfDPLike_(0.0),
 	sigExtraLike_(0.0),
@@ -98,31 +99,52 @@ void LauSimpleFitModel::setupBkgndVectors()
 	bkgndTotalLike_.resize( nBkgnds );
 }
 
-void LauSimpleFitModel::setNSigEvents(Double_t nSigEvents, Bool_t fixSigEvents)
+void LauSimpleFitModel::setNSigEvents(LauParameter* nSigEvents)
 {
-	signalEvents_.range(-2.0*(TMath::Abs(nSigEvents)+1.0), 2.0*(TMath::Abs(nSigEvents)+1.0));
-	signalEvents_.value(nSigEvents);
-	signalEvents_.initValue(nSigEvents);
-	signalEvents_.genValue(nSigEvents);
-	signalEvents_.fixed(fixSigEvents);
+	if ( nSigEvents == 0 ) {
+		cerr << "ERROR in LauSimpleFitModel::setNSigEvents : The signal yield LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( signalEvents_ != 0 ) {
+		cerr << "ERROR in LauSimpleFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		return;
+	}
+
+	signalEvents_ = new LauParameter("signalEvents",1.0,0.0,1.0);
+	signalEvents_->range(-2.0*(TMath::Abs(nSigEvents->value())+1.0), 2.0*(TMath::Abs(nSigEvents->value())+1.0));
+	signalEvents_->value(nSigEvents->value());
+	signalEvents_->initValue(nSigEvents->value());
+	signalEvents_->genValue(nSigEvents->value());
+	signalEvents_->fixed(nSigEvents->fixed());
 }
 
-void LauSimpleFitModel::setNBkgndEvents(const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents)
+void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 {
-	if ( ! this->validBkgndClass( bkgndClass ) ) {
-		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+	if ( nBkgndEvents == 0 ) {
+		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : The background yield LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
+		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
 		cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
 		return;
 	}
 
-	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+	UInt_t bkgndID = this->bkgndClassID( nBkgndEvents->name() );
 
-	bkgndEvents_[bkgndID].name( bkgndClass+"Events" );
-	bkgndEvents_[bkgndID].range(-2.0*(TMath::Abs(nBkgndEvents)+1.0), 2.0*(TMath::Abs(nBkgndEvents)+1.0));
-	bkgndEvents_[bkgndID].value(nBkgndEvents);
-	bkgndEvents_[bkgndID].initValue(nBkgndEvents);
-	bkgndEvents_[bkgndID].genValue(nBkgndEvents);
-	bkgndEvents_[bkgndID].fixed(fixBkgndEvents);
+	if ( bkgndEvents_[bkgndID] != 0 ) {
+		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : You are trying to overwrite the background yield." << endl;
+		return;
+	}
+
+	bkgndEvents_[bkgndID] = new LauParameter("background",1.0,0.0,1.0);
+	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
+	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(nBkgndEvents->value())+1.0), 2.0*(TMath::Abs(nBkgndEvents->value())+1.0));
+	bkgndEvents_[bkgndID]->value(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->initValue(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->genValue(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->fixed(nBkgndEvents->fixed());
 }
 
 void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )
@@ -382,7 +404,7 @@ void LauSimpleFitModel::setSignalDPParameters()
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	
+
 	// Place signal model parameters in vector of fit variables
 	LauParameterPList& fitVars = this->fitPars();
 	for (UInt_t i = 0; i < nSigComp_; i++) {
@@ -420,12 +442,20 @@ void LauSimpleFitModel::setExtraPdfParameters()
 
 void LauSimpleFitModel::setFitNEvents()
 {
+	if ( signalEvents_ == 0 ) {
+		cerr << "ERROR in LauSimpleFitModel::setFitNEvents : Signal yield not defined." << endl;
+		return;
+	}
 	nNormPar_ = 0;
 
 	// initialise the total number of events to be the sum of all the hypotheses
-	Double_t nTotEvts = signalEvents_.value();
+	Double_t nTotEvts = signalEvents_->value();
 	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		nTotEvts += iter->value();
+		nTotEvts += (*iter)->value();
+		if ( (*iter) == 0 ) {
+			cerr << "ERROR in LauSimpleFitModel::setFitNEvents : Background yield not defined." << endl;
+			return;
+		}
 	}
 	this->eventsPerExpt(TMath::FloorNint(nTotEvts));
 
@@ -435,7 +465,7 @@ void LauSimpleFitModel::setFitNEvents()
 	if (this->doEMLFit()) {
 		cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for signal and background components..." << endl;
 		// add the signal events to the list of fit parameters
-		fitVars.push_back(&signalEvents_);
+		fitVars.push_back(signalEvents_);
 		++nNormPar_;
 	} else {
 		cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for background components (and hence signal)..." << endl;
@@ -448,8 +478,8 @@ void LauSimpleFitModel::setFitNEvents()
 
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			LauParameter& parameter = (*iter);
-			fitVars.push_back(&parameter);
+			LauParameter* parameter = (*iter);
+			fitVars.push_back(parameter);
 			++nNormPar_;
 		}
 	}
@@ -525,14 +555,14 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 
 	// update the pulls on the events
 	if (this->doEMLFit()) {
-		signalEvents_.updatePull();
+		signalEvents_->updatePull();
 	}
 	if (useSCF_ && !useSCFHist_) {
 		scfFrac_.updatePull();
 	}
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			iter->updatePull();
+			(*iter)->updatePull();
 		}
 	}
 
@@ -591,7 +621,7 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 		std::vector<LauParameter> extraParams = sigDPModel_->getExtraParameters();
 		std::vector<LauParameter>::iterator extraIter;
 		for (extraIter = extraParams.begin(); extraIter != extraParams.end(); ++extraIter) {
-		        LauParameter extraParameter = (*extraIter);
+			LauParameter extraParameter = (*extraIter);
 			extraVars.push_back(extraParameter);
 		}		
 
@@ -743,7 +773,7 @@ LauSimpleFitModel::LauGenInfo LauSimpleFitModel::eventsToGenerate()
 
 	// Signal
 	Double_t evtWeight(1.0);
-	Int_t nEvts = TMath::FloorNint(signalEvents_.genValue());
+	Int_t nEvts = TMath::FloorNint(signalEvents_->genValue());
 	if ( nEvts < 0 ) {
 		evtWeight = -1.0;
 		nEvts = TMath::Abs( nEvts );
@@ -757,9 +787,9 @@ LauSimpleFitModel::LauGenInfo LauSimpleFitModel::eventsToGenerate()
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		const LauParameter& evtsPar = bkgndEvents_[bkgndID];
+		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
 		evtWeight = 1.0;
-		nEvts = TMath::FloorNint( evtsPar.genValue() );
+		nEvts = TMath::FloorNint( evtsPar->genValue() );
 		if ( nEvts < 0 ) {
 			evtWeight = -1.0;
 			nEvts = TMath::Abs( nEvts );
@@ -910,14 +940,14 @@ Bool_t LauSimpleFitModel::generateSignalEvent()
 
 	if (this->useDP()) {
 		if (this->enableEmbedding() && signalTree_) {
-		        if (useReweighting_) {
-		                // Select a (random) event from the generated data. Then store the
-			        // reconstructed DP co-ords, together with other pdf information,
-		                // as the embedded data.
-		                genOK = signalTree_->getReweightedEvent(sigDPModel_);
+			if (useReweighting_) {
+				// Select a (random) event from the generated data. Then store the
+				// reconstructed DP co-ords, together with other pdf information,
+				// as the embedded data.
+				genOK = signalTree_->getReweightedEvent(sigDPModel_);
 			} else {
 
-			        signalTree_->getEmbeddedEvent(kinematics_);
+				signalTree_->getEmbeddedEvent(kinematics_);
 			}
 			if (signalTree_->haveBranch("mcMatch")) {
 				Int_t match = static_cast<Int_t>(signalTree_->getValue("mcMatch"));
@@ -1156,7 +1186,7 @@ void LauSimpleFitModel::propagateParUpdates()
 	}
 
 	// Update the signal events from the background events if not doing an extended fit
-	if ( !this->doEMLFit() && !signalEvents_.fixed() ) {
+	if ( !this->doEMLFit() && !signalEvents_->fixed() ) {
 		this->updateSigEvents();
 	}
 }
@@ -1167,12 +1197,12 @@ void LauSimpleFitModel::updateSigEvents()
 	// We need to update the signal events using these.
 	Double_t nTotEvts = this->eventsPerExpt();
 
-	signalEvents_.range(-2.0*nTotEvts,2.0*nTotEvts);
+	signalEvents_->range(-2.0*nTotEvts,2.0*nTotEvts);
 	for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		(*iter).range(-2.0*nTotEvts,2.0*nTotEvts);
+		(*iter)->range(-2.0*nTotEvts,2.0*nTotEvts);
 	}
 
-	if ( signalEvents_.fixed() ) {
+	if ( signalEvents_->fixed() ) {
 		return;
 	}
 
@@ -1180,10 +1210,10 @@ void LauSimpleFitModel::updateSigEvents()
 	Double_t signalEvents = nTotEvts;
 	if ( usingBkgnd_ == kTRUE ) {
 		for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			signalEvents -= (*iter);
+			signalEvents -= (*iter)->value();
 		}
 	}
-	signalEvents_.value(signalEvents);
+	signalEvents_->value(signalEvents);
 }
 
 void LauSimpleFitModel::cacheInputFitVars()
@@ -1314,10 +1344,10 @@ Double_t LauSimpleFitModel::getTotEvtLikelihood(UInt_t iEvt)
 	}
 
 	// Construct the total event likelihood
-	Double_t likelihood = signalEvents_ * sigLike;
+	Double_t likelihood = signalEvents_->value() * sigLike;
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-		likelihood += (bkgndEvents_[bkgndID] * bkgndDPLike_[bkgndID] * bkgndExtraLike_[bkgndID]);
+		likelihood += (bkgndEvents_[bkgndID]->value() * bkgndDPLike_[bkgndID] * bkgndExtraLike_[bkgndID]);
 	}
 
 	return likelihood;
@@ -1326,9 +1356,9 @@ Double_t LauSimpleFitModel::getTotEvtLikelihood(UInt_t iEvt)
 Double_t LauSimpleFitModel::getEventSum() const
 {
 	Double_t eventSum(0.0);
-	eventSum += signalEvents_;
+	eventSum += signalEvents_->value();
 	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		eventSum += (*iter);
+		eventSum += (*iter)->value();
 	}
 	return eventSum;
 }
@@ -1671,16 +1701,16 @@ LauSPlot::NameSet LauSimpleFitModel::variableNames() const
 LauSPlot::NumbMap LauSimpleFitModel::freeSpeciesNames() const
 {
 	LauSPlot::NumbMap numbMap;
-	if (!signalEvents_.fixed() && this->doEMLFit()) {
-		numbMap["sig"] = signalEvents_.genValue();
+	if (!signalEvents_->fixed() && this->doEMLFit()) {
+		numbMap["sig"] = signalEvents_->genValue();
 	}
 	if ( usingBkgnd_ ) {
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter& par = bkgndEvents_[iBkgnd];
-			if (!par.fixed()) {
-				numbMap[bkgndClass] = par.genValue();
+			const LauParameter* par = bkgndEvents_[iBkgnd];
+			if (!par->fixed()) {
+				numbMap[bkgndClass] = par->genValue();
 			}
 		}
 	}
@@ -1690,16 +1720,16 @@ LauSPlot::NumbMap LauSimpleFitModel::freeSpeciesNames() const
 LauSPlot::NumbMap LauSimpleFitModel::fixdSpeciesNames() const
 {
 	LauSPlot::NumbMap numbMap;
-	if (signalEvents_.fixed() && this->doEMLFit()) {
-		numbMap["sig"] = signalEvents_.genValue();
+	if (signalEvents_->fixed() && this->doEMLFit()) {
+		numbMap["sig"] = signalEvents_->genValue();
 	}
 	if ( usingBkgnd_ ) {
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter& par = bkgndEvents_[iBkgnd];
-			if (par.fixed()) {
-				numbMap[bkgndClass] = par.genValue();
+			const LauParameter* par = bkgndEvents_[iBkgnd];
+			if (par->fixed()) {
+				numbMap[bkgndClass] = par->genValue();
 			}
 		}
 	}
@@ -1881,8 +1911,8 @@ void LauSimpleFitModel::storePerEvtLlhds()
 }
 
 void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& treeName,
-				 Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
-				 Bool_t useReweighting)
+		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
+		Bool_t useReweighting)
 {
 	if (signalTree_) {
 		cerr << "ERROR in LauSimpleFitModel::embedSignal : Already embedding signal from a file." << endl;

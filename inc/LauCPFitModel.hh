@@ -61,38 +61,30 @@ class LauCPFitModel : public LauAbsFitModel {
 
 		//! Set the signal event yield
 		/*!
-		        \param [in] nSigEvents the number of signal events
-			\param [in] fixSigEvents the option to fix the number of signal events
+		        \param [in] nSigEvents contains the signal yield and option to fix it
 		*/	
-		virtual void setNSigEvents(Double_t nSigEvents, Bool_t fixSigEvents = kFALSE);
+		virtual void setNSigEvents(LauParameter* nSigEvents);
 
 		//! Set the signal event yield if there is an asymmetry
 		/*!
-		        \param [in] nSigEvents the number of signal events
-			\param [in] fixSigEvents the option to fix the number of signal events
-			\param [in] sigAsym the signal asymmetry fraction
-			\param [in] fixSigAsym fix the asymmetry or allow it to float
+		        \param [in] nSigEvents contains the signal yield and option to fix it
+			\param [in] sigAsym contains the signal asymmetry fraction and option to fix it
 			\param [in] forceAsym the option to force there to be an asymmetry
 		*/	
-		virtual void setNSigEvents(Double_t nSigEvents, Bool_t fixSigEvents, Double_t sigAsym, Bool_t fixSigAsym, Bool_t forceAsym = kFALSE);
+		virtual void setNSigEvents(LauParameter* nSigEvents, LauParameter* sigAsym, Bool_t forceAsym = kFALSE);
 
 		//! Set the background event yield(s)
 		/*!
-			\param [in] bkgndClass the name of the background class
-			\param [in] nBkgndEvents the number of background events
-			\param [in] fixBkgndEvents the option to fix the number of background events
+			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 		*/	
-		virtual void setNBkgndEvents(const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents = kFALSE);
+		virtual void setNBkgndEvents(LauParameter* nBkgndEvents);
 
 		//! Set the background event yield(s)
 		/*!
-			\param [in] bkgndClass the name of the background class
-			\param [in] nBkgndEvents the number of background events
-			\param [in] fixBkgndEvents the option to fix the number of background events
-			\param [in] bkgndAsym the background asymmetry fraction
-			\param [in] fixBkgndAsym fix the asymmetry or allow it to float
+			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
+			\param [in] bkgndAsym contains the background asymmetry fraction and option to fix it
 		*/	
-		virtual void setNBkgndEvents(const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents, Double_t bkgndAsym, Bool_t fixBkgndAsym);
+		virtual void setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bkgndAsym);
 
 		//! Set the background DP models
 		/*!
@@ -226,7 +218,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		typedef std::vector<LauPdfList> LauBkgndPdfsList;
 
 		//! Typedef for a vector of background yields
-		typedef std::vector<LauParameter> LauBkgndYieldList;
+		typedef std::vector<LauParameter*> LauBkgndYieldList;
 
 		//! Typedef for a vector of embedded data objects
 		typedef std::vector<LauEmbeddedData*> LauBkgndEmbDataList;
@@ -513,10 +505,10 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauParameter posDPRate_;
 
 		//! Signal yield
-		LauParameter signalEvents_; 
+		LauParameter* signalEvents_; 
 
 		//! Signal asymmetry
-		LauParameter signalAsym_;
+		LauParameter* signalAsym_;
 
 		//! Option to force an asymmetry
 		Bool_t forceAsym_;

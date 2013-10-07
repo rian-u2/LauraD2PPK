@@ -163,7 +163,8 @@ int main( int argc, char** argv )
 
 	Double_t nSigEvents = 5000;
 	Bool_t fixSigEvents = kTRUE;
-	fitModel->setNSigEvents(nSigEvents, fixSigEvents);
+	LauParameter* nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixSigEvents);
+	fitModel->setNSigEvents(nSig);
 	fitModel->setNExpts(nExpt, firstExpt);
 
 	// Switch on/off calculation of asymmetric errors.

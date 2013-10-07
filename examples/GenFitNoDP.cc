@@ -105,9 +105,12 @@ int main( int argc, char** argv )
 	Bool_t fixNPartRecoBgEvents = kFALSE;
 
 	// Set the number of signal and background events and the number of experiments
-	fitModel->setNSigEvents(nSigEvents, fixNSigEvents);
-	fitModel->setNBkgndEvents( bkgndNames[0], nCombBgEvents, fixNCombBgEvents);
-	fitModel->setNBkgndEvents( bkgndNames[1], nPartRecoBgEvents, fixNPartRecoBgEvents);
+	LauParameter* nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixNSigEvents);
+	LauParameter* nCombBkg = new LauParameter("Combinatorial",nCombBgEvents,-2*nCombBgEvents,2*nCombBgEvents,fixNCombBgEvents);
+	LauParameter* nPartBkg = new LauParameter("PartialReco",nPartRecoBgEvents,-2*nPartRecoBgEvents,2*nPartRecoBgEvents,fixNPartRecoBgEvents);
+	fitModel->setNSigEvents(nSig);
+	fitModel->setNBkgndEvents( nCombBkg );
+	fitModel->setNBkgndEvents( nPartBkg );
 	fitModel->setNExpts(nExpt, firstExpt);
 
 	// Signal mB PDF parameter values

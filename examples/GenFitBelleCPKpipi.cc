@@ -129,7 +129,8 @@ int main( int argc, char** argv )
 	// Set the signal yield and define whether it is fixed or floated
 	Int_t nSigEvents = 2000;
 	Bool_t fixNSigEvents = kFALSE;
-	fitModel->setNSigEvents(nSigEvents, fixNSigEvents);
+	LauParameter* nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixNSigEvents);
+	fitModel->setNSigEvents(nSig);
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with

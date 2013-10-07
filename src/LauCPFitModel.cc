@@ -9,8 +9,8 @@
 // Paul Harrison
 
 /*! \file LauCPFitModel.cc
-    \brief File containing implementation of LauCPFitModel class.
-*/
+  \brief File containing implementation of LauCPFitModel class.
+ */
 
 #include <iostream>
 #include <iomanip>
@@ -50,7 +50,7 @@ using std::vector;
 ClassImp(LauCPFitModel)
 
 
-LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),
+	LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),
 	negSigModel_(negModel), posSigModel_(posModel),
 	negKinematics_(negModel ? negModel->getKinematics() : 0),
 	posKinematics_(posModel ? posModel->getKinematics() : 0),
@@ -61,8 +61,8 @@ LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posMo
 	nNormPar_(0),
 	negMeanEff_("negMeanEff",0.0,0.0,1.0), posMeanEff_("posMeanEff",0.0,0.0,1.0),
 	negDPRate_("negDPRate",0.0,0.0,100.0), posDPRate_("posDPRate",0.0,0.0,100.0),
-	signalEvents_("signalEvents",1.0,0.0,1.0),
-	signalAsym_("signalAsym",0.0,-1.0,1.0),
+	signalEvents_(0),
+	signalAsym_(0),
 	forceAsym_(kFALSE),
 	tagged_(tagged),
 	tagVarName_(tagVarName),
@@ -76,7 +76,7 @@ LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posMo
 	negParent_("B-"), posParent_("B+"),
 	negSignalTree_(0), posSignalTree_(0),
 	reuseSignal_(kFALSE),
-        useNegReweighting_(kFALSE), usePosReweighting_(kFALSE),
+	useNegReweighting_(kFALSE), usePosReweighting_(kFALSE),
 	sigDPLike_(0.0),
 	scfDPLike_(0.0),
 	sigExtraLike_(0.0),
@@ -120,86 +120,144 @@ void LauCPFitModel::setupBkgndVectors()
 	bkgndTotalLike_.resize( nBkgnds );
 }
 
-void LauCPFitModel::setNSigEvents(Double_t nSigEvents, Bool_t fixSigEvents)
+void LauCPFitModel::setNSigEvents(LauParameter* nSigEvents)
 {
-	signalEvents_.range(-2.0*(TMath::Abs(nSigEvents)+1.0),2.0*(TMath::Abs(nSigEvents)+1.0));
-	signalEvents_.value(nSigEvents);
-	signalEvents_.initValue(nSigEvents);
-	signalEvents_.genValue(nSigEvents);
-	signalEvents_.fixed(fixSigEvents);
+	if ( nSigEvents == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : The LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( signalEvents_ != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		return;
+	}
+	if ( signalAsym_ != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		return;
+	}
+	signalEvents_ = new LauParameter("signalEvents",1.0,0.0,1.0);
+	signalEvents_->range(-2.0*(TMath::Abs(nSigEvents->value())+1.0),2.0*(TMath::Abs(nSigEvents->value())+1.0));
+	signalEvents_->value(nSigEvents->value());
+	signalEvents_->initValue(nSigEvents->value());
+	signalEvents_->genValue(nSigEvents->value());
+	signalEvents_->fixed(nSigEvents->fixed());
 
-	signalAsym_.range(-1.0,1.0);
-	signalAsym_.value(0.0);
-	signalAsym_.initValue(0.0);
-	signalAsym_.genValue(0.0);
-	signalAsym_.fixed(kTRUE);
+	signalAsym_ = new LauParameter("signalAsym",0.0,-1.0,1.0);
+	signalAsym_->range(-1.0,1.0);
+	signalAsym_->value(0.0);
+	signalAsym_->initValue(0.0);
+	signalAsym_->genValue(0.0);
+	signalAsym_->fixed(kTRUE);
 }
 
-void LauCPFitModel::setNSigEvents( Double_t nSigEvents, Bool_t fixSigEvents, Double_t sigAsym, Bool_t fixSigAsym, Bool_t forceAsym )
+void LauCPFitModel::setNSigEvents( LauParameter* nSigEvents, LauParameter* sigAsym, Bool_t forceAsym )
 {
-	signalEvents_.range(-2.0*(TMath::Abs(nSigEvents)+1.0),2.0*(TMath::Abs(nSigEvents)+1.0));
-	signalEvents_.value(nSigEvents);
-	signalEvents_.initValue(nSigEvents);
-	signalEvents_.genValue(nSigEvents);
-	signalEvents_.fixed(fixSigEvents);
+	if ( nSigEvents == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : The event LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( signalEvents_ != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		return;
+	}
+	if ( sigAsym == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : The asym LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
 
-	signalAsym_.range(-1.0,1.0);
-	signalAsym_.value(sigAsym);
-	signalAsym_.initValue(sigAsym);
-	signalAsym_.genValue(sigAsym);
-	signalAsym_.fixed(fixSigAsym);
+	signalEvents_ = new LauParameter("signalEvents",1.0,0.0,1.0);
+	signalEvents_->range(-2.0*(TMath::Abs(nSigEvents->value())+1.0),2.0*(TMath::Abs(nSigEvents->value())+1.0));
+	signalEvents_->value(nSigEvents->value());
+	signalEvents_->initValue(nSigEvents->value());
+	signalEvents_->genValue(nSigEvents->value());
+	signalEvents_->fixed(nSigEvents->fixed());
+
+	signalAsym_ = new LauParameter("signalAsym",0.0,-1.0,1.0);
+	signalAsym_->range(-1.0,1.0);
+	signalAsym_->value(sigAsym->value());
+	signalAsym_->initValue(sigAsym->value());
+	signalAsym_->genValue(sigAsym->value());
+	signalAsym_->fixed(sigAsym->fixed());
 
 	forceAsym_ = forceAsym;
 }
 
-void LauCPFitModel::setNBkgndEvents( const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents )
+void LauCPFitModel::setNBkgndEvents( LauParameter* nBkgndEvents )
 {
-	if ( ! this->validBkgndClass( bkgndClass ) ) {
-		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+	if ( nBkgndEvents == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBgkndEvents : The background yield LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	} 
+
+	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
 		cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
 		return;
 	}
 
-	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+	UInt_t bkgndID = this->bkgndClassID( nBkgndEvents->name() );
 
-	bkgndEvents_[bkgndID].name( bkgndClass+"Events" );
-	bkgndEvents_[bkgndID].range(-2.0*(TMath::Abs(nBkgndEvents)+1.0), 2.0*(TMath::Abs(nBkgndEvents)+1.0));
-	bkgndEvents_[bkgndID].value(nBkgndEvents);
-	bkgndEvents_[bkgndID].initValue(nBkgndEvents);
-	bkgndEvents_[bkgndID].genValue(nBkgndEvents);
-	bkgndEvents_[bkgndID].fixed(fixBkgndEvents);
+	if ( bkgndEvents_[bkgndID] != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : You are trying to overwrite the background yield." << endl;
+		return;
+	}
 
-	bkgndAsym_[bkgndID].name( bkgndClass+"Asym" );
-	bkgndAsym_[bkgndID].range(-1.0,1.0);
-	bkgndAsym_[bkgndID].value(0.0);
-	bkgndAsym_[bkgndID].initValue(0.0);
-	bkgndAsym_[bkgndID].genValue(0.0);
-	bkgndAsym_[bkgndID].fixed(kTRUE);
+	bkgndEvents_[bkgndID] = new LauParameter("background",1.0,0.0,1.0);
+	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
+	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(nBkgndEvents->value())+1.0), 2.0*(TMath::Abs(nBkgndEvents->value())+1.0));
+	bkgndEvents_[bkgndID]->value(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->initValue(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->genValue(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->fixed(nBkgndEvents->fixed());
+
+	bkgndAsym_[bkgndID] = new LauParameter("background_asym",0.0,-1.0,1.0);
+	bkgndAsym_[bkgndID]->name( nBkgndEvents->name()+"Asym" );
+	bkgndAsym_[bkgndID]->range(-1.0,1.0);
+	bkgndAsym_[bkgndID]->value(0.0);
+	bkgndAsym_[bkgndID]->initValue(0.0);
+	bkgndAsym_[bkgndID]->genValue(0.0);
+	bkgndAsym_[bkgndID]->fixed(kTRUE);
 }
 
-void LauCPFitModel::setNBkgndEvents(const TString& bkgndClass, Double_t nBkgndEvents, Bool_t fixBkgndEvents, Double_t bkgndAsym, Bool_t fixBkgndAsym)
+void LauCPFitModel::setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bkgndAsym)
 {
-	if ( ! this->validBkgndClass( bkgndClass ) ) {
-		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+	if ( nBkgndEvents == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : The background yield LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
 		cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
 		return;
 	}
 
-	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
+	if ( bkgndAsym == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : The background asym LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
 
-	bkgndEvents_[bkgndID].name( bkgndClass+"Events" );
-	bkgndEvents_[bkgndID].range(-2.0*(TMath::Abs(nBkgndEvents)+1.0), 2.0*(TMath::Abs(nBkgndEvents)+1.0));
-	bkgndEvents_[bkgndID].value(nBkgndEvents);
-	bkgndEvents_[bkgndID].initValue(nBkgndEvents);
-	bkgndEvents_[bkgndID].genValue(nBkgndEvents);
-	bkgndEvents_[bkgndID].fixed(fixBkgndEvents);
+	UInt_t bkgndID = this->bkgndClassID( nBkgndEvents->name() );
 
-	bkgndAsym_[bkgndID].name( bkgndClass+"Asym" );
-	bkgndAsym_[bkgndID].range(-1.0,1.0);
-	bkgndAsym_[bkgndID].value(bkgndAsym);
-	bkgndAsym_[bkgndID].initValue(bkgndAsym);
-	bkgndAsym_[bkgndID].genValue(bkgndAsym);
-	bkgndAsym_[bkgndID].fixed(fixBkgndAsym);
+	if ( bkgndEvents_[bkgndID] != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : You are trying to overwrite the background yield." << endl;
+		return;
+	}
+
+	bkgndEvents_[bkgndID] = new LauParameter("background",1.0,0.0,1.0);
+	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
+	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(nBkgndEvents->value())+1.0), 2.0*(TMath::Abs(nBkgndEvents->value())+1.0));
+	bkgndEvents_[bkgndID]->value(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->initValue(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->genValue(nBkgndEvents->value());
+	bkgndEvents_[bkgndID]->fixed(nBkgndEvents->value());
+
+	bkgndAsym_[bkgndID] = new LauParameter("background_asym",0.0,-1.0,1.0);
+	bkgndAsym_[bkgndID]->name( bkgndAsym->name()+"Asym" );
+	bkgndAsym_[bkgndID]->range(-1.0,1.0);
+	bkgndAsym_[bkgndID]->value(bkgndAsym->value());
+	bkgndAsym_[bkgndID]->initValue(bkgndAsym->value());
+	bkgndAsym_[bkgndID]->genValue(bkgndAsym->value());
+	bkgndAsym_[bkgndID]->fixed(bkgndAsym->fixed());
 }
 
 void LauCPFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )
@@ -573,12 +631,20 @@ void LauCPFitModel::setExtraPdfParameters()
 
 void LauCPFitModel::setFitNEvents()
 {
+	if ( signalEvents_ == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setFitNEvents : Signal yield not defined." << endl;
+		return;
+	}
 	nNormPar_ = 0;
 
 	// initialise the total number of events to be the sum of all the hypotheses
-	Double_t nTotEvts = signalEvents_.value();
+	Double_t nTotEvts = signalEvents_->value();
 	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		nTotEvts += *iter;
+		nTotEvts += (*iter)->value();
+		if ( (*iter) == 0 ) {
+			cerr << "ERROR in LauCPFitModel::setFitNEvents : Background yield not defined." << endl;
+			return;
+		}
 	}
 	this->eventsPerExpt(TMath::FloorNint(nTotEvts));
 
@@ -588,7 +654,7 @@ void LauCPFitModel::setFitNEvents()
 	if (this->doEMLFit()) {
 		cout << "INFO in LauCPFitModel::setFitNEvents : Initialising number of events for signal and background components..." << endl;
 		// add the signal fraction to the list of fit parameters
-		fitVars.push_back(&signalEvents_);
+		fitVars.push_back(signalEvents_);
 		++nNormPar_;
 	} else {
 		cout << "INFO in LauCPFitModel::setFitNEvents : Initialising number of events for background components (and hence signal)..." << endl;
@@ -596,7 +662,7 @@ void LauCPFitModel::setFitNEvents()
 
 	// if not using the DP in the model we need an explicit signal asymmetry parameter
 	if (this->useDP() == kFALSE) {
-		fitVars.push_back(&signalAsym_);
+		fitVars.push_back(signalAsym_);
 		++nNormPar_;
 	}
 
@@ -607,13 +673,13 @@ void LauCPFitModel::setFitNEvents()
 
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			LauParameter& parameter = (*iter);
-			fitVars.push_back(&parameter);
+			LauParameter* parameter = (*iter);
+			fitVars.push_back(parameter);
 			++nNormPar_;
 		}
 		for (LauBkgndYieldList::iterator iter = bkgndAsym_.begin(); iter != bkgndAsym_.end(); ++iter) {
-			LauParameter& parameter = (*iter);
-			fitVars.push_back(&parameter);
+			LauParameter* parameter = (*iter);
+			fitVars.push_back(parameter);
 			++nNormPar_;
 		}
 	}
@@ -834,20 +900,20 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 
 	// update the pulls on the event fractions and asymmetries
 	if (this->doEMLFit()) {
-		signalEvents_.updatePull();
+		signalEvents_->updatePull();
 	}
 	if (this->useDP() == kFALSE) {
-		signalAsym_.updatePull();
+		signalAsym_->updatePull();
 	}
 	if (useSCF_ && !useSCFHist_) {
 		scfFrac_.updatePull();
 	}
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			iter->updatePull();
+			(*iter)->updatePull();
 		}
 		for (LauBkgndYieldList::iterator iter = bkgndAsym_.begin(); iter != bkgndAsym_.end(); ++iter) {
-			iter->updatePull();
+			(*iter)->updatePull();
 		}
 	}
 
@@ -936,14 +1002,14 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 		std::vector<LauParameter> negExtraPars = negSigModel_->getExtraParameters();
 		std::vector<LauParameter>::iterator negExtraIter;
 		for (negExtraIter = negExtraPars.begin(); negExtraIter != negExtraPars.end(); ++negExtraIter) {
-		        LauParameter negExtraParameter = (*negExtraIter);
+			LauParameter negExtraParameter = (*negExtraIter);
 			extraVars.push_back(negExtraParameter);
 		}
 
 		std::vector<LauParameter> posExtraPars = posSigModel_->getExtraParameters();
 		std::vector<LauParameter>::iterator posExtraIter;
 		for (posExtraIter = posExtraPars.begin(); posExtraIter != posExtraPars.end(); ++posExtraIter) {
-		        LauParameter posExtraParameter = (*posExtraIter);
+			LauParameter posExtraParameter = (*posExtraIter);
 			extraVars.push_back(posExtraParameter);
 		}
 
@@ -1174,7 +1240,7 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 
 	// Signal
 	Double_t evtWeight(1.0);
-	Double_t nEvts = signalEvents_.genValue();
+	Double_t nEvts = signalEvents_->genValue();
 	if ( nEvts < 0.0 ) {
 		evtWeight = -1.0;
 		nEvts = TMath::Abs( nEvts );
@@ -1183,7 +1249,7 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 	Double_t sigAsym(0.0);
 	// need to include this as an alternative in case the DP isn't in the model
 	if ( !this->useDP() || forceAsym_ ) {
-		sigAsym = signalAsym_.genValue();
+		sigAsym = signalAsym_->genValue();
 	} else {
 		Double_t negRate = negSigModel_->getDPNorm();
 		Double_t posRate = posSigModel_->getDPNorm();
@@ -1205,15 +1271,15 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		const LauParameter& evtsPar = bkgndEvents_[bkgndID];
-		const LauParameter& asymPar = bkgndAsym_[bkgndID];
+		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
+		const LauParameter* asymPar = bkgndAsym_[bkgndID];
 		evtWeight = 1.0;
-		nEvts = TMath::FloorNint( evtsPar.genValue() );
+		nEvts = TMath::FloorNint( evtsPar->genValue() );
 		if ( nEvts < 0 ) {
 			evtWeight = -1.0;
 			nEvts = TMath::Abs( nEvts );
 		}
-		asym = asymPar.genValue();
+		asym = asymPar->genValue();
 		nPosEvts = static_cast<Int_t>((nEvts/2.0 * (1.0 - asym)) + 0.5);
 		nNegEvts = static_cast<Int_t>((nEvts/2.0 * (1.0 + asym)) + 0.5);
 		if (this->doPoissonSmearing()) {
@@ -1225,12 +1291,12 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 	}
 
 	cout << "Generating toy MC with:" << endl;
-	cout << "Signal asymmetry  = " << sigAsym << " and number of signal events = " << signalEvents_.genValue() << endl;
+	cout << "Signal asymmetry  = " << sigAsym << " and number of signal events = " << signalEvents_->genValue() << endl;
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		const LauParameter& evtsPar = bkgndEvents_[bkgndID];
-		const LauParameter& asymPar = bkgndAsym_[bkgndID];
-		cout << bkgndClass << " asymmetry  = " << asymPar.genValue() << " and number of " << bkgndClass << " events = " << evtsPar.genValue() << endl;
+		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
+		const LauParameter* asymPar = bkgndAsym_[bkgndID];
+		cout << bkgndClass << " asymmetry  = " << asymPar->genValue() << " and number of " << bkgndClass << " events = " << evtsPar->genValue() << endl;
 	}
 
 	return nEvtsGen;
@@ -1413,7 +1479,7 @@ Bool_t LauCPFitModel::generateSignalEvent()
 		sigPdfs = &negSignalPdfs_;
 		scfPdfs = &negScfPdfs_;
 		if (this->enableEmbedding()) {
-		        embeddedData = negSignalTree_;
+			embeddedData = negSignalTree_;
 			doReweighting = useNegReweighting_;
 		}
 	} else {
@@ -1427,22 +1493,22 @@ Bool_t LauCPFitModel::generateSignalEvent()
 			scfPdfs = &negScfPdfs_;
 		}
 		if (this->enableEmbedding()) {
-		        embeddedData = posSignalTree_;
+			embeddedData = posSignalTree_;
 			doReweighting = usePosReweighting_;
 		}
 	}
 
 	if (this->useDP()) {
 		if (embeddedData) {
-		        if (doReweighting) {
-		                // Select a (random) event from the generated data. Then store the
-			        // reconstructed DP co-ords, together with other pdf information,
-		                // as the embedded data.
-			        genOK = embeddedData->getReweightedEvent(model);
+			if (doReweighting) {
+				// Select a (random) event from the generated data. Then store the
+				// reconstructed DP co-ords, together with other pdf information,
+				// as the embedded data.
+				genOK = embeddedData->getReweightedEvent(model);
 			} else {
-			        // Just get the information of a (randomly) selected event in the 
-		                // embedded data
-		                embeddedData->getEmbeddedEvent(kinematics);
+				// Just get the information of a (randomly) selected event in the 
+				// embedded data
+				embeddedData->getEmbeddedEvent(kinematics);
 			}
 			genSCF = this->storeSignalMCMatch( embeddedData );
 		} else {
@@ -1702,7 +1768,7 @@ void LauCPFitModel::generateExtraPdfValues(LauPdfList* extraPdfs, LauEmbeddedDat
 Bool_t LauCPFitModel::storeSignalMCMatch(LauEmbeddedData* embeddedData)
 {
 	// Default to TM
-        Bool_t genSCF(kFALSE);
+	Bool_t genSCF(kFALSE);
 	Int_t match(1);
 
 	// Check that we have a valid pointer and that embedded data has
@@ -1735,7 +1801,7 @@ void LauCPFitModel::propagateParUpdates()
 	}
 
 	// Update the signal fraction from the background fractions if not doing an extended fit
-	if ( !this->doEMLFit() && !signalEvents_.fixed() ) {
+	if ( !this->doEMLFit() && !signalEvents_->fixed() ) {
 		this->updateSigEvents();
 	}
 }
@@ -1746,12 +1812,12 @@ void LauCPFitModel::updateSigEvents()
 	// We need to update the signal events using these.
 	Double_t nTotEvts = this->eventsPerExpt();
 
-	signalEvents_.range(-2.0*nTotEvts,2.0*nTotEvts);
+	signalEvents_->range(-2.0*nTotEvts,2.0*nTotEvts);
 	for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		(*iter).range(-2.0*nTotEvts,2.0*nTotEvts);
+		(*iter)->range(-2.0*nTotEvts,2.0*nTotEvts);
 	}
 
-	if (signalEvents_.fixed()) {
+	if (signalEvents_->fixed()) {
 		return;
 	}
 
@@ -1759,10 +1825,10 @@ void LauCPFitModel::updateSigEvents()
 	Double_t signalEvents = nTotEvts;
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			signalEvents -= (*iter);
+			signalEvents -= (*iter)->value();
 		}
 	}
-	signalEvents_.value(signalEvents);
+	signalEvents_->value(signalEvents);
 }
 
 void LauCPFitModel::cacheInputFitVars()
@@ -1943,9 +2009,9 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 	// Get the correct event fractions depending on the charge
 	// Signal asymmetry is built into the DP model... but when the DP
 	// isn't in the fit we need an explicit parameter
-	Double_t signalEvents = signalEvents_ * 0.5;
+	Double_t signalEvents = signalEvents_->value() * 0.5;
 	if (this->useDP() == kFALSE) {
-		signalEvents *= (1.0 - curEvtCharge_ * signalAsym_);
+		signalEvents *= (1.0 - curEvtCharge_ * signalAsym_->value());
 	}
 
 	// Construct the total event likelihood
@@ -1954,7 +2020,7 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 		likelihood = sigLike*signalEvents;
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-			Double_t bkgndEvents  = bkgndEvents_[bkgndID] * 0.5 * (1.0 - curEvtCharge_ * bkgndAsym_[bkgndID]);
+			Double_t bkgndEvents  = bkgndEvents_[bkgndID]->value() * 0.5 * (1.0 - curEvtCharge_ * bkgndAsym_[bkgndID]->value());
 			likelihood += bkgndEvents*bkgndDPLike_[bkgndID]*bkgndExtraLike_[bkgndID];
 		}
 	} else {
@@ -1966,10 +2032,10 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 Double_t LauCPFitModel::getEventSum() const
 {
 	Double_t eventSum(0.0);
-	eventSum += signalEvents_;
+	eventSum += signalEvents_->value();
 	if (usingBkgnd_) {
 		for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			eventSum += (*iter);
+			eventSum += (*iter)->value();
 		}
 	}
 	return eventSum;
@@ -2030,12 +2096,12 @@ void LauCPFitModel::getEvtDPLikelihood(UInt_t iEvt)
 		negSigModel_->calcLikelihoodInfo(iEvt);
 
 		sigDPLike_ = 0.5 * ( posSigModel_->getEvtDPAmp().abs2() * posSigModel_->getEvtEff() +
-				     negSigModel_->getEvtDPAmp().abs2() * negSigModel_->getEvtEff() );
+				negSigModel_->getEvtDPAmp().abs2() * negSigModel_->getEvtEff() );
 
 		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 			if (usingBkgnd_ == kTRUE) {
 				bkgndDPLike_[bkgndID] = 0.5 * ( posBkgndDPModels_[bkgndID]->getLikelihood(iEvt) +
-						                negBkgndDPModels_[bkgndID]->getLikelihood(iEvt) );
+						negBkgndDPModels_[bkgndID]->getLikelihood(iEvt) );
 			} else {
 				bkgndDPLike_[bkgndID] = 0.0;
 			}
@@ -2379,16 +2445,16 @@ LauSPlot::NameSet LauCPFitModel::variableNames() const
 LauSPlot::NumbMap LauCPFitModel::freeSpeciesNames() const
 {
 	LauSPlot::NumbMap numbMap;
-	if (!signalEvents_.fixed() && this->doEMLFit()) {
-		numbMap["sig"] = signalEvents_.genValue();
+	if (!signalEvents_->fixed() && this->doEMLFit()) {
+		numbMap["sig"] = signalEvents_->genValue();
 	}
 	if ( usingBkgnd_ ) {
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter& par = bkgndEvents_[iBkgnd];
-			if (!par.fixed()) {
-				numbMap[bkgndClass] = par.genValue();
+			const LauParameter* par = bkgndEvents_[iBkgnd];
+			if (!par->fixed()) {
+				numbMap[bkgndClass] = par->genValue();
 			}
 		}
 	}
@@ -2398,16 +2464,16 @@ LauSPlot::NumbMap LauCPFitModel::freeSpeciesNames() const
 LauSPlot::NumbMap LauCPFitModel::fixdSpeciesNames() const
 {
 	LauSPlot::NumbMap numbMap;
-	if (signalEvents_.fixed() && this->doEMLFit()) {
-		numbMap["sig"] = signalEvents_.genValue();
+	if (signalEvents_->fixed() && this->doEMLFit()) {
+		numbMap["sig"] = signalEvents_->genValue();
 	}
 	if ( usingBkgnd_ ) {
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter& par = bkgndEvents_[iBkgnd];
-			if (par.fixed()) {
-				numbMap[bkgndClass] = par.genValue();
+			const LauParameter* par = bkgndEvents_[iBkgnd];
+			if (par->fixed()) {
+				numbMap[bkgndClass] = par->genValue();
 			}
 		}
 	}
@@ -2587,7 +2653,7 @@ void LauCPFitModel::storePerEvtLlhds()
 			sigTotalLike_ *= this->setSPlotNtupleBranchValues(sigPdfs, "sig", iEvt);
 		}
 
-		// the beckground PDF values
+		// the background PDF values
 		if (usingBkgnd_) {
 			const UInt_t nBkgnds = this->nBkgndClasses();
 			for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
@@ -2630,8 +2696,8 @@ void LauCPFitModel::storePerEvtLlhds()
 }
 
 void LauCPFitModel::embedNegSignal(const TString& fileName, const TString& treeName,
-				   Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment, 
-				   Bool_t useReweighting)
+		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment, 
+		Bool_t useReweighting)
 {
 	if (negSignalTree_) {
 		cerr << "ERROR in LauCPFitModel::embedNegSignal : Already embedding signal from a file." << endl;
@@ -2688,8 +2754,8 @@ void LauCPFitModel::embedNegBkgnd(const TString& bkgndClass, const TString& file
 }
 
 void LauCPFitModel::embedPosSignal(const TString& fileName, const TString& treeName,
-				   Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
-				   Bool_t useReweighting)
+		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
+		Bool_t useReweighting)
 {
 	if (posSignalTree_) {
 		cerr << "ERROR in LauCPFitModel::embedPosSignal : Already embedding signal from a file." << endl;

@@ -207,19 +207,16 @@ class LauAbsFitModel : public TObject {
 
 		//! Set the number of signal events
 		/*!
-			\param [in] nSigEvents the number of signal events
-			\param [in] fixNSigEvents should nSigEvents be fixed or floated
+			\param [in] nSigEvents contains the signal yield and option to fix it
 		*/
-		virtual void setNSigEvents(Double_t nSigEvents, Bool_t fixNSigEvents) = 0;
+		virtual void setNSigEvents(LauParameter* nSigEvents) = 0;
 
 		//! Set the number of background events
 		/*!
-			\param [in] bgClass the name of the background component
-			\param [in] nBkgndEvents the number of signal events
-			\param [in] fixNBkgndEvents should nBkgndEvents be fixed or floated
+			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 
 		*/	
-		virtual void setNBkgndEvents(const TString& bgClass, Double_t nBkgndEvents, Bool_t fixNBkgndEvents) = 0;
+		virtual void setNBkgndEvents(LauParameter* nBkgndEvents) = 0;
 
 		//! Specify that a toy MC sample should be created for a successful fit to an experiment
 		/*!

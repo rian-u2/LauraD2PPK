@@ -102,7 +102,7 @@ Lau2DHistDPPdf::~Lau2DHistDPPdf()
 void Lau2DHistDPPdf::calcMaxHeight()
 {
 	// Get the maximum height of the 2D histogram
-	maxHeight_ = 0.0;
+	maxHeight_ = 1.0;
 	if ( hist_ ) {
 		Int_t maxBin = hist_->GetMaximumBin();
 		maxHeight_ = hist_->GetBinContent(maxBin);
@@ -156,6 +156,10 @@ Double_t Lau2DHistDPPdf::getBinHistValue(Int_t xBinNo, Int_t yBinNo) const
 		yBinNo = 0;
 	} else if (yBinNo >= nBinsY_) {
 		return 0.0;
+	}
+
+	if ( hist_ == 0 ) {
+		return 1.0;
 	}
 
 	Double_t value = hist_->GetBinContent(xBinNo+1, yBinNo+1);

@@ -105,9 +105,9 @@ int main( int argc, char** argv )
 	Bool_t fixNPartRecoBgEvents = kFALSE;
 
 	// Set the number of signal and background events and the number of experiments
-	LauParameter* nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixNSigEvents);
-	LauParameter* nCombBkg = new LauParameter("Combinatorial",nCombBgEvents,-2*nCombBgEvents,2*nCombBgEvents,fixNCombBgEvents);
-	LauParameter* nPartBkg = new LauParameter("PartialReco",nPartRecoBgEvents,-2*nPartRecoBgEvents,2*nPartRecoBgEvents,fixNPartRecoBgEvents);
+	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
+	LauParameter* nCombBkg = new LauParameter("Combinatorial",nCombBgEvents,-2.0*nCombBgEvents,2.0*nCombBgEvents,fixNCombBgEvents);
+	LauParameter* nPartBkg = new LauParameter("PartialReco",nPartRecoBgEvents,-2.0*nPartRecoBgEvents,2.0*nPartRecoBgEvents,fixNPartRecoBgEvents);
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNBkgndEvents( nCombBkg );
 	fitModel->setNBkgndEvents( nPartBkg );

@@ -163,7 +163,7 @@ int main( int argc, char** argv )
 
 	Double_t nSigEvents = 5000;
 	Bool_t fixSigEvents = kTRUE;
-	LauParameter* nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixSigEvents);
+	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixSigEvents);
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNExpts(nExpt, firstExpt);
 

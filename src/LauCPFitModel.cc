@@ -131,22 +131,16 @@ void LauCPFitModel::setNSigEvents(LauParameter* nSigEvents)
 		return;
 	}
 	if ( signalAsym_ != 0 ) {
-		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal asymmetry." << endl;
 		return;
 	}
-	signalEvents_ = new LauParameter("signalEvents",1.0,0.0,1.0);
-	signalEvents_->range(-2.0*(TMath::Abs(nSigEvents->value())+1.0),2.0*(TMath::Abs(nSigEvents->value())+1.0));
-	signalEvents_->value(nSigEvents->value());
-	signalEvents_->initValue(nSigEvents->value());
-	signalEvents_->genValue(nSigEvents->value());
-	signalEvents_->fixed(nSigEvents->fixed());
 
-	signalAsym_ = new LauParameter("signalAsym",0.0,-1.0,1.0);
-	signalAsym_->range(-1.0,1.0);
-	signalAsym_->value(0.0);
-	signalAsym_->initValue(0.0);
-	signalAsym_->genValue(0.0);
-	signalAsym_->fixed(kTRUE);
+	signalEvents_ = nSigEvents;
+	signalEvents_->name("signalEvents");
+	Double_t value = nSigEvents->value();
+	signalEvents_->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+
+	signalAsym_ = new LauParameter("signalAsym",0.0,-1.0,1.0,kTRUE);
 }
 
 void LauCPFitModel::setNSigEvents( LauParameter* nSigEvents, LauParameter* sigAsym, Bool_t forceAsym )
@@ -155,28 +149,28 @@ void LauCPFitModel::setNSigEvents( LauParameter* nSigEvents, LauParameter* sigAs
 		cerr << "ERROR in LauCPFitModel::setNSigEvents : The event LauParameter pointer is null." << endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
-	if ( signalEvents_ != 0 ) {
-		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
-		return;
-	}
 	if ( sigAsym == 0 ) {
 		cerr << "ERROR in LauCPFitModel::setNSigEvents : The asym LauParameter pointer is null." << endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	signalEvents_ = new LauParameter("signalEvents",1.0,0.0,1.0);
-	signalEvents_->range(-2.0*(TMath::Abs(nSigEvents->value())+1.0),2.0*(TMath::Abs(nSigEvents->value())+1.0));
-	signalEvents_->value(nSigEvents->value());
-	signalEvents_->initValue(nSigEvents->value());
-	signalEvents_->genValue(nSigEvents->value());
-	signalEvents_->fixed(nSigEvents->fixed());
+	if ( signalEvents_ != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		return;
+	}
+	if ( signalAsym_ != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNSigEvents : You are trying to overwrite the signal asymmetry." << endl;
+		return;
+	}
 
-	signalAsym_ = new LauParameter("signalAsym",0.0,-1.0,1.0);
+	signalEvents_ = nSigEvents;
+	signalEvents_->name("signalEvents");
+	Double_t value = nSigEvents->value();
+	signalEvents_->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+
+	signalAsym_ = sigAsym;
+	signalAsym_->name("signalAsym");
 	signalAsym_->range(-1.0,1.0);
-	signalAsym_->value(sigAsym->value());
-	signalAsym_->initValue(sigAsym->value());
-	signalAsym_->genValue(sigAsym->value());
-	signalAsym_->fixed(sigAsym->fixed());
 
 	forceAsym_ = forceAsym;
 }
@@ -191,7 +185,7 @@ void LauCPFitModel::setNBkgndEvents( LauParameter* nBkgndEvents )
 	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
 		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
 		cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
-		return;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	UInt_t bkgndID = this->bkgndClassID( nBkgndEvents->name() );
@@ -201,21 +195,17 @@ void LauCPFitModel::setNBkgndEvents( LauParameter* nBkgndEvents )
 		return;
 	}
 
-	bkgndEvents_[bkgndID] = new LauParameter("background",1.0,0.0,1.0);
-	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
-	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(nBkgndEvents->value())+1.0), 2.0*(TMath::Abs(nBkgndEvents->value())+1.0));
-	bkgndEvents_[bkgndID]->value(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->initValue(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->genValue(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->fixed(nBkgndEvents->fixed());
+	if ( bkgndAsym_[bkgndID] != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : You are trying to overwrite the background asymmetry." << endl;
+		return;
+	}
 
-	bkgndAsym_[bkgndID] = new LauParameter("background_asym",0.0,-1.0,1.0);
-	bkgndAsym_[bkgndID]->name( nBkgndEvents->name()+"Asym" );
-	bkgndAsym_[bkgndID]->range(-1.0,1.0);
-	bkgndAsym_[bkgndID]->value(0.0);
-	bkgndAsym_[bkgndID]->initValue(0.0);
-	bkgndAsym_[bkgndID]->genValue(0.0);
-	bkgndAsym_[bkgndID]->fixed(kTRUE);
+	bkgndEvents_[bkgndID] = nBkgndEvents;
+	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
+	Double_t value = nBkgndEvents->value();
+	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+
+	bkgndAsym_[bkgndID] = new LauParameter(nBkgndEvents->name()+"Asym",0.0,-1.0,1.0,kTRUE);
 }
 
 void LauCPFitModel::setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bkgndAsym)
@@ -225,14 +215,14 @@ void LauCPFitModel::setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bk
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
+	if ( bkgndAsym == 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : The background asym LauParameter pointer is null." << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
 	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
 		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
 		cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
-		return;
-	}
-
-	if ( bkgndAsym == 0 ) {
-		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : The background asym LauParameter pointer is null." << endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -243,21 +233,19 @@ void LauCPFitModel::setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bk
 		return;
 	}
 
-	bkgndEvents_[bkgndID] = new LauParameter("background",1.0,0.0,1.0);
-	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
-	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(nBkgndEvents->value())+1.0), 2.0*(TMath::Abs(nBkgndEvents->value())+1.0));
-	bkgndEvents_[bkgndID]->value(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->initValue(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->genValue(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->fixed(nBkgndEvents->value());
+	if ( bkgndAsym_[bkgndID] != 0 ) {
+		cerr << "ERROR in LauCPFitModel::setNBkgndEvents : You are trying to overwrite the background asymmetry." << endl;
+		return;
+	}
 
-	bkgndAsym_[bkgndID] = new LauParameter("background_asym",0.0,-1.0,1.0);
-	bkgndAsym_[bkgndID]->name( bkgndAsym->name()+"Asym" );
+	bkgndEvents_[bkgndID] = nBkgndEvents;
+	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
+	Double_t value = nBkgndEvents->value();
+	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+
+	bkgndAsym_[bkgndID] = bkgndAsym;
+	bkgndAsym_[bkgndID]->name( nBkgndEvents->name()+"Asym" );
 	bkgndAsym_[bkgndID]->range(-1.0,1.0);
-	bkgndAsym_[bkgndID]->value(bkgndAsym->value());
-	bkgndAsym_[bkgndID]->initValue(bkgndAsym->value());
-	bkgndAsym_[bkgndID]->genValue(bkgndAsym->value());
-	bkgndAsym_[bkgndID]->fixed(bkgndAsym->fixed());
 }
 
 void LauCPFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )

@@ -110,12 +110,10 @@ void LauSimpleFitModel::setNSigEvents(LauParameter* nSigEvents)
 		return;
 	}
 
-	signalEvents_ = new LauParameter("signalEvents",1.0,0.0,1.0);
-	signalEvents_->range(-2.0*(TMath::Abs(nSigEvents->value())+1.0), 2.0*(TMath::Abs(nSigEvents->value())+1.0));
-	signalEvents_->value(nSigEvents->value());
-	signalEvents_->initValue(nSigEvents->value());
-	signalEvents_->genValue(nSigEvents->value());
-	signalEvents_->fixed(nSigEvents->fixed());
+	signalEvents_ = nSigEvents;
+	signalEvents_->name("signalEvents");
+	Double_t value = nSigEvents->value();
+	signalEvents_->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 }
 
 void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
@@ -128,7 +126,7 @@ void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
 		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
 		cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
-		return;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	UInt_t bkgndID = this->bkgndClassID( nBkgndEvents->name() );
@@ -138,13 +136,10 @@ void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 		return;
 	}
 
-	bkgndEvents_[bkgndID] = new LauParameter("background",1.0,0.0,1.0);
+	bkgndEvents_[bkgndID] = nBkgndEvents;
 	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
-	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(nBkgndEvents->value())+1.0), 2.0*(TMath::Abs(nBkgndEvents->value())+1.0));
-	bkgndEvents_[bkgndID]->value(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->initValue(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->genValue(nBkgndEvents->value());
-	bkgndEvents_[bkgndID]->fixed(nBkgndEvents->fixed());
+	Double_t value = nBkgndEvents->value();
+	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 }
 
 void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )

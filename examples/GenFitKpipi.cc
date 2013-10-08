@@ -197,8 +197,8 @@ int main( int argc, char** argv )
 	}
 
 	// Set the number of signal events and the number of experiments
-	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-10*nSigEvents,10*nSigEvents,fixNSigEvents);
-	LauParameter * signalAsym = new LauParameter("signalAsym",sigAsym,-10*sigAsym,10*sigAsym,fixSigAsym);
+	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
+	LauParameter * signalAsym = new LauParameter("signalAsym",sigAsym,-1.0,1.0,fixSigAsym);
 
 	fitModel->setNSigEvents(signalEvents, signalAsym);
 	fitModel->setNExpts(nExpt, firstExpt);
@@ -277,8 +277,8 @@ int main( int argc, char** argv )
 	LauBkgndDPModel* posqqbarModel= new LauBkgndDPModel(posDaughters, vetoes);
 	posqqbarModel->setBkgndHisto( posqqDP, useInterpolation, fluctuateBins, useUpperHalfOnly, squareDP );
 
-	LauParameter* backgroundEvents = new LauParameter("qqbar",nBgEvents,-10.0*nBgEvents,10.0*nBgEvents,fixNBgEvents);
-	LauParameter* backgroundAsym = new LauParameter("backgroundAsym",bgAsym,10.0*bgAsym,-10.0*bgAsym,fixBgAsym);
+	LauParameter* backgroundEvents = new LauParameter("qqbar",nBgEvents,-2.0*nBgEvents,2.0*nBgEvents,fixNBgEvents);
+	LauParameter* backgroundAsym = new LauParameter("qqbar",bgAsym,1.0,-1.0,fixBgAsym);
 
 	fitModel->setNBkgndEvents( backgroundEvents, backgroundAsym );
 	fitModel->setBkgndDPModels( "qqbar", negqqbarModel, posqqbarModel );
@@ -295,8 +295,6 @@ int main( int argc, char** argv )
 	std::vector<LauParameter*> BBAsym(nBBs);
 	std::vector<LauBkgndDPModel*> negBBModels(nBBs);
 	std::vector<LauBkgndDPModel*> posBBModels(nBBs);
-	std::vector<Bool_t> fixNBBEvents(nBBs);
-	std::vector<Bool_t> fixBBAsym(nBBs);
 
 	for (Int_t i(0); i<nBBs; ++i) {
 		negBBFile->cd();
@@ -324,16 +322,10 @@ int main( int argc, char** argv )
 		Double_t totalBBEvents = negBBEvents + posBBEvents;
 		Double_t asym = ( negBBEvents - posBBEvents ) / totalBBEvents ;
 
-		nBBEvents[i] = new LauParameter(BBNames[i],totalBBEvents,0.0,2*totalBBEvents,kTRUE);
-		BBAsym[i] = new LauParameter(BBNames[i]+"Asym",asym,-1.0,1.0,kTRUE);
-
-		//nBBEvents[i]->value(negBBEvents + posBBEvents);
-		//BBAsym[i]->value((negBBEvents - posBBEvents)/nBBEvents[i]->value());
-		//fixNBBEvents[i] = kTRUE;
-		//fixBBAsym[i] = kTRUE;
+		nBBEvents[i] = new LauParameter(BBNames[i],totalBBEvents,-2.0*totalBBEvents,2.0*totalBBEvents,kTRUE);
+		BBAsym[i] = new LauParameter(BBNames[i],asym,-1.0,1.0,kTRUE);
 
 		fitModel->setBkgndDPModels(BBNames[i], negBBModels[i], posBBModels[i] );
-		//fitModel->setNBkgndEvents( BBNames[i], nBBEvents[i], fixNBBEvents[i], BBAsym[i], fixBBAsym[i]);
 		fitModel->setNBkgndEvents( nBBEvents[i], BBAsym[i] );
 	}
 

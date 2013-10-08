@@ -61,6 +61,8 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		//! Set the background event yield(s)
 		/*!
+		  	The name of the parameter must be that of the corresponding background category (so that it can be correctly assigned)
+
 			\param [in] nBkgndEvents contains the name, yield and option to fix the background yield
 		*/	
 		virtual void setNBkgndEvents(LauParameter* nBkgndEvents);

@@ -144,17 +144,17 @@ int main( int argc, char** argv )
 
 	// Optionally load in continuum background DP model histogram
 	// (example syntax given in commented-out section)
-	//std::vector<TString> bkgndNames(1);
-	//bkgndNames[0] = "qqbar";
-	//LauParameter* nBkgndEvents = new LauParameter("qqbar",500.0,-1000.0,1000.0,kFALSE);
-	//fitModel->setBkgndClassNames( bkgndNames );
-	//fitModel->setNBkgndEvents( *nBkgndEvents );
+	std::vector<TString> bkgndNames(1);
+	bkgndNames[0] = "qqbar";
+	fitModel->setBkgndClassNames( bkgndNames );
+	LauParameter* nBkgndEvents = new LauParameter("qqbar",1200.0,-2400.0,2400.0,kFALSE);
+	fitModel->setNBkgndEvents( nBkgndEvents );
 	//TString qqFileName("histoFiles/offResDP.root");
 	//TFile* qqFile = TFile::Open(qqFileName.Data(), "read");
 	//TH2* qqDP = dynamic_cast<TH2*>(qqFile->Get("AllmTheta")); // m', theta'
-	//LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
+	LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
 	//qqbarModel->setBkgndHisto(qqDP, useInterpolation, fluctuateBins, useUpperHalf, squareDP);
-	//fitModel->setBkgndModel( "qqbar", qqbarModel );
+	fitModel->setBkgndDPModel( "qqbar", qqbarModel );
 
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);

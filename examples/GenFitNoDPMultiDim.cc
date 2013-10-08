@@ -101,8 +101,8 @@ int main( int argc, char** argv )
 	Bool_t fixNCombBgEvents = kFALSE;
 
 	// Set the number of signal and background events and the number of experiments
-	LauParameter* nSig = new LauParameter("nSig",nSigEvents,-2*nSigEvents,2*nSigEvents,fixNSigEvents);
-	LauParameter* nBkg = new LauParameter("qqbar",nCombBgEvents,-2*nCombBgEvents,2*nCombBgEvents,fixNCombBgEvents);
+	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
+	LauParameter* nBkg = new LauParameter("qqbar",nCombBgEvents,-2.0*nCombBgEvents,2.0*nCombBgEvents,fixNCombBgEvents);
 	
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNBkgndEvents(nBkg);

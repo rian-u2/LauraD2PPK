@@ -213,6 +213,8 @@ class LauAbsFitModel : public TObject {
 
 		//! Set the number of background events
 		/*!
+		  	The name of the parameter must be that of the corresponding background category (so that it can be correctly assigned)
+
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 
 		*/	

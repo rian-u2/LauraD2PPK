@@ -75,12 +75,16 @@ class LauCPFitModel : public LauAbsFitModel {
 
 		//! Set the background event yield(s)
 		/*!
+		  	The name of the parameter must be that of the corresponding background category (so that it can be correctly assigned)
+
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 		*/	
 		virtual void setNBkgndEvents(LauParameter* nBkgndEvents);
 
 		//! Set the background event yield(s)
 		/*!
+		  	The names of the parameters must be that of the corresponding background category (so that they can be correctly assigned)
+
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 			\param [in] bkgndAsym contains the background asymmetry fraction and option to fix it
 		*/	

@@ -18,7 +18,7 @@
 
 void makeFitFile(const TString& inputFileName, const TString& inputTreeName, const TString& outputFileName)
 {
-	gSystem->Load("Laura++/lib/libLaura++.so");
+	gSystem->Load("../lib/libLaura++.so");
 
 	LauDaughters* daughters = new LauDaughters( "B0", "pi+", "pi-", "D0_bar", kFALSE );
         LauKinematics* kinematics = daughters->getKinematics();

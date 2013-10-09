@@ -65,7 +65,7 @@ void makeFitFile(const TString& inputFileName, const TString& inputTreeName, con
 
 		kinematics->updateKinematics( m13Sq, m23Sq );
 		if ( ! kinematics->withinDPLimits() ) {
-			cerr << "WARNING : Reco position of event " << iEntry << " not within DP boundary, skipping it." << endl;
+			cerr << "WARNING : Reconstructed position of event " << iEntry << " not within DP boundary, skipping it." << endl;
 			continue;
 		}
 

@@ -34,13 +34,13 @@
 
 # first check that ROOTSYS is defined
 ifndef ROOTSYS
-  ROOTSYS = $(shell root-config --prefix)
-  ROOTBINDIR = $(shell root-config --bindir)
+  ROOTSYS := $(shell root-config --prefix)
+  ROOTBINDIR := $(shell root-config --bindir)
   ifeq ($(ROOTSYS), )
     $(error running of root-config failed or reported null value)
   endif 
 else
-  ROOTBINDIR = $(ROOTSYS)/bin
+  ROOTBINDIR := $(ROOTSYS)/bin
 endif
 
 ROOTCONFIG := $(ROOTBINDIR)/root-config
@@ -75,7 +75,6 @@ endif
 PACKAGE=Laura++
 DEPDIR=$(WORKDIR)/dependencies
 OBJDIR=$(WORKDIR)/objects
-VPATH=$(INCDIR) $(OBJDIR)
 
 INCLUDES += -I$(INCDIR) -I$(shell $(ROOTBINDIR)/root-config --incdir)
 CXXFLAGS += $(INCLUDES)
@@ -88,23 +87,23 @@ SHLIBFILE = $(LIBDIR)/lib$(PACKAGE).so
 default: shlib
 
 # List of all header files
-HHLIST=$(wildcard $(INCDIR)/*.hh)
+HHLIST:=$(wildcard $(INCDIR)/*.hh)
 
 # List of all source files to build
-CCLIST=$(filter-out $(SKIPLIST),$(wildcard $(SRCDIR)/*.cc))
+CCLIST:=$(filter-out $(SKIPLIST),$(wildcard $(SRCDIR)/*.cc))
 
 # List of all object files to build
-OLIST=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(CCLIST))))
+OLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(CCLIST))))
 
 # List of all dependency file to make
-DLIST=$(patsubst %.hh,%.d,$(addprefix $(DEPDIR)/,$(notdir $(HHLIST))))
+DLIST:=$(patsubst %.hh,%.d,$(addprefix $(DEPDIR)/,$(notdir $(HHLIST))))
 
 # Implicit rule making all dependency Makefiles included at the end of this makefile
-$(DEPDIR)/%.d: $(SRCDIR)/%.cc $(HHLIST)
+$(DEPDIR)/%.d: $(SRCDIR)/%.cc
 	@echo "Making $@"
 	@mkdir -p $(DEPDIR)
 	@set -e; $(CXX) $(MFLAGS) $(CXXFLAGS) $< \
-	          | sed 's/\($(notdir $*)\)\.o[ :]*/\1.o $(notdir $@) : /g' > $@; \
+	          | sed 's#\($(notdir $*)\)\.o[ :]*#$(OBJDIR)/\1.o $@ : #g' > $@; \
 	        [ -s $@ ] || rm -f $@
 
 # Implicit rule to compile all classes

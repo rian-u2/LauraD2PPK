@@ -4,6 +4,15 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+18th October 2013 Thomas Latham
+
+* Fix dependency problem in Makefile
+
+8th October 2013 Thomas Latham
+
+* Some fixes to yield implementation
+* Minor bug fix in DP background histogram class
+
 7th October 2013 Mark Whitehead
 
 * Update to accept the yields and yield asymmetries as 
@@ -11,11 +20,9 @@ LauParameters. All examples have been updated to
 reflect this change. This updated the following files:
 - inc/LauCPFitModel.hh
 - inc/LauSimpleFitModel.hh
-- inc/LauTimeDepFitModel.hh
 - inc/LauAbsFitModel.hh
 - src/LauCPFitModel.cc
 - src/LauSimpleFitModel.cc
-- src/LauTimeDepFitModel.cc
 
 * Addition of the following particles to src/LauResonanceMaker.cc
 Ds*+-, Ds0*(2317)+-, Ds2*(2573)+-, Ds1*(2700)+- and Bs*0

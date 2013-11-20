@@ -144,7 +144,7 @@ void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadi
 	
 	// Recalculate the Blatt-Weisskopf form factor for the case when m = m_0
 	Double_t zR0 = q0_*q0_*resRSq_;
-	Double_t zB0 = pstar0_*pstar0_*parRSq_;
+	Double_t zB0 = p0_*p0_*parRSq_;
 	if ( ( type == LauAbsResonance::BWPrimeBarrier ) || ( type == LauAbsResonance::ExpBarrier ) ) {
 		FR0_ = (resR_==0.0) ? 1.0 : this->calcFFactor(zR0);
 		FB0_ = (parR_==0.0) ? 1.0 : this->calcFFactor(zB0);
@@ -190,11 +190,11 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t resMass = this->getMass();
 	Double_t resWidth = this->getWidth();
 	Double_t q = this->getQ();
-	//Double_t p = this->getP();
-	Double_t pstar = this->getPstar();
+	Double_t p = this->getP();
+	//Double_t pstar = this->getPstar();
 
 	Double_t zR = q*q*resRSq_;
-	Double_t zB = pstar*pstar*parRSq_;
+	Double_t zB = p*p*parRSq_;
 	Double_t fFactorR = this->calcFFactor(zR);
 	Double_t fFactorB = this->calcFFactor(zB);
 	Double_t fFactorRRatio = fFactorR/FR0_;

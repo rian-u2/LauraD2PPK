@@ -3,6 +3,13 @@
 ///  This is the History file for the Laura++ package.      ///
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
+20th November 2013 Mark Whitehead
+
+* Changed convention for the barrier factors, swapping 
+from p* to p. This seems to give more physically reasonable 
+results. The files updated are:
+- src/LauGounarisSakuraiRes.cc
+- src/LauRelBreitWignerRes.cc
 
 18th October 2013 Thomas Latham
 

@@ -50,7 +50,7 @@ using std::vector;
 ClassImp(LauCPFitModel)
 
 
-	LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),
+LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),
 	negSigModel_(negModel), posSigModel_(posModel),
 	negKinematics_(negModel ? negModel->getKinematics() : 0),
 	posKinematics_(posModel ? posModel->getKinematics() : 0),
@@ -2197,7 +2197,7 @@ void LauCPFitModel::getEvtExtraLikelihoods(UInt_t iEvt)
 
 	const UInt_t nBkgnds = this->nBkgndClasses();
 
-	if ( ! tagged_  || curEvtCharge_<0 ) {
+	if ( ! tagged_  || curEvtCharge_ < 0 ) {
 		sigExtraLike_ = this->prodPdfValue( negSignalPdfs_, iEvt );
 
 		if (useSCF_) {
@@ -2212,15 +2212,15 @@ void LauCPFitModel::getEvtExtraLikelihoods(UInt_t iEvt)
 			}
 		}
 	} else {
-		sigExtraLike_ = this->prodPdfValue( negSignalPdfs_, iEvt );
+		sigExtraLike_ = this->prodPdfValue( posSignalPdfs_, iEvt );
 
 		if (useSCF_) {
-			scfExtraLike_ = this->prodPdfValue( negScfPdfs_, iEvt );
+			scfExtraLike_ = this->prodPdfValue( posScfPdfs_, iEvt );
 		}
 
 		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 			if (usingBkgnd_) {
-				bkgndExtraLike_[bkgndID] = this->prodPdfValue( negBkgndPdfs_[bkgndID], iEvt );
+				bkgndExtraLike_[bkgndID] = this->prodPdfValue( posBkgndPdfs_[bkgndID], iEvt );
 			} else {
 				bkgndExtraLike_[bkgndID] = 0.0;
 			}

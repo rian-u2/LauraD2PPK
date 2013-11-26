@@ -11,6 +11,7 @@
 #pragma link C++ class LauAbsBkgndDPModel;
 #pragma link C++ class LauAbsCoeffSet;
 #pragma link C++ class LauAbsDPDynamics;
+#pragma link C++ class LauAbsFitter;
 #pragma link C++ class LauAbsFitModel;
 #pragma link C++ class LauAbsPdf;
 #pragma link C++ class LauAbsResonance;
@@ -43,6 +44,8 @@
 #pragma link C++ class LauExponentialPdf;
 #pragma link C++ class LauFitDataTree;
 #pragma link C++ class LauFitNtuple;
+#pragma link C++ class LauFitter;
+#pragma link C++ class LauFitObject;
 #pragma link C++ class LauFlatteRes;
 #pragma link C++ class LauGaussPdf;
 #pragma link C++ class LauGenNtuple;
@@ -61,6 +64,7 @@
 #pragma link C++ class LauLinearPdf;
 #pragma link C++ class LauMagPhaseCoeffSet;
 #pragma link C++ class LauMagPhaseCPCoeffSet;
+#pragma link C++ class LauMinuit;
 #pragma link C++ class LauNovosibirskPdf;
 #pragma link C++ class LauNRAmplitude;
 #pragma link C++ class LauParameter;
@@ -76,13 +80,13 @@
 #pragma link C++ class LauSigmaRes;
 #pragma link C++ class LauSigmoidPdf;
 #pragma link C++ class LauSimpleFitModel;
+#pragma link C++ class LauSimFitMaster;
 #pragma link C++ class LauSPlot;
 #pragma link C++ class LauString;
 #pragma link C++ class LauSumPdf;
 #pragma link C++ class LauTextFileParser;
 #pragma link C++ class LauVetoes;
 #pragma link C++ namespace LauConstants;
-#pragma link C++ namespace LauFitter;
 #pragma link C++ namespace LauRandom;
 
 #endif

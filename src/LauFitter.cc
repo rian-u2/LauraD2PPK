@@ -12,21 +12,36 @@
     \brief File containing implementation of LauFitter methods.
 */
 
+#include <iostream>
 
 #include "LauFitter.hh"
+#include "LauAbsFitter.hh"
+#include "LauMinuit.hh"
 
-#include "TVirtualFitter.h"
+LauAbsFitter* LauFitter::theInstance_ = 0;
+LauFitter::Type LauFitter::fitterType_ = LauFitter::Minuit;
 
-TVirtualFitter* LauFitter::fitter( const TString& fitterString, Int_t maxPar )
+void LauFitter::setFitterType( Type type )
 {
-	// Returns a pointer to a singleton TVirtualFitter object.
+	if ( theInstance_ != 0 ) {
+		std::cerr << "ERROR in LauFitter::setFitterType : The fitter has already been created, cannot change the type now." << std::endl;
+		return;
+	}
+
+	fitterType_ = type;
+}
+
+LauAbsFitter* LauFitter::fitter()
+{
+	// Returns a pointer to a singleton LauAbsFitter object.
 	// Creates the object the first time it is called.
 
-	static TVirtualFitter* theFitter = 0;
-	if ( theFitter == 0 ) {
-		TVirtualFitter::SetDefaultFitter( fitterString );
-		theFitter = TVirtualFitter::Fitter( 0, maxPar );
+	if ( theInstance_ == 0 ) {
+		if ( fitterType_ == Minuit ) {
+			theInstance_ = new LauMinuit();
+		}
 	}
-	return theFitter;
+
+	return theInstance_;
 }
 

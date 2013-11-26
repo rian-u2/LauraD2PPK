@@ -25,10 +25,11 @@
 #include <map>
 #include <vector>
 
+#include "TObject.h"
 #include "TString.h"
 
 
-class LauParameter {
+class LauParameter : public TObject {
 
 	public:
 		//! Default constructor
@@ -203,6 +204,12 @@ class LauParameter {
 		*/
 		inline Bool_t secondStage() const {return secondStage_;}
 
+		//! The parameter global correlation coefficient
+		/*!
+		    \return the global correlation coefficient
+		*/
+		inline Double_t globalCorrelationCoeff() const {return gcc_;}
+
 		//! The bias in the parameter
 		/*!
 		    \return the bias in the parameter, defined as the difference between the value and the generated value
@@ -263,6 +270,12 @@ class LauParameter {
 		    \param [in] newPosError the upper error on the parameter (default set to zero)
 		*/
 		void valueAndErrors(Double_t newValue, Double_t newError, Double_t newNegError = 0.0, Double_t newPosError = 0.0);
+
+		//! Set the global correlation coefficient
+		/*!
+		    \param [in] gcc the value of the coefficient
+		*/
+		void globalCorrelationCoeff(Double_t newGCCValue);
 
 		//! Set the generated value for the parameter
 		/*!
@@ -461,12 +474,16 @@ class LauParameter {
 		Double_t minValue_;
 		//! Maximum value for the parameter
 		Double_t maxValue_;
+
 		//! Fix/float option for parameter
 		Bool_t fixed_;
 		//! Flag whether it is floated only in the first stage of the fit
 		Bool_t firstStage_;
 		//! Flag whether it is floated only in the second stage of the fit
 		Bool_t secondStage_;
+
+		//! Global correlation coefficient
+		Double_t gcc_;
 
 		//! Parameter bias
 		Double_t bias_;
@@ -481,7 +498,7 @@ class LauParameter {
 		//! The clones of this parameter
 		std::map<LauParameter*, Double_t> clones_;
 
-		ClassDef(LauParameter, 0)
+		ClassDef(LauParameter, 1)
 
 };
 

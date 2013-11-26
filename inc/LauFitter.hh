@@ -24,19 +24,36 @@
 #include "Rtypes.h"
 #include "TString.h"
 
-class TVirtualFitter;
+class LauAbsFitter;
 
-namespace LauFitter {
+class LauFitter {
 
-	//! Method that provides a pointer to a TVirtualFitter object
-	/*!
-	    Arguments are ignored except for very first call
-	    \param [in] fitterString the name of the default fitter (default set to Minuit)
-	    \param [in] maxPar the maximum number of fit parameters for current fitter (default set to 100)
-	    \return a pointer to a singleton TVirtualFitter object 
-	*/
-	TVirtualFitter* fitter( const TString& fitterString = "Minuit", Int_t maxPar = 100 );
+	public:
+		//! The types of fitter available
+		enum Type {
+			Minuit	/*!< the Minuit fitter */
+		};
 
+		//! Set the type of the fitter
+		/*!
+		  \param [in] type the type of the fitter (default set to Minuit)
+		*/
+		static void setFitterType( Type type );
+
+		//! Method that provides access to the singleton fitter
+		/*!
+		    \return a pointer to a singleton LauAbsFitter object 
+		*/
+		static LauAbsFitter* fitter();
+
+	private:
+		//! Pointer to the singleton instance
+		static LauAbsFitter* theInstance_;
+
+		//! The fitter type
+		static Type fitterType_;
+
+		ClassDef(LauFitter,0);
 };
 
 #endif

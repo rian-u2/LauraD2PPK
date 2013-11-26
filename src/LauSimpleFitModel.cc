@@ -111,7 +111,10 @@ void LauSimpleFitModel::setNSigEvents(LauParameter* nSigEvents)
 	}
 
 	signalEvents_ = nSigEvents;
-	signalEvents_->name("signalEvents");
+	TString name = signalEvents_->name();
+	if ( ! name.Contains("signalEvents") && !( name.BeginsWith("signal") && name.EndsWith("Events") ) ) {
+		signalEvents_->name("signalEvents");
+	}
 	Double_t value = nSigEvents->value();
 	signalEvents_->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 }
@@ -635,7 +638,7 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 	ntuple->storeParsAndErrors(fitVars, extraVars);
 
 	// find out the correlation matrix for the parameters
-	ntuple->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus());
+	ntuple->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus(), this->covarianceMatrix());
 
 	// Fill the data into ntuple
 	ntuple->updateFitNtuple();

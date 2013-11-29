@@ -66,7 +66,6 @@ LauAbsFitModel::LauAbsFitModel() :
 	sPlotNtuple_(0),
 	fitStatus_(0),
 	NLL_(0),
-	covMatrix_(0),
 	numberOKFits_(0),
 	numberBadFits_(0),
 	nParams_(0),
@@ -99,7 +98,6 @@ LauAbsFitModel::~LauAbsFitModel()
 	delete fitNtuple_; fitNtuple_ = 0;
 	delete genNtuple_; genNtuple_ = 0;
 	delete sPlotNtuple_; sPlotNtuple_ = 0;
-	delete covMatrix_; covMatrix_ = 0;
 	delete sMaster_; sMaster_ = 0;
 	delete[] parValues_; parValues_ = 0;
 }
@@ -653,21 +651,27 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 
 		} else if ( messageFromMaster_->What() == kMESS_OBJECT ) {
 
+			std::cout << "INFO in LauAbsFitModel::fitSlave : Received message from master: Finalise" << std::endl;
+
 			messageFromMaster_->ReadInt( fitStatus_ );
 			messageFromMaster_->ReadDouble( NLL_ );
+
 			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
 			if ( ! objarray ) {
 				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Error reading parameters from master" << std::endl;
 				gSystem->Exit( EXIT_FAILURE );
 			}
-			/*
-			delete covMatrix_;  covMatrix_ = 0;
-			covMatrix_ = dynamic_cast<TMatrixD*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
-			if ( ! covMatrix_ ) {
+
+			TMatrixD * covMat = dynamic_cast<TMatrixD*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
+			if ( ! covMat ) {
 				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Error reading covariance matrix from master" << std::endl;
 				gSystem->Exit( EXIT_FAILURE );
 			}
-			*/
+			covMatrix_.Clear();
+			covMatrix_.ResizeTo( covMat->GetNrows(), covMat->GetNcols() );
+			covMatrix_.SetMatrixArray( covMat->GetMatrixArray() );
+			delete covMat; covMat = 0;
+
 
 			UInt_t nPars = objarray->GetEntries();
 
@@ -817,8 +821,10 @@ void LauAbsFitModel::fitExpt()
 
 	fitStatus_ = fitResult.first;
 	NLL_       = fitResult.second;
-	delete covMatrix_;
-	covMatrix_ = new TMatrixD( *LauFitter::fitter()->covarianceMatrix() );
+	const TMatrixD& covMat = LauFitter::fitter()->covarianceMatrix();
+	covMatrix_.Clear();
+	covMatrix_.ResizeTo( covMat.GetNrows(), covMat.GetNcols() );
+	covMatrix_.SetMatrixArray( covMat.GetMatrixArray() );
 
 	// Store the final fit results and errors into protected internal vectors that
 	// all sub-classes can use within their own finalFitResults implementation

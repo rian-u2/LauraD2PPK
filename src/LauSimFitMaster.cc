@@ -27,6 +27,7 @@
 #include "LauAbsFitter.hh"
 #include "LauFitter.hh"
 #include "LauParameter.hh"
+#include "LauParamFixed.hh"
 #include "LauSimFitMaster.hh"
 
 
@@ -43,7 +44,6 @@ LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 	numberBadFits_(0),
 	fitStatus_(0),
 	NLL_(0.0),
-	covMatrix_(0),
 	socketMonitor_(0),
 	messageFromSlave_(0)
 {
@@ -55,7 +55,6 @@ LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 
 LauSimFitMaster::~LauSimFitMaster()
 {
-	delete covMatrix_; covMatrix_ = 0;
 	delete socketMonitor_; socketMonitor_ = 0;
 	TString msgStr("Finish");
 	TMessage message( kMESS_STRING );
@@ -99,9 +98,11 @@ void LauSimFitMaster::initSockets()
 	sSlaves_.resize(nSlaves_);
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
 		sSlaves_[iSlave] = ss->Accept();
+		std::cout << "                                     : Added slave " << iSlave << std::endl;
 	}
 
 	// tell the clients to start
+	std::cout << "INFO in LauSimFitMaster::initSockets : Initialising slaves" << std::endl;
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
 
 		TMessage message( kMESS_ANY );
@@ -111,7 +112,6 @@ void LauSimFitMaster::initSockets()
 		sSlaves_[iSlave]->Send(message);
 
 		socketMonitor_->Add(sSlaves_[iSlave]);
-		std::cout << "                                     : Added slave " << iSlave << std::endl;
 	}
 	std::cout << "                                     : Now start fit\n" << std::endl;
 
@@ -527,8 +527,10 @@ void LauSimFitMaster::fitExpt( Bool_t twoStageFit )
 
 	fitStatus_ = fitResult.first;
 	NLL_       = fitResult.second;
-	delete covMatrix_;
-	covMatrix_ = new TMatrixD( *LauFitter::fitter()->covarianceMatrix() );
+	const TMatrixD& covMat = LauFitter::fitter()->covarianceMatrix();
+	covMatrix_.Clear();
+	covMatrix_.ResizeTo( covMat.GetNrows(), covMat.GetNcols() );
+	covMatrix_.SetMatrixArray( covMat.GetMatrixArray() );
 
 	// Store the final fit results and errors into protected internal vectors that
 	// all sub-classes can use within their own finalFitResults implementation
@@ -613,12 +615,57 @@ Bool_t LauSimFitMaster::finalise()
 		return kFALSE;
 	}
 
+	// Prepare the covariance matrices
+	covMatrices_.resize( nSlaves_ );
+
+	LauParamFixed pred;
+
+	std::map<UInt_t,UInt_t> freeParIndices;
+
+	UInt_t counter(0);
+	for ( UInt_t iPar(0); iPar < nParams_; ++iPar ) {
+		const LauParameter* par = params_[iPar];
+		if ( ! pred(par) ) {
+			freeParIndices.insert( std::make_pair(iPar,counter) );
+			++counter;
+		}
+	}
+
+	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+		const UInt_t nPar = slaveIndices_[iSlave].size();
+
+		std::vector<UInt_t> freeIndices;
+		freeIndices.reserve( nPar );
+
+		for ( UInt_t iPar(0); iPar < nPar; ++iPar ) {
+			UInt_t index = slaveIndices_[iSlave][iPar];
+			std::map<UInt_t,UInt_t>::iterator freeIter = freeParIndices.find(index);
+			if ( freeIter == freeParIndices.end() ) {
+				continue;
+			}
+			UInt_t freeIndex = freeIter->second;
+			freeIndices.push_back( freeIndex );
+		}
+
+		const UInt_t nFreePars = freeIndices.size();
+		TMatrixD& covMat = covMatrices_[iSlave];
+		covMat.ResizeTo( nFreePars, nFreePars );
+
+		for ( UInt_t iPar(0); iPar < nFreePars; ++iPar ) {
+			for ( UInt_t jPar(0); jPar < nFreePars; ++jPar ) {
+				UInt_t i = freeIndices[iPar];
+				UInt_t j = freeIndices[jPar];
+				covMat( iPar, jPar ) = covMatrix_( i, j );
+			}
+		}
+	}
+
+	// The array to hold the parameters
 	TObjArray array;
 
 	// Send messages to all slaves containing the final parameters and fit status, NLL
-	// TODO - it makes no sense to send the slaves the full covMatrix
-	//      - so should we store that in an ntuple? along with all the parameters?
-	//      - or should we send them the subset of the covmatrix that corresponds to their parameters?
+	// TODO - at present we lose the information on the correlations between the parameters that are unique to each slave
+	//      - so should we store the full correlation matrix in an ntuple? along with all the parameters?
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
 
 		array.Clear();
@@ -629,12 +676,14 @@ Bool_t LauSimFitMaster::finalise()
 			array.Add( params_[ indices[iPar] ] );
 		}
 
+		TMatrixD& covMat = covMatrices_[iSlave];
+
 		TMessage* message = messagesToSlaves_[iSlave];
 		message->Reset( kMESS_OBJECT );
 		message->WriteInt( fitStatus_ );
 		message->WriteDouble( NLL_ );
 		message->WriteObject( &array );
-		//message->WriteObject( covMatrix_ );
+		message->WriteObject( &covMat );
 
 		sSlaves_[iSlave]->Send(*message);
 	}

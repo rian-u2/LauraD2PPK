@@ -253,6 +253,7 @@ LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs)
 	this->firstStage(rhs.firstStage());
 	this->secondStage(rhs.secondStage());
 	this->errors(rhs.error(), rhs.negError(), rhs.posError());
+	this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
 	this->clone(rhs.parent());
 	clones_ = rhs.clones_;
 }
@@ -269,6 +270,7 @@ LauParameter& LauParameter::operator=(const LauParameter& rhs)
 		this->firstStage(rhs.firstStage());
 		this->secondStage(rhs.secondStage());
 		this->errors(rhs.error(), rhs.negError(), rhs.posError());
+		this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
 		this->clone(rhs.parent());
 		clones_ = rhs.clones_;
 	}

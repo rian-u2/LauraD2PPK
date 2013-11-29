@@ -58,7 +58,7 @@ class LauFitNtuple {
 		    \param [in] fitStatus the status of the fit
 		    \param [in] covMatrix the fit covariance matrix
 		*/
-		void storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD* covMatrix);
+		void storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD& covMatrix);
 
 		//! Store parameters and their errors
 		/*!
@@ -86,8 +86,6 @@ class LauFitNtuple {
 		//! Extra variables
 		std::vector<LauParameter> extraVars_;
 
-		//! Global correlation coefficients
-		std::vector<Double_t> globalCC_;
 		//! Correlation matrix
 		std::vector< std::vector<Double_t> > corrMatrix_;
 

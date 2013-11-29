@@ -100,7 +100,7 @@ class LauAbsFitter {
 		virtual void updateParameters() = 0;
 
 		//! Retrieve the fit covariance matrix
-		virtual const TMatrixD* covarianceMatrix() const = 0;
+		virtual const TMatrixD& covarianceMatrix() const = 0;
 
 	protected:
 		//! Constructor

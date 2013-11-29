@@ -59,27 +59,27 @@ LauFitNtuple::~LauFitNtuple()
 	delete rootFile_; rootFile_ = 0;
 }
 
-void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD* covMatrix )
+void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD& covMatrix )
 {
 	// store the minimised NLL value, correlation matrix status and experiment number
 	iExpt_ = iExpt;
 	NLL_ = NLL;
 	fitStatus_ = fitStatus;
 
-	// make the two correlation matrices the correct dimensions
+	// make the correlation matrix the correct dimensions
 	if (definedFitTree_ == kFALSE) {
-		globalCC_.clear();
-		globalCC_.resize(nFitPars_);
-
 		corrMatrix_.clear();
-		if ( covMatrix != 0 ) {
+		if ( covMatrix.GetNoElements() != 0 ) {
 			corrMatrix_.resize(nFitPars_);
 			for (UInt_t i = 0; i < nFitPars_; ++i) {corrMatrix_[i].resize(nFitPars_);}
 		}
 	}
 
+	if ( covMatrix.GetNoElements() == 0 ) {
+		return;
+	}
+
 	// calculate the  correlation matrix information from the fitter covariance matrix
-	Double_t globalcc(0.0);
 	Bool_t iFixed(kFALSE);
 	Bool_t jFixed(kFALSE);
 	UInt_t iFree(0);
@@ -88,18 +88,6 @@ void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus,
 	for (UInt_t i = 0; i < nFitPars_; ++i) {      
 
 		iFixed = fitVars_[i]->fixed();
-
-		// get the global correlation factor for each parameter
-		if (iFixed) {
-			globalcc = 0.0;
-		} else {
-			globalcc = fitVars_[i]->globalCorrelationCoeff();
-		}
-		globalCC_[i] = globalcc;
-
-		if ( ! covMatrix ) {
-			continue;
-		}
 
 		// reset the "j" free parameter counter
 		jFree = 0;
@@ -114,9 +102,9 @@ void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus,
 			} else if (iFixed == kTRUE || jFixed == kTRUE) {
 				corrMatrix_[i][j] = 0.0;
 			} else {
-				Double_t r_ij = (*covMatrix)(iFree,jFree);
-				Double_t r_ii = (*covMatrix)(iFree,iFree);
-				Double_t r_jj = (*covMatrix)(jFree,jFree);
+				Double_t r_ij = covMatrix(iFree,jFree);
+				Double_t r_ii = covMatrix(iFree,iFree);
+				Double_t r_jj = covMatrix(jFree,jFree);
 				Double_t denom = r_ii * r_jj;
 				if (denom < 0.0) {
 					r_ij = 0.0;
@@ -212,7 +200,7 @@ void LauFitNtuple::updateFitNtuple()
 				// First the global correlation coeffs
 				TString parGCCName(parName); parGCCName += "_GCC";
 				TString parGCCNameD(parGCCName); parGCCNameD += "/D";
-				fitResults_->Branch(parGCCName.Data(), &globalCC_[i], parGCCNameD.Data());
+				fitResults_->Branch(parGCCName.Data(), &fitVars_[i]->gcc_, parGCCNameD.Data());
 
 				if ( ! corrMatrix_.empty() ) {
 					// Then the rest

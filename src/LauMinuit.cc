@@ -41,8 +41,7 @@ LauMinuit::LauMinuit( Int_t maxPar ) : LauAbsFitter(),
 	twoStageFit_(kFALSE),
 	useAsymmFitErrors_(kFALSE),
 	fitStatus_(0),
-	NLL_(0.0),
-	covMatrix_(0)
+	NLL_(0.0)
 {
 	TVirtualFitter::SetDefaultFitter( "Minuit" );
 	minuit_ = TVirtualFitter::Fitter( 0, maxPar_ );
@@ -50,8 +49,6 @@ LauMinuit::LauMinuit( Int_t maxPar ) : LauAbsFitter(),
 
 LauMinuit::~LauMinuit()
 {
-	delete covMatrix_;
-	covMatrix_ = 0;
 }
 
 void LauMinuit::initialise( LauFitObject* fitObj, const std::vector<LauParameter*>& parameters )
@@ -203,10 +200,11 @@ std::pair<Int_t,Double_t> LauMinuit::minimise()
 	// For some reason the array returned is as if the matrix is of dimension nParams_ x nParams_
 	// but only the elements within the sub-matrix nFreeParams_ x nFreeParams_ have values,
 	// the "trailing" elements are zero, so we trim them off.
-	delete covMatrix_;
 	Double_t* covMatrix = minuit_->GetCovarianceMatrix();
-	covMatrix_ = new TMatrixD( nParams_, nParams_, covMatrix );
-	covMatrix_->ResizeTo( nFreeParams_, nFreeParams_ );
+	covMatrix_.Clear();
+	covMatrix_.ResizeTo( nParams_, nParams_ );
+	covMatrix_.SetMatrixArray( covMatrix );
+	covMatrix_.ResizeTo( nFreeParams_, nFreeParams_ );
 
 	return std::make_pair( fitStatus_, NLL_ );
 }

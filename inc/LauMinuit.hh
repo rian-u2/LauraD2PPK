@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "Rtypes.h"
-#include "TMatrixDfwd.h"
+#include "TMatrixD.h"
 
 #include "LauAbsFitter.hh"
 
@@ -101,7 +101,7 @@ class LauMinuit : public LauAbsFitter {
 		virtual void updateParameters();
 
 		//! Retrieve the fit covariance matrix
-		virtual const TMatrixD* covarianceMatrix() const { return covMatrix_; }
+		virtual const TMatrixD& covarianceMatrix() const { return covMatrix_; }
 
 
 	private:
@@ -145,7 +145,7 @@ class LauMinuit : public LauAbsFitter {
 		Double_t NLL_;
 
 		//! The covariance matrix
-		TMatrixD* covMatrix_;
+		TMatrixD covMatrix_;
 
 		ClassDef(LauMinuit,0);
 };

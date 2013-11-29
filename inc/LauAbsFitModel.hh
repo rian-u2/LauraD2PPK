@@ -47,7 +47,7 @@
 #ifndef LAU_ABS_FIT_MODEL
 #define LAU_ABS_FIT_MODEL
 
-#include "TMatrixDfwd.h"
+#include "TMatrixD.h"
 #include "TString.h"
 #include "TStopwatch.h"
 #include "TVectorDfwd.h"
@@ -646,7 +646,7 @@ class LauAbsFitModel : public LauFitObject {
 		Int_t fitStatus() const {return fitStatus_;}
 
 		//! Access the fit covariance matrix
-		const TMatrixD* covarianceMatrix() const {return covMatrix_;}
+		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
 
 	private:
 		// Various control booleans
@@ -709,7 +709,7 @@ class LauAbsFitModel : public LauFitObject {
 		//! The negative log-likelihood
 		Double_t NLL_;
 		//! The fit covariance matrix
-		TMatrixD* covMatrix_;
+		TMatrixD covMatrix_;
 		//! The number of good fits 
 		UInt_t numberOKFits_; 
 		//! The number of bad fits

@@ -24,7 +24,7 @@
 #include <map>
 #include <vector>
 
-#include "TMatrixDfwd.h"
+#include "TMatrixD.h"
 #include "TMessage.h"
 #include "TStopwatch.h"
 #include "TString.h"
@@ -193,7 +193,10 @@ class LauSimFitMaster : public LauFitObject {
 		Double_t NLL_;
 
 		//! The fit covariance matrix
-		TMatrixD* covMatrix_;
+		TMatrixD covMatrix_;
+
+		//! The covariance sub-matrices for each slave
+		std::vector<TMatrixD> covMatrices_;
 
 		//! Parallel setup monitor
 		TMonitor* socketMonitor_;

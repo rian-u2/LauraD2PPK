@@ -55,10 +55,10 @@ void LauMinuit::initialise( LauFitObject* fitObj, const std::vector<LauParameter
 {
 	// Check whether we're going to use asymmetric errors
 	if (useAsymmFitErrors_ == kTRUE) {
-		std::cout << "INFO in LauAbsFitModel::fit : We are going to calculate the asymmetric fit errors." << std::endl;
-		std::cout << "                            : This will, in general, significantly increase the CPU time required for fitting." << std::endl;
+		std::cout << "INFO in LauMinuit::fit : We are going to calculate the asymmetric fit errors." << std::endl;
+		std::cout << "                       : This will, in general, significantly increase the CPU time required for fitting." << std::endl;
 	} else {
-		std::cout << "INFO in LauAbsFitModel::fit : Only parabolic errors will be calculated." << std::endl;
+		std::cout << "INFO in LauMinuit::fit : Only parabolic errors will be calculated." << std::endl;
 	}
 
 	// Store the parameters

@@ -249,6 +249,10 @@ void ResultsExtractor::process(Int_t numExpts)
 	}
 	cout<<"Finished filling best entries in output tree.\n"<<endl;
 	fout.close();
+
+	cout<<"Writing output file."<<endl;
+
+	this->writeFile();
 }
 
 void ResultsExtractor::writeFile()

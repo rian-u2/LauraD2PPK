@@ -1,15 +1,52 @@
 
-ROOTCFLAGS    = $(shell root-config --cflags)
+# --- External configuration ----------------------------------
+
+# first check that ROOTSYS is defined
+ifndef ROOTSYS
+  ROOTSYS := $(shell root-config --prefix)
+  ROOTBINDIR := $(shell root-config --bindir)
+  ifeq ($(ROOTSYS), )
+    $(error running of root-config failed or reported null value)
+  endif 
+else
+  ROOTBINDIR := $(ROOTSYS)/bin
+endif
+
+ROOTCONFIG := $(ROOTBINDIR)/root-config
+ARCH       := $(shell $(ROOTCONFIG) --arch)
+PLATFORM   := $(shell $(ROOTCONFIG) --platform)
+
+INCLUDES = 
+WORKDIR  = tmp
+
+ifeq ($(findstring linux, $(ARCH)),linux)
+# This set here should work for Linux.
+CXX      = g++
+LD       = g++
+CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC
+MFLAGS   = -MM
+LDFLAGS  = -g
+SOFLAGS  = -shared
+endif
+
+ifeq ($(ARCH),macosx64)
+# For Mac OS X you may need to put -m64 in CXXFLAGS and SOFLAGS.
+CXX      = g++
+LD       = g++
+CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -m64
+MFLAGS   = -MM
+LDFLAGS  = -g
+SOFLAGS  = -m64 -dynamiclib -single_module -undefined dynamic_lookup
+endif
+
+# --- Internal configuration ----------------------------------
+INCDIR=../inc
+DEPDIR=$(WORKDIR)/dependencies
+OBJDIR=$(WORKDIR)/objects
+
+SHLIBFILE=$(WORKDIR)/libLauraUtils.so
+
 ROOTLIBS      = $(shell root-config --libs)
-
-CXX           = g++
-CXXFLAGS      = -g -Wall -Wextra -fPIC
-LD            = g++
-LDFLAGS       = -g
-SOFLAGS       = -shared
-
-CXXFLAGS     += $(ROOTCFLAGS)
-CXXFLAGS     += -I${PWD}/../inc
 NLIBS         = $(ROOTLIBS) 
 NLIBS        += -lEG
 NLIBS        += -lMinuit
@@ -17,51 +54,64 @@ NLIBS        += -lTreePlayer
 NLIBS        += ${PWD}/../lib/libLaura++.so
 LIBS          = $(filter-out -lNew, $(NLIBS))
 
-.SUFFIXES: .cc,.C
+INCLUDES += -I$(INCDIR) -I$(shell $(ROOTBINDIR)/root-config --incdir)
+CXXFLAGS += $(INCLUDES)
 
-# ================================================================================
-default: GenFitNoDPMultiDim GenFitNoDP GenFitKpipi GenFit3pi GenFitBelleCPKpipi \
-ResultsExtractor PlotResults MergeDataFiles KMatrixExample CalcChiSq
+default: bin
 
-GenFitNoDPMultiDim: GenFitNoDPMultiDim.o
-	$(LD) $(LDFLAGS) -o GenFitNoDPMultiDim GenFitNoDPMultiDim.o $(LIBS)
+# List of all source files
+CCLIST:=$(wildcard *.cc)
 
-GenFitNoDP: GenFitNoDP.o
-	$(LD) $(LDFLAGS) -o GenFitNoDP GenFitNoDP.o $(LIBS)
+# List of all source files that contain main functions
+BINCCLIST:=$(shell egrep -l "^[[:space:]]*int[[:space:]]*main\>" $(CCLIST))
 
-GenFitKpipi: GenFitKpipi.o
-	$(LD) $(LDFLAGS) -o GenFitKpipi GenFitKpipi.o $(LIBS)
+# List of all source files to be compiled into the library
+LIBCCLIST:=$(filter-out $(BINCCLIST), $(CCLIST))
 
-GenFitBelleCPKpipi: GenFitBelleCPKpipi.o
-	$(LD) $(LDFLAGS) -o GenFitBelleCPKpipi GenFitBelleCPKpipi.o $(LIBS)
+# List of all object files to build
+OLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(CCLIST))))
 
-GenFit3pi: GenFit3pi.o
-	$(LD) $(LDFLAGS) -o GenFit3pi GenFit3pi.o $(LIBS)
+# List of all object files to be combined into library
+LIBOLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(LIBCCLIST))))
 
-PlotResults: PlotResults.o
-	$(LD) $(LDFLAGS) -o PlotResults PlotResults.o $(LIBS)
+# List of all dependency files to make
+DLIST:=$(patsubst %.cc,%.d,$(addprefix $(DEPDIR)/,$(notdir $(CCLIST))))
 
-ResultsExtractor.o: ResultsExtractor.cc ResultsExtractor.hh
-ResultsExtractor: resultsExtractorMain.o ResultsExtractor.o
-	$(LD) $(LDFLAGS) -o ResultsExtractor resultsExtractorMain.o ResultsExtractor.o $(LIBS)
+# List of all binary files to make
+BINLIST:=$(patsubst %.cc,%,$(notdir $(BINCCLIST)))
 
-MergeDataFiles.o: MergeDataFiles.cc MergeDataFiles.hh
-MergeDataFiles: mergeDataFilesMain.o MergeDataFiles.o
-	$(LD) $(LDFLAGS) -o MergeDataFiles mergeDataFilesMain.o MergeDataFiles.o $(LIBS)
+# Implicit rule making all dependency Makefiles included at the end of this makefile
+$(DEPDIR)/%.d: %.cc
+	@echo "Making $@"
+	@mkdir -p $(DEPDIR)
+	@set -e; $(CXX) $(MFLAGS) $(CXXFLAGS) $< \
+	          | sed 's#\($(notdir $*)\)\.o[ :]*#$(OBJDIR)/\1.o $@ : #g' > $@; \
+	        [ -s $@ ] || rm -f $@
 
-KMatrixExample: KMatrixExample.o
-	$(LD) $(LDFLAGS) -o KMatrixExample KMatrixExample.o $(LIBS)
-KMatrixDto3pi: KMatrixDto3pi.o
-	$(LD) $(LDFLAGS) -o KMatrixDto3pi KMatrixDto3pi.o $(LIBS)
+# Implicit rule to compile all sources
+$(OBJDIR)/%.o : %.cc
+	@echo "Compiling $<"
+	@mkdir -p $(OBJDIR)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-CalcChiSq.o: CalcChiSq.cc CalcChiSq.hh
-CalcChiSq: calcChiSqMain.o CalcChiSq.o
-	$(LD) $(LDFLAGS) -o CalcChiSq calcChiSqMain.o CalcChiSq.o $(LIBS)
+# Rule to combine objects into a shared library
+$(SHLIBFILE): $(LIBOLIST)
+	@echo "Making $(SHLIBFILE)"
+	@rm -f $(SHLIBFILE)
+	@$(CXX) $(LIBOLIST) $(SOFLAGS) -o $(SHLIBFILE)
 
-.cc.o:
-	$(CXX) $(CXXFLAGS) -c $<
+# Rule to compile all binaries
+% : $(OBJDIR)/%.o $(SHLIBFILE)
+	@echo "Linking $@"
+	@$(CXX) $(LDFLAGS) $< -o $@ $(LIBS) $(SHLIBFILE)
+
+bin: $(BINLIST)
 
 clean:
-	rm -f ResultsExtractor MergeDataFiles PlotResults \
-	GenFitBelleCPKpipi GenFitKpipi GenFitNoDPMultiDim GenFitNoDP GenFit3pi \
-	KMatrixExample KMatrixDto3pi CalcChiSq *.o core
+	rm -f $(BINLIST)
+	rm -f $(SHLIBFILE)
+	rm -rf $(WORKDIR)
+
+.PHONY : bin default clean
+
+-include $(DLIST)

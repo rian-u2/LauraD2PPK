@@ -95,8 +95,8 @@ CCLIST:=$(filter-out $(SKIPLIST),$(wildcard $(SRCDIR)/*.cc))
 # List of all object files to build
 OLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(CCLIST))))
 
-# List of all dependency file to make
-DLIST:=$(patsubst %.hh,%.d,$(addprefix $(DEPDIR)/,$(notdir $(HHLIST))))
+# List of all dependency files to make
+DLIST:=$(patsubst %.cc,%.d,$(addprefix $(DEPDIR)/,$(notdir $(CCLIST))))
 
 # Implicit rule making all dependency Makefiles included at the end of this makefile
 $(DEPDIR)/%.d: $(SRCDIR)/%.cc
@@ -111,7 +111,6 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.cc
 	@echo "Compiling $<"
 	@mkdir -p $(OBJDIR)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
-
 
 # Rule to make ROOTCINT output file
 $(CINTOBJ): $(HHLIST) $(INCDIR)/$(PACKAGE)_LinkDef.h

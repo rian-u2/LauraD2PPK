@@ -46,6 +46,7 @@ ClassImp(LauAbsFitModel)
 
 LauAbsFitModel::LauAbsFitModel() :
 	twoStageFit_(kFALSE),
+	useAsymmFitErrors_(kFALSE),
 	compareFitData_(kFALSE),
 	writeLatexTable_(kFALSE),
 	writeSPlotData_(kFALSE),
@@ -698,9 +699,16 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 
 			this->finaliseFitResults( tableFileNameBase );
 
+			// Send the finalised parameters
+			TObjArray array;
+			for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
+				array.Add( *iter );
+			}
+
 			messageToMaster.Reset( kMESS_ANY );
 			messageToMaster.WriteUInt( slaveId_ );
 			messageToMaster.WriteBool( kTRUE );
+			messageToMaster.WriteObject( &array );
 			sMaster_->Send( messageToMaster );
 
 		} else if ( messageFromMaster_->What() == kMESS_ANY ) {
@@ -790,6 +798,7 @@ void LauAbsFitModel::fitExpt()
 	this->checkInitFitParams();
 
 	// Initialise the fitter
+	LauFitter::fitter()->useAsymmFitErrors( this->useAsymmFitErrors() );
 	LauFitter::fitter()->twoStageFit( this->twoStageFit() );
 	LauFitter::fitter()->initialise( this, fitVars_ );
 

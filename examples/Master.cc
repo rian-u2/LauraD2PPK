@@ -42,7 +42,7 @@ int main(const int argc, const  char ** argv)
 	}
 
 	LauSimFitMaster master( nSlaves, port );
-	master.runSimFit( nExpt, firstExpt );
+	master.runSimFit( "master-ntuple.root", nExpt, firstExpt );
 
 	return EXIT_SUCCESS;
 }

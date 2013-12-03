@@ -36,63 +36,28 @@ class TMessage;
 class TMonitor;
 class TSocket;
 class LauParameter;
+class LauFitNtuple;
 
-/* NOTES
- *
- * Fit procedure in LauAbsFitModel:
- *
- * Print message about asym errors.
- * How many experiments are we fitting and what is the ID of the first one?
- * Start the cumulative timer.
- * Create the fit ntuple and (optionally) the sPlot ntuple. (I think we let the slaves handle these.)
- * Read in the data. (Tell the slaves to read the data.)
- * Loop through the experiments.
- *   Start the expt timer.
- *   Set the expt number for the data cache. (Tell the slaves to do this. They should report back the number of events they find - abort (or skip expt) on one or more having zero?)
- *   Do the caching. (Tell the slaves to do it.)
- *   Fit the expt.
- *     Set the FCN.
- *     Set the Object.
- *     Clear the fitter.
- *     Update the initial fit parameters (randomise, recalc nSig if not going extended fit).
- *     Give the parameters to the fitter.
- *     Fix parameters if needed.
- *     Count the number of free and fixed parameters.
- *     Set the fitter error definition.
- *     Set the fitter strategy.
- *     Run the minimisation.
- *       Migrad.
- *       Check status.
- *       Hesse.
- *       Check status.
- *       Optionally Minos.
- *       Get final status.
- *       Print results.
- *     If doing a two-stage fit release the 2nd stage parameters and rerun the minimisation.
- *     Get the final parameter values and errors and store in the LauParameters.
- *   Finalise the results and (optionally) write likelihood and sWeight data. (Tell the slaves to do it.)
- *   Optionally create toy MC samples. (Tell the slaves to do it.)
- *   Stop and print the expt timer. (Maybe do this before the previous two items?)
- * Stop and print the cumulative timer.
- * Print information on the number of OK and failed fits.
- * Write out the results (etc.) ntuples. (Tell the slaves to do it.)
- *
- *
- *
- *
- */
 
 class LauSimFitMaster : public LauFitObject {
 
 	public:
 		//! Constructor
-		explicit LauSimFitMaster( UInt_t numSlaves, UInt_t port = 9090 );
+		/*! 
+			\param [in] numSlaves the number of slaves processes to expect connections from
+			\param [in] port the port on which to listen for connections from the slaves
+		*/
+		LauSimFitMaster( UInt_t numSlaves, UInt_t port = 9090 );
 
 		//! Destructor
 		virtual ~LauSimFitMaster();
 
 		//! Run the fit
-		void runSimFit( UInt_t nExpt, UInt_t firstExpt = 0, Bool_t twoStageFit = kFALSE );
+		/*! 
+			\param [in] numSlaves the number of slaves processes to expect connections from
+			\param [in] port the port on which to listen for connections from the slaves
+		*/
+		void runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt = 0, Bool_t useAsymmErrors = kFALSE, Bool_t twoStageFit = kFALSE );
 
 		//! Mark that the fit is calculating asymmetric errors
 		/*!
@@ -132,18 +97,23 @@ class LauSimFitMaster : public LauFitObject {
 		//! Initialise socket connections for the slaves 
 		void initSockets();
 
-		//! Determine the parameter names and initial values from all slaves
+		//! Determine/update the parameter initial values from all slaves
 		void getParametersFromSlaves();
+
+		//! Determine the parameter names and initial values from all slaves
+		void getParametersFromSlavesFirstTime();
+
+		//! Update and verify the parameter initial values from all slaves
+		void updateParametersFromSlaves();
 
 		//! Check for compatibility between two same-named parameters, which should therefore be identical
 		void checkParameter( const LauParameter* param, UInt_t index ) const;
 
 		//! Instruct the slaves to read the input data for the given experiment
 		/*!
-			\param [in] iExpt the number of the experiment to read
 			\return success/failure of the reading operations
 		*/
-		Bool_t readData( UInt_t iExpt );
+		Bool_t readData();
 
 		//! Instruct the slaves to perform the caching
 		/*!
@@ -152,7 +122,7 @@ class LauSimFitMaster : public LauFitObject {
 		Bool_t cacheInputData();
 
 		//! Perform the fit for the current experiment
-		void fitExpt( Bool_t twoStageFit );
+		void fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit );
 
 		//! Instruct the slaves to update the initial fit parameter values, if required
 		void checkInitFitParams();
@@ -188,6 +158,9 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! The status of the current fit
 		Int_t fitStatus_;
+
+		//! The experiment number of the current fit
+		UInt_t iExpt_;
 
 		//! The negative log-likelihood
 		Double_t NLL_;
@@ -236,6 +209,9 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! The total fit timer
 		TStopwatch cumulTimer_;
+
+		//! The fit results ntuple
+		LauFitNtuple* fitNtuple_;
 
 		ClassDef(LauSimFitMaster,0);
 };

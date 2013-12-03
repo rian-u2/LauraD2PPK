@@ -20,7 +20,7 @@ LIBS          = $(filter-out -lNew, $(NLIBS))
 .SUFFIXES: .cc,.C
 
 # ================================================================================
-default: GenFitNoDPMultiDim GenFitNoDP GenFitKpipi GenFit3pi GenFitBelleCPKpipi \
+default: Master Slave GenFitNoDPMultiDim GenFitNoDP GenFitKpipi GenFit3pi GenFitBelleCPKpipi \
 ResultsExtractor PlotResults MergeDataFiles KMatrixExample CalcChiSq
 
 Master: Master.o
@@ -28,9 +28,6 @@ Master: Master.o
 
 Slave: Slave.o
 	$(LD) $(LDFLAGS) -o Slave Slave.o $(LIBS)
-
-ATLAS-CMS: ATLAS-CMS.o
-	$(LD) $(LDFLAGS) -o ATLAS-CMS ATLAS-CMS.o $(LIBS)
 
 GenFitNoDPMultiDim: GenFitNoDPMultiDim.o
 	$(LD) $(LDFLAGS) -o GenFitNoDPMultiDim GenFitNoDPMultiDim.o $(LIBS)
@@ -73,4 +70,4 @@ CalcChiSq: calcChiSqMain.o CalcChiSq.o
 clean:
 	rm -f ResultsExtractor MergeDataFiles PlotResults \
 	GenFitBelleCPKpipi GenFitKpipi GenFitNoDPMultiDim GenFitNoDP GenFit3pi \
-	KMatrixExample KMatrixDto3pi CalcChiSq Master Slave ATLAS-CMS *.o core
+	KMatrixExample KMatrixDto3pi CalcChiSq Master Slave *.o core

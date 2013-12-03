@@ -25,6 +25,7 @@
 #include "TVectorD.h"
 
 #include "LauAbsFitter.hh"
+#include "LauFitNtuple.hh"
 #include "LauFitter.hh"
 #include "LauParameter.hh"
 #include "LauParamFixed.hh"
@@ -43,9 +44,11 @@ LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 	numberOKFits_(0),
 	numberBadFits_(0),
 	fitStatus_(0),
+	iExpt_(0),
 	NLL_(0.0),
 	socketMonitor_(0),
-	messageFromSlave_(0)
+	messageFromSlave_(0),
+	fitNtuple_(0)
 {
 	messagesToSlaves_.resize( nSlaves_ );
 	for ( UInt_t iSlave(0); iSlave < nSlaves_; ++iSlave ) {
@@ -78,6 +81,7 @@ LauSimFitMaster::~LauSimFitMaster()
 		delete (*iter);
 	}
 	messagesToSlaves_.clear();
+	delete fitNtuple_;
 }
 
 void LauSimFitMaster::initSockets()
@@ -124,7 +128,7 @@ void LauSimFitMaster::initSockets()
  * THIS INCREASES THE GENERALITY OF THE CODE, I.E. THERE IS NO NEED FOR THE SLAVES TO KNOW ANY LAURA++ CLASS BUT THIS ONE, BUT MAKES IT RATHER MORE DENSE
  * FOR THE MOMENT I WILL STICK WITH THE METHOD OF PASSING LAUPARAMETER OBJECTS AROUND AND CONSIDER GOING BACK TO THIS GENERAL METHOD ONCE EVERYTHING IS WORKING
  *
-void LauSimFitMaster::getParametersFromSlaves()
+void LauSimFitMaster::getParametersFromSlavesFirstTime()
 {
 	slaveIndices_.resize( nSlaves_ );
 
@@ -139,7 +143,7 @@ void LauSimFitMaster::getParametersFromSlaves()
 		// Wait to receive the response and check that it has come from the slave we just requested from
 		sActive = socketMonitor_->Select();
 		if ( sActive != sSlaves_[iSlave] ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Received message from a different slave than expected!" << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Received message from a different slave than expected!" << std::endl;
 			gSystem->Exit(1);
 		}
 
@@ -147,7 +151,7 @@ void LauSimFitMaster::getParametersFromSlaves()
 		sSlaves_[iSlave]->Recv( messageFromSlave_ );
 		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
 		if ( ! objarray ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Error reading parameter names from slave" << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameter names from slave" << std::endl;
 			gSystem->Exit(1);
 		}
 
@@ -155,7 +159,7 @@ void LauSimFitMaster::getParametersFromSlaves()
 		for ( Int_t iPar(0); iPar < nPars; ++iPar ) {
 			TObjString* objstring = dynamic_cast<TObjString*>( (*objarray)[iPar] );
 			if ( ! objstring ) {
-				std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Error reading parameter names from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameter names from slave" << std::endl;
 				gSystem->Exit(1);
 			}
 			TString parname = objstring->GetString();
@@ -188,21 +192,85 @@ void LauSimFitMaster::getParametersFromSlaves()
 		return;
 	}
 
-	parIndices_.clear();
-	parNames_.clear();
-	for ( std::vector<LauParameter*>::iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
-		delete *iter;
+	if ( params_.empty() ) {
+		this->getParametersFromSlavesFirstTime();
+	} else {
+		this->updateParametersFromSlaves();
 	}
-	params_.clear();
-	parValues_.clear();
-	slaveIndices_.clear();
-	for ( std::vector<Double_t*>::iterator iter = vectorPar_.begin(); iter != vectorPar_.end(); ++iter ) {
-		delete[] (*iter);
+}
+
+void LauSimFitMaster::updateParametersFromSlaves()
+{
+	TSocket* sActive(0);
+
+	// Construct a message, requesting the list of parameter names
+	TString msgStr = "Send Parameters";
+	TMessage message( kMESS_STRING );
+	message.WriteTString( msgStr );
+
+	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+		// Send the message to the slave
+		sSlaves_[iSlave]->Send(message);
+
+		// Wait to receive the response and check that it has come from the slave we just requested from
+		sActive = socketMonitor_->Select();
+		if ( sActive != sSlaves_[iSlave] ) {
+			std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Received message from a different slave than expected!" << std::endl;
+			gSystem->Exit(1);
+		}
+
+		// Read the object and extract the parameter names
+		sSlaves_[iSlave]->Recv( messageFromSlave_ );
+		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
+		if ( ! objarray ) {
+			std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Error reading parameter names from slave" << std::endl;
+			gSystem->Exit(1);
+		}
+
+		// We want to auto-delete the supplied parameters since we only copy their values in this case
+		objarray->SetOwner(kTRUE);
+
+		const UInt_t nPars = objarray->GetEntries();
+		if ( nPars != slaveIndices_[iSlave].size() ) {
+			std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Unexpected number of parameters received from slave" << std::endl;
+			gSystem->Exit(1);
+		}
+
+		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
+			LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
+			if ( ! parameter ) {
+				std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Error reading parameter from slave" << std::endl;
+				gSystem->Exit(1);
+			}
+
+			TString parname = parameter->name();
+			Double_t parvalue = parameter->initValue();
+
+			std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
+			if ( iter == parIndices_.end() ) {
+				std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Unexpected parameter name received from slave" << std::endl;
+				gSystem->Exit(1);
+			}
+
+			const UInt_t index = iter->second;
+			if ( slaveIndices_[iSlave][iPar] != index ) {
+				std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Unexpected parameter received from slave" << std::endl;
+				gSystem->Exit(1);
+			}
+
+			params_[index]->initValue( parvalue );
+			parValues_[index] = parvalue;
+			vectorPar_[iSlave][iPar] = parvalue;
+			this->checkParameter( parameter, index );
+		}
+
+		delete objarray; objarray = 0;
+		delete messageFromSlave_; messageFromSlave_ = 0;
 	}
-	vectorPar_.clear();
-	vectorRes_.clear();
+}
 
-
+void LauSimFitMaster::getParametersFromSlavesFirstTime()
+{
 	slaveIndices_.resize( nSlaves_ );
 	vectorPar_.resize( nSlaves_ );
 	vectorRes_.resize( nSlaves_ );
@@ -221,7 +289,7 @@ void LauSimFitMaster::getParametersFromSlaves()
 		// Wait to receive the response and check that it has come from the slave we just requested from
 		sActive = socketMonitor_->Select();
 		if ( sActive != sSlaves_[iSlave] ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Received message from a different slave than expected!" << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Received message from a different slave than expected!" << std::endl;
 			gSystem->Exit(1);
 		}
 
@@ -229,18 +297,18 @@ void LauSimFitMaster::getParametersFromSlaves()
 		sSlaves_[iSlave]->Recv( messageFromSlave_ );
 		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
 		if ( ! objarray ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Error reading parameter names from slave" << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameters from slave" << std::endl;
 			gSystem->Exit(1);
 		}
 
-		Int_t nPars = objarray->GetEntries();
+		const UInt_t nPars = objarray->GetEntries();
 
 		vectorPar_[iSlave] = new Double_t[nPars];
 
-		for ( Int_t iPar(0); iPar < nPars; ++iPar ) {
+		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 			LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
 			if ( ! parameter ) {
-				std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Error reading parameter names from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameter from slave" << std::endl;
 				gSystem->Exit(1);
 			}
 
@@ -326,7 +394,7 @@ void LauSimFitMaster::initialise()
 	this->initSockets();
 }
 
-void LauSimFitMaster::runSimFit( UInt_t nExpt, UInt_t firstExpt, Bool_t twoStageFit )
+void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt, Bool_t useAsymmErrors, Bool_t twoStageFit )
 {
 	// Routine to perform the total fit.
 
@@ -342,16 +410,21 @@ void LauSimFitMaster::runSimFit( UInt_t nExpt, UInt_t firstExpt, Bool_t twoStage
 	numberOKFits_ = 0, numberBadFits_ = 0;
 	fitStatus_ = -1;
 
+	// Create and setup the fit results ntuple
+	std::cout << "INFO in LauSimFitMaster::runSimFit : Creating fit ntuple." << std::endl;
+	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
+	fitNtuple_ = new LauFitNtuple(fitNtupleFileName);
+
 	// Loop over the number of experiments
-	for (UInt_t iExpt = firstExpt; iExpt < (firstExpt+nExpt); ++iExpt) {
+	for (iExpt_ = firstExpt; iExpt_ < (firstExpt+nExpt); ++iExpt_) {
 
 		// Start the timer to see how long each fit takes
 		timer_.Start();
 
 		// Instruct the slaves to read the data for this experiment
-		Bool_t readOK = this->readData( iExpt );
+		Bool_t readOK = this->readData();
 		if ( ! readOK ) {
-			std::cerr << "ERROR in LauSimFitMaster::runSimFit : One or more slaves reported problems with reading data for experiment " << iExpt << ", skipping..." << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::runSimFit : One or more slaves reported problems with reading data for experiment " << iExpt_ << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
 		}
@@ -360,7 +433,7 @@ void LauSimFitMaster::runSimFit( UInt_t nExpt, UInt_t firstExpt, Bool_t twoStage
 		this->cacheInputData();
 
 		// Do the fit
-		this->fitExpt( twoStageFit );
+		this->fitExpt( useAsymmErrors, twoStageFit );
 
 		// Stop the timer and see how long the program took so far
 		timer_.Stop();
@@ -393,7 +466,7 @@ void LauSimFitMaster::runSimFit( UInt_t nExpt, UInt_t firstExpt, Bool_t twoStage
 	this->writeOutResults();
 }
 
-Bool_t LauSimFitMaster::readData( UInt_t iExpt )
+Bool_t LauSimFitMaster::readData()
 {
 	if ( socketMonitor_ == 0 ) {
 		std::cerr << "ERROR in LauSimFitMaster::readData : Sockets not initialised." << std::endl;
@@ -404,7 +477,7 @@ Bool_t LauSimFitMaster::readData( UInt_t iExpt )
 	TString msgStr("Read Expt");
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
-	message.WriteUInt( iExpt );
+	message.WriteUInt( iExpt_ );
 
 	// Send the message to the slaves
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
@@ -427,10 +500,10 @@ Bool_t LauSimFitMaster::readData( UInt_t iExpt )
 		messageFromSlave_->ReadUInt( nEvents );
 
 		if ( nEvents <= 0 ) {
-			std::cerr << "ERROR in LauSimFitMaster::readData : Slave " << iSlave << " reports no events found for experiment " << iExpt << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::readData : Slave " << iSlave << " reports no events found for experiment " << iExpt_ << std::endl;
 			ok = kFALSE;
 		} else {
-			std::cerr << "INFO in LauSimFitMaster::readData : Slave " << iSlave << " reports " << nEvents << " events found for experiment " << iExpt << std::endl;
+			std::cerr << "INFO in LauSimFitMaster::readData : Slave " << iSlave << " reports " << nEvents << " events found for experiment " << iExpt_ << std::endl;
 		}
 
 		++responsesReceived;
@@ -488,7 +561,7 @@ void LauSimFitMaster::checkInitFitParams()
 	this->printParInfo();
 }
 
-void LauSimFitMaster::fitExpt( Bool_t twoStageFit )
+void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
 {
 	// Routine to perform the actual fit for the given experiment
 
@@ -496,6 +569,7 @@ void LauSimFitMaster::fitExpt( Bool_t twoStageFit )
 	this->checkInitFitParams();
 
 	// Initialise the fitter
+	LauFitter::fitter()->useAsymmFitErrors( useAsymmErrors );
 	LauFitter::fitter()->twoStageFit( twoStageFit );
 	LauFitter::fitter()->initialise( this, params_ );
 
@@ -703,12 +777,71 @@ Bool_t LauSimFitMaster::finalise()
 		messageFromSlave_->ReadUInt( iSlave );
 		messageFromSlave_->ReadBool( ok );
 
-		if ( ! ok ) {
+		if ( ok ) {
+			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
+			if ( ! objarray ) {
+				std::cerr << "ERROR in LauSimFitMaster::finalise : Error reading finalised parameters from slave" << std::endl;
+				allOK = kFALSE;
+			} else {
+				// We want to auto-delete the supplied parameters since we only copy their values in this case
+				objarray->SetOwner(kTRUE);
+
+				const UInt_t nPars = objarray->GetEntries();
+				if ( nPars != slaveIndices_[iSlave].size() ) {
+					std::cerr << "ERROR in LauSimFitMaster::finalise : Unexpected number of finalised parameters received from slave" << std::endl;
+					allOK = kFALSE;
+				} else {
+					for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
+						LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
+						if ( ! parameter ) {
+							std::cerr << "ERROR in LauSimFitMaster::finalise : Error reading parameter from slave" << std::endl;
+							allOK = kFALSE;
+							continue;
+						}
+
+						TString parname = parameter->name();
+
+						std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
+						if ( iter == parIndices_.end() ) {
+							std::cerr << "ERROR in LauSimFitMaster::finalise : Unexpected parameter name received from slave" << std::endl;
+							allOK = kFALSE;
+							continue;
+						}
+
+						const UInt_t index = iter->second;
+						if ( slaveIndices_[iSlave][iPar] != index ) {
+							std::cerr << "ERROR in LauSimFitMaster::finalise : Unexpected parameter received from slave" << std::endl;
+							allOK = kFALSE;
+							continue;
+						}
+
+						Double_t parvalue = parameter->value();
+						params_[index]->value( parvalue );
+						parValues_[index] = parvalue;
+						vectorPar_[iSlave][iPar] = parvalue;
+					}
+				}
+				delete objarray;
+			}
+		} else {
 			std::cerr << "ERROR in LauSimFitMaster::finalise : Slave " << iSlave << " reports an error performing finalisation" << std::endl;
 			allOK = kFALSE;
 		}
 
 		++responsesReceived;
+	}
+
+	// Fill our ntuple as well
+	if ( fitNtuple_ != 0 ) {
+		for ( std::vector<LauParameter*>::iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
+			if (!(*iter)->fixed()) {
+				(*iter)->updatePull();
+			}
+		}
+		std::vector<LauParameter> extraVars;
+		fitNtuple_->storeParsAndErrors( params_, extraVars );
+		fitNtuple_->storeCorrMatrix( iExpt_, NLL_, fitStatus_, covMatrix_ );
+		fitNtuple_->updateFitNtuple();
 	}
 
 	return allOK;
@@ -752,6 +885,11 @@ Bool_t LauSimFitMaster::writeOutResults()
 		}
 
 		++responsesReceived;
+	}
+
+	// Write out our ntuple as well
+	if (fitNtuple_ != 0) {
+		fitNtuple_->writeOutFitResults();
 	}
 
 	return allOK;

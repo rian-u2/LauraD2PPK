@@ -123,6 +123,15 @@ class LauAbsFitModel : public LauFitObject {
 		*/	
 		virtual void twoStageFit(Bool_t doTwoStageFit) {twoStageFit_ = doTwoStageFit;}
 
+		//! Determine whether calculation of asymmetric errors is enabled
+		Bool_t useAsymmFitErrors() const {return useAsymmFitErrors_;}
+
+		//! Turn on or off the computation of asymmetric errors (e.g. MINOS routine in Minuit)
+		/*!
+			\param [in] useAsymmErrors boolean specifying whether or not the computation of asymmetric errors is enabled
+		*/	
+		void useAsymmFitErrors(Bool_t useAsymmErrors) {useAsymmFitErrors_ = useAsymmErrors;}
+
 		//! Determine whether Poisson smearing is enabled for the toy MC generation
 		Bool_t doPoissonSmearing() const {return poissonSmear_;}
 
@@ -653,6 +662,8 @@ class LauAbsFitModel : public LauFitObject {
 
 		//! Option to perform a two stage fit
 		Bool_t twoStageFit_; 
+		//! Option to use asymmetric errors
+		Bool_t useAsymmFitErrors_; 
 		//! Option to make toy from 1st successful experiment
 		Bool_t compareFitData_; 
 		//! Option to output a Latex format table

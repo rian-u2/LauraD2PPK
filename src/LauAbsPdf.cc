@@ -512,7 +512,7 @@ void LauAbsPdf::floatPar(const TString& parName)
 
 void LauAbsPdf::updatePulls()
 {
-	for ( std::vector<LauParameter*>::const_iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
+	for ( std::vector<LauParameter*>::iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
 		if (!(*iter)->fixed()) {
 			(*iter)->updatePull();
 		}

@@ -115,6 +115,11 @@ int main( int argc, char** argv )
 	// error.
 	sigModel->setASqMaxValue(1.25);  
 
+	TString integralsFileName("integ-");
+	integralsFileName += category;
+	integralsFileName += ".dat";
+	sigModel->setIntFileName( integralsFileName );
+
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
 

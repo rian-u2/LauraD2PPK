@@ -278,7 +278,7 @@ int main( int argc, char** argv )
 	posqqbarModel->setBkgndHisto( posqqDP, useInterpolation, fluctuateBins, useUpperHalfOnly, squareDP );
 
 	LauParameter* backgroundEvents = new LauParameter("qqbar",nBgEvents,-2.0*nBgEvents,2.0*nBgEvents,fixNBgEvents);
-	LauParameter* backgroundAsym = new LauParameter("qqbar",bgAsym,1.0,-1.0,fixBgAsym);
+	LauParameter* backgroundAsym = new LauParameter("qqbar",bgAsym,-1.0,1.0,fixBgAsym);
 
 	fitModel->setNBkgndEvents( backgroundEvents, backgroundAsym );
 	fitModel->setBkgndDPModels( "qqbar", negqqbarModel, posqqbarModel );

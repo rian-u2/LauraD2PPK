@@ -4,9 +4,23 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
- 4th December 2013 Daniel Craik
+5th December 2013 Thomas Latham
 
- * Updated 2D chi-squared code to use adaptive binning.
+* Fix small bug in GenFitKpipi example where background asymmetry parameter had
+  its limits the wrong way around
+
+4th December 2013 Daniel Craik
+
+* Updated 2D chi-squared code to use adaptive binning.
+
+3rd December 2013 Thomas Latham
+
+* Generalise the Makefile in the examples directory
+  - results in minor changes to the names of 3 of the binaries
+
+29th November 2013 Thomas Latham
+
+* Fixed bug in ResultsExtractor where the output file was not written
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v1r1p1
@@ -23,11 +37,11 @@
 
 20th November 2013 Mark Whitehead
 
-* Changed convention for the barrier factors, swapping 
-from p* to p. This seems to give more physically reasonable 
-results. The files updated are:
-- src/LauGounarisSakuraiRes.cc
-- src/LauRelBreitWignerRes.cc
+* Changed convention for the barrier factors, swapping from p* to p.
+  This seems to give more physically reasonable results.
+  The files updated are:
+  - src/LauGounarisSakuraiRes.cc
+  - src/LauRelBreitWignerRes.cc
 
 18th October 2013 Thomas Latham
 
@@ -40,17 +54,17 @@ results. The files updated are:
 
 7th October 2013 Mark Whitehead
 
-* Update to accept the yields and yield asymmetries as 
-LauParameters. All examples have been updated to 
-reflect this change. This updated the following files:
-- inc/LauCPFitModel.hh
-- inc/LauSimpleFitModel.hh
-- inc/LauAbsFitModel.hh
-- src/LauCPFitModel.cc
-- src/LauSimpleFitModel.cc
+* Update to accept the yields and yield asymmetries as LauParameters.
+  All examples have been updated to reflect this change.
+  This updated the following files:
+  - inc/LauCPFitModel.hh
+  - inc/LauSimpleFitModel.hh
+  - inc/LauAbsFitModel.hh
+  - src/LauCPFitModel.cc
+  - src/LauSimpleFitModel.cc
 
 * Addition of the following particles to src/LauResonanceMaker.cc
-Ds*+-, Ds0*(2317)+-, Ds2*(2573)+-, Ds1*(2700)+- and Bs*0
+  Ds*+-, Ds0*(2317)+-, Ds2*(2573)+-, Ds1*(2700)+- and Bs*0
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v1r0

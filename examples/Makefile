@@ -44,7 +44,7 @@ INCDIR=../inc
 DEPDIR=$(WORKDIR)/dependencies
 OBJDIR=$(WORKDIR)/objects
 
-SHLIBFILE=$(WORKDIR)/libLauraUtils.so
+SHLIBFILE=$(PWD)/$(WORKDIR)/libLauraUtils.so
 
 ROOTLIBS      = $(shell root-config --libs)
 NLIBS         = $(ROOTLIBS) 

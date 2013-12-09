@@ -46,7 +46,7 @@ class LauFitNtuple {
 		/*!
 		    \param [in] fileName the name for the ntuple
 		*/
-		LauFitNtuple(const TString& fileName);
+		LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors);
 		
 		//! Destructor
 		virtual ~LauFitNtuple();
@@ -91,6 +91,9 @@ class LauFitNtuple {
 
 		//! Flags whether the fit tree has been defined
 		Bool_t definedFitTree_;
+		//! Flags whether or not to store the asymmetric error information
+		Bool_t storeAsymErrors_;
+
 		//! Status of fit
 		Int_t fitStatus_;
 		//! Number of fit parameters

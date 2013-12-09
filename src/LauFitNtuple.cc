@@ -31,11 +31,12 @@ using std::endl;
 ClassImp(LauFitNtuple)
 
 
-LauFitNtuple::LauFitNtuple(const TString& fileName) :
+LauFitNtuple::LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors) :
 	rootFileName_(fileName),
 	rootFile_(0),
 	fitResults_(0),
 	definedFitTree_(kFALSE),
+	storeAsymErrors_(storeAsymErrors),
 	fitStatus_(0),
 	nFitPars_(0),
 	nFreePars_(0),
@@ -189,6 +190,16 @@ void LauFitNtuple::updateFitNtuple()
 				TString parErrName(parName); parErrName += "_Error";
 				TString parErrNameD(parErrName); parErrNameD += "/D";
 				fitResults_->Branch(parErrName.Data(), &fitVars_[i]->error_, parErrNameD.Data());
+
+				if ( storeAsymErrors_ ) {
+					TString parNegErrName(parName); parNegErrName += "_NegError";
+					TString parNegErrNameD(parNegErrName); parNegErrNameD += "/D";
+					fitResults_->Branch(parNegErrName.Data(), &fitVars_[i]->negError_, parNegErrNameD.Data());
+
+					TString parPosErrName(parName); parPosErrName += "_PosError";
+					TString parPosErrNameD(parPosErrName); parPosErrNameD += "/D";
+					fitResults_->Branch(parPosErrName.Data(), &fitVars_[i]->posError_, parPosErrNameD.Data());
+				}
 
 				TString parPullName(parName); parPullName += "_Pull";
 				TString parPullNameD(parPullName); parPullNameD += "/D";

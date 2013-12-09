@@ -454,7 +454,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 	// Create and setup the fit results ntuple
 	cout << "INFO in LauAbsFitModel::fit : Creating fit ntuple." << endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
-	fitNtuple_ = new LauFitNtuple(histFileName);
+	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
 
 	// Create and setup the sPlot ntuple
 	if (this->writeSPlotData()) {
@@ -563,7 +563,7 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 	// Create and setup the fit results ntuple
 	cout << "INFO in LauAbsFitModel::fitSlave : Creating fit ntuple." << endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
-	fitNtuple_ = new LauFitNtuple(histFileName);
+	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
 
 	// This reads in the given dataFile and creates an input
 	// fit data tree that stores them for all events and experiments.

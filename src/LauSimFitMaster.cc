@@ -413,7 +413,7 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 	// Create and setup the fit results ntuple
 	std::cout << "INFO in LauSimFitMaster::runSimFit : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
-	fitNtuple_ = new LauFitNtuple(fitNtupleFileName);
+	fitNtuple_ = new LauFitNtuple(fitNtupleFileName, useAsymmErrors);
 
 	// Loop over the number of experiments
 	for (iExpt_ = firstExpt; iExpt_ < (firstExpt+nExpt); ++iExpt_) {

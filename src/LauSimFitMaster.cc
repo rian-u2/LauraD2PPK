@@ -618,17 +618,14 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 	// This function sets the internal parameters based on the values
 	// that Minuit is using when trying to minimise the total likelihood function.
 
-	// MINOS reports one fewer free parameter than there nominally is
-	// (since it is doing a scan over one parameter at a time),
-	// so increment npar so the following check doesn't fail
-	if ( withinAsymErrorCalc_ ) {
-		++npar;
-	}
-
-	if (static_cast<UInt_t>(npar) != nFreeParams_) {
-		std::cerr << "ERROR in LauSimFitMaster::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
-		std::cerr << "                                              Expected: " << nFreeParams_ << ".\n" << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
+	// MINOS reports different numbers of free parameters depending on the
+	// situation, so disable this check
+	if ( ! withinAsymErrorCalc_ ) {
+		if (static_cast<UInt_t>(npar) != nFreeParams_) {
+			std::cerr << "ERROR in LauSimFitMaster::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
+			std::cerr << "                                              Expected: " << nFreeParams_ << ".\n" << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
 	}
 
 	// Despite npar being the number of free parameters

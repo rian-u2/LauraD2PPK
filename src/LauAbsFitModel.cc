@@ -273,20 +273,15 @@ const TString& LauAbsFitModel::bkgndClassName( UInt_t classID ) const
 
 void LauAbsFitModel::clearFitParVectors()
 {
-	cout << "Clearing fit vectors" << endl;
+	cout << "Clearing fit variable vectors" << endl;
 	fitVars_.clear();
+	conVars_.clear();
 }
 
 void LauAbsFitModel::clearExtraVarVectors()
 {
 	cout << "Clearing extra ntuple variable vectors" << endl;
 	extraVars_.clear();
-}
-
-void LauAbsFitModel::clearConParVectors()
-{
-	cout << "Clearing Gaussian constrained variable vectors" << endl;
-	conVars_.clear();
 }
 
 void LauAbsFitModel::setGenValues()
@@ -992,8 +987,8 @@ Double_t LauAbsFitModel::getTotNegLogLikelihood()
 	}
 
 	// Calculate any penalty terms from Gaussian constrained variables
-	if ( conVars_.size() != 0 ){
-		logLike += this->getLogLikelihoodPenalty();
+	if ( ! conVars_.empty() ){
+		logLike -= this->getLogLikelihoodPenalty();
 	}
 
 	Double_t totNegLogLike = -logLike;
@@ -1002,14 +997,15 @@ Double_t LauAbsFitModel::getTotNegLogLikelihood()
 
 Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 {
-	Double_t penalty(0);
+	Double_t penalty(0.0);
 
-	for ( LauParameterPList::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
+	for ( LauParameterPList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
 		Double_t val = (*iter)->value();
-		Double_t mean = (*iter)->gaussMean();
-		Double_t width = (*iter)->gaussWidth();
+		Double_t mean = (*iter)->constraintMean();
+		Double_t width = (*iter)->constraintWidth();
 
-		penalty += -1.0*( ( val - mean ) / width )*( ( val - mean ) / width );
+		Double_t term = ( val - mean ) / width;
+		penalty += term*term;
 	}
 
 	return penalty;
@@ -1105,8 +1101,8 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 
 void LauAbsFitModel::addConParameters()
 {
-	for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
-		if ( (*iter)->gaussCon() ) {
+	for ( LauParameterPList::const_iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
+		if ( (*iter)->gaussConstraint() ) {
 			conVars_.push_back( *iter );
 			std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
 		}

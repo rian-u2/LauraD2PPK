@@ -317,9 +317,6 @@ class LauAbsFitModel : public LauFitObject {
 		//! Clear the vectors containing extra ntuple variables
 		void clearExtraVarVectors();
 
-		//! Clear the vectors containing Gaussian constrained parameters
-		void clearConParVectors();
-
 		//! Generate toy MC 
 		/*!
 			\param [in] dataFileName the name of the file where the generated events are stored

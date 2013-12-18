@@ -204,23 +204,23 @@ class LauParameter : public TObject {
 		*/
 		inline Bool_t secondStage() const {return secondStage_;}
 
-		//! Check whether Gaussian constraints are needed  
+		//! Check whether a Gaussian constraints is applied
 		/*!
-		    \return the boolean flag true/false whether the Gaussian constraints are needed
+		    \return the boolean flag true/false whether a Gaussian constraint is applied
 		*/
-		inline Bool_t gaussCon() const {return gaussCon_;}
+		inline Bool_t gaussConstraint() const {return gaussConstraint_;}
 
 		//! The mean of the Gaussian constraint
 		/*!
 		    \return the mean value of the Gaussian constraint
 		*/
-		inline Double_t gaussMean() const {return gaussMean_;}
+		inline Double_t constraintMean() const {return constraintMean_;}
 
 		//! The width of the Gaussian constraint
 		/*!
 		    \return the width of the Gaussian constraint
 		*/
-		inline Double_t gaussWidth() const {return gaussWidth_;}
+		inline Double_t constraintWidth() const {return constraintWidth_;}
 
 		//! The parameter global correlation coefficient
 		/*!
@@ -352,31 +352,15 @@ class LauParameter : public TObject {
 		*/
 		void secondStage(Bool_t secondStagePar);
 
-		//! Choice to use Gaussian constraints
+		//! Add a Gaussian constraint (or modify an existing one)
 		/*!
-		    \param [in] newGaussCon boolean flag to use Gaussian constraints
+		    \param [in] newGaussMean the new value of the Gaussian constraint mean
+		    \param [in] newGaussWidth the new value of the Gaussian constraint width
 		*/
-		void gaussCon(Bool_t newGaussCon);
+		void addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth);
 
-		//! Set the Gaussian mean
-		/*!
-		    \param [in] newGaussMean the new value of the Gaussian mean
-		*/
-		void gaussMean(Double_t newGaussMean);
-
-		//! Set the Gaussian width
-		/*!
-		    \param [in] newGaussWidth the new value of the Gaussian width
-		*/
-		void gaussWidth(Double_t newGaussWidth);
-
-		//! Set the Gaussian parameters
-		/*!
-		    \param [in] newGaussCon boolean flag to use Gaussian constraints
-		    \param [in] newGaussMean the new value of the Gaussian mean
-		    \param [in] newGaussWidth the new value of the Gaussian width
-		*/
-		void gaussParam(Bool_t newGaussCon, Double_t newGaussMean, Double_t newGaussWidth);
+		//! Remove the Gaussian constraint
+		void removeGaussianConstraint();
 
 		// operators
 
@@ -527,11 +511,11 @@ class LauParameter : public TObject {
 		Bool_t secondStage_;
 
 		//! Choice to use Gaussian constraint
-		Bool_t gaussCon_;
+		Bool_t gaussConstraint_;
 		//! Mean value of the Gaussian constraint
-		Double_t gaussMean_;
+		Double_t constraintMean_;
 		//! Width of the Gaussian constraint
-		Double_t gaussWidth_;
+		Double_t constraintWidth_;
 
 		//! Global correlation coefficient
 		Double_t gcc_;

@@ -123,6 +123,9 @@ void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFile
 	// i.e. specify parameter names, initial, min, max and fixed values
 	this->initialise();
 
+	// Add variables to Gaussian constrain to a list
+	this->addConParameters();
+
 	if (dataFileNameCopy == "") {dataFileNameCopy = "data.root";}
 	if (dataTreeNameCopy == "") {dataTreeNameCopy = "genResults";}
 
@@ -278,6 +281,12 @@ void LauAbsFitModel::clearExtraVarVectors()
 {
 	cout << "Clearing extra ntuple variable vectors" << endl;
 	extraVars_.clear();
+}
+
+void LauAbsFitModel::clearConParVectors()
+{
+	cout << "Clearing Gaussian constrained variable vectors" << endl;
+	conVars_.clear();
 }
 
 void LauAbsFitModel::setGenValues()
@@ -982,8 +991,28 @@ Double_t LauAbsFitModel::getTotNegLogLikelihood()
 		logLike -= this->getEventSum();
 	}
 
+	// Calculate any penalty terms from Gaussian constrained variables
+	if ( conVars_.size() != 0 ){
+		logLike += this->getLogLikelihoodPenalty();
+	}
+
 	Double_t totNegLogLike = -logLike;
 	return totNegLogLike;
+}
+
+Double_t LauAbsFitModel::getLogLikelihoodPenalty()
+{
+	Double_t penalty(0);
+
+	for ( LauParameterPList::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
+		Double_t val = (*iter)->value();
+		Double_t mean = (*iter)->gaussMean();
+		Double_t width = (*iter)->gaussWidth();
+
+		penalty += -1.0*( ( val - mean ) / width )*( ( val - mean ) / width );
+	}
+
+	return penalty;
 }
 
 Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
@@ -1022,7 +1051,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 	} else if (logLike < worstLogLike_) {
 		worstLogLike_ = logLike;
 	}
-
+	
 	return logLike;
 }
 
@@ -1072,6 +1101,17 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 		}
 	}
 	return nParsAdded;
+}
+
+void LauAbsFitModel::addConParameters()
+{
+	for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
+		if ( (*iter)->gaussCon() ) {
+			conVars_.push_back( *iter );
+			std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+		}
+	}
+
 }
 
 void LauAbsFitModel::updateFitParameters(LauPdfList& pdfList)

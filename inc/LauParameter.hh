@@ -204,6 +204,24 @@ class LauParameter : public TObject {
 		*/
 		inline Bool_t secondStage() const {return secondStage_;}
 
+		//! Check whether Gaussian constraints are needed  
+		/*!
+		    \return the boolean flag true/false whether the Gaussian constraints are needed
+		*/
+		inline Bool_t gaussCon() const {return gaussCon_;}
+
+		//! The mean of the Gaussian constraint
+		/*!
+		    \return the mean value of the Gaussian constraint
+		*/
+		inline Double_t gaussMean() const {return gaussMean_;}
+
+		//! The width of the Gaussian constraint
+		/*!
+		    \return the width of the Gaussian constraint
+		*/
+		inline Double_t gaussWidth() const {return gaussWidth_;}
+
 		//! The parameter global correlation coefficient
 		/*!
 		    \return the global correlation coefficient
@@ -333,6 +351,32 @@ class LauParameter : public TObject {
 		    \param [in] secondStagePar boolean flag to check whether is a second-stage parameter
 		*/
 		void secondStage(Bool_t secondStagePar);
+
+		//! Choice to use Gaussian constraints
+		/*!
+		    \param [in] newGaussCon boolean flag to use Gaussian constraints
+		*/
+		void gaussCon(Bool_t newGaussCon);
+
+		//! Set the Gaussian mean
+		/*!
+		    \param [in] newGaussMean the new value of the Gaussian mean
+		*/
+		void gaussMean(Double_t newGaussMean);
+
+		//! Set the Gaussian width
+		/*!
+		    \param [in] newGaussWidth the new value of the Gaussian width
+		*/
+		void gaussWidth(Double_t newGaussWidth);
+
+		//! Set the Gaussian parameters
+		/*!
+		    \param [in] newGaussCon boolean flag to use Gaussian constraints
+		    \param [in] newGaussMean the new value of the Gaussian mean
+		    \param [in] newGaussWidth the new value of the Gaussian width
+		*/
+		void gaussParam(Bool_t newGaussCon, Double_t newGaussMean, Double_t newGaussWidth);
 
 		// operators
 
@@ -481,6 +525,13 @@ class LauParameter : public TObject {
 		Bool_t firstStage_;
 		//! Flag whether it is floated only in the second stage of the fit
 		Bool_t secondStage_;
+
+		//! Choice to use Gaussian constraint
+		Bool_t gaussCon_;
+		//! Mean value of the Gaussian constraint
+		Double_t gaussMean_;
+		//! Width of the Gaussian constraint
+		Double_t gaussWidth_;
 
 		//! Global correlation coefficient
 		Double_t gcc_;

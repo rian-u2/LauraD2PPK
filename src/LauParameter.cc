@@ -40,6 +40,9 @@ LauParameter::LauParameter() :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -61,6 +64,9 @@ LauParameter::LauParameter(const TString& parName) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -82,6 +88,9 @@ LauParameter::LauParameter(Double_t parValue) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -103,6 +112,9 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -124,6 +136,9 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -146,6 +161,9 @@ LauParameter::LauParameter(Double_t parValue, Double_t parError, Double_t min, D
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -168,6 +186,9 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max, Bool_t
 	fixed_(parFixed),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -190,6 +211,9 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -212,6 +236,9 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	fixed_(parFixed),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -234,6 +261,9 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussCon_(kFALSE),
+	gaussMean_(0.0),
+	gaussWidth_(0.0),
 	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
@@ -252,6 +282,9 @@ LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs)
 	this->fixed(rhs.fixed());
 	this->firstStage(rhs.firstStage());
 	this->secondStage(rhs.secondStage());
+	this->gaussCon(rhs.gaussCon());
+	this->gaussMean(rhs.gaussMean());
+	this->gaussWidth(rhs.gaussWidth());
 	this->errors(rhs.error(), rhs.negError(), rhs.posError());
 	this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
 	this->clone(rhs.parent());
@@ -269,6 +302,9 @@ LauParameter& LauParameter::operator=(const LauParameter& rhs)
 		this->fixed(rhs.fixed());
 		this->firstStage(rhs.firstStage());
 		this->secondStage(rhs.secondStage());
+		this->gaussCon(rhs.gaussCon());
+		this->gaussMean(rhs.gaussMean());
+		this->gaussWidth(rhs.gaussWidth());
 		this->errors(rhs.error(), rhs.negError(), rhs.posError());
 		this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
 		this->clone(rhs.parent());
@@ -409,6 +445,40 @@ void LauParameter::firstStage(Bool_t firstStagePar)
 void LauParameter::secondStage(Bool_t secondStagePar)
 {
 	secondStage_ = secondStagePar;
+	if (!this->clone()) {
+		this->updateClones();
+	}
+}
+
+void LauParameter::gaussCon(Bool_t newGaussCon)
+{
+	gaussCon_ = newGaussCon;
+	if (!this->clone()) {
+		this->updateClones();
+	}
+}
+
+void LauParameter::gaussMean(Double_t newGaussMean)
+{
+	gaussMean_ = newGaussMean;
+	if (!this->clone()) {
+		this->updateClones();
+	}
+}
+
+void LauParameter::gaussWidth(Double_t newGaussWidth)
+{
+	gaussWidth_ = newGaussWidth;
+	if (!this->clone()) {
+		this->updateClones();
+	}
+}
+
+void LauParameter::gaussParam(Bool_t newGaussCon, Double_t newGaussMean, Double_t newGaussWidth)
+{
+	gaussCon_ = newGaussCon;
+	gaussMean_ = newGaussMean;
+	gaussWidth_ = newGaussWidth;
 	if (!this->clone()) {
 		this->updateClones();
 	}

@@ -317,6 +317,9 @@ class LauAbsFitModel : public LauFitObject {
 		//! Clear the vectors containing extra ntuple variables
 		void clearExtraVarVectors();
 
+		//! Clear the vectors containing Gaussian constrained parameters
+		void clearConParVectors();
+
 		//! Generate toy MC 
 		/*!
 			\param [in] dataFileName the name of the file where the generated events are stored
@@ -409,6 +412,13 @@ class LauAbsFitModel : public LauFitObject {
 			\param [in] iEnd the event number of the final event to be considered
 		*/	
 		Double_t getLogLikelihood( UInt_t iStart, UInt_t iEnd );
+
+		//! Calculate the penalty terms to the log likelihood from Gaussian constraints
+		/*!
+			\param [in] iStart the event number of the first event to be considered
+			\param [in] iEnd the event number of the final event to be considered
+		*/	
+		Double_t getLogLikelihoodPenalty();
 
 		//! Calculates the likelihood for a given event
 		/*!
@@ -585,6 +595,9 @@ class LauAbsFitModel : public LauFitObject {
 		*/	
 		UInt_t addFitParameters(LauPdfList& pdfList);
 
+		//! Add parameters to the list of Gaussian constrained parameters
+		void addConParameters();
+
 		//! Print the fit parameters for all PDFs in the list
 		/*!
 			\param [in] pdfList a list of Pdfs
@@ -631,6 +644,10 @@ class LauAbsFitModel : public LauFitObject {
 		//! Access the extra variables
 		const LauParameterList& extraPars() const {return extraVars_;}
 		LauParameterList& extraPars() {return extraVars_;}
+
+		//! Access the Gaussian constrained variables
+		const LauParameterPList& conPars() const {return conVars_;}
+		LauParameterPList& conPars() {return conVars_;}
 
 		//! Access the fit ntuple
 		const LauFitNtuple* fitNtuple() const {return fitNtuple_;}
@@ -701,6 +718,9 @@ class LauAbsFitModel : public LauFitObject {
 
 		//! Extra variables that aren't in the fit but are stored in the ntuple
 		LauParameterList extraVars_;
+
+		//! Internal vectors of Gaussian  parameters
+		LauParameterPList conVars_;
 
 		// Input data and output ntuple
 

@@ -3,6 +3,15 @@
 ///  This is the History file for the Laura++ package.      ///
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
+18th December 2013 Mark Whitehead
+
+* Added functionality to include Gaussian constraints on floated
+  parameters in the fit.
+  The files updated are:
+  - inc/LauAbsFitModel.hh
+  - inc/LauParameter.hh
+  - src/LauAbsFitModel.cc
+  - src/LauParameter.cc
 
 5th December 2013 Thomas Latham
 

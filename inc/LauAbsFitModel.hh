@@ -414,10 +414,6 @@ class LauAbsFitModel : public LauFitObject {
 		Double_t getLogLikelihood( UInt_t iStart, UInt_t iEnd );
 
 		//! Calculate the penalty terms to the log likelihood from Gaussian constraints
-		/*!
-			\param [in] iStart the event number of the first event to be considered
-			\param [in] iEnd the event number of the final event to be considered
-		*/	
 		Double_t getLogLikelihoodPenalty();
 
 		//! Calculates the likelihood for a given event

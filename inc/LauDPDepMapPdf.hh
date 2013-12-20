@@ -31,7 +31,7 @@
 #include "LauAbsPdf.hh"
 
 class LauDaughters;
-class Lau2DHistDP;
+class Lau2DAbsDP;
 class LauParameter;
 class TH2;
 class TH1;
@@ -77,7 +77,7 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		virtual ~LauDPDepMapPdf();
 
 		//! Copy constructor
-		LauDPDepMapPdf(const LauDPDepMapPdf& other);
+		//LauDPDepMapPdf(const LauDPDepMapPdf& other);
 
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
@@ -124,6 +124,9 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		UInt_t determineDPRegion( Double_t m13Sq, Double_t m23Sq ) const;
 
 	private:
+		//! Copy constructor - not implemented
+		LauDPDepMapPdf(const LauDPDepMapPdf& other);
+
 		//! Daughter particles
 		LauDaughters* daughters_;
 
@@ -131,7 +134,7 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		std::vector<LauAbsPdf*> pdfs_;
 
 		//! 2D histogram - DP
-		Lau2DHistDP* dpDependence_;
+		Lau2DAbsDP* dpDependence_;
 		//! 1D histogram - DP axis
 		TH1* dpAxisDependence_;
 

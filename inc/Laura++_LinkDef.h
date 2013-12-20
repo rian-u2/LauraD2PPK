@@ -5,9 +5,13 @@
 #pragma link off all functions;
 
 #pragma link C++ class Lau1DHistPdf;
+#pragma link C++ class Lau2DAbsDP;
+#pragma link C++ class Lau2DAbsHistDP;
+#pragma link C++ class Lau2DCubicSpline;
 #pragma link C++ class Lau2DHistDP;
 #pragma link C++ class Lau2DHistDPPdf;
 #pragma link C++ class Lau2DHistPdf;
+#pragma link C++ class Lau2DSplineDP;
 #pragma link C++ class LauAbsBkgndDPModel;
 #pragma link C++ class LauAbsCoeffSet;
 #pragma link C++ class LauAbsDPDynamics;

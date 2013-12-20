@@ -33,7 +33,7 @@ ClassImp(LauDPDepSumPdf)
 
 LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 		const LauDaughters* daughters,
-		const TH2* dpHisto, Bool_t upperHalf) :
+		const TH2* dpHisto, Bool_t upperHalf, Bool_t useSpline) :
 	LauAbsPdf(pdf1 ? pdf1->varNames() : vector<TString>(), vector<LauParameter*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
 	daughters_( new LauDaughters(*daughters) ),
 	pdf1_(pdf1),
@@ -50,7 +50,11 @@ LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 	// and S(PDFi) is the integral of the i'th PDF.
 	// The value of the fraction is read from the DP histogram.
 
-	dpDependence_->setEffHisto( dpHisto, kTRUE, kFALSE, 0.0, 0.0, upperHalf, daughters->squareDP() );
+	if(useSpline) {
+		dpDependence_->setEffSpline( dpHisto, kFALSE, 0.0, 0.0, upperHalf, daughters->squareDP());
+	} else {
+		dpDependence_->setEffHisto( dpHisto, kTRUE, kFALSE, 0.0, 0.0, upperHalf, daughters->squareDP() );
+	}
 
 	// So the first thing we have to do is check the pointers are all valid.
 	if (!pdf1 || !pdf2) {
@@ -188,7 +192,7 @@ LauDPDepSumPdf::~LauDPDepSumPdf()
 	delete dpDependence_; dpDependence_ = 0;
 }
 
-LauDPDepSumPdf::LauDPDepSumPdf(const LauDPDepSumPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
+/*LauDPDepSumPdf::LauDPDepSumPdf(const LauDPDepSumPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
 	daughters_( other.daughters_ ),
 	pdf1_( other.pdf1_ ),
 	pdf2_( other.pdf2_ ),
@@ -202,7 +206,7 @@ LauDPDepSumPdf::LauDPDepSumPdf(const LauDPDepSumPdf& other) : LauAbsPdf(other.va
 	// Copy constructor
 	this->setRandomFun(other.getRandomFun());
 	this->calcNorm();
-}
+}*/
 
 void LauDPDepSumPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {

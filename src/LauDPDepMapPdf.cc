@@ -164,7 +164,7 @@ LauDPDepMapPdf::~LauDPDepMapPdf()
 	delete dpAxisDependence_; dpAxisDependence_ = 0;
 }
 
-LauDPDepMapPdf::LauDPDepMapPdf(const LauDPDepMapPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
+/*LauDPDepMapPdf::LauDPDepMapPdf(const LauDPDepMapPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
 	daughters_( other.daughters_ ),
 	pdfs_( other.pdfs_ ),
 	dpDependence_( (other.dpDependence_) ? new Lau2DHistDP( *other.dpDependence_ ) : 0 ),
@@ -175,7 +175,7 @@ LauDPDepMapPdf::LauDPDepMapPdf(const LauDPDepMapPdf& other) : LauAbsPdf(other.va
 	// Copy constructor
 	this->setRandomFun(other.getRandomFun());
 	this->calcNorm();
-}
+}*/
 
 UInt_t LauDPDepMapPdf::determineDPRegion( Double_t m13Sq, Double_t m23Sq ) const
 {

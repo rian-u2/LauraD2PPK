@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+16th January 2014 Thomas Latham
+
+* Add LauRealImagCPCoeffSet, which provides an (x,y), (xbar,ybar) way of
+  parametrising the complex coefficients.
+* Try to improve timing in the *CoeffSet classes by making the complex coeffs
+  into member variables.
+
 20th December 2013 Daniel Craik
 
 * Added Lau2DCubicSpline which provides cubic spline interpolation of a histogram

@@ -1,0 +1,155 @@
+
+// Copyright University of Warwick 2006 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauRealImagCPCoeffSet.hh
+    \brief File containing declaration of LauRealImagCPCoeffSet class.
+*/
+
+/*! \class LauRealImagCPCoeffSet
+    \brief Class for defining a complex coefficient using a simple Cartesian CP convention.
+
+    Holds a set of real values that define the complex coefficient of an amplitude component.
+    The amplitudes have the form:
+    c    = x    + i * y
+    cbar = xbar + i * ybar
+*/
+
+#ifndef LAU_REALIMAGCP_COEFF_SET
+#define LAU_REALIMAGCP_COEFF_SET
+
+#include <iosfwd>
+#include <vector>
+
+#include "Rtypes.h"
+
+#include "LauAbsCoeffSet.hh"
+#include "LauParameter.hh"
+
+class LauComplex;
+
+
+class LauRealImagCPCoeffSet : public LauAbsCoeffSet {
+
+	public:
+		//! Constructor
+		/*!
+		    \param [in] compName the name of the coefficient set
+		    \param [in] x the real part for the particle
+		    \param [in] y the imaginary part for the particle
+		    \param [in] xbar the real part for the antiparticle
+		    \param [in] ybar the imaginary part for the antiparticle
+		    \param [in] xFixed whether x is fixed
+		    \param [in] yFixed whether y is fixed
+		    \param [in] xbarFixed whether xbar is fixed
+		    \param [in] ybarFixed whether ybar is fixed
+		*/
+		LauRealImagCPCoeffSet(const TString& compName, Double_t x, Double_t y, Double_t xbar, Double_t ybar,
+				      Bool_t xFixed, Bool_t yFixed, Bool_t xbarFixed, Bool_t ybarFixed);
+
+		//! Destructor
+		virtual ~LauRealImagCPCoeffSet(){}
+	
+		//! Retrieve the parameters of the coefficient, e.g. so that they can be loaded into a fit
+		/*!
+		    \return the parameters of the coefficient
+		*/
+		virtual std::vector<LauParameter*> getParameters();
+
+		//! Print the column headings for a results table
+		/*!
+                    \param [out] stream the stream to print to
+		*/
+		virtual void printTableHeading(std::ostream& stream);
+
+		//! Print the parameters of the complex coefficient as a row in the results table
+		/*!
+                    \param [out] stream the stream to print to
+		*/
+		virtual void printTableRow(std::ostream& stream);
+
+		//! Randomise the starting values of the parameters for a fit
+		virtual void randomiseInitValues();
+
+		//! Make sure values are in "standard" ranges, e.g. phases should be between -pi and pi
+		virtual void finaliseValues();
+
+		//! Retrieve the complex coefficient for a particle
+		/*!
+		    \return the complex coefficient for a particle
+		*/
+		virtual LauComplex particleCoeff();
+
+		//! Retrieve the complex coefficient for an antiparticle
+		/*!
+		    \return the complex coefficient for an antiparticle
+		*/
+		virtual LauComplex antiparticleCoeff();
+
+		//! Set the parameters based on the complex coefficients for particles and antiparticles
+		/*!
+		    \param [in] coeff the complex coefficient for a particle
+		    \param [in] coeffBar the complex coefficient for an antiparticle
+		*/
+		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar );
+
+		//! Calculate the CP asymmetry
+		/*!
+		    \return the CP asymmetry
+		*/
+		virtual LauParameter acp();
+
+		//! Create a clone of the coefficient set
+		/*!
+		    \param [in] newName the clone's name
+		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		    \return a clone of the coefficient set
+		*/
+		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0);
+
+	protected:
+		//! Copy constructor
+		/*!
+		    This creates cloned parameters, not copies.
+		    \param [in] rhs the coefficient to clone
+		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		*/
+		LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, Double_t constFactor = 1.0);
+
+		//! Copy assignment operator
+		/*!
+		    This creates cloned parameters, not copies.
+		    \param [in] rhs the coefficient to clone
+		*/
+		LauRealImagCPCoeffSet& operator=(const LauRealImagCPCoeffSet& rhs);
+
+	private:
+		//! The minimum allowed value
+		Double_t minPar_;
+		//! The maximum allowed value
+		Double_t maxPar_;
+
+		// the actual fit parameters
+		// (need to be pointers so they can be cloned)
+		//! The real part for the particle
+		LauParameter* x_;
+		//! The imaginary part for the particle
+		LauParameter* y_;
+		//! The real part for the antiparticle
+		LauParameter* xbar_;
+		//! The imaginary part for the antiparticle
+		LauParameter* ybar_;
+
+		//! The CP asymmetry
+		LauParameter acp_;
+
+		ClassDef(LauRealImagCPCoeffSet, 0)
+};
+
+#endif

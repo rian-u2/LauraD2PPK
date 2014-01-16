@@ -73,6 +73,7 @@
 #pragma link C++ class LauParticlePDG;
 #pragma link C++ class LauPrint;
 #pragma link C++ class LauRealImagCoeffSet;
+#pragma link C++ class LauRealImagCPCoeffSet;
 #pragma link C++ class LauRelBreitWignerRes;
 #pragma link C++ class LauResonanceInfo;
 #pragma link C++ class LauResonanceMaker;

@@ -41,6 +41,8 @@ LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const TString& compName, Double_t x
 	y_(new LauParameter("Y", y, minPar_, maxPar_, yFixed)),
 	xbar_(new LauParameter("Xbar", xbar, minPar_, maxPar_, xbarFixed)),
 	ybar_(new LauParameter("Ybar", ybar, minPar_, maxPar_, ybarFixed)),
+	particleCoeff_(x,y),
+	antiparticleCoeff_(xbar,ybar),
 	acp_("ACP", 0.0, -1.0, 1.0, kTRUE)
 {
 	// Print message
@@ -56,6 +58,8 @@ LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, D
 	y_ = rhs.y_->createClone(constFactor);
 	xbar_ = rhs.xbar_->createClone(constFactor);
 	ybar_ = rhs.ybar_->createClone(constFactor);
+	particleCoeff_ = rhs.particleCoeff_;
+	antiparticleCoeff_ = rhs.antiparticleCoeff_;
 	acp_ = rhs.acp_;
 }
 
@@ -69,6 +73,8 @@ LauRealImagCPCoeffSet& LauRealImagCPCoeffSet::operator=(const LauRealImagCPCoeff
 		y_ = rhs.y_->createClone();
 		xbar_ = rhs.xbar_->createClone();
 		ybar_ = rhs.ybar_->createClone();
+		particleCoeff_ = rhs.particleCoeff_;
+		antiparticleCoeff_ = rhs.antiparticleCoeff_;
 		acp_ = rhs.acp_;
 	}
 	return *this;
@@ -149,14 +155,16 @@ void LauRealImagCPCoeffSet::finaliseValues()
 	ybar_->updatePull();
 }
 
-LauComplex LauRealImagCPCoeffSet::particleCoeff()
+const LauComplex& LauRealImagCPCoeffSet::particleCoeff()
 {
-	return LauComplex( x_->value(), y_->value() );
+	particleCoeff_.setRealImagPart( x_->value(), y_->value() );
+	return particleCoeff_;
 }
 
-LauComplex LauRealImagCPCoeffSet::antiparticleCoeff()
+const LauComplex& LauRealImagCPCoeffSet::antiparticleCoeff()
 {
-	return LauComplex( xbar_->value(), ybar_->value() );
+	antiparticleCoeff_.setRealImagPart( xbar_->value(), ybar_->value() );
+	return antiparticleCoeff_;
 }
 
 void LauRealImagCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )

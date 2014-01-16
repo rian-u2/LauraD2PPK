@@ -17,6 +17,7 @@
 
     Holds a set of real values that define the complex coefficient of an amplitude component.
     The amplitude has the form x +/- delta_x + i * ( y +/- delta_y ).
+    [Phys.Rev. D78 (2008) 012004]
 */
 
 #ifndef LAU_CARTESIANCP_COEFF_SET
@@ -28,9 +29,8 @@
 #include "Rtypes.h"
 
 #include "LauAbsCoeffSet.hh"
+#include "LauComplex.hh"
 #include "LauParameter.hh"
-
-class LauComplex;
 
 
 class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
@@ -84,13 +84,13 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \return the complex coefficient for a particle
 		*/
-		virtual LauComplex particleCoeff();
+		virtual const LauComplex& particleCoeff();
 
 		//! Retrieve the complex coefficient for an antiparticle
 		/*!
 		    \return the complex coefficient for an antiparticle
 		*/
-		virtual LauComplex antiparticleCoeff();
+		virtual const LauComplex& antiparticleCoeff();
 
 		//! Set the parameters based on the complex coefficients for particles and antiparticles
 		/*!
@@ -149,6 +149,11 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		LauParameter* deltaX_;
 		//! The asymmetric imaginary part
 		LauParameter* deltaY_;
+
+		//! The particle complex coefficient
+		LauComplex particleCoeff_;
+		//! The antiparticle complex coefficient
+		LauComplex antiparticleCoeff_;
 
 		//! The CP asymmetry
 		LauParameter acp_;

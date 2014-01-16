@@ -21,7 +21,7 @@
     b is a CP violating magnitude,
     delta is the strong phase
     and phi is the weak phase.
-    TODO - add reference
+    [Phys.Rev.Lett. 96 (2006) 251803]
 */
 
 #ifndef LAU_BELLECP_COEFF_SET
@@ -33,9 +33,8 @@
 #include "Rtypes.h"
 
 #include "LauAbsCoeffSet.hh"
+#include "LauComplex.hh"
 #include "LauParameter.hh"
-
-class LauComplex;
 
 
 class LauBelleCPCoeffSet : public LauAbsCoeffSet {
@@ -87,13 +86,13 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \return the complex coefficient for a particle
 		*/
-		virtual LauComplex particleCoeff();
+		virtual const LauComplex& particleCoeff();
 
 		//! Retrieve the complex coefficient for an antiparticle
 		/*!
 		    \return the complex coefficient for an antiparticle
 		*/
-		virtual LauComplex antiparticleCoeff();
+		virtual const LauComplex& antiparticleCoeff();
 
 		//! Set the parameters based on the complex coefficients for particles and antiparticles
 		/*!
@@ -153,6 +152,11 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		LauParameter* delta_;
 		//! The weak phase
 		LauParameter* phi_;
+
+		//! The particle complex coefficient
+		LauComplex particleCoeff_;
+		//! The antiparticle complex coefficient
+		LauComplex antiparticleCoeff_;
 
 		//! The CP asymmetry
 		LauParameter acp_;

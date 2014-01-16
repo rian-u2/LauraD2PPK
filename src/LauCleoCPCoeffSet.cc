@@ -43,6 +43,8 @@ LauCleoCPCoeffSet::LauCleoCPCoeffSet(const TString& compName, Double_t a, Double
 	b_(new LauParameter("B", b, minMag_, maxMag_, bFixed)),
 	delta_(new LauParameter("Delta", delta, minPhase_, maxPhase_, deltaFixed)),
 	phi_(new LauParameter("Phi", phi, minPhase_, maxPhase_, phiFixed)),
+	particleCoeff_( (a+b)*TMath::Cos(delta+phi), (a+b)*TMath::Sin(delta+phi) ),
+	antiparticleCoeff_( (a-b)*TMath::Cos(delta-phi), (a-b)*TMath::Sin(delta-phi) ),
 	acp_("ACP", (-2.0*a*b)/(a*a+b*b), -1.0, 1.0, bFixed&&phiFixed)
 {
 	// Print message
@@ -60,24 +62,27 @@ LauCleoCPCoeffSet::LauCleoCPCoeffSet(const LauCleoCPCoeffSet& rhs, Double_t cons
 	b_ = rhs.b_->createClone(constFactor);
 	delta_ = rhs.delta_->createClone(constFactor);
 	phi_ = rhs.phi_->createClone(constFactor);
+	particleCoeff_ = rhs.particleCoeff_;
+	antiparticleCoeff_ = rhs.antiparticleCoeff_;
 	acp_ = rhs.acp_;
 }
 
 LauCleoCPCoeffSet& LauCleoCPCoeffSet::operator=(const LauCleoCPCoeffSet& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		this->name(rhs.name());
+		minMag_ = rhs.minMag_;
+		maxMag_ = rhs.maxMag_;
+		minPhase_ = rhs.minPhase_;
+		maxPhase_ = rhs.maxPhase_;
+		a_ = rhs.a_->createClone();
+		b_ = rhs.b_->createClone();
+		delta_ = rhs.delta_->createClone();
+		phi_ = rhs.phi_->createClone();
+		particleCoeff_ = rhs.particleCoeff_;
+		antiparticleCoeff_ = rhs.antiparticleCoeff_;
+		acp_ = rhs.acp_;
 	}
-	this->name(rhs.name());
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	a_ = rhs.a_->createClone();
-	b_ = rhs.b_->createClone();
-	delta_ = rhs.delta_->createClone();
-	phi_ = rhs.phi_->createClone();
-	acp_ = rhs.acp_;
 	return *this;
 }
 
@@ -217,20 +222,20 @@ void LauCleoCPCoeffSet::finaliseValues()
 	phi_->value(phiVal);      phi_->updatePull();
 }
 
-LauComplex LauCleoCPCoeffSet::particleCoeff()
+const LauComplex& LauCleoCPCoeffSet::particleCoeff()
 {
 	Double_t magnitude = a_->value() + b_->value();
 	Double_t phase = delta_->value() + phi_->value();
-	LauComplex coeff(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase));
-	return coeff;
+	particleCoeff_.setRealImagPart(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase));
+	return particleCoeff_;
 }
 
-LauComplex LauCleoCPCoeffSet::antiparticleCoeff()
+const LauComplex& LauCleoCPCoeffSet::antiparticleCoeff()
 {
 	Double_t magnitude = a_->value() - b_->value();
 	Double_t phase = delta_->value() - phi_->value();
-	LauComplex coeff(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase));
-	return coeff;
+	antiparticleCoeff_.setRealImagPart(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase));
+	return antiparticleCoeff_;
 }
 
 void LauCleoCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )

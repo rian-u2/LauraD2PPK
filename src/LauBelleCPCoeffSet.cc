@@ -44,6 +44,8 @@ LauBelleCPCoeffSet::LauBelleCPCoeffSet(const TString& compName, Double_t a, Doub
 	b_(new LauParameter("B", b, minMag_, maxMag_, bFixed)),
 	delta_(new LauParameter("Delta", delta, minPhase_, maxPhase_, deltaFixed)),
 	phi_(new LauParameter("Phi", phi, minPhase_, maxPhase_, phiFixed)),
+	particleCoeff_(0.0,0.0),
+	antiparticleCoeff_(0.0,0.0),
 	acp_("ACP", (-2.0*b*TMath::Cos(phi))/(1.0+b*b), -1.0, 1.0, bFixed&&phiFixed)
 {
 	// Print message
@@ -61,24 +63,27 @@ LauBelleCPCoeffSet::LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, Double_t c
 	b_ = rhs.b_->createClone(constFactor);
 	delta_ = rhs.delta_->createClone(constFactor);
 	phi_ = rhs.phi_->createClone(constFactor);
+	particleCoeff_ = rhs.particleCoeff_;
+	antiparticleCoeff_ = rhs.antiparticleCoeff_;
 	acp_ = rhs.acp_;
 }
 
 LauBelleCPCoeffSet& LauBelleCPCoeffSet::operator=(const LauBelleCPCoeffSet& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		this->name(rhs.name());
+		minMag_ = rhs.minMag_;
+		maxMag_ = rhs.maxMag_;
+		minPhase_ = rhs.minPhase_;
+		maxPhase_ = rhs.maxPhase_;
+		a_ = rhs.a_->createClone();
+		b_ = rhs.b_->createClone();
+		delta_ = rhs.delta_->createClone();
+		phi_ = rhs.phi_->createClone();
+		particleCoeff_ = rhs.particleCoeff_;
+		antiparticleCoeff_ = rhs.antiparticleCoeff_;
+		acp_ = rhs.acp_;
 	}
-	this->name(rhs.name());
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	a_ = rhs.a_->createClone();
-	b_ = rhs.b_->createClone();
-	delta_ = rhs.delta_->createClone();
-	phi_ = rhs.phi_->createClone();
-	acp_ = rhs.acp_;
 	return *this;
 }
 
@@ -224,24 +229,24 @@ void LauBelleCPCoeffSet::finaliseValues()
 	phi_->value(phiVal);      phi_->updatePull();
 }
 
-LauComplex LauBelleCPCoeffSet::particleCoeff()
+const LauComplex& LauBelleCPCoeffSet::particleCoeff()
 {
 	LauComplex aTerm(a_->value()*TMath::Cos(delta_->value()), a_->value()*TMath::Sin(delta_->value()));
 	LauComplex bTerm(b_->value()*TMath::Cos(phi_->value()), b_->value()*TMath::Sin(phi_->value()));
-	LauComplex coeff(1.0,0.0);
-	coeff += bTerm;
-	coeff *= aTerm;
-	return coeff;
+	particleCoeff_.setRealImagPart(1.0,0.0);
+	particleCoeff_ += bTerm;
+	particleCoeff_ *= aTerm;
+	return particleCoeff_;
 }
 
-LauComplex LauBelleCPCoeffSet::antiparticleCoeff()
+const LauComplex& LauBelleCPCoeffSet::antiparticleCoeff()
 {
 	LauComplex aTerm(a_->value()*TMath::Cos(delta_->value()), a_->value()*TMath::Sin(delta_->value()));
 	LauComplex bTerm(b_->value()*TMath::Cos(phi_->value()), b_->value()*TMath::Sin(phi_->value()));
-	LauComplex coeff(1.0,0.0);
-	coeff -= bTerm;
-	coeff *= aTerm;
-	return coeff;
+	antiparticleCoeff_.setRealImagPart(1.0,0.0);
+	antiparticleCoeff_ -= bTerm;
+	antiparticleCoeff_ *= aTerm;
+	return antiparticleCoeff_;
 }
 
 void LauBelleCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )

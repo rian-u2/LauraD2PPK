@@ -30,9 +30,8 @@
 #include "Rtypes.h"
 
 #include "LauAbsCoeffSet.hh"
+#include "LauComplex.hh"
 #include "LauParameter.hh"
-
-class LauComplex;
 
 
 class LauRealImagCPCoeffSet : public LauAbsCoeffSet {
@@ -84,13 +83,13 @@ class LauRealImagCPCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \return the complex coefficient for a particle
 		*/
-		virtual LauComplex particleCoeff();
+		virtual const LauComplex& particleCoeff();
 
 		//! Retrieve the complex coefficient for an antiparticle
 		/*!
 		    \return the complex coefficient for an antiparticle
 		*/
-		virtual LauComplex antiparticleCoeff();
+		virtual const LauComplex& antiparticleCoeff();
 
 		//! Set the parameters based on the complex coefficients for particles and antiparticles
 		/*!
@@ -145,6 +144,11 @@ class LauRealImagCPCoeffSet : public LauAbsCoeffSet {
 		LauParameter* xbar_;
 		//! The imaginary part for the antiparticle
 		LauParameter* ybar_;
+
+		//! The particle complex coefficient
+		LauComplex particleCoeff_;
+		//! The antiparticle complex coefficient
+		LauComplex antiparticleCoeff_;
 
 		//! The CP asymmetry
 		LauParameter acp_;

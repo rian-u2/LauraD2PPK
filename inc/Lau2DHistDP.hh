@@ -25,13 +25,13 @@
 #ifndef LAU_2DHIST_DP
 #define LAU_2DHIST_DP
 
-#include "Rtypes.h"
+#include "Lau2DAbsHistDP.hh"
 
 class TH2;
 class LauDaughters;
 class LauKinematics;
 
-class Lau2DHistDP {
+class Lau2DHistDP : public Lau2DAbsHistDP {
 
 	public:
 		//! Constructor
@@ -50,7 +50,7 @@ class Lau2DHistDP {
 				Double_t avEff = -1.0, Double_t avEffError = -1.0, Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
 
 		//! Copy constructor
-		Lau2DHistDP( const Lau2DHistDP& rhs );
+		//Lau2DHistDP( const Lau2DHistDP& rhs );
 
 		//! Destructor
 		virtual ~Lau2DHistDP();
@@ -72,31 +72,15 @@ class Lau2DHistDP {
 		*/
 		Double_t getBinHistValue(Int_t xBinNo, Int_t yBinNo) const;
 
-		//! Fluctuate the contents of each histogram bin independently, in accordance with their errors
-		void doBinFluctuation();
-
-		//! Rescale the histogram bin contents based on the desired average efficiency and its uncertainty
-		/*!
-		    The new average is sampled from a Gaussian distribution G(x;avEff,avEffError).
-		    The histogram is then rescaled according to newAvg/oldAvg.
-		    \param [in] avEff the desired average efficiency
-		    \param [in] avEffError the error on that efficiency
-		*/
-		void raiseOrLowerBins(Double_t avEff, Double_t avEffError);
-
-		//! Compute the average bin content for bins within the kinematic boundary
-		/*!
-		    This method just uses the raw bin contents with no interpolation
-		    \return the average value over the DP
-		*/
-		Double_t computeAverageContents() const;
-
 	private:
+		//! Copy constructor - not implemented
+		Lau2DHistDP( const Lau2DHistDP& rhs );
+
+		//! Copy assignment operator - not implemented
+		Lau2DHistDP& operator=(const Lau2DHistDP& rhs);
+
 		//! The underlying histogram
 		TH2* hist_;
-	
-		//! Kinematics used to check events are within DP boundary
-		const LauKinematics* kinematics_;
 		
 		//! The histogram x-axis minimum
 		Double_t minX_;
@@ -120,13 +104,9 @@ class Lau2DHistDP {
 		Int_t nBinsX_;
 		//! The number of bins on the y-axis of the histogram
 		Int_t nBinsY_;
-		
+
 		//! Control boolean for using the linear interpolation
 		Bool_t useInterpolation_;
-		//! Boolean for using the upper half of DP
-		Bool_t upperHalf_;
-		//! Boolean for using square DP variables
-		Bool_t squareDP_;
 
 		ClassDef(Lau2DHistDP,0) // 2D Histogram utility class for DP analyses
 };

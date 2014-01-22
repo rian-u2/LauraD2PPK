@@ -39,7 +39,8 @@ LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const TString& compName, Double_t magni
 	minPhase_(-LauConstants::threePi),
 	maxPhase_(+LauConstants::threePi),
 	magnitude_(new LauParameter("A",magnitude,minMag_,maxMag_,magFixed)),
-	phase_(new LauParameter("Delta",phase,minPhase_,maxPhase_,phaseFixed))
+	phase_(new LauParameter("Delta",phase,minPhase_,maxPhase_,phaseFixed)),
+	coeff_(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase))
 {
 	// Print message
 	cout<<"Set component \""<<this->name()<<"\" to have magnitude = "<<magnitude_->value()<<" and phase = "<<phase_->value()<<"."<<endl;
@@ -53,20 +54,21 @@ LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const LauMagPhaseCoeffSet& rhs, Double_
 	maxPhase_ = rhs.maxPhase_;
 	magnitude_ = rhs.magnitude_->createClone(constFactor);
 	phase_ = rhs.phase_->createClone(constFactor);
+	coeff_ = rhs.coeff_;
 }
 
 LauMagPhaseCoeffSet& LauMagPhaseCoeffSet::operator=(const LauMagPhaseCoeffSet& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		this->name(rhs.name());
+		minMag_ = rhs.minMag_;
+		maxMag_ = rhs.maxMag_;
+		minPhase_ = rhs.minPhase_;
+		maxPhase_ = rhs.maxPhase_;
+		magnitude_ = rhs.magnitude_->createClone();
+		phase_ = rhs.phase_->createClone();
+		coeff_ = rhs.coeff_;
 	}
-	this->name(rhs.name());
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	magnitude_ = rhs.magnitude_->createClone();
-	phase_ = rhs.phase_->createClone();
 	return *this;
 }
 
@@ -161,13 +163,13 @@ void LauMagPhaseCoeffSet::finaliseValues()
 	phase_->value(phase);  phase_->updatePull();
 }
 
-LauComplex LauMagPhaseCoeffSet::particleCoeff()
+const LauComplex& LauMagPhaseCoeffSet::particleCoeff()
 {
-	LauComplex coeff(magnitude_->value()*TMath::Cos(phase_->value()), magnitude_->value()*TMath::Sin(phase_->value()));
-	return coeff;
+	coeff_.setRealImagPart(magnitude_->value()*TMath::Cos(phase_->value()), magnitude_->value()*TMath::Sin(phase_->value()));
+	return coeff_;
 }
 
-LauComplex LauMagPhaseCoeffSet::antiparticleCoeff()
+const LauComplex& LauMagPhaseCoeffSet::antiparticleCoeff()
 {
 	return this->particleCoeff();
 }

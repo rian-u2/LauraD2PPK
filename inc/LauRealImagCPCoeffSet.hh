@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2006 - 2013.
+// Copyright University of Warwick 2013 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,24 +8,21 @@
 // John Back
 // Paul Harrison
 
-/*! \file LauBelleCPCoeffSet.hh
-    \brief File containing declaration of LauBelleCPCoeffSet class.
+/*! \file LauRealImagCPCoeffSet.hh
+    \brief File containing declaration of LauRealImagCPCoeffSet class.
 */
 
-/*! \class LauBelleCPCoeffSet
-    \brief Class for defining a complex coefficient using the Belle CP convention.
+/*! \class LauRealImagCPCoeffSet
+    \brief Class for defining a complex coefficient using a simple Cartesian CP convention.
+
     Holds a set of real values that define the complex coefficient of an amplitude component.
-
-    The amplitude has the form a * exp(i*delta) * ( 1 +/- b * exp(i*phi) ) where 
-    a is a CP conserving magnitude,
-    b is a CP violating magnitude,
-    delta is the strong phase
-    and phi is the weak phase.
-    [Phys.Rev.Lett. 96 (2006) 251803]
+    The amplitudes have the form:
+    c    = x    + i * y
+    cbar = xbar + i * ybar
 */
 
-#ifndef LAU_BELLECP_COEFF_SET
-#define LAU_BELLECP_COEFF_SET
+#ifndef LAU_REALIMAGCP_COEFF_SET
+#define LAU_REALIMAGCP_COEFF_SET
 
 #include <iosfwd>
 #include <vector>
@@ -37,27 +34,27 @@
 #include "LauParameter.hh"
 
 
-class LauBelleCPCoeffSet : public LauAbsCoeffSet {
+class LauRealImagCPCoeffSet : public LauAbsCoeffSet {
 
 	public:
 		//! Constructor
 		/*!
 		    \param [in] compName the name of the coefficient set
-		    \param [in] a the magnitude a
-		    \param [in] delta the strong phase
-		    \param [in] b the magnitude b
-		    \param [in] phi the weak phase
-		    \param [in] aFixed whether a is fixed
-		    \param [in] deltaFixed whether delta is fixed
-		    \param [in] bFixed whether b is fixed
-		    \param [in] phiFixed whether phi is fixed
+		    \param [in] x the real part for the particle
+		    \param [in] y the imaginary part for the particle
+		    \param [in] xbar the real part for the antiparticle
+		    \param [in] ybar the imaginary part for the antiparticle
+		    \param [in] xFixed whether x is fixed
+		    \param [in] yFixed whether y is fixed
+		    \param [in] xbarFixed whether xbar is fixed
+		    \param [in] ybarFixed whether ybar is fixed
 		*/
-		LauBelleCPCoeffSet(const TString& compName, Double_t a, Double_t delta, Double_t b, Double_t phi,
-				Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed);
+		LauRealImagCPCoeffSet(const TString& compName, Double_t x, Double_t y, Double_t xbar, Double_t ybar,
+				      Bool_t xFixed, Bool_t yFixed, Bool_t xbarFixed, Bool_t ybarFixed);
 
 		//! Destructor
-		virtual ~LauBelleCPCoeffSet(){}
-
+		virtual ~LauRealImagCPCoeffSet(){}
+	
 		//! Retrieve the parameters of the coefficient, e.g. so that they can be loaded into a fit
 		/*!
 		    \return the parameters of the coefficient
@@ -69,7 +66,7 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
                     \param [out] stream the stream to print to
 		*/
 		virtual void printTableHeading(std::ostream& stream);
-		
+
 		//! Print the parameters of the complex coefficient as a row in the results table
 		/*!
                     \param [out] stream the stream to print to
@@ -122,36 +119,31 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		    \param [in] rhs the coefficient to clone
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		*/
-		LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, Double_t constFactor = 1.0);
+		LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, Double_t constFactor = 1.0);
 
 		//! Copy assignment operator
 		/*!
 		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
 		*/
-		LauBelleCPCoeffSet& operator=(const LauBelleCPCoeffSet& rhs);
-
+		LauRealImagCPCoeffSet& operator=(const LauRealImagCPCoeffSet& rhs);
 
 	private:
-		//! The minimum allowed value for magnitudes
-		Double_t minMag_;
-		//! The maximum allowed value for magnitudes
-		Double_t maxMag_;
-		//! The minimum allowed value for phases
-		Double_t minPhase_;
-		//! The maximum allowed value for phases
-		Double_t maxPhase_;
+		//! The minimum allowed value
+		Double_t minPar_;
+		//! The maximum allowed value
+		Double_t maxPar_;
 
 		// the actual fit parameters
 		// (need to be pointers so they can be cloned)
-		//! The magnitude a
-		LauParameter* a_;
-		//! The magnitude b
-		LauParameter* b_;
-		//! The strong phase
-		LauParameter* delta_;
-		//! The weak phase
-		LauParameter* phi_;
+		//! The real part for the particle
+		LauParameter* x_;
+		//! The imaginary part for the particle
+		LauParameter* y_;
+		//! The real part for the antiparticle
+		LauParameter* xbar_;
+		//! The imaginary part for the antiparticle
+		LauParameter* ybar_;
 
 		//! The particle complex coefficient
 		LauComplex particleCoeff_;
@@ -161,7 +153,7 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP asymmetry
 		LauParameter acp_;
 
-		ClassDef(LauBelleCPCoeffSet, 0)
+		ClassDef(LauRealImagCPCoeffSet, 0)
 };
 
 #endif

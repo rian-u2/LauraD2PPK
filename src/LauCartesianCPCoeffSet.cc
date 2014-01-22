@@ -43,6 +43,8 @@ LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const TString& compName, Double_t
 	y_(new LauParameter("Y", y, minPar_, maxPar_, yFixed)),
 	deltaX_(new LauParameter("DeltaX", deltaX, minDeltaPar_, maxDeltaPar_, deltaXFixed)),
 	deltaY_(new LauParameter("DeltaY", deltaY, minDeltaPar_, maxDeltaPar_, deltaYFixed)),
+	particleCoeff_( x+deltaX, y+deltaY ),
+	antiparticleCoeff_( x-deltaX, y-deltaY ),
 	acp_("ACP", -2.0*(x*deltaX + y*deltaY)/(x*x + deltaX*deltaX + y*y + deltaY*deltaY), -1.0, 1.0, deltaXFixed&&deltaYFixed)
 {
 	// Print message
@@ -69,24 +71,27 @@ LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs
 	y_ = rhs.y_->createClone(constFactor);
 	deltaX_ = rhs.deltaX_->createClone(constFactor);
 	deltaY_ = rhs.deltaY_->createClone(constFactor);
+	particleCoeff_ = rhs.particleCoeff_;
+	antiparticleCoeff_ = rhs.antiparticleCoeff_;
 	acp_ = rhs.acp_;
 }
 
 LauCartesianCPCoeffSet& LauCartesianCPCoeffSet::operator=(const LauCartesianCPCoeffSet& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		this->name(rhs.name());
+		minPar_ = rhs.minPar_;
+		maxPar_ = rhs.maxPar_;
+		minDeltaPar_ = rhs.minDeltaPar_;
+		maxDeltaPar_ = rhs.maxDeltaPar_;
+		x_ = rhs.x_->createClone();
+		y_ = rhs.y_->createClone();
+		deltaX_ = rhs.deltaX_->createClone();
+		deltaY_ = rhs.deltaY_->createClone();
+		particleCoeff_ = rhs.particleCoeff_;
+		antiparticleCoeff_ = rhs.antiparticleCoeff_;
+		acp_ = rhs.acp_;
 	}
-	this->name(rhs.name());
-	minPar_ = rhs.minPar_;
-	maxPar_ = rhs.maxPar_;
-	minDeltaPar_ = rhs.minDeltaPar_;
-	maxDeltaPar_ = rhs.maxDeltaPar_;
-	x_ = rhs.x_->createClone();
-	y_ = rhs.y_->createClone();
-	deltaX_ = rhs.deltaX_->createClone();
-	deltaY_ = rhs.deltaY_->createClone();
-	acp_ = rhs.acp_;
 	return *this;
 }
 
@@ -165,14 +170,16 @@ void LauCartesianCPCoeffSet::finaliseValues()
 	deltaY_->updatePull();
 }
 
-LauComplex LauCartesianCPCoeffSet::particleCoeff()
+const LauComplex& LauCartesianCPCoeffSet::particleCoeff()
 {
-	return LauComplex( x_->value()+deltaX_->value(), y_->value()+deltaY_->value() );
+	particleCoeff_.setRealImagPart( x_->value()+deltaX_->value(), y_->value()+deltaY_->value() );
+	return particleCoeff_;
 }
 
-LauComplex LauCartesianCPCoeffSet::antiparticleCoeff()
+const LauComplex& LauCartesianCPCoeffSet::antiparticleCoeff()
 {
-	return LauComplex( x_->value()-deltaX_->value(), y_->value()-deltaY_->value() );
+	antiparticleCoeff_.setRealImagPart( x_->value()-deltaX_->value(), y_->value()-deltaY_->value() );
+	return antiparticleCoeff_;
 }
 
 void LauCartesianCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )

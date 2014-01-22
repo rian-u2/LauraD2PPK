@@ -30,16 +30,14 @@ ClassImp(Lau2DHistDP)
 Lau2DHistDP::Lau2DHistDP(const TH2* hist, const LauDaughters* daughters,
 		Bool_t useInterpolation, Bool_t fluctuateBins,
 		Double_t avEff, Double_t avEffError, Bool_t useUpperHalfOnly, Bool_t squareDP) :
+	Lau2DAbsHistDP(daughters,useUpperHalfOnly,squareDP),
 	hist_(hist ? dynamic_cast<TH2*>(hist->Clone()) : 0),
-	kinematics_( (daughters!=0) ? daughters->getKinematics() : 0 ),
 	minX_(0.0), maxX_(0.0),
 	minY_(0.0), maxY_(0.0),
 	rangeX_(0.0), rangeY_(0.0),
 	binXWidth_(0.0), binYWidth_(0.0),
 	nBinsX_(0), nBinsY_(0),
-	useInterpolation_(useInterpolation),
-	upperHalf_(useUpperHalfOnly),
-	squareDP_(squareDP)
+	useInterpolation_(useInterpolation)
 {
 	if ( ! hist_ ) {
 		std::cerr << "ERROR in Lau2DHistDP constructor : the histogram pointer is null." << std::endl;
@@ -65,25 +63,11 @@ Lau2DHistDP::Lau2DHistDP(const TH2* hist, const LauDaughters* daughters,
 	binYWidth_ = static_cast<Double_t>(TMath::Abs(rangeY_)/(nBinsY_*1.0));
 
 	if (fluctuateBins) {
-		this->doBinFluctuation();
+		this->doBinFluctuation(hist_);
 	}
 	if (avEff > 0.0 && avEffError > 0.0) {
-		this->raiseOrLowerBins(avEff,avEffError);
+		this->raiseOrLowerBins(hist_,avEff,avEffError);
 	}
-}
-
-Lau2DHistDP::Lau2DHistDP( const Lau2DHistDP& rhs ) :
-	hist_(rhs.hist_ ? dynamic_cast<TH2*>(rhs.hist_->Clone()) : 0),
-	kinematics_( rhs.kinematics_ ),
-	minX_(rhs.minX_), maxX_(rhs.maxX_),
-	minY_(rhs.minY_), maxY_(rhs.maxY_),
-	rangeX_(rhs.rangeX_), rangeY_(rhs.rangeY_),
-	binXWidth_(rhs.binXWidth_), binYWidth_(rhs.binYWidth_),
-	nBinsX_(rhs.nBinsX_), nBinsY_(rhs.nBinsY_),
-	useInterpolation_(rhs.useInterpolation_),
-	upperHalf_(rhs.upperHalf_),
-	squareDP_(rhs.squareDP_)
-{
 }
 
 Lau2DHistDP::~Lau2DHistDP()
@@ -120,24 +104,10 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 
 	// If we're only using one half then flip co-ordinates
 	// appropriately for conventional or square DP
-	if ( upperHalf_ == kTRUE ) {
-		if ( squareDP_ == kFALSE && x > y ) {
-			Double_t temp = y;
-			y = x;
-			x = temp;
-		} else if ( squareDP_ == kTRUE && y > 0.5 ) {
-			y = 1.0 - y;
-		}
-	}
+	getUpperHalf(x,y);
 
 	// First ask whether the point is inside the kinematic region.
-	Bool_t withinDP(kFALSE);
-	if (squareDP_ == kTRUE) {
-		withinDP = kinematics_->withinSqDPLimits(x,y);
-	} else {
-		withinDP = kinematics_->withinDPLimits(x,y);
-	}
-	if (withinDP == kFALSE) {
+	if (withinDPBoundaries(x,y) == kFALSE) {
 		std::cerr << "WARNING in Lau2DHistDP::interpolateXY : Given position is outside the DP boundary, returning 0.0." << std::endl;
 		return 0.0;
 	}
@@ -158,12 +128,7 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 	Double_t cbiny = Double_t(j+0.5)*rangeY_/nBinsY_ + minY_;
 
 	// If bin centres are outside kinematic region, do not extrapolate
-	if (squareDP_ == kTRUE) {
-		withinDP = kinematics_->withinSqDPLimits(cbinx, cbiny);
-	} else {
-		withinDP = kinematics_->withinDPLimits(cbinx, cbiny);
-	}
-	if (withinDP == kFALSE) {return getBinHistValue(i,j);}
+	if (withinDPBoundaries(cbinx,cbiny) == kFALSE) {return getBinHistValue(i,j);}
 
 	// Find the adjacent bins
 	Double_t deltax = x - cbinx;
@@ -198,13 +163,7 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 		// Find the adjacent x bin centre
 		Double_t cbinx_adj = Double_t(i_adj+0.5)*rangeX_/nBinsX_ + minX_;
 
-		if (squareDP_ == kTRUE) {
-			withinDP = kinematics_->withinSqDPLimits(cbinx_adj, y);
-		} else {
-			withinDP = kinematics_->withinDPLimits(cbinx_adj, y);
-		}
-
-		if (withinDP == kFALSE) {
+		if (withinDPBoundaries(cbinx_adj, y) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
 			value = getBinHistValue(i,j);
@@ -227,13 +186,7 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 		// Find the adjacent y bin centre
 		Double_t cbiny_adj = Double_t(j_adj+0.5)*rangeY_/nBinsY_ + minY_;
 
-		if (squareDP_ == kTRUE) {
-			withinDP = kinematics_->withinSqDPLimits(x, cbiny_adj);
-		} else {
-			withinDP = kinematics_->withinDPLimits(x, cbiny_adj);
-		}
-
-		if (withinDP == kFALSE) {
+		if (withinDPBoundaries(x, cbiny_adj) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
 			value = getBinHistValue(i,j);
@@ -258,13 +211,7 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 		Double_t cbinx_adj = Double_t(i_adj+0.5)*rangeX_/nBinsX_ + minX_;
 		Double_t cbiny_adj = Double_t(j_adj+0.5)*rangeY_/nBinsY_ + minY_;
 
-		if (squareDP_ == kTRUE) {
-			withinDP = kinematics_->withinSqDPLimits(cbinx_adj, cbiny_adj);
-		} else {
-			withinDP = kinematics_->withinDPLimits(cbinx_adj, cbiny_adj);
-		}
-
-		if (withinDP == kFALSE) {
+		if (withinDPBoundaries(cbinx_adj, cbiny_adj) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
 			value = getBinHistValue(i,j);
@@ -292,76 +239,4 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 	return value;
 
 }
-
-void Lau2DHistDP::doBinFluctuation()
-{
-	TRandom* random = LauRandom::zeroSeedRandom();
-	for (Int_t i(0); i<nBinsX_; ++i) {
-		for (Int_t j(0); j<nBinsY_; ++j) {
-			Double_t currentContent = hist_->GetBinContent(i+1,j+1);
-			Double_t currentError   = hist_->GetBinError(i+1,j+1);
-			Double_t newContent = random->Gaus(currentContent,currentError);
-			if (newContent<0.0) {
-				hist_->SetBinContent(i+1,j+1,0.0);
-			} else {
-				hist_->SetBinContent(i+1,j+1,newContent);
-			}
-		}
-	}
-}
-
-void Lau2DHistDP::raiseOrLowerBins(Double_t avEff, Double_t avEffError)
-{
-	TRandom* random = LauRandom::zeroSeedRandom();
-
-	Double_t curAvg = this->computeAverageContents();
-	Double_t newAvg = random->Gaus(avEff,avEffError);
-
-	hist_->Scale( newAvg / curAvg );
-}
-
-Double_t Lau2DHistDP::computeAverageContents() const
-{
-	Double_t totalContent(0.0);
-	Int_t binsWithinDPBoundary(0);
-
-	// Loop through the bins and include any that have their centre or any
-	// of the four corners within the kinematic boundary
-	for ( Int_t i(0); i<nBinsX_; ++i ) {
-		Double_t binXCentre = hist_->GetXaxis()->GetBinCenter(i+1);
-		Double_t binXLowerEdge = hist_->GetXaxis()->GetBinLowEdge(i+1);
-		Double_t binXUpperEdge = hist_->GetXaxis()->GetBinUpEdge(i+1);
-
-		for ( Int_t j(0); j<nBinsX_; ++j ) {
-			Double_t binYCentre = hist_->GetYaxis()->GetBinCenter(i+1);
-			Double_t binYLowerEdge = hist_->GetYaxis()->GetBinLowEdge(i+1);
-			Double_t binYUpperEdge = hist_->GetYaxis()->GetBinUpEdge(i+1);
-
-			if ( squareDP_ ) {
-				if ( kinematics_->withinSqDPLimits( binXCentre, binYCentre ) ||
-				     kinematics_->withinSqDPLimits( binXLowerEdge, binYLowerEdge ) ||
-				     kinematics_->withinSqDPLimits( binXUpperEdge, binYUpperEdge ) ||
-				     kinematics_->withinSqDPLimits( binXLowerEdge, binYUpperEdge ) ||
-				     kinematics_->withinSqDPLimits( binXUpperEdge, binYLowerEdge ) ) {
-
-					totalContent += this->getBinHistValue( i, j );
-					++binsWithinDPBoundary;
-				}
-			} else {
-				if ( kinematics_->withinDPLimits( binXCentre, binYCentre ) ||
-				     kinematics_->withinDPLimits( binXLowerEdge, binYLowerEdge ) ||
-				     kinematics_->withinDPLimits( binXUpperEdge, binYUpperEdge ) ||
-				     kinematics_->withinDPLimits( binXLowerEdge, binYUpperEdge ) ||
-				     kinematics_->withinDPLimits( binXUpperEdge, binYLowerEdge ) ) {
-
-					totalContent += this->getBinHistValue( i, j );
-					++binsWithinDPBoundary;
-				}
-			}
-		}
-	}
-
-	return totalContent/binsWithinDPBoundary;
-}
-
 

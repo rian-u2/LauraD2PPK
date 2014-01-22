@@ -16,10 +16,11 @@
     \brief Class for defining a complex coefficient using seperate magnitudes and phases for particles and antiparticles.
 
     Holds a set of real values that define the complex coefficient of an amplitude component.
-    The amplitude has the form mag*exp(i*phase) for particles and
-    magBar*exp(i*phaseBar) for antiparticles where
-    mag and magBar are the magnitudes for particles and antiparticles respectively and
-    phase and phaseBar are the phases for particles and antiparticles respectively.
+    The amplitudes have the form:
+    c    = mag    * exp(i*phase)
+    cBar = magBar * exp(i*phaseBar)
+    where mag and magBar are the magnitudes for particle and antiparticle and
+    phase and phaseBar are the phases for particle and antiparticle.
 */
 
 #ifndef LAU_MAGPHASECP_COEFF_SET
@@ -31,9 +32,8 @@
 #include "Rtypes.h"
 
 #include "LauAbsCoeffSet.hh"
+#include "LauComplex.hh"
 #include "LauParameter.hh"
-
-class LauComplex;
 
 
 class LauMagPhaseCPCoeffSet : public LauAbsCoeffSet {
@@ -85,13 +85,13 @@ class LauMagPhaseCPCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \return the complex coefficient for a particle
 		*/
-		virtual LauComplex particleCoeff();
+		virtual const LauComplex& particleCoeff();
 
 		//! Retrieve the complex coefficient for an antiparticle
 		/*!
 		    \return the complex coefficient for an antiparticle
 		*/
-		virtual LauComplex antiparticleCoeff();
+		virtual const LauComplex& antiparticleCoeff();
 
 		//! Set the parameters based on the complex coefficients for particles and antiparticles
 		/*!
@@ -150,6 +150,11 @@ class LauMagPhaseCPCoeffSet : public LauAbsCoeffSet {
 		LauParameter* magBar_;
 		//! The phase for antiparticles
 		LauParameter* phaseBar_;
+
+		//! The particle complex coefficient
+		LauComplex particleCoeff_;
+		//! The antiparticle complex coefficient
+		LauComplex antiparticleCoeff_;
 
 		//! The CP asymmetry
 		LauParameter acp_;

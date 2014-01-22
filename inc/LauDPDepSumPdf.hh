@@ -51,10 +51,12 @@ class LauDPDepSumPdf : public LauAbsPdf {
 		    \param [in] daughters the daughter particles
 		    \param [in] dpHisto the 2D histogram
 		    \param [in] upperHalf specifies whether only upper half of DP is supplied in the case of a symmetric DP
+		    \param [in] useSpline specifies whether a spline is used to interpolate the histogram
 		*/
 		LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 				const LauDaughters* daughters,
-				const TH2* dpHisto, Bool_t upperHalf = kFALSE);
+				const TH2* dpHisto, Bool_t upperHalf = kFALSE,
+				Bool_t useSpline = kFALSE);
 
 		//! Constructor - fraction determined by a polynomial of a DP "axis"
 		/*!
@@ -75,7 +77,7 @@ class LauDPDepSumPdf : public LauAbsPdf {
 		virtual ~LauDPDepSumPdf();
 
 		//! Copy constructor
-		LauDPDepSumPdf(const LauDPDepSumPdf& other);
+		//LauDPDepSumPdf(const LauDPDepSumPdf& other);
 
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
@@ -121,6 +123,9 @@ class LauDPDepSumPdf : public LauAbsPdf {
 		void scaleFrac( Double_t dpPos );
 
 	private:
+		//! Copy constructor - not implemented
+		LauDPDepSumPdf(const LauDPDepSumPdf& other);
+
 		//! Daughter particles
 		LauDaughters* daughters_;
 

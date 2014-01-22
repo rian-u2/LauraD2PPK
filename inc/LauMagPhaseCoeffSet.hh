@@ -28,9 +28,8 @@
 #include "Rtypes.h"
 
 #include "LauAbsCoeffSet.hh"
+#include "LauComplex.hh"
 #include "LauParameter.hh"
-
-class LauComplex;
 
 
 class LauMagPhaseCoeffSet : public LauAbsCoeffSet {
@@ -77,13 +76,13 @@ class LauMagPhaseCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \return the complex coefficient for a particle
 		*/
-		virtual LauComplex particleCoeff();
+		virtual const LauComplex& particleCoeff();
 
 		//! Retrieve the complex coefficient for an antiparticle
 		/*!
 		    \return the complex coefficient for an antiparticle
 		*/
-		virtual LauComplex antiparticleCoeff();
+		virtual const LauComplex& antiparticleCoeff();
 
 		//! Set the parameters based on the complex coefficients for particles and antiparticles
 		/*!
@@ -140,6 +139,9 @@ class LauMagPhaseCoeffSet : public LauAbsCoeffSet {
 		LauParameter* magnitude_;
 		//! The phase
 		LauParameter* phase_;
+
+		//! The complex coefficient
+		LauComplex coeff_;
 
 		ClassDef(LauMagPhaseCoeffSet, 0)
 };

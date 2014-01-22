@@ -3,7 +3,27 @@
 ///  This is the History file for the Laura++ package.      ///
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
+
+16th January 2014 Thomas Latham
+
+* Add LauRealImagCPCoeffSet, which provides an (x,y), (xbar,ybar) way of
+  parametrising the complex coefficients.
+* Try to improve timing in the *CoeffSet classes by making the complex coeffs
+  into member variables.
+
+20th December 2013 Daniel Craik
+
+* Added Lau2DCubicSpline which provides cubic spline interpolation of a histogram
+  - Added Lau2DSplineDP which uses a spline to model variation across a DP (eg efficiency)
+  - Added pABC, Lau2DAbsDP, for Lau2DHistDP and Lau2DSplineDP and moved common code 
+    in Lau2DHistDP and Lau2DSplineDP into ABC Lau2DAbsHistDP
+  - LauEffModel, LauDPDepSumPdf and LauDPDepMapPdf modified to use Lau2DAbsDP instead of 
+    Lau2DHistDP
+  - setEffSpline method added to LauEffModel and useSpline flag added to constructor for 
+    LauDPDepSumPdf to allow use of splines
+
 18th December 2013 Mark Whitehead
+(in branch for release in v2r0)
 
 * Added functionality to include Gaussian constraints on floated
   parameters in the fit.

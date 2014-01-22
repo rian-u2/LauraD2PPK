@@ -43,6 +43,8 @@ LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const TString& compName, Double_t m
 	phase_(new LauParameter("Phase", phase, minPhase_, maxPhase_, phaseFixed)),
 	magBar_(new LauParameter("MagBar", magBar, minMag_, maxMag_, magBarFixed)),
 	phaseBar_(new LauParameter("PhaseBar", phaseBar, minPhase_, maxPhase_, phaseBarFixed)),
+	particleCoeff_( mag*TMath::Cos(phase), mag*TMath::Sin(phase) ),
+	antiparticleCoeff_( magBar*TMath::Cos(phaseBar), magBar*TMath::Sin(phaseBar) ),
 	acp_("ACP", (magBar*magBar - mag*mag)/(magBar*magBar + mag*mag), -1.0, 1.0)
 {
 	// Print message
@@ -61,24 +63,27 @@ LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const LauMagPhaseCPCoeffSet& rhs, D
 	phase_ = rhs.phase_->createClone(constFactor);
 	magBar_ = rhs.magBar_->createClone(constFactor);
 	phaseBar_ = rhs.phaseBar_->createClone(constFactor);
+	particleCoeff_ = rhs.particleCoeff_;
+	antiparticleCoeff_ = rhs.antiparticleCoeff_;
 	acp_ = rhs.acp_;
 }
 
 LauMagPhaseCPCoeffSet& LauMagPhaseCPCoeffSet::operator=(const LauMagPhaseCPCoeffSet& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		this->name(rhs.name());
+		minMag_ = rhs.minMag_;
+		maxMag_ = rhs.maxMag_;
+		minPhase_ = rhs.minPhase_;
+		maxPhase_ = rhs.maxPhase_;
+		mag_ = rhs.mag_->createClone();
+		phase_ = rhs.phase_->createClone();
+		magBar_ = rhs.magBar_->createClone();
+		phaseBar_ = rhs.phaseBar_->createClone();
+		particleCoeff_ = rhs.particleCoeff_;
+		antiparticleCoeff_ = rhs.antiparticleCoeff_;
+		acp_ = rhs.acp_;
 	}
-	this->name(rhs.name());
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	mag_ = rhs.mag_->createClone();
-	phase_ = rhs.phase_->createClone();
-	magBar_ = rhs.magBar_->createClone();
-	phaseBar_ = rhs.phaseBar_->createClone();
-	acp_ = rhs.acp_;
 	return *this;
 }
 
@@ -223,14 +228,16 @@ void LauMagPhaseCPCoeffSet::finaliseValues()
 
 }
 
-LauComplex LauMagPhaseCPCoeffSet::particleCoeff()
+const LauComplex& LauMagPhaseCPCoeffSet::particleCoeff()
 {
-	return LauComplex( mag_->value()*TMath::Cos(phase_->value()), mag_->value()*TMath::Sin(phase_->value()) );
+	particleCoeff_.setRealImagPart( mag_->value()*TMath::Cos(phase_->value()), mag_->value()*TMath::Sin(phase_->value()) );
+	return particleCoeff_;
 }
 
-LauComplex LauMagPhaseCPCoeffSet::antiparticleCoeff()
+const LauComplex& LauMagPhaseCPCoeffSet::antiparticleCoeff()
 {
-	return LauComplex( magBar_->value()*TMath::Cos(phaseBar_->value()), magBar_->value()*TMath::Sin(phaseBar_->value()) );
+	antiparticleCoeff_.setRealImagPart( magBar_->value()*TMath::Cos(phaseBar_->value()), magBar_->value()*TMath::Sin(phaseBar_->value()) );
+	return antiparticleCoeff_;
 }
 
 void LauMagPhaseCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )

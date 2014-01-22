@@ -65,13 +65,13 @@ class LauAbsCoeffSet {
 		/*!
 		    \return the complex coefficient for a particle
 		*/
-		virtual LauComplex particleCoeff() = 0;
+		virtual const LauComplex& particleCoeff() = 0;
 
 		//! Retrieve the complex coefficient for an antiparticle
 		/*!
 		    \return the complex coefficient for an antiparticle
 		*/
-		virtual LauComplex antiparticleCoeff() = 0;
+		virtual const LauComplex& antiparticleCoeff() = 0;
 
 		//! Set the parameters based on the complex coefficients for particles and antiparticles
 		/*!

@@ -37,7 +37,8 @@ LauRealImagCoeffSet::LauRealImagCoeffSet(const TString& compName, Double_t x, Do
 	minPar_(-10.0),
 	maxPar_(+10.0),
 	x_(new LauParameter("X",x,minPar_,maxPar_,xFixed)),
-	y_(new LauParameter("Y",y,minPar_,maxPar_,yFixed))
+	y_(new LauParameter("Y",y,minPar_,maxPar_,yFixed)),
+	coeff_(x,y)
 {
 	// Print message
 	cout<<"Set component \""<<this->name()<<"\" to have real part = "<<x_->value()<<" and imaginary part = "<<y_->value()<<"."<<endl;
@@ -49,18 +50,19 @@ LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, Double_
 	maxPar_ = rhs.maxPar_;
 	y_ = rhs.x_->createClone(constFactor);
 	y_ = rhs.y_->createClone(constFactor);
+	coeff_ = rhs.coeff_;
 }
 
 LauRealImagCoeffSet& LauRealImagCoeffSet::operator=(const LauRealImagCoeffSet& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		this->name(rhs.name());
+		minPar_ = rhs.minPar_;
+		maxPar_ = rhs.maxPar_;
+		y_ = rhs.x_->createClone();
+		y_ = rhs.y_->createClone();
+		coeff_ = rhs.coeff_;
 	}
-	this->name(rhs.name());
-	minPar_ = rhs.minPar_;
-	maxPar_ = rhs.maxPar_;
-	y_ = rhs.x_->createClone();
-	y_ = rhs.y_->createClone();
 	return *this;
 }
 
@@ -116,13 +118,13 @@ void LauRealImagCoeffSet::finaliseValues()
 	y_->updatePull();
 }
 
-LauComplex LauRealImagCoeffSet::particleCoeff()
+const LauComplex& LauRealImagCoeffSet::particleCoeff()
 {
-	LauComplex coeff(x_->value(), y_->value());
-	return coeff;
+	coeff_.setRealImagPart(x_->value(), y_->value());
+	return coeff_;
 }
 
-LauComplex LauRealImagCoeffSet::antiparticleCoeff()
+const LauComplex& LauRealImagCoeffSet::antiparticleCoeff()
 {
 	return this->particleCoeff();
 }

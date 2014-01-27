@@ -4,6 +4,15 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+27th January 2014 Daniel Craik
+
+* Added spline interpolation to DP backgrounds
+  - Added Lau2DSplineDPPdf which uses a spline to model a normalised PDF across a DP
+  - Added pABC, Lau2DAbsDPPdf, for Lau2DHistDPPdf and Lau2DSplineDPPdf and moved common 
+    code in Lau2DHistDPPdf and Lau2DSplineDPPdf into ABC Lau2DAbsHistDPPdf
+  - LauBkgndModel, modified to use Lau2DAbsDPPdf instead of Lau2DHistDPPdf
+  - setBkgndSpline method added to LauBkgndDPModel to allow use of splines
+
 16th January 2014 Thomas Latham
 
 * Add LauRealImagCPCoeffSet, which provides an (x,y), (xbar,ybar) way of

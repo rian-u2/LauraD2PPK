@@ -25,7 +25,7 @@
 #include "LauAbsBkgndDPModel.hh"
 
 class TH2;
-class Lau2DHistDPPdf;
+class Lau2DAbsDPPdf;
 class LauDaughters;
 class LauFitDataTree;
 class LauVetoes;
@@ -55,6 +55,16 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		void setBkgndHisto(const TH2* histo, Bool_t useInterpolation, 
 				Bool_t fluctuateBins, Bool_t useUpperHalfOnly,
 				Bool_t squareDP = kFALSE);
+
+		//! Set the background histogram and generate a spline
+		/*!
+		    \param [in] histo the 2D histogram describing the DP distribution
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors 
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void setBkgndSpline(const TH2* histo, Bool_t fluctuateBins,
+				Bool_t useUpperHalfOnly, Bool_t squareDP);
 
 		//! Initialise the model
 		virtual void initialise();
@@ -114,7 +124,7 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		Bool_t squareDP_;
 
 		//! PDF of Dalitz plot background, from a 2D histogram
-		Lau2DHistDPPdf* bgHistDPPdf_;
+		Lau2DAbsDPPdf* bgHistDPPdf_;
 
 		//! Cached histogram values for each event
 		std::vector<Double_t> bgData_;

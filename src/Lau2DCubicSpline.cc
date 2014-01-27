@@ -79,14 +79,16 @@ Lau2DCubicSpline::Lau2DCubicSpline(const TH2& h) :
     TAxis *xaxis = h.GetXaxis(), *yaxis = h.GetYaxis();
     // verify that all bins have same size
     for (Int_t i = 1; i < nBinsX; ++i) {
-	if (std::abs(xaxis->GetBinWidth(i) / binSizeX - 1.) > 1e-9)
+	if (std::abs(xaxis->GetBinWidth(i) / binSizeX - 1.) > 1e-9) {
 	    std::cerr << "ERROR in Lau2DCubicSpline constructor : the histogram has variable bin sizes." << std::endl;
 	    gSystem->Exit(EXIT_FAILURE);
+	}
     }
     for (Int_t i = 1; i < nBinsY; ++i) {
-	if (std::abs(yaxis->GetBinWidth(i) / binSizeY - 1.) > 1e-9)
+	if (std::abs(yaxis->GetBinWidth(i) / binSizeY - 1.) > 1e-9) {
 	    std::cerr << "ERROR in Lau2DCubicSpline constructor : the histogram has variable bin sizes." << std::endl;
 	    gSystem->Exit(EXIT_FAILURE);
+	}
     }
     // ok, go through histogram to precalculate the interpolation coefficients
     // in rectangles between bin centres
@@ -205,6 +207,11 @@ Double_t Lau2DCubicSpline::evaluate(Double_t x, Double_t y) const
 	retVal += coeff(binx, biny, k) * hxton[k % 4] * hyton[k / 4];
 
     return retVal;
+}
+
+Double_t Lau2DCubicSpline::analyticalIntegral() const
+{
+    return evalXY(xmin,xmax,ymin,ymax);
 }
 
 Double_t Lau2DCubicSpline::analyticalIntegral(Double_t x1, Double_t x2, Double_t y1, Double_t y2) const

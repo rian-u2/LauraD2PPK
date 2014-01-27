@@ -75,6 +75,9 @@ class Lau2DCubicSpline
 	    \param [in] y2 the upper y limit
 	*/
         virtual Double_t analyticalIntegral(Double_t x1, Double_t x2, Double_t y1, Double_t y2) const;
+	
+	//! Evaluate analytical integral across the whole function
+        virtual Double_t analyticalIntegral() const;
 
 
     private:
@@ -195,7 +198,7 @@ class Lau2DCubicSpline
 	*/
 	Double_t evalXY(Double_t x1, Double_t x2, Double_t y1, Double_t y2) const;
 
-	ClassDef(Lau2DCubicSpline, 0);
+	ClassDef(Lau2DCubicSpline, 0); // Class for defining a 2D cubic spline based on an input histogram
 };
 
 #endif

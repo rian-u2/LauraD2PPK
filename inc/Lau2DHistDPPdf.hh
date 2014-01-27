@@ -24,13 +24,13 @@
 #ifndef LAU_2DHIST_DP_PDF
 #define LAU_2DHIST_DP_PDF
 
-#include "Rtypes.h"
+#include "Lau2DAbsHistDPPdf.hh"
 
 class TH2;
 class LauKinematics;
 class LauVetoes;
 
-class Lau2DHistDPPdf {
+class Lau2DHistDPPdf : public Lau2DAbsHistDPPdf {
 
 	public:
 		//! Constructor
@@ -50,10 +50,10 @@ class Lau2DHistDPPdf {
 		//! Destructor
 		virtual ~Lau2DHistDPPdf();
 
-		//! Retrieve maximum height
-		Double_t getMaxHeight() const {return maxHeight_;}
-
 		//! Retrieve PDF normalisation
+		/*!
+		    \return the normalisation factor
+		*/
 		Double_t getHistNorm() const {return norm_;}
 
 		//! Perform the interpolation (unnormalised)
@@ -81,28 +81,22 @@ class Lau2DHistDPPdf {
 		*/
 		Double_t getBinHistValue(Int_t xBinNo, Int_t yBinNo) const;
 
-		//! Calculate maximum height
-		void calcMaxHeight();
-
 		//! Calculate the PDF normalisation
 		void calcHistNorm();
-
+		
 		//! Check the normalisation calculation
 		void checkNormalisation();
 
-		//! Fluctuate the histogram bin contents in accordance with their errors
-		void doBinFluctuation();
-
 	private:
+		//! Copy constructor - not implemented
+		Lau2DHistDPPdf( const Lau2DHistDPPdf& rhs );
+
+		//! Copy assignment operator - not implemented
+		Lau2DHistDPPdf& operator=(const Lau2DHistDPPdf& rhs);
+
 		//! The underlying histogram
 		TH2* hist_;
 	
-		//! DP kinematics
-		LauKinematics* kinematics_;
-
-		//! Vetos within DP
-		const LauVetoes* vetoes_;
-
 		//! The histogram x-axis minimum
 		Double_t minX_;
 		//! The histogram x-axis maximum
@@ -138,10 +132,6 @@ class Lau2DHistDPPdf {
 
 		//! Control boolean for using the linear interpolation
 		Bool_t useInterpolation_;
-		//! Boolean for using the upper half of DP
-		Bool_t upperHalf_;
-		//! Boolean for using square DP variables
-		Bool_t squareDP_;
 		
 		ClassDef(Lau2DHistDPPdf,0) // 2D Histogram utility class for DP analyses
 };

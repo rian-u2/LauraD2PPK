@@ -22,6 +22,7 @@ using std::endl;
 #include "TSystem.h"
 
 #include "Lau2DHistDPPdf.hh"
+#include "Lau2DSplineDPPdf.hh"
 #include "LauBkgndDPModel.hh"
 #include "LauDaughters.hh"
 #include "LauFitDataTree.hh"
@@ -65,6 +66,22 @@ void LauBkgndDPModel::setBkgndHisto(const TH2* histo, Bool_t useInterpolation, B
 	LauKinematics* kinematics = this->getKinematics();
 	const LauVetoes* vetoes = this->getVetoes();
 	bgHistDPPdf_ = new Lau2DHistDPPdf(histo, kinematics, vetoes, useInterpolation, fluctuateBins, upperHalf, squareDP);
+
+	maxPdfHeight_ = bgHistDPPdf_->getMaxHeight();
+	pdfNorm_ = bgHistDPPdf_->getHistNorm();
+}
+
+void LauBkgndDPModel::setBkgndSpline(const TH2* histo, Bool_t fluctuateBins, Bool_t useUpperHalfOnly, Bool_t squareDP)
+{
+	Bool_t upperHalf = kFALSE;
+	if (symmetricalDP_ == kTRUE && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
+	cout<<"Bg histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+
+	squareDP_ = squareDP;
+
+	LauKinematics* kinematics = this->getKinematics();
+	const LauVetoes* vetoes = this->getVetoes();
+	bgHistDPPdf_ = new Lau2DSplineDPPdf(histo, kinematics, vetoes, fluctuateBins, upperHalf, squareDP);
 
 	maxPdfHeight_ = bgHistDPPdf_->getMaxHeight();
 	pdfNorm_ = bgHistDPPdf_->getHistNorm();

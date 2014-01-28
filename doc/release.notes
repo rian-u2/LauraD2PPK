@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+28th January 2014 Daniel Craik
+
+* Improved out-of-range efficiency warnings in LauEffModel and supressed excessive errors
+
 27th January 2014 Daniel Craik
 
 * Added spline interpolation to DP backgrounds

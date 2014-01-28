@@ -34,7 +34,9 @@ LauEffModel::LauEffModel(const LauDaughters* daughters, const LauVetoes* vetoes)
 	vetoes_( vetoes ),
 	effHisto_( 0 ),
 	squareDP_( kFALSE ),
-	fluctuateEffHisto_( kFALSE )
+	fluctuateEffHisto_( kFALSE ),
+	lowBinWarningIssued_( kFALSE ),
+	highBinWarningIssued_( kFALSE )
 {
 	if ( daughters_ == 0 ) {
 		cerr << "ERROR in LauEffModel Constructor : invalid pointer to daughters object supplied." << endl;
@@ -153,11 +155,25 @@ Double_t LauEffModel::calcEfficiency( const LauKinematics* kinematics ) const
 	}
 
 	// Check that the efficiency is in the allowed range (0-1)
+	// If we're using a spline then out-of-range efficiencies can be caused by adjacent bins that all contain a value of either zero or one.
+	// The spline requires the efficiency, its first derivatives and the mixed second derivative to be continuous and to match the input histogram
+	// at the bin centres. Derivatives are calculated using a finite difference approximation taking the difference between the neighbouring bins.
+	// If two bins are zero but the third is not then the second bin will have a positive first derivative causing the spline to dip below zero
+	// between the two zero bins to remain smooth. The analogous case with adjacent maximised bins will cause peaks above one. Such dips are 
+	// unavoidable but are correctly removed here.
 	if ( eff < 0.0 ) {
-		std::cerr << "WARNING in LauEffModel::calcEfficiency : Efficiency is less than 0 - setting to 0.  You may want to check your histogram!" << std::endl;
+		if(!lowBinWarningIssued_) {
+			std::cerr << "WARNING in LauEffModel::calcEfficiency : Efficiency " << eff << " is less than 0 - setting to 0.  You may want to check your histogram!" << std::endl
+			          << "If you are using a spline then this could be caused by adjacent empty bins. Further warnings will be suppressed." << std::endl;
+			lowBinWarningIssued_=kTRUE;
+		}
 		eff = 0.0;
 	} else if ( eff > 1.0 ) {
-		std::cerr << "WARNING in LauEffModel::calcEfficiency : Efficiency is greater than 1 - setting to 1.  You may want to check your histogram!" << std::endl;
+		if(!highBinWarningIssued_) {
+			std::cerr << "WARNING in LauEffModel::calcEfficiency : Efficiency " << eff << " is greater than 1 - setting to 1.  You may want to check your histogram!" << std::endl
+				  << "If you are using a spline then this could be caused by adjacent full bins. Further warnings will be suppressed." << std::endl;
+			highBinWarningIssued_=kTRUE;
+		}
 		eff = 1.0;
 	}
 

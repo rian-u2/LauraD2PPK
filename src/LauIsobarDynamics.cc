@@ -461,10 +461,10 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 		theGS->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
 	}
 
-	if (changeLASSScatteringLength_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
+	if (changeLASSScatteringLength_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
 		theResonance->setResonanceParameter(LASSScatteringLength_, "a");
 	}
-	if (changeLASSEffectiveRange_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
+	if (changeLASSEffectiveRange_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
 		theResonance->setResonanceParameter(LASSEffectiveRange_, "r");
 	}
 	if (changeLASSResonanceMag_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
@@ -479,7 +479,7 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 	if (changeLASSBackgroundPhase_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
 		theResonance->setResonanceParameter(LASSBackgroundPhase_, "phiB");
 	}
-	if (changeLASSCutOff_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
+	if (changeLASSCutOff_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
 		theResonance->setResonanceParameter(LASSCutOff_, "cutOff");
 	}
 

@@ -49,9 +49,6 @@ class Lau2DHistDP : public Lau2DAbsHistDP {
 				Bool_t useInterpolation = kTRUE, Bool_t fluctuateBins = kFALSE,
 				Double_t avEff = -1.0, Double_t avEffError = -1.0, Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
 
-		//! Copy constructor
-		//Lau2DHistDP( const Lau2DHistDP& rhs );
-
 		//! Destructor
 		virtual ~Lau2DHistDP();
 

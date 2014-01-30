@@ -568,8 +568,12 @@ void LauCPFitModel::setSignalDPParameters()
 	// Need to check that the number of components we have and that the dynamics has matches up
 	UInt_t nNegAmp = negSigModel_->getnAmp();
 	UInt_t nPosAmp = posSigModel_->getnAmp();
-	if (nNegAmp != nSigComp_ || nPosAmp != nSigComp_) {
-		cerr << "ERROR in LauCPFitModel::setSignalDPParameters : Number of signal DP components with magnitude and phase set not right." << endl;
+	if ( nNegAmp != nPosAmp ) {
+		cerr << "ERROR in LauCPFitModel::setSignalDPParameters : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( nNegAmp != nSigComp_ ) {
+		cerr << "ERROR in LauCPFitModel::setSignalDPParameters : Number of signal DP components in the model (" << nNegAmp << ") not equal to number of coefficients supplied (" << nSigComp_ << ")." << endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 

@@ -23,9 +23,6 @@
 
 #include "Rtypes.h"
 
-class TH2;
-class LauDaughters;
-class LauKinematics;
 
 class Lau2DAbsDP {
 

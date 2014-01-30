@@ -28,18 +28,14 @@ ClassImp(Lau2DHistDPPdf)
 
 Lau2DHistDPPdf::Lau2DHistDPPdf(const TH2* hist, LauKinematics* kinematics, const LauVetoes* vetoes,
 		Bool_t useInterpolation, Bool_t fluctuateBins, Bool_t useUpperHalfOnly, Bool_t squareDP) :
+	Lau2DAbsHistDPPdf(kinematics,vetoes,useUpperHalfOnly,squareDP),
 	hist_(hist ? dynamic_cast<TH2*>(hist->Clone()) : 0),
-	kinematics_(kinematics),
-	vetoes_(vetoes),
 	minX_(0.0), maxX_(0.0), minY_(0.0), maxY_(0.0), rangeX_(0.0), rangeY_(0.0), 
 	binXWidth_(0.0), binYWidth_(0.0),
 	invBinXWidth_(0.0), invBinYWidth_(0.0),
-	maxHeight_(0.0),
 	nBinsX_(0), nBinsY_(0),
 	norm_(0.0),
-	useInterpolation_(useInterpolation),
-	upperHalf_(useUpperHalfOnly),
-	squareDP_(squareDP)
+	useInterpolation_(useInterpolation)
 {
 	// For square Dalitz plots, the co-ordinates must be m', theta'
 	// The input data to the fit is still in m13^2, m23^2 co-ords, and a
@@ -60,11 +56,11 @@ Lau2DHistDPPdf::Lau2DHistDPPdf(const TH2* hist, LauKinematics* kinematics, const
 		nBinsX_ = hist_->GetNbinsX();
 		nBinsY_ = hist_->GetNbinsY();
 	} else {
-		minX_ = kinematics_->getm13SqMin();
-		maxX_ = kinematics_->getm13SqMax();
+		minX_ = getKinematics()->getm13SqMin();
+		maxX_ = getKinematics()->getm13SqMax();
 
-		minY_ = kinematics_->getm23SqMin();
-		maxY_ = kinematics_->getm23SqMax();
+		minY_ = getKinematics()->getm23SqMin();
+		maxY_ = getKinematics()->getm23SqMax();
 
 		nBinsX_ = 1;
 		nBinsY_ = 1;
@@ -80,7 +76,7 @@ Lau2DHistDPPdf::Lau2DHistDPPdf(const TH2* hist, LauKinematics* kinematics, const
 	// If the bins are to be fluctuated then do so now before
 	// calculating anything that depends on the bin content.
 	if (fluctuateBins) {
-		this->doBinFluctuation();
+		this->doBinFluctuation(hist_);
 	}
 
 	// Calculate the PDF normalisation.
@@ -90,25 +86,13 @@ Lau2DHistDPPdf::Lau2DHistDPPdf(const TH2* hist, LauKinematics* kinematics, const
 	this->checkNormalisation();
 
 	// Also obtain the maximum height
-	this->calcMaxHeight();
+	this->calcMaxHeight(hist_);
 }
 
 Lau2DHistDPPdf::~Lau2DHistDPPdf()
 {
 	// Destructor
 	delete hist_; hist_ = 0;
-}
-
-void Lau2DHistDPPdf::calcMaxHeight()
-{
-	// Get the maximum height of the 2D histogram
-	maxHeight_ = 1.0;
-	if ( hist_ ) {
-		Int_t maxBin = hist_->GetMaximumBin();
-		maxHeight_ = hist_->GetBinContent(maxBin);
-	}
-
-	std::cout << "INFO in Lau2DHistDPPdf::calcMaxHeight : Max height = " << maxHeight_ << std::endl;
 }
 
 void Lau2DHistDPPdf::calcHistNorm()
@@ -184,36 +168,18 @@ Double_t Lau2DHistDPPdf::interpolateXY(Double_t x, Double_t y) const
 
 	// If we're only using one half then flip co-ordinates
 	// appropriately for conventional or square DP
-	if ( upperHalf_ == kTRUE ) {
-		if ( squareDP_ == kFALSE && x > y ) {
-			Double_t temp = y;
-			y = x;
-			x = temp;
-		} else if ( squareDP_ == kTRUE && y > 0.5 ) {
-			y = 1.0 - y;
-		}
-	}
+	getUpperHalf(x,y);
 
 	// First ask whether the point is inside the kinematic region.
-	Bool_t withinDP(kFALSE);
-	if (squareDP_ == kTRUE) {
-		withinDP = kinematics_->withinSqDPLimits(x,y);
-	} else {
-		withinDP = kinematics_->withinDPLimits(x,y);
-	}
-	if (withinDP == kFALSE) {return 0.0;}
+	if (withinDPBoundaries(x,y) == kFALSE) {return 0.0;}
 
 	// Update the kinematics to the position of interest.
-	if (squareDP_ == kTRUE) {
-		kinematics_->updateSqDPKinematics(x,y);
-	} else {
-		kinematics_->updateKinematics(x,y);
-	}
+	updateKinematics(x,y);
 
 	// Check that we're not inside a veto
 	Bool_t vetoOK(kTRUE);
-	if (vetoes_) {
-		vetoOK = vetoes_->passVeto(kinematics_);
+	if (getVetoes()) {
+		vetoOK = getVetoes()->passVeto(getKinematics());
 	}
 	if (vetoOK == kFALSE) {return 0.0;}
 
@@ -235,12 +201,7 @@ Double_t Lau2DHistDPPdf::interpolateXY(Double_t x, Double_t y) const
 	Double_t cbiny = (j+0.5)*binYWidth_ + minY_;
 
 	// If bin centres are outside kinematic region, do not extrapolate
-	if (squareDP_ == kTRUE) {
-		withinDP = kinematics_->withinSqDPLimits(cbinx, cbiny);
-	} else {
-		withinDP = kinematics_->withinDPLimits(cbinx, cbiny);
-	}
-	if (withinDP == kFALSE) {
+	if (withinDPBoundaries(cbinx, cbiny) == kFALSE) {
 		return this->getBinHistValue(i,j);
 	}
 
@@ -277,13 +238,7 @@ Double_t Lau2DHistDPPdf::interpolateXY(Double_t x, Double_t y) const
 		// Find the adjacent x bin centre
 		Double_t cbinx_adj = Double_t(i_adj+0.5)*binXWidth_ + minX_;
 
-		if (squareDP_ == kTRUE) {
-			withinDP = kinematics_->withinSqDPLimits(cbinx_adj, y);
-		} else {
-			withinDP = kinematics_->withinDPLimits(cbinx_adj, y);
-		}
-
-		if (withinDP == kFALSE) {
+		if (withinDPBoundaries(cbinx_adj, y) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
 			value = this->getBinHistValue(i,j);
@@ -306,13 +261,7 @@ Double_t Lau2DHistDPPdf::interpolateXY(Double_t x, Double_t y) const
 		// Find the adjacent y bin centre
 		Double_t cbiny_adj = Double_t(j_adj+0.5)*binYWidth_ + minY_;
 
-		if (squareDP_ == kTRUE) {
-			withinDP = kinematics_->withinSqDPLimits(x, cbiny_adj);
-		} else {
-			withinDP = kinematics_->withinDPLimits(x, cbiny_adj);
-		}
-
-		if (withinDP == kFALSE) {
+		if (withinDPBoundaries(x, cbiny_adj) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
 			value = this->getBinHistValue(i,j);
@@ -337,13 +286,7 @@ Double_t Lau2DHistDPPdf::interpolateXY(Double_t x, Double_t y) const
 		Double_t cbinx_adj = Double_t(i_adj+0.5)*binXWidth_ + minX_;
 		Double_t cbiny_adj = Double_t(j_adj+0.5)*binYWidth_ + minY_;
 
-		if (squareDP_ == kTRUE) {
-			withinDP = kinematics_->withinSqDPLimits(cbinx_adj, cbiny_adj);
-		} else {
-			withinDP = kinematics_->withinDPLimits(cbinx_adj, cbiny_adj);
-		}
-
-		if (withinDP == kFALSE) {
+		if (withinDPBoundaries(cbinx_adj, cbiny_adj) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
 			value = this->getBinHistValue(i,j);
@@ -410,26 +353,5 @@ void Lau2DHistDPPdf::checkNormalisation()
 	std::cout << "INFO in Lau2DHistDPPdf::checkNormalisation : Area = " << area << ", dx = " << dx << ", dy = " << dy << ", dx*dy = " << dx*dy << std::endl;
 	std::cout << "                                           : Area with no norm = " << areaNoNorm << "*dx*dy = " << areaNoNorm*dx*dy << std::endl;
 	std::cout << "                                           : The total area of the normalised histogram PDF is " << norm << std::endl;
-}
-
-void Lau2DHistDPPdf::doBinFluctuation()
-{
-	if ( !hist_ ) {
-		return;
-	}
-
-	TRandom* random = LauRandom::zeroSeedRandom();
-	for (Int_t i(0); i<nBinsX_; i++) {
-		for (Int_t j(0); j<nBinsY_; j++) {
-			Double_t currentContent = hist_->GetBinContent(i+1,j+1);
-			Double_t currentError   = hist_->GetBinError(i+1,j+1);
-			Double_t newContent = random->Gaus(currentContent,currentError);
-			if (newContent<0.0) {
-				hist_->SetBinContent(i+1,j+1,0.0);
-			} else {
-				hist_->SetBinContent(i+1,j+1,newContent);
-			}
-		}
-	}
 }
 

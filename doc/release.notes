@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+3rd February 2014 Mark Whitehead
+
+* Added a new class to allow parameters to be a function of other parameters
+  - inc/LauFormulaPar.hh
+  - src/LauFormulaPar.cc
+
 28th January 2014 Daniel Craik
 
 * Improved out-of-range efficiency warnings in LauEffModel and supressed excessive errors

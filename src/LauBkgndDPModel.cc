@@ -41,7 +41,8 @@ LauBkgndDPModel::LauBkgndDPModel(LauDaughters* daughters, LauVetoes* vetoes) :
 	curEvtHistVal_(0.0),
 	maxPdfHeight_(1.0),
 	pdfNorm_(1.0),
-	doneGenWarning_(kFALSE)
+	doneGenWarning_(kFALSE),
+	lowBinWarningIssued_(kFALSE)
 {
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
@@ -99,6 +100,21 @@ Double_t LauBkgndDPModel::calcHistValue(Double_t xVal, Double_t yVal)
 
 	// Find out the un-normalised PDF value
 	Double_t value = bgHistDPPdf_->interpolateXY(xVal, yVal);
+
+	// Check that the value is greater than zero
+	// If we're using a spline then negative values can be caused by adjacent bins that all contain a value of zero.
+	// The spline requires the value, its first derivatives and the mixed second derivative to be continuous and to match the input histogram
+	// at the bin centres. Derivatives are calculated using a finite difference approximation taking the difference between the neighbouring bins.
+	// If two bins are zero but the third is not then the second bin will have a positive first derivative causing the spline to dip below zero
+	// between the two zero bins to remain smooth. Such dips are unavoidable but are correctly removed here.
+	if ( value < 0.0 ) {
+		if(!lowBinWarningIssued_) {
+			std::cerr << "WARNING in LauBkgndDPModel::calcHistValue : Value " << value << " is less than 0 - setting to 0.  You may want to check your histogram!" << std::endl
+			          << "If you are using a spline then this could be caused by adjacent empty bins. Further warnings will be suppressed." << std::endl;
+			lowBinWarningIssued_=kTRUE;
+		}
+		return 0.0;
+	}
 
 	LauKinematics* kinematics = this->getKinematics();
 

@@ -48,10 +48,7 @@ Lau2DSplineDPPdf::Lau2DSplineDPPdf(const TH2* hist, LauKinematics* kinematics, c
 	spline_ = new Lau2DCubicSpline(*tempHist);
 
 	// Calculate the PDF normalisation.
-	//this->calcHistNorm();
-
-	// And check it is OK.
-	//this->checkNormalisation();
+	this->calcHistNorm();
 
 	// Also obtain the maximum height
 	this->calcMaxHeight(tempHist);

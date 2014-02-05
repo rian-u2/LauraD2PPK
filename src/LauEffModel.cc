@@ -164,14 +164,14 @@ Double_t LauEffModel::calcEfficiency( const LauKinematics* kinematics ) const
 	if ( eff < 0.0 ) {
 		if(!lowBinWarningIssued_) {
 			std::cerr << "WARNING in LauEffModel::calcEfficiency : Efficiency " << eff << " is less than 0 - setting to 0.  You may want to check your histogram!" << std::endl
-			          << "If you are using a spline then this could be caused by adjacent empty bins. Further warnings will be suppressed." << std::endl;
+			          << "                                       : If you are using a spline then this could be caused by adjacent empty bins. Further warnings will be suppressed." << std::endl;
 			lowBinWarningIssued_=kTRUE;
 		}
 		eff = 0.0;
 	} else if ( eff > 1.0 ) {
 		if(!highBinWarningIssued_) {
 			std::cerr << "WARNING in LauEffModel::calcEfficiency : Efficiency " << eff << " is greater than 1 - setting to 1.  You may want to check your histogram!" << std::endl
-				  << "If you are using a spline then this could be caused by adjacent full bins. Further warnings will be suppressed." << std::endl;
+				  << "                                       : If you are using a spline then this could be caused by adjacent full bins. Further warnings will be suppressed." << std::endl;
 			highBinWarningIssued_=kTRUE;
 		}
 		eff = 1.0;

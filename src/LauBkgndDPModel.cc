@@ -110,7 +110,7 @@ Double_t LauBkgndDPModel::calcHistValue(Double_t xVal, Double_t yVal)
 	if ( value < 0.0 ) {
 		if(!lowBinWarningIssued_) {
 			std::cerr << "WARNING in LauBkgndDPModel::calcHistValue : Value " << value << " is less than 0 - setting to 0.  You may want to check your histogram!" << std::endl
-			          << "If you are using a spline then this could be caused by adjacent empty bins. Further warnings will be suppressed." << std::endl;
+			          << "                                          : If you are using a spline then this could be caused by adjacent empty bins. Further warnings will be suppressed." << std::endl;
 			lowBinWarningIssued_=kTRUE;
 		}
 		return 0.0;

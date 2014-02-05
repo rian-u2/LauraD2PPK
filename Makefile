@@ -83,6 +83,7 @@ CINTFILE  = $(WORKDIR)/$(PACKAGE)Cint.cc
 CINTOBJ   = $(OBJDIR)/$(PACKAGE)Cint.o
 LIBFILE   = $(LIBDIR)/lib$(PACKAGE).a
 SHLIBFILE = $(LIBDIR)/lib$(PACKAGE).so
+ROOTMAPFILE := $(patsubst %.so,%.rootmap,$(SHLIBFILE))
 
 default: shlib
 
@@ -133,6 +134,7 @@ $(SHLIBFILE): $(OLIST) $(CINTOBJ)
 	@mkdir -p $(LIBDIR)
 	@rm -f $(SHLIBFILE)
 	@$(CXX) $(OLIST) $(CINTOBJ) $(SOFLAGS) -o $(SHLIBFILE)
+	@rlibmap -f -o $(ROOTMAPFILE) -l $(SHLIBFILE) -d libMatrix libHist libTree -c $(INCDIR)/$(PACKAGE)_LinkDef.h
 
 # Useful build targets
 lib: $(LIBFILE) 
@@ -141,6 +143,7 @@ clean:
 	rm -rf $(WORKDIR)
 	rm -f $(LIBFILE)
 	rm -f $(SHLIBFILE)
+	rm -f $(ROOTMAPFILE)
 
 .PHONY : shlib lib default clean
 

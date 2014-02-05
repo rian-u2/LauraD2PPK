@@ -99,11 +99,11 @@ class Lau2DAbsHistDPPdf : public Lau2DAbsDPPdf {
 		*/
 		void doBinFluctuation(TH2* hist);
 
-		//! Check whether the given co-oridinates are within the kinematic boundary
+		//! Check whether the given co-ordinates are within the kinematic boundary
 		/*!
 		    \param [in] x the x co-ordinate
 		    \param [in] y the y co-ordinate
-		    \return true if the co-oridinates are within the kinematic boundary, otherwise false
+		    \return true if the co-ordinates are within the kinematic boundary, otherwise false
 		*/
 		Bool_t withinDPBoundaries(Double_t x, Double_t y) const;
 

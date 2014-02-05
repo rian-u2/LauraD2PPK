@@ -141,6 +141,9 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		//! Boolean to indicate if the warning that there is no histogram has already been issued
 		Bool_t doneGenWarning_;
 
+		//! Flag to track whether a warning has been issued for bin values less than zero
+		mutable Bool_t lowBinWarningIssued_;
+
 		ClassDef(LauBkgndDPModel,0) // DP background model
 };
 

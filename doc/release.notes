@@ -4,7 +4,21 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v1r2
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+5th February 2014 Thomas Latham
+
+* Add rule to the Makefile that creates a rootmap file for the library
+
+4th February 2014 Daniel Craik
+
+* Fixed bug in Lau2DSplineDPPdf - normalisation was not being calculated
+* Added out-of-range warning in LauBkgndDPModel and supressed excessive warnings
+
 3rd February 2014 Mark Whitehead
+(in branch for release in v2r0)
 
 * Added a new class to allow parameters to be a function of other parameters
   - inc/LauFormulaPar.hh
@@ -22,8 +36,13 @@
   - Added Lau2DSplineDPPdf which uses a spline to model a normalised PDF across a DP
   - Added pABC, Lau2DAbsDPPdf, for Lau2DHistDPPdf and Lau2DSplineDPPdf and moved common 
     code in Lau2DHistDPPdf and Lau2DSplineDPPdf into ABC Lau2DAbsHistDPPdf
-  - LauBkgndModel, modified to use Lau2DAbsDPPdf instead of Lau2DHistDPPdf
+  - LauBkgndDPModel, modified to use Lau2DAbsDPPdf instead of Lau2DHistDPPdf
   - setBkgndSpline method added to LauBkgndDPModel to allow use of splines
+
+22nd January 2014 Thomas Latham
+
+* Improve some error checks and corresponding warning messages in
+  LauCPFitModel::setSignalDPParameters
 
 16th January 2014 Thomas Latham
 

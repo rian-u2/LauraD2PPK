@@ -187,13 +187,13 @@ class LauKinematics {
 		inline Double_t getc12() const {return c12_;}
 		//! Get the cosine of the helicity angle theta23
 		/*!
-		    theta23 is defined as the angle between 1&2 in the rest frame of 2&3
+		    theta23 is defined as the angle between 3&1 in the rest frame of 2&3
 		    \return the cosine of the helicity angle theta23
 		*/
 		inline Double_t getc23() const {return c23_;}
 		//! Get the cosine of the helicity angle theta13
 		/*!
-		    theta13 is defined as the angle between 1&2 in the rest frame of 1&3
+		    theta13 is defined as the angle between 3&2 in the rest frame of 1&3
 		    \return the cosine of the helicity angle theta13
 		*/
 		inline Double_t getc13() const {return c13_;}

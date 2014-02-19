@@ -192,7 +192,7 @@ Double_t Lau1DHistPdf::interpolate(Double_t x) const
 	// bin centres.
 
 	// Find the histogram bin
-	Int_t bin = hist_->FindBin(x);
+	Int_t bin = hist_->FindFixBin(x);
 
 	// Ask whether we want to do the interpolation, since this method is
 	// not reliable for low statistics histograms.

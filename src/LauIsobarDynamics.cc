@@ -42,6 +42,7 @@ using std::ofstream;
 #include "LauKMatrixProdPole.hh"
 #include "LauKMatrixProdSVP.hh"
 #include "LauNRAmplitude.hh"
+#include "LauPolNR.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"
 #include "LauRelBreitWignerRes.hh"
@@ -506,8 +507,16 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 		} else {
 			cout<<"Belle non-resonant object is null"<<endl;
 		}
-	}
 
+	} else if ( resonanceName.BeginsWith("PolNR", TString::kExact) ) {
+		LauPolNR* polNR = dynamic_cast<LauPolNR*>(theResonance);
+		Double_t omega = 0.5*(daughters_->getMassParent()+(1./3)*(daughters_->getMassDaug1()+daughters_->getMassDaug2()+daughters_->getMassDaug3()));
+		if (polNR != 0) {
+		  polNR->setOmega(omega);
+		} else {
+			cout<<"Polynomial non-resonant object is null"<<endl;
+		}
+	}
 	// Initialise the resonance model
 	theResonance->initialise();
 
@@ -519,6 +528,7 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 	// in case the user chooses the wrong number.
 	if (    (resonanceName.BeginsWith("NonReson",   TString::kExact) == kTRUE) || 
 		(resonanceName.BeginsWith("BelleSymNR", TString::kExact) == kTRUE) ||
+		(resonanceName.BeginsWith("PolNR",      TString::kExact) == kTRUE) ||
 		(resonanceName.BeginsWith("NRModel",    TString::kExact) == kTRUE)) {
 	        cout<<"Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<endl;
 		resPairAmp_.push_back(0);

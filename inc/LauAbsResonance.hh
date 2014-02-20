@@ -35,7 +35,7 @@ class LauAbsResonance {
 
 	public:
 		//! Define the allowed resonance types
-		enum LauResonanceModel {BW, RelBW, Flatte, Sigma, Kappa, Dabba, LASS_BW, LASS_NR, LASS, NRModel, BelleNR, GS, KMatrix};
+  enum LauResonanceModel {BW, RelBW, Flatte, Sigma, Kappa, Dabba, LASS_BW, LASS_NR, LASS, NRModel, BelleNR, GS, KMatrix, PolNR};
 
 		//! Define the allowed types of barrier factors 
 		enum BarrierType { BWBarrier, BWPrimeBarrier, ExpBarrier };
@@ -117,9 +117,21 @@ class LauAbsResonance {
 
 		//! Set the helicity flip flag
 		/*!
-			\param [in] boolean the helcity flip status
+			\param [in] boolean the helicity flip status
 		*/
 		void flipHelicity(Bool_t boolean) {flipHelicity_ = boolean;}
+	
+		//! Get the ignore momenta flag
+		/*! 
+			\return the ignore momenta flag
+		*/
+		Bool_t ignoreMomenta() const {return ignoreMomenta_;}
+
+  //! Set the ignore p_ and q_ flag
+		/*!
+			\param [in] boolean the ignore momenta status
+		*/
+		void ignoreMomenta(Bool_t boolean) {ignoreMomenta_ = boolean;}
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
@@ -225,6 +237,8 @@ class LauAbsResonance {
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
+  //! Boolean to ignore q_ and p_ in spinTerm
+  Bool_t ignoreMomenta_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;

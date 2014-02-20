@@ -79,6 +79,7 @@
 #pragma link C++ class LauParametricStepFuncPdf;
 #pragma link C++ class LauParamFixed;
 #pragma link C++ class LauParticlePDG;
+#pragma link C++ class LauPolNR;
 #pragma link C++ class LauPrint;
 #pragma link C++ class LauRealImagCoeffSet;
 #pragma link C++ class LauRealImagCPCoeffSet;

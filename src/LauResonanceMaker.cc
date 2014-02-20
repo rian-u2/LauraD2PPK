@@ -29,6 +29,7 @@ using std::endl;
 #include "LauLASSBWRes.hh"
 #include "LauLASSNRRes.hh"
 #include "LauNRAmplitude.hh"
+#include "LauPolNR.hh"
 #include "LauRelBreitWignerRes.hh"
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
@@ -210,21 +211,34 @@ void LauResonanceMaker::createResonanceVector()
 	// Bs*
 	resInfo_.push_back(LauResonanceInfo("Bs*0",          5.4154,   0.00,    1,    0          ));
 	
-	// nonresonant models               name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)
-	// Phase-space nonresonant model
-	resInfo_.push_back(LauResonanceInfo("NonReson",      0.0,      0.0,     0,     0          ));
-	// Theory-based nonresonant model
-	resInfo_.push_back(LauResonanceInfo("NRModel",       0.0,      0.0,     0,     0          ));
-	// Belle nonresonant models
-	resInfo_.push_back(LauResonanceInfo("BelleSymNR",    0.0,      0.0,     0,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR",       0.0,      0.0,     0,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR_Swave", 0.0,      0.0,     0,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR_Pwave", 0.0,      0.0,     1,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR_Dwave", 0.0,      0.0,     2,     0          ));
-	// Taylor expansion nonresonant model
-	resInfo_.push_back(LauResonanceInfo("NRTaylor",      0.0,      0.0,     0,     0          ));
-	// LASS nonresonant model
-	resInfo_.push_back(LauResonanceInfo("LASSNR",        1.412,    0.294,   0,     0          ));
+        // nonresonant models               name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)               
+        // Phase-space nonresonant model                                                                                                      
+        resInfo_.push_back(LauResonanceInfo("NonReson",      0.0,      0.0,     0,     0          ));
+        // Theory-based nonresonant model                                                                                                     
+        resInfo_.push_back(LauResonanceInfo("NRModel",       0.0,      0.0,     0,     0          ));
+        // Babar nonresonant polynomial model                                                                                                 
+        resInfo_.push_back(LauResonanceInfo("BabarNR",       0.0,      0.0,     0,     0          ));
+        // Belle nonresonant models                                                                                                           
+        resInfo_.push_back(LauResonanceInfo("BelleSymNR",    0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR",       0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR_Swave", 0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR_Pwave", 0.0,      0.0,     1,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR_Dwave", 0.0,      0.0,     2,     0          ));
+
+	// Polynomial nonresonant models
+        resInfo_.push_back(LauResonanceInfo("PolNR",         0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_S0",      0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_S1",      0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_S2",      0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_P0",      0.0,      0.0,     1,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_P1",      0.0,      0.0,     1,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_P2",      0.0,      0.0,     1,     0          ));
+
+
+        // Taylor expansion nonresonant model                                                                                                 
+        resInfo_.push_back(LauResonanceInfo("NRTaylor",      0.0,      0.0,     0,     0          ));
+        // LASS nonresonant model                                                                                                             
+        resInfo_.push_back(LauResonanceInfo("LASSNR",        1.412,    0.294,   0,     0          ));
 
 	nResDefMax_ = resInfo_.size();
 }
@@ -362,6 +376,12 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 		// Belle NR amplitude model - arguments are there to preserve the interface
 		theResonance =
 			new LauBelleNR(resName, resMass, resWidth, resSpin, resCharge,
+					resPairAmpInt, daughters_);
+	} else if ( !resTypeName.CompareTo("polnr") ) {
+
+		// Polynomial NR amplitude model - arguments are there to preserve the interface
+		theResonance =
+			new LauPolNR(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
 
 	} else {

@@ -36,7 +36,7 @@ private:
 	TString fileName1_, fileName2_, treeName1_, treeName2_, xName1_, xName2_, yName1_, yName2_;
 	Float_t minContent_;
 
-	TH2Poly *theHisto_, *histo1_, *histo2_,;
+	TH2Poly *theHisto_, *histo1_, *histo2_;
 	TH2Poly *pullHisto_;
 	TH2Poly *chiSqHisto_;
 	TH2Poly *chiSqSignedHisto_;

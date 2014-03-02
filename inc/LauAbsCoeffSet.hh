@@ -34,6 +34,16 @@ class LauParameter;
 class LauAbsCoeffSet {
 
 	public:
+		//! Options for cloning operation
+		enum CloneOption {
+			All,		/*!< no special operation, all parameters cloned */
+			TiePhase,	/*!< phase cloned, magnitude free to vary */
+			TieMagnitude,	/*!< magnitude cloned, phase free to vary */
+			TieRealPart,	/*!< real part cloned, imaginary part free to vary */
+			TieImagPart,	/*!< imaginary part cloned, real part free to vary */
+			TieCPPars	/*!< CP-violating parameters cloned, CP-conserving ones free to vary */
+		};
+
 		//! Destructor
 		virtual ~LauAbsCoeffSet(){}
 
@@ -89,10 +99,11 @@ class LauAbsCoeffSet {
 		//! Create a clone of the coefficient set
 		/*!
 		    \param [in] newName the clone's name
-		    \param [in] constFactor a constant factor to multiply the clone's parameters by
+		    \param [in] cloneOption special option for the cloning operation
+		    \param [in] constFactor a constant factor by which to multiply the cloned parameters
 		    \return a clone of the coefficient set
 		*/
-		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0) = 0;
+		virtual LauAbsCoeffSet* createClone(const TString& newName, CloneOption cloneOption = All, Double_t constFactor = 1.0) = 0;
 
 		//! Retrieve the name of the coefficient set
 		/*!
@@ -114,7 +125,7 @@ class LauAbsCoeffSet {
 		    This is used in the fit results ntuple.
 		    \return the base name of the coefficient set
 		*/
-		virtual TString baseName() const {return basename_;}
+		virtual const TString& baseName() const {return basename_;}
 
 		//! Set the base name of the coefficient set
 		/*!
@@ -136,24 +147,64 @@ class LauAbsCoeffSet {
 		*/
 		virtual void index(UInt_t newIndex);
 
+		//! Set the allowed range for magnitude parameters
+		/*!
+		    \param [in] minMag the lower edge of the range
+		    \param [in] maxMag the upper edge of the range
+		*/
+		static void setMagnitudeRange(Double_t minMag, Double_t maxMag) { minMagnitude_ = minMag;  maxMagnitude_ = maxMag; }
+
+		//! Set the allowed range for phase parameters
+		/*!
+		    \param [in] minPhase the lower edge of the range
+		    \param [in] maxPhase the upper edge of the range
+		*/
+		static void setPhaseRange(Double_t minPhase, Double_t maxPhase) { minPhase_ = minPhase;  maxPhase_ = maxPhase; }
+
+		//! Set the allowed range for real/imaginary part parameters
+		/*!
+		    \param [in] minPar the lower edge of the range
+		    \param [in] maxPar the upper edge of the range
+		*/
+		static void setRealImagRange(Double_t minPar, Double_t maxPar) { minRealImagPart_ = minPar;  maxRealImagPart_ = maxPar; }
+
+		//! Set the allowed range for CP-violating parameters
+		/*!
+		    \param [in] minPar the lower edge of the range
+		    \param [in] maxPar the upper edge of the range
+		*/
+		static void setCPParRange(Double_t minPar, Double_t maxPar) { minDelta_ = minPar;  maxDelta_ = maxPar; }
+
 	protected:
 		//! Constructor
 		/*! 
 		    \param [in] theName the name of the coefficient set
+		    \param [in] theBaseName the single character base for the parameter names
 		*/
-		LauAbsCoeffSet(const TString& theName);
-
-		//! Prepend the base name and index to the name of a parameter
-		/*!
-		    \param [out] par the parameter
-		*/
-		virtual void adjustName(LauParameter& par);
+		LauAbsCoeffSet(const TString& theName, const TString& theBaseName = "A");
 
 		//! Prepend the base name and index to the name of a parameter
 		/*!
 		    \param [out] par pointer to the parameter
 		*/
 		virtual void adjustName(LauParameter* par);
+
+		//! Minimum allowed value of magnitude parameters
+		static Double_t minMagnitude_;
+		//! Maximum allowed value of magnitude parameters
+		static Double_t maxMagnitude_;
+		//! Minimum allowed value of phase parameters
+		static Double_t minPhase_;
+		//! Maximum allowed value of phase parameters
+		static Double_t maxPhase_;
+		//! Minimum allowed value of real/imaginary part parameters
+		static Double_t minRealImagPart_;
+		//! Maximum allowed value of real/imaginary part parameters
+		static Double_t maxRealImagPart_;
+		//! Minimum allowed value of CP-violating real/imaginary part parameters
+		static Double_t minDelta_;
+		//! Maximum allowed value of CP-violating real/imaginary part parameters
+		static Double_t maxDelta_;
 
 	private:
 		//! The name of the coefficient set

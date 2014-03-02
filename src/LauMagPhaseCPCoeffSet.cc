@@ -35,13 +35,9 @@ ClassImp(LauMagPhaseCPCoeffSet)
 LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const TString& compName, Double_t mag, Double_t phase, Double_t magBar, Double_t phaseBar,
 		Bool_t magFixed, Bool_t phaseFixed,Bool_t magBarFixed, Bool_t phaseBarFixed) :
 	LauAbsCoeffSet(compName),
-	minMag_(-40.0),
-	maxMag_(+40.0),
-	minPhase_(-LauConstants::threePi),
-	maxPhase_(+LauConstants::threePi),
-	mag_(new LauParameter("Mag", mag, minMag_, maxMag_, magFixed)),
+	mag_(new LauParameter("Mag", mag, minMagnitude_, maxMagnitude_, magFixed)),
 	phase_(new LauParameter("Phase", phase, minPhase_, maxPhase_, phaseFixed)),
-	magBar_(new LauParameter("MagBar", magBar, minMag_, maxMag_, magBarFixed)),
+	magBar_(new LauParameter("MagBar", magBar, minMagnitude_, maxMagnitude_, magBarFixed)),
 	phaseBar_(new LauParameter("PhaseBar", phaseBar, minPhase_, maxPhase_, phaseBarFixed)),
 	particleCoeff_( mag*TMath::Cos(phase), mag*TMath::Sin(phase) ),
 	antiparticleCoeff_( magBar*TMath::Cos(phaseBar), magBar*TMath::Sin(phaseBar) ),
@@ -53,38 +49,30 @@ LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const TString& compName, Double_t m
 
 }
 
-LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const LauMagPhaseCPCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
+LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const LauMagPhaseCPCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	mag_(0),
+	phase_(0),
+	magBar_(0),
+	phaseBar_(0),
+	particleCoeff_( rhs.particleCoeff_ ),
+	antiparticleCoeff_( rhs.antiparticleCoeff_ ),
+	acp_( rhs.acp_ )
 {
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	mag_ = rhs.mag_->createClone(constFactor);
-	phase_ = rhs.phase_->createClone(constFactor);
-	magBar_ = rhs.magBar_->createClone(constFactor);
-	phaseBar_ = rhs.phaseBar_->createClone(constFactor);
-	particleCoeff_ = rhs.particleCoeff_;
-	antiparticleCoeff_ = rhs.antiparticleCoeff_;
-	acp_ = rhs.acp_;
-}
-
-LauMagPhaseCPCoeffSet& LauMagPhaseCPCoeffSet::operator=(const LauMagPhaseCPCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minMag_ = rhs.minMag_;
-		maxMag_ = rhs.maxMag_;
-		minPhase_ = rhs.minPhase_;
-		maxPhase_ = rhs.maxPhase_;
-		mag_ = rhs.mag_->createClone();
-		phase_ = rhs.phase_->createClone();
-		magBar_ = rhs.magBar_->createClone();
-		phaseBar_ = rhs.phaseBar_->createClone();
-		particleCoeff_ = rhs.particleCoeff_;
-		antiparticleCoeff_ = rhs.antiparticleCoeff_;
-		acp_ = rhs.acp_;
+	if ( cloneOption == All || cloneOption == TieMagnitude ) {
+		mag_ = rhs.mag_->createClone(constFactor);
+		magBar_ = rhs.magBar_->createClone(constFactor);
+	} else {
+		mag_ = new LauParameter("Mag", rhs.mag_->value(), minMagnitude_, maxMagnitude_, rhs.mag_->fixed());
+		magBar_ = new LauParameter("MagBar", rhs.magBar_->value(), minMagnitude_, maxMagnitude_, rhs.magBar_->fixed());
 	}
-	return *this;
+
+	if ( cloneOption == All || cloneOption == TiePhase ) {
+		phase_ = rhs.phase_->createClone(constFactor);
+		phaseBar_ = rhs.phaseBar_->createClone(constFactor);
+	} else {
+		phase_ = new LauParameter("Phase", rhs.phase_->value(), minPhase_, maxPhase_, rhs.phase_->fixed());
+		phaseBar_ = new LauParameter("PhaseBar", rhs.phaseBar_->value(), minPhase_, maxPhase_, rhs.phaseBar_->fixed());
+	}
 }
 
 std::vector<LauParameter*> LauMagPhaseCPCoeffSet::getParameters()
@@ -273,10 +261,15 @@ LauParameter LauMagPhaseCPCoeffSet::acp()
 	return acp_;
 }
 
-LauAbsCoeffSet* LauMagPhaseCPCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauMagPhaseCPCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauMagPhaseCPCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TiePhase || cloneOption == TieMagnitude ) {
+		clone = new LauMagPhaseCPCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauMagPhaseCPCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

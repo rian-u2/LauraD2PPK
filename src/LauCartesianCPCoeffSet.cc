@@ -35,14 +35,10 @@ ClassImp(LauCartesianCPCoeffSet)
 LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const TString& compName, Double_t x, Double_t y, Double_t deltaX, Double_t deltaY,
 		Bool_t xFixed, Bool_t yFixed, Bool_t deltaXFixed, Bool_t deltaYFixed, Bool_t deltaXSecondStage, Bool_t deltaYSecondStage) :
 	LauAbsCoeffSet(compName),
-	minPar_(-10.0),
-	maxPar_(+10.0),
-	minDeltaPar_(-2.0),
-	maxDeltaPar_(+2.0),
-	x_(new LauParameter("X", x, minPar_, maxPar_, xFixed)),
-	y_(new LauParameter("Y", y, minPar_, maxPar_, yFixed)),
-	deltaX_(new LauParameter("DeltaX", deltaX, minDeltaPar_, maxDeltaPar_, deltaXFixed)),
-	deltaY_(new LauParameter("DeltaY", deltaY, minDeltaPar_, maxDeltaPar_, deltaYFixed)),
+	x_(new LauParameter("X", x, minRealImagPart_, maxRealImagPart_, xFixed)),
+	y_(new LauParameter("Y", y, minRealImagPart_, maxRealImagPart_, yFixed)),
+	deltaX_(new LauParameter("DeltaX", deltaX, minDelta_, maxDelta_, deltaXFixed)),
+	deltaY_(new LauParameter("DeltaY", deltaY, minDelta_, maxDelta_, deltaYFixed)),
 	particleCoeff_( x+deltaX, y+deltaY ),
 	antiparticleCoeff_( x-deltaX, y-deltaY ),
 	acp_("ACP", -2.0*(x*deltaX + y*deltaY)/(x*x + deltaX*deltaX + y*y + deltaY*deltaY), -1.0, 1.0, deltaXFixed&&deltaYFixed)
@@ -61,38 +57,42 @@ LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const TString& compName, Double_t
 	}
 }
 
-LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
+LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	x_(0),
+	y_(0),
+	deltaX_(0),
+	deltaY_(0),
+	particleCoeff_( rhs.particleCoeff_ ),
+	antiparticleCoeff_( rhs.antiparticleCoeff_ ),
+	acp_( rhs.acp_ )
 {
-	minPar_ = rhs.minPar_;
-	maxPar_ = rhs.maxPar_;
-	minDeltaPar_ = rhs.minDeltaPar_;
-	maxDeltaPar_ = rhs.maxDeltaPar_;
-	x_ = rhs.x_->createClone(constFactor);
-	y_ = rhs.y_->createClone(constFactor);
-	deltaX_ = rhs.deltaX_->createClone(constFactor);
-	deltaY_ = rhs.deltaY_->createClone(constFactor);
-	particleCoeff_ = rhs.particleCoeff_;
-	antiparticleCoeff_ = rhs.antiparticleCoeff_;
-	acp_ = rhs.acp_;
-}
-
-LauCartesianCPCoeffSet& LauCartesianCPCoeffSet::operator=(const LauCartesianCPCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minPar_ = rhs.minPar_;
-		maxPar_ = rhs.maxPar_;
-		minDeltaPar_ = rhs.minDeltaPar_;
-		maxDeltaPar_ = rhs.maxDeltaPar_;
-		x_ = rhs.x_->createClone();
-		y_ = rhs.y_->createClone();
-		deltaX_ = rhs.deltaX_->createClone();
-		deltaY_ = rhs.deltaY_->createClone();
-		particleCoeff_ = rhs.particleCoeff_;
-		antiparticleCoeff_ = rhs.antiparticleCoeff_;
-		acp_ = rhs.acp_;
+	if ( cloneOption == All || cloneOption == TieRealPart ) {
+		x_ = rhs.x_->createClone(constFactor);
+	} else {
+		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
 	}
-	return *this;
+
+	if ( cloneOption == All || cloneOption == TieImagPart ) {
+		y_ = rhs.y_->createClone(constFactor);
+	} else {
+		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TieCPPars ) {
+		deltaX_ = rhs.deltaX_->createClone(constFactor);
+		deltaY_ = rhs.deltaY_->createClone(constFactor);
+	} else {
+		deltaX_ = new LauParameter("DeltaX", rhs.deltaX_->value(), minDelta_, maxDelta_, rhs.deltaX_->fixed());
+		deltaY_ = new LauParameter("DeltaY", rhs.deltaY_->value(), minDelta_, maxDelta_, rhs.deltaY_->fixed());
+		if ( rhs.deltaX_->secondStage() && !rhs.deltaX_->fixed() ) {
+			deltaX_->secondStage(kTRUE);
+			deltaX_->initValue(0.0);
+		}
+		if ( rhs.deltaY_->secondStage() && !rhs.deltaY_->fixed() ) {
+			deltaY_->secondStage(kTRUE);
+			deltaY_->initValue(0.0);
+		}
+	}
 }
 
 std::vector<LauParameter*> LauCartesianCPCoeffSet::getParameters()
@@ -139,12 +139,12 @@ void LauCartesianCPCoeffSet::printTableRow(std::ostream& stream)
 
 void LauCartesianCPCoeffSet::randomiseInitValues()
 {
-	if (x_->fixed() == kFALSE && x_->secondStage() == kFALSE) {
+	if (x_->fixed() == kFALSE) {
 		// Choose a value for "X" between -3.0 and 3.0
 		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
 		x_->initValue(value); x_->value(value);
 	}
-	if (y_->fixed() == kFALSE && y_->secondStage() == kFALSE) {
+	if (y_->fixed() == kFALSE) {
 		// Choose a value for "Y" between -3.0 and 3.0
 		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
 		y_->initValue(value);  y_->value(value);
@@ -218,10 +218,15 @@ LauParameter LauCartesianCPCoeffSet::acp()
 	return acp_;
 }
 
-LauAbsCoeffSet* LauCartesianCPCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauCartesianCPCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauCartesianCPCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TieRealPart || cloneOption == TieImagPart || cloneOption == TieCPPars ) {
+		clone = new LauCartesianCPCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauCartesianCPCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

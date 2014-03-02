@@ -34,11 +34,7 @@ ClassImp(LauMagPhaseCoeffSet)
 
 LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const TString& compName, Double_t magnitude, Double_t phase, Bool_t magFixed, Bool_t phaseFixed) :
 	LauAbsCoeffSet(compName),
-	minMag_(-10.0),
-	maxMag_(+10.0),
-	minPhase_(-LauConstants::threePi),
-	maxPhase_(+LauConstants::threePi),
-	magnitude_(new LauParameter("A",magnitude,minMag_,maxMag_,magFixed)),
+	magnitude_(new LauParameter("A",magnitude,minMagnitude_,maxMagnitude_,magFixed)),
 	phase_(new LauParameter("Delta",phase,minPhase_,maxPhase_,phaseFixed)),
 	coeff_(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase))
 {
@@ -46,30 +42,22 @@ LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const TString& compName, Double_t magni
 	cout<<"Set component \""<<this->name()<<"\" to have magnitude = "<<magnitude_->value()<<" and phase = "<<phase_->value()<<"."<<endl;
 }
 
-LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const LauMagPhaseCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
+LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const LauMagPhaseCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	magnitude_(0),
+	phase_(0),
+	coeff_( rhs.coeff_ )
 {
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	magnitude_ = rhs.magnitude_->createClone(constFactor);
-	phase_ = rhs.phase_->createClone(constFactor);
-	coeff_ = rhs.coeff_;
-}
-
-LauMagPhaseCoeffSet& LauMagPhaseCoeffSet::operator=(const LauMagPhaseCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minMag_ = rhs.minMag_;
-		maxMag_ = rhs.maxMag_;
-		minPhase_ = rhs.minPhase_;
-		maxPhase_ = rhs.maxPhase_;
-		magnitude_ = rhs.magnitude_->createClone();
-		phase_ = rhs.phase_->createClone();
-		coeff_ = rhs.coeff_;
+	if ( cloneOption == All || cloneOption == TieMagnitude ) {
+		magnitude_ = rhs.magnitude_->createClone(constFactor);
+	} else {
+		magnitude_ = new LauParameter("A", rhs.magnitude_->value(), minMagnitude_, maxMagnitude_, rhs.magnitude_->fixed());
 	}
-	return *this;
+
+	if ( cloneOption == All || cloneOption == TiePhase ) {
+		phase_ = rhs.phase_->createClone(constFactor);
+	} else {
+		phase_ = new LauParameter("Delta", rhs.phase_->value(), minPhase_, maxPhase_, rhs.phase_->fixed());
+	}
 }
 
 std::vector<LauParameter*> LauMagPhaseCoeffSet::getParameters()
@@ -190,10 +178,15 @@ LauParameter LauMagPhaseCoeffSet::acp()
 	return LauParameter(parName,0.0);
 }
 
-LauAbsCoeffSet* LauMagPhaseCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauMagPhaseCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauMagPhaseCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TiePhase || cloneOption == TieMagnitude ) {
+		clone = new LauMagPhaseCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauMagPhaseCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

@@ -101,37 +101,27 @@ class LauMagPhaseCoeffSet : public LauAbsCoeffSet {
 		//! Create a clone of the coefficient set
 		/*!
 		    \param [in] newName the clone's name
+		    \param [in] cloneOption special option for the cloning operation
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		    \return a clone of the coefficient set
 		*/
-		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0);
+		virtual LauAbsCoeffSet* createClone(const TString& newName, CloneOption cloneOption = All, Double_t constFactor = 1.0);
 
-	protected:
+	private:
 		//! Copy constructor
 		/*!
 		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
+		    \param [in] cloneOption special option for the cloning operation
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		*/
-		LauMagPhaseCoeffSet(const LauMagPhaseCoeffSet& rhs, Double_t constFactor = 1.0);
+		LauMagPhaseCoeffSet(const LauMagPhaseCoeffSet& rhs, CloneOption cloneOption = All, Double_t constFactor = 1.0);
 		
-		//! Copy assignment operator
+		//! Copy assignment operator (not implemented)
 		/*!
-		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
 		*/
 		LauMagPhaseCoeffSet& operator=(const LauMagPhaseCoeffSet& rhs);
-
-
-	private:
-		//! The minimum allowed value for magnitudes
-		Double_t minMag_;
-		//! The maximum allowed value for magnitudes
-		Double_t maxMag_;
-		//! The minimum allowed value for phases
-		Double_t minPhase_;
-		//! The maximum allowed value for phases
-		Double_t maxPhase_;
 
 		// the actual fit parameters
 		// (need to be pointers so they can be cloned)

@@ -51,9 +51,11 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		    \param [in] deltaFixed whether delta is fixed
 		    \param [in] bFixed whether b is fixed
 		    \param [in] phiFixed whether phi is fixed
+		    \param [in] bSecondStage whether b should be floated only in the second stage of the fit
+		    \param [in] phiSecondStage whether phi should be floated only in the second stage of the fit
 		*/
 		LauBelleCPCoeffSet(const TString& compName, Double_t a, Double_t delta, Double_t b, Double_t phi,
-				Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed);
+				Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed, Bool_t bSecondStage = kFALSE, Bool_t phiSecondStage = kFALSE);
 
 		//! Destructor
 		virtual ~LauBelleCPCoeffSet(){}
@@ -110,37 +112,27 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		//! Create a clone of the coefficient set
 		/*!
 		    \param [in] newName the clone's name
+		    \param [in] cloneOption special option for the cloning operation
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		    \return a clone of the coefficient set
 		*/
-		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0);
+		virtual LauAbsCoeffSet* createClone(const TString& newName, CloneOption cloneOption = All, Double_t constFactor = 1.0);
 
-	protected:
+	private:
 		//! Copy constructor
 		/*!
 		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
+		    \param [in] cloneOption special option for the cloning operation
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		*/
-		LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, Double_t constFactor = 1.0);
+		LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, CloneOption cloneOption = All, Double_t constFactor = 1.0);
 
-		//! Copy assignment operator
+		//! Copy assignment operator (not implemented)
 		/*!
-		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
 		*/
 		LauBelleCPCoeffSet& operator=(const LauBelleCPCoeffSet& rhs);
-
-
-	private:
-		//! The minimum allowed value for magnitudes
-		Double_t minMag_;
-		//! The maximum allowed value for magnitudes
-		Double_t maxMag_;
-		//! The minimum allowed value for phases
-		Double_t minPhase_;
-		//! The maximum allowed value for phases
-		Double_t maxPhase_;
 
 		// the actual fit parameters
 		// (need to be pointers so they can be cloned)

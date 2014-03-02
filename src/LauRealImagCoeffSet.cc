@@ -34,36 +34,30 @@ ClassImp(LauRealImagCoeffSet)
 
 LauRealImagCoeffSet::LauRealImagCoeffSet(const TString& compName, Double_t x, Double_t y, Bool_t xFixed, Bool_t yFixed) :
 	LauAbsCoeffSet(compName),
-	minPar_(-10.0),
-	maxPar_(+10.0),
-	x_(new LauParameter("X",x,minPar_,maxPar_,xFixed)),
-	y_(new LauParameter("Y",y,minPar_,maxPar_,yFixed)),
+	x_(new LauParameter("X",x,minRealImagPart_,maxRealImagPart_,xFixed)),
+	y_(new LauParameter("Y",y,minRealImagPart_,maxRealImagPart_,yFixed)),
 	coeff_(x,y)
 {
 	// Print message
 	cout<<"Set component \""<<this->name()<<"\" to have real part = "<<x_->value()<<" and imaginary part = "<<y_->value()<<"."<<endl;
 }
 
-LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
+LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	x_(0),
+	y_(0),
+	coeff_( rhs.coeff_ )
 {
-	minPar_ = rhs.minPar_;
-	maxPar_ = rhs.maxPar_;
-	y_ = rhs.x_->createClone(constFactor);
-	y_ = rhs.y_->createClone(constFactor);
-	coeff_ = rhs.coeff_;
-}
-
-LauRealImagCoeffSet& LauRealImagCoeffSet::operator=(const LauRealImagCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minPar_ = rhs.minPar_;
-		maxPar_ = rhs.maxPar_;
-		y_ = rhs.x_->createClone();
-		y_ = rhs.y_->createClone();
-		coeff_ = rhs.coeff_;
+	if ( cloneOption == All || cloneOption == TieRealPart ) {
+		x_ = rhs.x_->createClone(constFactor);
+	} else {
+		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
 	}
-	return *this;
+
+	if ( cloneOption == All || cloneOption == TieImagPart ) {
+		y_ = rhs.y_->createClone(constFactor);
+	} else {
+		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+	}
 }
 
 std::vector<LauParameter*> LauRealImagCoeffSet::getParameters()
@@ -145,10 +139,15 @@ LauParameter LauRealImagCoeffSet::acp()
 	return LauParameter(parName,0.0);
 }
 
-LauAbsCoeffSet* LauRealImagCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauRealImagCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauRealImagCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TieRealPart || cloneOption == TieImagPart ) {
+		clone = new LauRealImagCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauRealImagCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

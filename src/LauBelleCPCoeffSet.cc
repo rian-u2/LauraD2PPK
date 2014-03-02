@@ -34,14 +34,10 @@ ClassImp(LauBelleCPCoeffSet)
 
 
 LauBelleCPCoeffSet::LauBelleCPCoeffSet(const TString& compName, Double_t a, Double_t delta, Double_t b, Double_t phi,
-		Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed) :
+		Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed, Bool_t bSecondStage, Bool_t phiSecondStage) :
 	LauAbsCoeffSet(compName),
-	minMag_(-10.0),
-	maxMag_(+10.0),
-	minPhase_(-LauConstants::threePi),
-	maxPhase_(+LauConstants::threePi),
-	a_(new LauParameter("A", a, minMag_, maxMag_, aFixed)),
-	b_(new LauParameter("B", b, minMag_, maxMag_, bFixed)),
+	a_(new LauParameter("A", a, minMagnitude_, maxMagnitude_, aFixed)),
+	b_(new LauParameter("B", b, minMagnitude_, maxMagnitude_, bFixed)),
 	delta_(new LauParameter("Delta", delta, minPhase_, maxPhase_, deltaFixed)),
 	phi_(new LauParameter("Phi", phi, minPhase_, maxPhase_, phiFixed)),
 	particleCoeff_(0.0,0.0),
@@ -51,40 +47,49 @@ LauBelleCPCoeffSet::LauBelleCPCoeffSet(const TString& compName, Double_t a, Doub
 	// Print message
 	cout<<"Set component \""<<this->name()<<"\" to have a-magnitude = "<<a_->value()<<",\tdelta = "<<delta_->value()<<",\t";
 	cout<<"b-magnitude = "<<b_->value()<<",\tphi = "<<phi_->value()<<"."<<endl;
-}
 
-LauBelleCPCoeffSet::LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
-{
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	a_ = rhs.a_->createClone(constFactor);
-	b_ = rhs.b_->createClone(constFactor);
-	delta_ = rhs.delta_->createClone(constFactor);
-	phi_ = rhs.phi_->createClone(constFactor);
-	particleCoeff_ = rhs.particleCoeff_;
-	antiparticleCoeff_ = rhs.antiparticleCoeff_;
-	acp_ = rhs.acp_;
-}
-
-LauBelleCPCoeffSet& LauBelleCPCoeffSet::operator=(const LauBelleCPCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minMag_ = rhs.minMag_;
-		maxMag_ = rhs.maxMag_;
-		minPhase_ = rhs.minPhase_;
-		maxPhase_ = rhs.maxPhase_;
-		a_ = rhs.a_->createClone();
-		b_ = rhs.b_->createClone();
-		delta_ = rhs.delta_->createClone();
-		phi_ = rhs.phi_->createClone();
-		particleCoeff_ = rhs.particleCoeff_;
-		antiparticleCoeff_ = rhs.antiparticleCoeff_;
-		acp_ = rhs.acp_;
+	if (bSecondStage && !bFixed) {
+		b_->secondStage(kTRUE);
+		b_->initValue(0.0);
 	}
-	return *this;
+	if (phiSecondStage && !phiFixed) {
+		phi_->secondStage(kTRUE);
+		phi_->initValue(0.0);
+	}
+}
+
+LauBelleCPCoeffSet::LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	a_(0),
+	b_(0),
+	delta_(0),
+	phi_(0),
+	particleCoeff_( rhs.particleCoeff_ ),
+	antiparticleCoeff_( rhs.antiparticleCoeff_ ),
+	acp_( rhs.acp_ )
+{
+	if ( cloneOption == All || cloneOption == TieMagnitude ) {
+		a_ = rhs.a_->createClone(constFactor);
+	} else {
+		a_ = new LauParameter("A", rhs.a_->value(), minMagnitude_, maxMagnitude_, rhs.a_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TieCPPars ) {
+		b_ = rhs.b_->createClone(constFactor);
+	} else {
+		b_ = new LauParameter("B", rhs.b_->value(), minMagnitude_, maxMagnitude_, rhs.b_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TiePhase ) {
+		delta_ = rhs.delta_->createClone(constFactor);
+	} else {
+		delta_ = new LauParameter("Delta", rhs.delta_->value(), minPhase_, maxPhase_, rhs.delta_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TieCPPars ) {
+		phi_ = rhs.phi_->createClone(constFactor);
+	} else {
+		phi_ = new LauParameter("Phi", rhs.phi_->value(), minPhase_, maxPhase_, rhs.phi_->fixed());
+	}
 }
 
 vector<LauParameter*> LauBelleCPCoeffSet::getParameters()
@@ -136,7 +141,7 @@ void LauBelleCPCoeffSet::randomiseInitValues()
 		Double_t mag = LauRandom::zeroSeedRandom()->Rndm()*2.0;
 		a_->initValue(mag); a_->value(mag);
 	}
-	if (b_->fixed() == kFALSE) {
+	if (b_->fixed() == kFALSE && b_->secondStage() == kFALSE) {
 		// Choose a b-magnitude between 0.0 and 0.1
 		Double_t mag = LauRandom::zeroSeedRandom()->Rndm()*0.1;
 		b_->initValue(mag);  b_->value(mag);
@@ -146,7 +151,7 @@ void LauBelleCPCoeffSet::randomiseInitValues()
 		Double_t phase = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		delta_->initValue(phase); delta_->value(phase);
 	}
-	if (phi_->fixed() == kFALSE) {
+	if (phi_->fixed() == kFALSE && phi_->secondStage() == kFALSE) {
 		// Choose a phase between +- pi
 		Double_t phase = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		phi_->initValue(phase); phi_->value(phase);
@@ -284,10 +289,15 @@ LauParameter LauBelleCPCoeffSet::acp()
 	return acp_;
 }
 
-LauAbsCoeffSet* LauBelleCPCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauBelleCPCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauBelleCPCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TiePhase || cloneOption == TieMagnitude || cloneOption == TieCPPars ) {
+		clone = new LauBelleCPCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauBelleCPCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

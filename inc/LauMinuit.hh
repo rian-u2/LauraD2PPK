@@ -41,6 +41,7 @@ class LauMinuit : public LauAbsFitter {
 
 		//! Initialise the fitter, setting the information on the parameters
 		/*!
+		    \param [in] fitObj the object that controls the likelihood calculation
 		    \param [in] parameters the list of parameters of the fit
 		*/
 		virtual void initialise( LauFitObject* fitObj, const std::vector<LauParameter*>& parameters );

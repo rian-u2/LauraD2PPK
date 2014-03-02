@@ -54,8 +54,11 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! Run the fit
 		/*! 
-			\param [in] numSlaves the number of slaves processes to expect connections from
-			\param [in] port the port on which to listen for connections from the slaves
+			\param [in] fitNtupleFileName the file to which the ntuple containing the fit results should be written
+			\param [in] nExpt the number of experiments to be fitted
+			\param [in] firstExpt the ID of the first experiment to be fitted
+			\param [in] useAsymmErrors should asymmetric errors be calculated or not
+			\param [in] twoStageFit should the fit be performed in two stages or not
 		*/
 		void runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt = 0, Bool_t useAsymmErrors = kFALSE, Bool_t twoStageFit = kFALSE );
 

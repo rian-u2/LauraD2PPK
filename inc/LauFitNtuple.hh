@@ -45,6 +45,7 @@ class LauFitNtuple {
 		//! Constructor
 		/*!
 		    \param [in] fileName the name for the ntuple
+		    \param [in] storeAsymErrors whether or not to store the asymmetric error variables
 		*/
 		LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors);
 		

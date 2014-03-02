@@ -291,7 +291,7 @@ class LauParameter : public TObject {
 
 		//! Set the global correlation coefficient
 		/*!
-		    \param [in] gcc the value of the coefficient
+		    \param [in] newGCCValue the value of the coefficient
 		*/
 		void globalCorrelationCoeff(Double_t newGCCValue);
 

@@ -75,7 +75,7 @@ int main( int argc, char** argv )
 	// Particle 2 = pi+
 	// Particle 3 = pi-
 	// The DP is defined in terms of m13Sq and m23Sq
-	LauDaughters* daughters = new LauDaughters("B+", "pi+", "pi+", "pi-", squareDP);
+	LauDaughters* daughters = new LauDaughters("B+", "K+", "pi+", "pi-", squareDP);
 
 	// Optionally apply some vetoes to the DP
 	LauVetoes* vetoes = new LauVetoes();
@@ -104,12 +104,9 @@ int main( int argc, char** argv )
 	//effModel->setEffHisto(effHist, useInterpolation, fluctuateBins, 0.0, 0.0, useUpperHalf, squareDP);
 
 	// Create the isobar model
+	TString resType = "PolNR_S3";
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-	sigModel->addResonance("rho0(770)",  1, "RelBW"); // resPairAmpInt = 1 => resonance mass is m23.
-	sigModel->addResonance("rho0(1450)", 1, "RelBW");
-	sigModel->addResonance("f_0(980)",   1, "Flatte");
-	sigModel->addResonance("f_2(1270)",  1, "RelBW");
-	sigModel->addResonance("NonReson",   0);
+	sigModel->addResonance(resType,   1, "PolNR");
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
@@ -125,17 +122,13 @@ int main( int argc, char** argv )
 	// Here we're using the magnitude and phase form:
 	// c_j = a_j exp(i*delta_j)
 	std::vector<LauAbsCoeffSet*> coeffset;
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",  1.00,  0.00,  kTRUE,  kTRUE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)", 0.37,  1.99, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",   0.27, -1.59, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)",  0.53,  1.39, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",   0.54, -0.84, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet(resType, 1.00, 0.00, kTRUE, kTRUE) );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	LauParameter * nSigEvents = new LauParameter("nSigEvents",500.0,-1000.0,1000.0,kFALSE);
+	LauParameter * nSigEvents = new LauParameter("nSigEvents",50000.0,-100000.0,100000.0,kFALSE);
 	fitModel->setNSigEvents(nSigEvents);
 
 	// Set the number of experiments to generate or fit and which
@@ -144,17 +137,17 @@ int main( int argc, char** argv )
 
 	// Optionally load in continuum background DP model histogram
 	// (example syntax given in commented-out section)
-	std::vector<TString> bkgndNames(1);
-	bkgndNames[0] = "qqbar";
-	fitModel->setBkgndClassNames( bkgndNames );
-	LauParameter* nBkgndEvents = new LauParameter("qqbar",1200.0,-2400.0,2400.0,kFALSE);
-	fitModel->setNBkgndEvents( nBkgndEvents );
+	//std::vector<TString> bkgndNames(1);
+	//bkgndNames[0] = "qqbar";
+	//fitModel->setBkgndClassNames( bkgndNames );
+	//LauParameter* nBkgndEvents = new LauParameter("qqbar",1200.0,-2400.0,2400.0,kFALSE);
+	//fitModel->setNBkgndEvents( nBkgndEvents );
 	//TString qqFileName("histoFiles/offResDP.root");
 	//TFile* qqFile = TFile::Open(qqFileName.Data(), "read");
 	//TH2* qqDP = dynamic_cast<TH2*>(qqFile->Get("AllmTheta")); // m', theta'
-	LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
+	//LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
 	//qqbarModel->setBkgndHisto(qqDP, useInterpolation, fluctuateBins, useUpperHalf, squareDP);
-	fitModel->setBkgndDPModel( "qqbar", qqbarModel );
+	//fitModel->setBkgndDPModel( "qqbar", qqbarModel );
 
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
@@ -163,7 +156,8 @@ int main( int argc, char** argv )
 	fitModel->useRandomInitFitPars(kTRUE);
 
 	// Switch on/off Poissonian smearing of total number of events
-	fitModel->doPoissonSmearing(kTRUE);
+	Bool_t poissonSmear = ( fitModel->nBkgndClasses() > 0 );
+	fitModel->doPoissonSmearing(poissonSmear);
 
 	// Switch on/off Extended ML Fit option
 	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );

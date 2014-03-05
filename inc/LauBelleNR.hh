@@ -16,7 +16,7 @@
     \brief Class for defining the Belle nonresonant model.
 
     Defines the nonresonant model from the Belle collaboration.
-    TODO - add reference
+    arXiv:hep-ex/0412066
 */
 
 #ifndef LAU_BELLE_NR
@@ -62,14 +62,14 @@ class LauBelleNR : public LauAbsResonance {
 		//! Set the parameter alpha, the effective range
 		/*!
 			\param [in] alpha the new effective range parameter value
-		*/	
+		*/
 		virtual void setAlpha(Double_t alpha) {alpha_ = alpha;}
 
 		//! Get the effective range parameter
 		/*!
 			\return the effective range parameter
 		*/
-		virtual Double_t getAlpha() {return alpha_;}
+		virtual Double_t getAlpha() const {return alpha_;}
 
 	protected:
 		//! Complex resonant amplitude
@@ -84,7 +84,6 @@ class LauBelleNR : public LauAbsResonance {
 		Double_t alpha_;
 
 		ClassDef(LauBelleNR,0) // Belle Non-resonant model
-
 };
 
 #endif

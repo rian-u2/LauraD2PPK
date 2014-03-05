@@ -12,17 +12,7 @@
     \brief File containing implementation of LauBelleNR class.
 */
 
-//****************************************************************************
-// Class for defining the Belle Non-Resonant model
-//****************************************************************************
-
-// --CLASS DESCRIPTION [MODEL] --
-// Class for defining the  Belle Non-Resonant model.
-
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 
@@ -48,7 +38,7 @@ void LauBelleNR::initialise()
 	const LauDaughters* daughters = this->getDaughters();
 	Int_t resPairAmpInt = this->getPairInt();
 	if ( daughters->gotSymmetricalDP() && resPairAmpInt != 3 ) {
-		cerr << "WARNING in LauBelleNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << endl;
+		std::cerr << "WARNING in LauBelleNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
 	}
 }
 

@@ -115,6 +115,8 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back(LauResonanceInfo("f_0(1500)",     1.505,    0.109,   0,     0          ));
 	// f'_2(1525)
 	resInfo_.push_back(LauResonanceInfo("f'_2(1525)",    1.525,    0.073,   2,     0          ));
+	// f_0(1710)
+	resInfo_.push_back(LauResonanceInfo("f_0(1710)",     1.720,    0.135,   0,     0          ));
 
 	// omega resonances                 name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)
         // omega(782)

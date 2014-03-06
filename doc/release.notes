@@ -4,6 +4,27 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+5th March 2014 Thomas Latham
+
+* Some improvements to LauPolNR to speed up amplitude calculation
+
+2nd March 2014 Thomas Latham
+
+* A number of updates to the CoeffSet classes:
+  - allow specification of the basename just after construction (before being given to the fit model)
+  - allow configuration of the parameter fit ranges (through static methods of base class)
+  - more adaptable cloning of the parameters (e.g. can only clone phase but allow magnitude to float independently)
+  - allow CP-violating parameters to be second-stage in Belle and CLEO formats
+* Some improvements to the Doxygen and runtime information printouts
+
+20th February 2014 Louis Henry
+
+* Add LauPolNR - class for modelling the nonresonant contribution based on BaBar 3K model (arXiv:1201.5897)
+
+6th February 2014 Thomas Latham
+
+* Correct helicity convention information in Doxygen for LauKinematics
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v1r2
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

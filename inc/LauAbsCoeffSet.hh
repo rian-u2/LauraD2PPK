@@ -53,17 +53,20 @@ class LauAbsCoeffSet {
 		*/
 		virtual std::vector<LauParameter*> getParameters() = 0;
 
+		//! Print the current values of the parameters
+		virtual void printParValues() const = 0;
+
 		//! Print the column headings for a results table
 		/*!
                     \param [out] stream the stream to print to
 		*/
-		virtual void printTableHeading(std::ostream& stream) = 0;
+		virtual void printTableHeading(std::ostream& stream) const = 0;
 
 		//! Print the parameters of the complex coefficient as a row in the results table
 		/*!
                     \param [out] stream the stream to print to
 		*/
-		virtual void printTableRow(std::ostream& stream) = 0;
+		virtual void printTableRow(std::ostream& stream) const = 0;
 
 		//! Randomise the starting values of the parameters for a fit
 		virtual void randomiseInitValues() = 0;
@@ -87,8 +90,9 @@ class LauAbsCoeffSet {
 		/*!
 		    \param [in] coeff the complex coefficient for a particle
 		    \param [in] coeffBar the complex coefficient for an antiparticle
+		    \param [in] init whether or not the initial and generated values should also be adjusted
 		*/
-		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar ) = 0;
+		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init ) = 0;
 
 		//! Calculate the CP asymmetry
 		/*!
@@ -147,6 +151,26 @@ class LauAbsCoeffSet {
 		*/
 		virtual void index(UInt_t newIndex);
 
+		//! Set the value of the named parameter
+		/*!
+		    \param [in] parName the name of the parameter to adjust
+		    \param [in] value the new value for the parameter to take
+		    \parma [in] init whether or not the initial and generated values should also be adjusted
+		*/
+		virtual void setParameterValue(const TString& parName, Double_t value, Bool_t init);
+
+		//! Set the named parameter to be fixed in the fit
+		/*!
+		    \param [in] parName the name of the parameter to adjust
+		*/
+		virtual void fixParameter(const TString& parName);
+
+		//! Set the named parameter to float in the fit
+		/*!
+		    \param [in] parName the name of the parameter to adjust
+		*/
+		virtual void floatParameter(const TString& parName);
+
 		//! Set the allowed range for magnitude parameters
 		/*!
 		    \param [in] minMag the lower edge of the range
@@ -183,11 +207,18 @@ class LauAbsCoeffSet {
 		*/
 		LauAbsCoeffSet(const TString& theName, const TString& theBaseName = "A");
 
+		//! Find the parameter with the given name
+		/*!
+		    \param [in] parName the name of the parameter to be found
+		    return the retrieved parameter
+		*/
+		LauParameter* findParameter(const TString& parName);
+
 		//! Prepend the base name and index to the name of a parameter
 		/*!
 		    \param [out] par pointer to the parameter
 		*/
-		virtual void adjustName(LauParameter* par);
+		void adjustName(LauParameter* par);
 
 		//! Minimum allowed value of magnitude parameters
 		static Double_t minMagnitude_;

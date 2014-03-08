@@ -57,7 +57,7 @@ ifeq ($(findstring linux, $(ARCH)),linux)
 # This set here should work for Linux.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC
+CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
 MFLAGS   = -MM
 SOFLAGS  = -shared
 endif
@@ -66,7 +66,7 @@ ifeq ($(ARCH),macosx64)
 # For Mac OS X you may need to put -m64 in CXXFLAGS and SOFLAGS.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -m64
+CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -m64
 MFLAGS   = -MM
 SOFLAGS  = -m64 -dynamiclib -single_module -undefined dynamic_lookup
 endif

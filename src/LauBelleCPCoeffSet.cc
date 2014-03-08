@@ -15,10 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::vector;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -44,10 +40,6 @@ LauBelleCPCoeffSet::LauBelleCPCoeffSet(const TString& compName, Double_t a, Doub
 	antiparticleCoeff_(0.0,0.0),
 	acp_("ACP", (-2.0*b*TMath::Cos(phi))/(1.0+b*b), -1.0, 1.0, bFixed&&phiFixed)
 {
-	// Print message
-	cout<<"Set component \""<<this->name()<<"\" to have a-magnitude = "<<a_->value()<<",\tdelta = "<<delta_->value()<<",\t";
-	cout<<"b-magnitude = "<<b_->value()<<",\tphi = "<<phi_->value()<<"."<<endl;
-
 	if (bSecondStage && !bFixed) {
 		b_->secondStage(kTRUE);
 		b_->initValue(0.0);
@@ -92,9 +84,9 @@ LauBelleCPCoeffSet::LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, CloneOptio
 	}
 }
 
-vector<LauParameter*> LauBelleCPCoeffSet::getParameters()
+std::vector<LauParameter*> LauBelleCPCoeffSet::getParameters()
 {
-	vector<LauParameter*> pars;
+	std::vector<LauParameter*> pars;
 	pars.push_back(a_);
 	pars.push_back(b_);
 	pars.push_back(delta_);
@@ -102,15 +94,24 @@ vector<LauParameter*> LauBelleCPCoeffSet::getParameters()
 	return pars;
 }
 
-void LauBelleCPCoeffSet::printTableHeading(std::ostream& stream)
+void LauBelleCPCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & a-Magnitude & delta & b-Magnitude & phi \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout<<"INFO in LauBelleCPCoeffSet::printParValues : Component \""<<this->name()<<"\" has ";
+	std::cout<<"a-magnitude = "<<a_->value()<<",\t";
+	std::cout<<"delta = "<<delta_->value()<<",\t";
+	std::cout<<"b-magnitude = "<<b_->value()<<",\t";
+	std::cout<<"phi = "<<phi_->value()<<"."<<std::endl;
 }
 
-void LauBelleCPCoeffSet::printTableRow(std::ostream& stream)
+void LauBelleCPCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & a-Magnitude & delta & b-Magnitude & phi \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauBelleCPCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -131,7 +132,7 @@ void LauBelleCPCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, phi_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, phi_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauBelleCPCoeffSet::randomiseInitValues()
@@ -254,17 +255,33 @@ const LauComplex& LauBelleCPCoeffSet::antiparticleCoeff()
 	return antiparticleCoeff_;
 }
 
-void LauBelleCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauBelleCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
 	LauComplex sum = coeff + coeffBar;
 	LauComplex diff = coeff - coeffBar;
 	LauComplex ratio = diff / sum;
 
-	a_->value( 0.5 * sum.abs() );
-	delta_->value( sum.arg() );
+	Double_t aVal( 0.5 * sum.abs() );
+	Double_t deltaVal( sum.arg() );
+	Double_t bVal( ratio.abs() );
+	Double_t phiVal( ratio.arg() );
 
-	b_->value( ratio.abs() );
-	phi_->value( ratio.arg() );
+	a_->value( aVal );
+	delta_->value( deltaVal );
+	b_->value( bVal );
+	phi_->value( phiVal );
+
+	if ( init ) {
+		a_->genValue( aVal );
+		delta_->genValue( deltaVal );
+		b_->genValue( bVal );
+		phi_->genValue( phiVal );
+
+		a_->initValue( aVal );
+		delta_->initValue( deltaVal );
+		b_->initValue( bVal );
+		phi_->initValue( phiVal );
+	}
 }
 
 LauParameter LauBelleCPCoeffSet::acp()

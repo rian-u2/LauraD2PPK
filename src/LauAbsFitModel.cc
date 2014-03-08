@@ -15,10 +15,6 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::vector;
 
 #include "TMessage.h"
 #include "TMonitor.h"
@@ -194,13 +190,13 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 
 	this->fitSlave(dataFileNameCopy, dataTreeNameCopy, histFileNameCopy, tableFileNameCopy);
 
-	std::cout << "Fit slave " << slaveId_ << " has finished successfully" << std::endl;
+	std::cout << "INFO in LauAbsFitModel::runSlave : Fit slave " << slaveId_ << " has finished successfully" << std::endl;
 }
 
 void LauAbsFitModel::doSFit( const TString& sWeightBranchName, Double_t scaleFactor )
 {
 	if ( sWeightBranchName == "" ) {
-		cerr << "WARNING in LauAbsFitModel::doSFit : sWeight branch name is empty string, not setting-up sFit." << endl;
+		std::cerr << "WARNING in LauAbsFitModel::doSFit : sWeight branch name is empty string, not setting-up sFit." << std::endl;
 		return;
 	}
 
@@ -212,7 +208,7 @@ void LauAbsFitModel::doSFit( const TString& sWeightBranchName, Double_t scaleFac
 void LauAbsFitModel::setBkgndClassNames( const std::vector<TString>& names )
 {
 	if ( !bkgndClassNames_.empty() ) {
-		cerr << "WARNING in LauAbsFitModel::setBkgndClassNames : Names already stored, not changing them." << endl;
+		std::cerr << "WARNING in LauAbsFitModel::setBkgndClassNames : Names already stored, not changing them." << std::endl;
 		return;
 	}
 
@@ -244,7 +240,7 @@ Bool_t LauAbsFitModel::validBkgndClass( const TString& className ) const
 UInt_t LauAbsFitModel::bkgndClassID( const TString& className ) const
 {
 	if ( ! this->validBkgndClass( className ) ) {
-		cerr << "ERROR in LauAbsFitModel::bkgndClassID : Request for ID for invalid background class \"" << className << "\"." << endl;
+		std::cerr << "ERROR in LauAbsFitModel::bkgndClassID : Request for ID for invalid background class \"" << className << "\"." << std::endl;
 		return (bkgndClassNames_.size() + 1);
 	}
 
@@ -264,7 +260,7 @@ const TString& LauAbsFitModel::bkgndClassName( UInt_t classID ) const
 	LauBkgndClassMap::const_iterator iter = bkgndClassNames_.find( classID );
 
 	if ( iter == bkgndClassNames_.end() ) {
-		cerr << "ERROR in LauAbsFitModel::bkgndClassName : Request for name of invalid background class ID " << classID << "." << endl;
+		std::cerr << "ERROR in LauAbsFitModel::bkgndClassName : Request for name of invalid background class ID " << classID << "." << std::endl;
 		return nullString_;
 	}
 
@@ -273,14 +269,14 @@ const TString& LauAbsFitModel::bkgndClassName( UInt_t classID ) const
 
 void LauAbsFitModel::clearFitParVectors()
 {
-	cout << "Clearing fit variable vectors" << endl;
+	std::cout << "INFO in LauAbsFitModel::clearFitParVectors : Clearing fit variable vectors" << std::endl;
 	fitVars_.clear();
 	conVars_.clear();
 }
 
 void LauAbsFitModel::clearExtraVarVectors()
 {
-	cout << "Clearing extra ntuple variable vectors" << endl;
+	std::cout << "INFO in LauAbsFitModel::clearExtraVarVectors : Clearing extra ntuple variable vectors" << std::endl;
 	extraVars_.clear();
 }
 
@@ -296,7 +292,7 @@ void LauAbsFitModel::setGenValues()
 void LauAbsFitModel::writeSPlotData(const TString& fileName, const TString& treeName, Bool_t storeDPEfficiency, const TString& verbosity)
 {
 	if (this->writeSPlotData()) {
-		cerr << "ERROR in LauAbsFitModel::writeSPlotData : Already have an sPlot ntuple setup, not doing it again." << endl;
+		std::cerr << "ERROR in LauAbsFitModel::writeSPlotData : Already have an sPlot ntuple setup, not doing it again." << std::endl;
 		return;
 	}
 	writeSPlotData_ = kTRUE;
@@ -313,7 +309,7 @@ void LauAbsFitModel::writeSPlotData(const TString& fileName, const TString& tree
 void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTreeName, const TString& /*histFileName*/, const TString& tableFileNameBase)
 {
 	// Create the ntuple for storing the results
-	cout << "Creating generation ntuple." << endl;
+	std::cout << "INFO in LauAbsFitModel::generate : Creating generation ntuple." << std::endl;
 	if (genNtuple_ != 0) {delete genNtuple_; genNtuple_ = 0;}
 	genNtuple_ = new LauGenNtuple(dataFileName,dataTreeName);
 
@@ -338,7 +334,7 @@ void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTr
 			this->setGenNtupleIntegerBranchValue("iExpt",iExpt_);
 
 			// Do the generation for this experiment
-			cout << "Generating experiment number " << iExpt_ << endl;
+			std::cout << "INFO in LauAbsFitModel::generate : Generating experiment number " << iExpt_ << std::endl;
 			genOK = this->genExpt();
 
 			// Stop the timer and see how long the program took so far
@@ -350,7 +346,7 @@ void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTr
 				genNtuple_->deleteAndRecreateTree();
 
 				// then break out of the experiment loop
-				cerr << "ERROR in LauAbsFitModel::generate : Problem in toy MC generation.  Starting again with updated parameters..." << endl;
+				std::cerr << "ERROR in LauAbsFitModel::generate : Problem in toy MC generation.  Starting again with updated parameters..." << std::endl;
 				break;
 			}
 
@@ -367,18 +363,18 @@ void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTr
 
 	// Print out total timing info.
 	cumulTimer_.Stop();
-	cout << "Finished generating all experiments." << endl;
-	cout << "Cumulative timing:" << endl;
+	std::cout << "INFO in LauAbsFitModel::generate : Finished generating all experiments." << std::endl;
+	std::cout << "INFO in LauAbsFitModel::generate : Cumulative timing:" << std::endl;
 	cumulTimer_.Print();
 
 	// Build the event index
-	cout << "Building experiment:event index." << endl;
+	std::cout << "INFO in LauAbsFitModel::generate : Building experiment:event index." << std::endl;
 	// TODO - can test this return value?
 	//Int_t nIndexEntries =
 	genNtuple_->buildIndex("iExpt","iEvtWithinExpt");
 
 	// Write out toy MC ntuple
-	cout << "Writing data to file " << dataFileName << "." << endl;
+	std::cout << "INFO in LauAbsFitModel::generate : Writing data to file " << dataFileName << "." << std::endl;
 	genNtuple_->writeOutGenResults();
 }
 
@@ -446,8 +442,8 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 {
 	// Routine to perform the total fit.
 
-	cout << "INFO in LauAbsFitModel::fit : First experiment = " << firstExpt_ << endl;
-	cout << "INFO in LauAbsFitModel::fit : Number of experiments = " << nExpt_ << endl;
+	std::cout << "INFO in LauAbsFitModel::fit : First experiment = " << firstExpt_ << std::endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Number of experiments = " << nExpt_ << std::endl;
 
 	// Start the cumulative timer
 	cumulTimer_.Start();
@@ -456,13 +452,13 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 	fitStatus_ = -1;
 
 	// Create and setup the fit results ntuple
-	cout << "INFO in LauAbsFitModel::fit : Creating fit ntuple." << endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
 	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
 
 	// Create and setup the sPlot ntuple
 	if (this->writeSPlotData()) {
-		cout << "INFO in LauAbsFitModel::fit : Creating sPlot ntuple." << endl;
+		std::cout << "INFO in LauAbsFitModel::fit : Creating sPlot ntuple." << std::endl;
 		if (sPlotNtuple_ != 0) {delete sPlotNtuple_; sPlotNtuple_ = 0;}
 		sPlotNtuple_ = new LauGenNtuple(sPlotFileName_,sPlotTreeName_);
 		this->setupSPlotNtupleBranches();
@@ -472,7 +468,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 	// fit data tree that stores them for all events and experiments.
 	Bool_t dataOK = this->cacheFitData(dataFileName,dataTreeName);
 	if (!dataOK) {
-		cerr << "ERROR in LauAbsFitModel::fit : Problem caching the fit data." << endl;
+		std::cerr << "ERROR in LauAbsFitModel::fit : Problem caching the fit data." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -486,7 +482,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 		this->eventsPerExpt(inputFitData_->nEvents());
 
 		if (this->eventsPerExpt() < 1) {
-			cerr << "ERROR in LauAbsFitModel::fit : Zero events in experiment " << iExpt_ << ", skipping..." << endl;
+			std::cerr << "ERROR in LauAbsFitModel::fit : Zero events in experiment " << iExpt_ << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
 		}
@@ -545,15 +541,15 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 
 	// Print out total timing info.
 	cumulTimer_.Stop();
-	cout << "INFO in LauAbsFitModel::fit : Cumulative timing:" << endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Cumulative timing:" << std::endl;
 	cumulTimer_.Print();
 
 	// Print out stats on OK fits.
-	cout << "INFO in LauAbsFitModel::fit : Number of OK Fits = " << numberOKFits_ << endl;
-	cout << "INFO in LauAbsFitModel::fit : Number of Failed Fits = " << numberBadFits_ << endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Number of OK Fits = " << numberOKFits_ << std::endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Number of Failed Fits = " << numberBadFits_ << std::endl;
 	Double_t fitEff(0.0);
 	if (nExpt_ != 0) {fitEff = numberOKFits_/(1.0*nExpt_);}
-	cout << "INFO in LauAbsFitModel::fit : Fit efficiency = " << fitEff*100.0 << "%." << endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Fit efficiency = " << fitEff*100.0 << "%." << std::endl;
 
 	// Write out any fit results (ntuples etc...).
 	this->writeOutAllFitResults();
@@ -565,7 +561,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTreeName, const TString& histFileName, const TString& tableFileNameBase)
 {
 	// Create and setup the fit results ntuple
-	cout << "INFO in LauAbsFitModel::fitSlave : Creating fit ntuple." << endl;
+	std::cout << "INFO in LauAbsFitModel::fitSlave : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
 	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
 
@@ -810,7 +806,7 @@ void LauAbsFitModel::fitExpt()
 	nFreeParams_ = LauFitter::fitter()->nFreeParameters();
 
 	// Now ready for minimisation step
-	cout << "\nINFO in LauAbsFitModel::fitExpt : Start minimisation...\n";
+	std::cout << "\nINFO in LauAbsFitModel::fitExpt : Start minimisation...\n";
 	std::pair<Int_t,Double_t> fitResult = LauFitter::fitter()->minimise();
 
 	fitStatus_ = fitResult.first;
@@ -821,7 +817,7 @@ void LauAbsFitModel::fitExpt()
 	if (this->twoStageFit()) {
 
 		if ( fitStatus_ != 3 ) {
-			cerr << "ERROR in LauAbsFitModel:fitExpt : Not running second stage fit since first stage failed." << endl;
+			std::cerr << "ERROR in LauAbsFitModel:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
 			LauFitter::fitter()->fixFirstStageParameters();
@@ -905,15 +901,13 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	}
 
 	// Generate the toy MC
-	cout << "Generating toy MC in " << mcFileName << " to compare fit with data..." << endl;
-	cout << "Number of experiments to generate = " << this->nExpt() << ", which is a factor of "
-		<<fitToyMCScale_ << " higher than that originally specified. "
-		<<"This is to allow the toy MC to be made with reduced statistical "
-		<<"fluctuations." << endl;
+	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Generating toy MC in " << mcFileName << " to compare fit with data..." << std::endl;
+	std::cout << "                                       : Number of experiments to generate = " << this->nExpt() << ", which is a factor of " <<fitToyMCScale_ << " higher than that originally specified." << std::endl;
+	std::cout <<"                                        : This is to allow the toy MC to be made with reduced statistical fluctuations." << std::endl;
 
 	// Set the genValue of each parameter to its current (fitted) value
 	// but first store the original genValues for restoring later
-	vector<Double_t> origGenValues;  origGenValues.reserve(nParams_);
+	std::vector<Double_t> origGenValues;  origGenValues.reserve(nParams_);
 	for (LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter) {
 		origGenValues.push_back((*iter)->genValue());
 		(*iter)->genValue((*iter)->value());
@@ -969,7 +963,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 		fitVars_[i]->genValue(origGenValues[i]);
 	}
 
-	cout << "Finished in createFitToyMC." << endl;
+	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Finished in createFitToyMC." << std::endl;
 }
 
 Double_t LauAbsFitModel::getTotNegLogLikelihood()
@@ -1034,7 +1028,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 			logLike += evtLogLike;
 		} else {
 			ok = kFALSE;
-			cerr << "WARNING in LauAbsFitModel::getLogLikelihood : Strange likelihood value for event " << iEvt << ": " << likelihood << "\n";
+			std::cerr << "WARNING in LauAbsFitModel::getLogLikelihood : Strange likelihood value for event " << iEvt << ": " << likelihood << "\n";
 			this->printEventInfo(iEvt);
 			this->printVarsInfo();	//Write the values of the floated variables for which the likelihood is zero
 			break;
@@ -1042,7 +1036,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 	}
 
 	if (!ok) {
-		cerr << "                                                  : Returning worst NLL found so far to force MINUIT out of this region." << endl;
+		std::cerr << "                                                  : Returning worst NLL found so far to force MINUIT out of this region." << std::endl;
 		logLike = worstLogLike_;
 	} else if (logLike < worstLogLike_) {
 		worstLogLike_ = logLike;
@@ -1060,8 +1054,8 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 	// situation, so disable this check
 	if ( ! withinAsymErrorCalc_ ) {
 		if (static_cast<UInt_t>(npar) != nFreeParams_) {
-			cerr << "ERROR in LauAbsFitModel::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
-			cerr << "                                             Expected: " << nFreeParams_ << ".\n" << endl;
+			std::cerr << "ERROR in LauAbsFitModel::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
+			std::cerr << "                                             Expected: " << nFreeParams_ << ".\n" << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -1131,7 +1125,7 @@ void LauAbsFitModel::printFitParameters(const LauPdfList& pdfList, std::ostream&
 				} else {
 					fout << " \\pm ";
 					print.printFormat(fout, (*pars_iter)->error());
-					fout << "$ \\\\" << endl;
+					fout << "$ \\\\" << std::endl;
 				}
 			}
 		}
@@ -1158,17 +1152,17 @@ Double_t LauAbsFitModel::prodPdfValue(LauPdfList& pdfList, UInt_t iEvt)
 void LauAbsFitModel::printEventInfo(UInt_t iEvt) const
 {
 	const LauFitData& data = inputFitData_->getData(iEvt);
-	cerr << "                                                  : Input data values for this event:" << endl;
+	std::cerr << "                                                  : Input data values for this event:" << std::endl;
 	for (LauFitData::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
-		cerr << " " << iter->first << " = " << iter->second << endl;
+		std::cerr << " " << iter->first << " = " << iter->second << std::endl;
 	}
 }
 
 void LauAbsFitModel::printVarsInfo() const
 {
-	cerr << "                                                  : Current values of fit parameters:" << endl;
+	std::cerr << "                                                  : Current values of fit parameters:" << std::endl;
 	for (UInt_t i(0); i<nParams_; ++i) {
-		cerr << " " << (fitVars_[i]->name()).Data() << " = " << fitVars_[i]->value() << endl;
+		std::cerr << " " << (fitVars_[i]->name()).Data() << " = " << fitVars_[i]->value() << std::endl;
 	}
 }
 

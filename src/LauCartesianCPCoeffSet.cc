@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -43,10 +40,6 @@ LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const TString& compName, Double_t
 	antiparticleCoeff_( x-deltaX, y-deltaY ),
 	acp_("ACP", -2.0*(x*deltaX + y*deltaY)/(x*x + deltaX*deltaX + y*y + deltaY*deltaY), -1.0, 1.0, deltaXFixed&&deltaYFixed)
 {
-	// Print message
-	cout<<"Set component \""<<this->name()<<"\" to have x = "<<x_->value()<<",\ty = "<<y_->value()<<",\t";
-	cout<<"Delta x = "<<deltaX_->value()<<",\tDelta y = "<<deltaY_->value()<<"."<<endl;
-
 	if (deltaXSecondStage && !deltaXFixed) {
 		deltaX_->secondStage(kTRUE);
 		deltaX_->initValue(0.0);
@@ -105,15 +98,24 @@ std::vector<LauParameter*> LauCartesianCPCoeffSet::getParameters()
 	return pars;
 }
 
-void LauCartesianCPCoeffSet::printTableHeading(std::ostream& stream)
+void LauCartesianCPCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & Real Part & Imaginary Part & $\\Delta$ Real Part & $\\Delta$ Imaginary Part \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout<<"INFO in LauCartesianCPCoeffSet::printParValues : Component \""<<this->name()<<"\" has ";
+	std::cout<<"x = "<<x_->value()<<",\t";
+	std::cout<<"y = "<<y_->value()<<",\t";
+	std::cout<<"Delta x = "<<deltaX_->value()<<",\t";
+	std::cout<<"Delta y = "<<deltaY_->value()<<"."<<std::endl;
 }
 
-void LauCartesianCPCoeffSet::printTableRow(std::ostream& stream)
+void LauCartesianCPCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & Real Part & Imaginary Part & $\\Delta$ Real Part & $\\Delta$ Imaginary Part \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauCartesianCPCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -134,7 +136,7 @@ void LauCartesianCPCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, deltaY_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, deltaY_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauCartesianCPCoeffSet::randomiseInitValues()
@@ -182,16 +184,33 @@ const LauComplex& LauCartesianCPCoeffSet::antiparticleCoeff()
 	return antiparticleCoeff_;
 }
 
-void LauCartesianCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauCartesianCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
 	LauComplex average( coeff );
 	average += coeffBar;
 	average.rescale( 0.5 );
 
-	x_->value( average.re() );
-	y_->value( average.im() );
-	deltaX_->value( coeff.re() - average.re() );
-	deltaY_->value( coeff.im() - average.im() );
+	Double_t xVal( average.re() );
+	Double_t yVal( average.im() );
+	Double_t deltaXVal( coeff.re() - average.re() );
+	Double_t deltaYVal( coeff.im() - average.im() );
+
+	x_->value( xVal );
+	y_->value( yVal );
+	deltaX_->value( deltaXVal );
+	deltaY_->value( deltaYVal );
+
+	if ( init ) {
+		x_->genValue( xVal );
+		y_->genValue( yVal );
+		deltaX_->genValue( deltaXVal );
+		deltaY_->genValue( deltaYVal );
+
+		x_->initValue( xVal );
+		y_->initValue( yVal );
+		deltaX_->initValue( deltaXVal );
+		deltaY_->initValue( deltaYVal );
+	}
 }
 
 LauParameter LauCartesianCPCoeffSet::acp()

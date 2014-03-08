@@ -15,10 +15,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::setprecision;
 
 #include "TFile.h"
 #include "TH2.h"
@@ -102,11 +98,11 @@ void LauSimpleFitModel::setupBkgndVectors()
 void LauSimpleFitModel::setNSigEvents(LauParameter* nSigEvents)
 {
 	if ( nSigEvents == 0 ) {
-		cerr << "ERROR in LauSimpleFitModel::setNSigEvents : The signal yield LauParameter pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setNSigEvents : The signal yield LauParameter pointer is null." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 	if ( signalEvents_ != 0 ) {
-		cerr << "ERROR in LauSimpleFitModel::setNSigEvents : You are trying to overwrite the signal yield." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setNSigEvents : You are trying to overwrite the signal yield." << std::endl;
 		return;
 	}
 
@@ -122,20 +118,20 @@ void LauSimpleFitModel::setNSigEvents(LauParameter* nSigEvents)
 void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 {
 	if ( nBkgndEvents == 0 ) {
-		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : The background yield LauParameter pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : The background yield LauParameter pointer is null." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
-		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
-		cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
+		std::cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	UInt_t bkgndID = this->bkgndClassID( nBkgndEvents->name() );
 
 	if ( bkgndEvents_[bkgndID] != 0 ) {
-		cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : You are trying to overwrite the background yield." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : You are trying to overwrite the background yield." << std::endl;
 		return;
 	}
 
@@ -148,12 +144,12 @@ void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )
 {
 	if ( useSCF_ == kTRUE ) {
-		cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << std::endl;
 		return;
 	}
 
 	if ( dpHisto == 0 ) {
-		cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : The histogram pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : The histogram pointer is null." << std::endl;
 		return;
 	}
 
@@ -170,7 +166,7 @@ void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHa
 void LauSimpleFitModel::splitSignalComponent( Double_t scfFrac, Bool_t fixed )
 {
 	if ( useSCF_ == kTRUE ) {
-		cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << std::endl;
 		return;
 	}
 
@@ -185,14 +181,14 @@ void LauSimpleFitModel::splitSignalComponent( Double_t scfFrac, Bool_t fixed )
 void LauSimpleFitModel::setBkgndDPModel(const TString& bkgndClass, LauAbsBkgndDPModel* bkgndDPModel)
 {
 	if (bkgndDPModel == 0) {
-		cerr << "ERROR in LauSimpleFitModel::setBkgndDPModel : The model pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setBkgndDPModel : The model pointer is null." << std::endl;
 		return;
 	}
 
 	// check that this background name is valid
 	if ( ! this->validBkgndClass( bkgndClass ) ) {
-		cerr << "ERROR in LauSimpleFitModel::setBkgndDPModel : Invalid background class \"" << bkgndClass << "\"." << std::endl;
-		cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setBkgndDPModel : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		std::cerr << "                                            : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << std::endl;
 		return;
 	}
 
@@ -205,7 +201,7 @@ void LauSimpleFitModel::setBkgndDPModel(const TString& bkgndClass, LauAbsBkgndDP
 void LauSimpleFitModel::setSignalPdf(LauAbsPdf* pdf)
 {
 	if (pdf==0) {
-		cerr << "ERROR in LauSimpleFitModel::setSignalPdf : The PDF pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setSignalPdf : The PDF pointer is null." << std::endl;
 		return;
 	}
 	signalPdfs_.push_back(pdf);
@@ -214,7 +210,7 @@ void LauSimpleFitModel::setSignalPdf(LauAbsPdf* pdf)
 void LauSimpleFitModel::setSCFPdf(LauAbsPdf* pdf)
 {
 	if (pdf==0) {
-		cerr << "ERROR in LauSimpleFitModel::setSCFPdf : The PDF pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setSCFPdf : The PDF pointer is null." << std::endl;
 		return;
 	}
 	scfPdfs_.push_back(pdf);
@@ -223,14 +219,14 @@ void LauSimpleFitModel::setSCFPdf(LauAbsPdf* pdf)
 void LauSimpleFitModel::setBkgndPdf(const TString& bkgndClass, LauAbsPdf* pdf)
 {
 	if (pdf == 0) {
-		cerr << "ERROR in LauSimpleFitModel::setBkgndPdf : The PDF pointer is null." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setBkgndPdf : The PDF pointer is null." << std::endl;
 		return;
 	}
 
 	// check that this background name is valid
 	if ( ! this->validBkgndClass( bkgndClass ) ) {
-		cerr << "ERROR in LauSimpleFitModel::setBkgndPdf : Invalid background class \"" << bkgndClass << "\"." << std::endl;
-		cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setBkgndPdf : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		std::cerr << "                                        : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << std::endl;
 		return;
 	}
 
@@ -246,14 +242,14 @@ void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 	TString compName(coeffSet->name());
 	Bool_t ok = sigDPModel_->hasResonance(compName);
 	if (!ok) {
-		cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Signal DP model doesn't contain component \"" << compName << "\"." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Signal DP model doesn't contain component \"" << compName << "\"." << std::endl;
 		return;
 	}
 
 	// Do we already have it in our list of names?
 	for (std::vector<LauAbsCoeffSet*>::const_iterator iter = coeffPars_.begin(); iter != coeffPars_.end(); ++iter) {
 		if ((*iter)->name() == compName) {
-			cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << std::endl;
 			return;
 		}
 	}
@@ -263,7 +259,8 @@ void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 
 	++nSigComp_;
 
-	cout << "Added coefficients for component \"" << compName << "\" to the fit model." << endl;
+	std::cout << "INFO in LauSimpleFitModel::setAmpCoeffSet : Added coefficients for component \"" << compName << "\" to the fit model." << std::endl;
+	coeffSet->printParValues();
 }
 
 
@@ -273,15 +270,15 @@ void LauSimpleFitModel::initialise()
 
 	if (this->useDP()) {
 		if ( sigDPModel_ == 0 ) {
-			cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to the signal DP model is null.\n";
-			cerr << "                                       : Removing the Dalitz Plot from the model." << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to the signal DP model is null.\n";
+			std::cerr << "                                       : Removing the Dalitz Plot from the model." << std::endl;
 			this->useDP(kFALSE);
 		}
 		if ( usingBkgnd_ ) {
 			for (LauBkgndDPModelList::const_iterator dpmodel_iter = bkgndDPModels_.begin(); dpmodel_iter != bkgndDPModels_.end(); ++dpmodel_iter ) {
 				if ( (*dpmodel_iter) == 0 ) {
-					cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to one of the background DP models is null.\n";
-					cerr << "                                       : Removing the Dalitz Plot from the model." << endl;
+					std::cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to one of the background DP models is null.\n";
+					std::cerr << "                                       : Removing the Dalitz Plot from the model." << std::endl;
 					this->useDP(kFALSE);
 					break;
 				}
@@ -313,7 +310,7 @@ void LauSimpleFitModel::initialise()
 			}
 		}
 		if (nscfpdfvars != nsigpdfvars) {
-			cerr << "ERROR in LauSimpleFitModel::initialise : There are " << nsigpdfvars << " TM signal PDF variables but " << nscfpdfvars << " SCF signal PDF variables." << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::initialise : There are " << nsigpdfvars << " TM signal PDF variables but " << nscfpdfvars << " SCF signal PDF variables." << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -330,7 +327,7 @@ void LauSimpleFitModel::initialise()
 				}
 			}
 			if (nbkgndpdfvars != nsigpdfvars) {
-				cerr << "ERROR in LauSimpleFitModel::initialise : There are " << nsigpdfvars << " signal PDF variables but " << nbkgndpdfvars << " bkgnd PDF variables." << endl;
+				std::cerr << "ERROR in LauSimpleFitModel::initialise : There are " << nsigpdfvars << " signal PDF variables but " << nbkgndpdfvars << " bkgnd PDF variables." << std::endl;
 				gSystem->Exit(EXIT_FAILURE);
 			}
 		}
@@ -351,7 +348,7 @@ void LauSimpleFitModel::initialise()
 	// Check that we have the expected number of fit variables
 	const LauParameterPList& fitVars = this->fitPars();
 	if (fitVars.size() != (nSigDPPar_ + nExtraPdfPar_ + nNormPar_)) {
-		cerr << "ERROR in LauSimpleFitModel::initialise : Number of fit parameters not of expected size." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::initialise : Number of fit parameters not of expected size." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -365,7 +362,7 @@ void LauSimpleFitModel::initialise()
 	}
 
 	if (!this->useDP() && signalPdfs_.empty()) {
-		cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -374,7 +371,7 @@ void LauSimpleFitModel::initialise()
 
 void LauSimpleFitModel::initialiseDPModels()
 {
-	cout << "Initialising signal DP model" << endl;
+	std::cout << "INFO in LauSimpleFitModel::initialiseDPModels : Initialising signal DP model" << std::endl;
 	sigDPModel_->initialise(coeffs_);
 
 	if (usingBkgnd_ == kTRUE) {
@@ -393,12 +390,12 @@ void LauSimpleFitModel::setSignalDPParameters()
 		return;
 	}
 
-	cout << "INFO in LauSimpleFitModel::setSignalDPParameters : Setting the initial fit parameters for the signal DP model." << endl;
+	std::cout << "INFO in LauSimpleFitModel::setSignalDPParameters : Setting the initial fit parameters for the signal DP model." << std::endl;
 
 	// Need to check that the number of components we have and that the dynamics has matches up
 	UInt_t nAmp = sigDPModel_->getnAmp();
 	if (nAmp != nSigComp_) {
-		cerr << "ERROR in LauSimpleFitModel::setSignalDPParameters : Number of signal DP components with magnitude and phase set not right." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setSignalDPParameters : Number of signal DP components with magnitude and phase set not right." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -441,7 +438,7 @@ void LauSimpleFitModel::setExtraPdfParameters()
 void LauSimpleFitModel::setFitNEvents()
 {
 	if ( signalEvents_ == 0 ) {
-		cerr << "ERROR in LauSimpleFitModel::setFitNEvents : Signal yield not defined." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setFitNEvents : Signal yield not defined." << std::endl;
 		return;
 	}
 	nNormPar_ = 0;
@@ -451,7 +448,7 @@ void LauSimpleFitModel::setFitNEvents()
 	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
 		nTotEvts += (*iter)->value();
 		if ( (*iter) == 0 ) {
-			cerr << "ERROR in LauSimpleFitModel::setFitNEvents : Background yield not defined." << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::setFitNEvents : Background yield not defined." << std::endl;
 			return;
 		}
 	}
@@ -461,12 +458,12 @@ void LauSimpleFitModel::setFitNEvents()
 
 	// if doing an extended ML fit add the number of signal events into the fit parameters
 	if (this->doEMLFit()) {
-		cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for signal and background components..." << endl;
+		std::cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for signal and background components..." << std::endl;
 		// add the signal events to the list of fit parameters
 		fitVars.push_back(signalEvents_);
 		++nNormPar_;
 	} else {
-		cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for background components (and hence signal)..." << endl;
+		std::cout << "INFO in LauSimpleFitModel::setFitNEvents : Initialising number of events for background components (and hence signal)..." << std::endl;
 	}
 
 	if (useSCF_ && !useSCFHist_) {
@@ -498,12 +495,12 @@ void LauSimpleFitModel::setExtraNtupleVars()
 	// Add a fit fraction for each signal component
 	fitFrac_ = sigDPModel_->getFitFractions();
 	if (fitFrac_.size() != nSigComp_) {
-		cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFrac_.size() << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFrac_.size() << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 	for (UInt_t i(0); i<nSigComp_; ++i) {
 		if (fitFrac_[i].size() != nSigComp_) {
-			cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFrac_[i].size() << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFrac_[i].size() << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -585,12 +582,12 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 
 		LauParArray fitFrac = sigDPModel_->getFitFractions();
 		if (fitFrac.size() != nSigComp_) {
-			cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFrac.size() << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFrac.size() << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			if (fitFrac[i].size() != nSigComp_) {
-				cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFrac[i].size() << endl;
+				std::cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFrac[i].size() << std::endl;
 				gSystem->Exit(EXIT_FAILURE);
 			}
 		}
@@ -629,7 +626,7 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 		// Also add in the DP rate
 		extraVars.push_back(dpRate_);
 
-		this->printFitFractions(cout);
+		this->printFitFractions(std::cout);
 	}
 
 	const LauParameterPList& fitVars = this->fitPars();
@@ -656,10 +653,10 @@ void LauSimpleFitModel::printFitFractions(std::ostream& output)
 {
 	// Print out Fit Fractions, total DP rate and mean efficiency
 	for (UInt_t i = 0; i < nSigComp_; i++) {
-		output << "FitFraction for component " << i << " (" << coeffPars_[i]->name() << ") = " << fitFrac_[i][i] << endl;
+		output << "FitFraction for component " << i << " (" << coeffPars_[i]->name() << ") = " << fitFrac_[i][i] << std::endl;
 	}
-	output << "Overall DP rate (integral of matrix element squared) = " << dpRate_ << endl;
-	output << "Average efficiency weighted by whole DP dynamics = " << meanEff_ << endl;
+	output << "Overall DP rate (integral of matrix element squared) = " << dpRate_ << std::endl;
+	output << "Average efficiency weighted by whole DP dynamics = " << meanEff_ << std::endl;
 }
 
 void LauSimpleFitModel::writeOutTable(const TString& outputFile)
@@ -669,7 +666,7 @@ void LauSimpleFitModel::writeOutTable(const TString& outputFile)
 	std::ofstream fout(outputFile);
 	LauPrint print;
 
-	cout << "Writing out results of the fit to the tex file " << outputFile << endl;
+	std::cout << "INFO in LauSimpleFitModel::writeOutTable : Writing out results of the fit to the tex file " << outputFile << std::endl;
 
 	if (this->useDP() == kTRUE) {
 		// print the fit coefficients in one table
@@ -677,14 +674,14 @@ void LauSimpleFitModel::writeOutTable(const TString& outputFile)
 		for (UInt_t i = 0; i < nSigComp_; i++) {
 			coeffPars_[i]->printTableRow(fout);
 		}
-		fout << "\\hline" << endl;
-		fout << "\\end{tabular}" << endl << endl;
+		fout << "\\hline" << std::endl;
+		fout << "\\end{tabular}" << std::endl << std::endl;
 
 		// print the fit fractions in another
-		fout << "\\begin{tabular}{|l|c|}" << endl;
-		fout << "\\hline" << endl;
-		fout << "Component & FitFraction \\\\" << endl;
-		fout << "\\hline" << endl;
+		fout << "\\begin{tabular}{|l|c|}" << std::endl;
+		fout << "\\hline" << std::endl;
+		fout << "Component & FitFraction \\\\" << std::endl;
+		fout << "\\hline" << std::endl;
 		Double_t fitFracSum(0.0);
 		for (UInt_t i = 0; i < nSigComp_; i++) {
 			TString resName = coeffPars_[i]->name();
@@ -693,50 +690,50 @@ void LauSimpleFitModel::writeOutTable(const TString& outputFile)
 			Double_t fitFrac = fitFrac_[i][i].value();
 			fitFracSum += fitFrac;
 			print.printFormat(fout, fitFrac);
-			fout << "$ \\\\" << endl;
+			fout << "$ \\\\" << std::endl;
 		}
-		fout << "\\hline" << endl;
+		fout << "\\hline" << std::endl;
 
 		// Also print out sum of fit fractions
 		fout << "Fit Fraction Sum  &  $";
 		print.printFormat(fout, fitFracSum);
-		fout << "$ \\\\" << endl;
-		fout << "\\hline" << endl;
+		fout << "$ \\\\" << std::endl;
+		fout << "\\hline" << std::endl;
 
 		fout << "DP rate  &  $";
 		print.printFormat(fout, dpRate_.value());
-		fout << "$ \\\\" << endl;
-		fout << "\\hline" << endl;
+		fout << "$ \\\\" << std::endl;
+		fout << "\\hline" << std::endl;
 
 		fout << "$< \\varepsilon >$  &  $";
 		print.printFormat(fout, meanEff_.value());
-		fout << "$ \\\\" << endl;
-		fout << "\\hline" << endl;
-		fout << "\\end{tabular}" << endl << endl;
+		fout << "$ \\\\" << std::endl;
+		fout << "\\hline" << std::endl;
+		fout << "\\end{tabular}" << std::endl << std::endl;
 	}
 
 	if (!signalPdfs_.empty()) {
-		fout << "\\begin{tabular}{|l|c|}" << endl;
-		fout << "\\hline" << endl;
+		fout << "\\begin{tabular}{|l|c|}" << std::endl;
+		fout << "\\hline" << std::endl;
 		if (useSCF_ == kTRUE) {
-			fout << "\\Extra TM Signal PDFs' Parameters: & \\\\" << endl;
+			fout << "\\Extra TM Signal PDFs' Parameters: & \\\\" << std::endl;
 		} else {
-			fout << "\\Extra Signal PDFs' Parameters: & \\\\" << endl;
+			fout << "\\Extra Signal PDFs' Parameters: & \\\\" << std::endl;
 		}
 		this->printFitParameters(signalPdfs_, fout);
 		if (useSCF_ == kTRUE && !scfPdfs_.empty()) {
-			fout << "\\hline" << endl;
-			fout << "\\Extra SCF Signal PDFs' Parameters: & \\\\" << endl;
+			fout << "\\hline" << std::endl;
+			fout << "\\Extra SCF Signal PDFs' Parameters: & \\\\" << std::endl;
 			this->printFitParameters(scfPdfs_, fout);
 		}
 		if (usingBkgnd_ == kTRUE && !bkgndPdfs_.empty()) {
-			fout << "\\hline" << endl;
-			fout << "\\Extra Background PDFs' Parameters: & \\\\" << endl;
+			fout << "\\hline" << std::endl;
+			fout << "\\Extra Background PDFs' Parameters: & \\\\" << std::endl;
 			for (LauBkgndPdfsList::const_iterator iter = bkgndPdfs_.begin(); iter != bkgndPdfs_.end(); ++iter) {
 				this->printFitParameters(*iter, fout);
 			}
 		}
-		fout << "\\hline \n\\end{tabular}" << endl << endl;
+		fout << "\\hline \n\\end{tabular}" << std::endl << std::endl;
 	}
 }
 
@@ -747,7 +744,7 @@ void LauSimpleFitModel::checkInitFitParams()
 
 	// Check whether we want to have randomised initial fit parameters for the signal model
 	if (this->useRandomInitFitPars() == kTRUE) {
-		cout << "Setting random parameters for the signal DP model" << endl;
+		std::cout << "INFO in LauSimpleFitModel::checkInitFitParams : Setting random parameters for the signal DP model" << std::endl;
 		this->randomiseInitFitPars();
 	}
 }
@@ -755,7 +752,7 @@ void LauSimpleFitModel::checkInitFitParams()
 void LauSimpleFitModel::randomiseInitFitPars()
 {
 	// Only randomise those parameters that are not fixed!
-	cout << "Randomising the initial fit magnitudes and phases of the resonances..." << endl;
+	std::cout << "INFO in LauSimpleFitModel::randomiseInitFitPars : Randomising the initial fit magnitudes and phases of the resonances..." << std::endl;
 
 	for (UInt_t i = 0; i < nSigComp_; i++) {
 		coeffPars_[i]->randomiseInitValues();
@@ -874,7 +871,7 @@ Bool_t LauSimpleFitModel::genExpt()
 
 			this->fillGenNtupleBranches();
 			if (iEvt%500 == 0) {
-				cout << "INFO in LauSimpleFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << endl;
+				std::cout << "INFO in LauSimpleFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << std::endl;
 			}
 		}
 
@@ -891,12 +888,12 @@ Bool_t LauSimpleFitModel::genExpt()
 		if (this->writeLatexTable()) {
 			LauParArray fitFrac = sigDPModel_->getFitFractions();
 			if (fitFrac.size() != nSigComp_) {
-				cerr << "ERROR in LauSimpleFitModel::genExpt : Fit Fraction array of unexpected dimension: " << fitFrac.size() << endl;
+				std::cerr << "ERROR in LauSimpleFitModel::genExpt : Fit Fraction array of unexpected dimension: " << fitFrac.size() << std::endl;
 				gSystem->Exit(EXIT_FAILURE);
 			}
 			for (UInt_t i(0); i<nSigComp_; ++i) {
 				if (fitFrac[i].size() != nSigComp_) {
-					cerr << "ERROR in LauSimpleFitModel::genExpt : Fit Fraction array of unexpected dimension: " << fitFrac[i].size() << endl;
+					std::cerr << "ERROR in LauSimpleFitModel::genExpt : Fit Fraction array of unexpected dimension: " << fitFrac[i].size() << std::endl;
 					gSystem->Exit(EXIT_FAILURE);
 				}
 			}
@@ -1052,7 +1049,7 @@ Bool_t LauSimpleFitModel::generateSignalEvent()
 	}
 	// Check for problems with the embedding
 	if (this->enableEmbedding() && signalTree_ && (signalTree_->nEvents() == signalTree_->nUsedEvents())) {
-		cerr << "WARNING in LauSimpleFitModel::generateSignalEvent : Source of embedded signal events used up, clearing the list of used events." << endl;
+		std::cerr << "WARNING in LauSimpleFitModel::generateSignalEvent : Source of embedded signal events used up, clearing the list of used events." << std::endl;
 		signalTree_->clearUsedList();
 	}
 	return genOK;
@@ -1074,7 +1071,7 @@ Bool_t LauSimpleFitModel::generateBkgndEvent(UInt_t bkgndID)
 			embeddedData->getEmbeddedEvent(kinematics_);
 		} else {
 			if (model == 0) {
-				cerr << "ERROR in LauSimpleFitModel::generateBkgndEvent : Can't find the DP model for background class \"" << this->bkgndClassName(bkgndID) << "\"." << endl;
+				std::cerr << "ERROR in LauSimpleFitModel::generateBkgndEvent : Can't find the DP model for background class \"" << this->bkgndClassName(bkgndID) << "\"." << std::endl;
 				gSystem->Exit(EXIT_FAILURE);
 			}
 			genOK = model->generate();
@@ -1089,7 +1086,7 @@ Bool_t LauSimpleFitModel::generateBkgndEvent(UInt_t bkgndID)
 	}
 	// Check for problems with the embedding
 	if (embeddedData && (embeddedData->nEvents() == embeddedData->nUsedEvents())) {
-		cerr << "WARNING in LauSimpleFitModel::generateBkgndEvent : Source of embedded " << this->bkgndClassName(bkgndID) << " events used up, clearing the list of used events." << endl;
+		std::cerr << "WARNING in LauSimpleFitModel::generateBkgndEvent : Source of embedded " << this->bkgndClassName(bkgndID) << " events used up, clearing the list of used events." << std::endl;
 		embeddedData->clearUsedList();
 	}
 	return genOK;
@@ -1246,7 +1243,7 @@ void LauSimpleFitModel::cacheInputFitVars()
 	// and finally the SCF fractions and jacobians
 	if ( useSCF_ && useSCFHist_ ) {
 		if ( !inputFitData->haveBranch( "m13Sq" )  || !inputFitData->haveBranch( "m23Sq" ) ) {
-			cerr << "ERROR in LauSimpleFitModel::cacheInputFitVars : Input data does not contain DP branches and so can't cache the SCF fraction." << endl;
+			std::cerr << "ERROR in LauSimpleFitModel::cacheInputFitVars : Input data does not contain DP branches and so can't cache the SCF fraction." << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 
@@ -1613,7 +1610,7 @@ void LauSimpleFitModel::addSPlotNtupleBranches(const LauPdfList* extraPdfs, cons
 				name += "Like";
 				this->addSPlotNtupleDoubleBranch(name);
 			} else {
-				cerr << "WARNING in LauSimpleFitModel::addSPlotNtupleBranches : Can't yet deal with 3D PDFs." << endl;
+				std::cerr << "WARNING in LauSimpleFitModel::addSPlotNtupleBranches : Can't yet deal with 3D PDFs." << std::endl;
 			}
 		}
 	}
@@ -1669,7 +1666,7 @@ Double_t LauSimpleFitModel::setSPlotNtupleBranchValues(LauPdfList* extraPdfs, co
 				name += "Like";
 				this->setSPlotNtupleDoubleBranchValue(name, extraLike);
 			} else {
-				cerr << "WARNING in LauSimpleFitModel::setSPlotNtupleBranchValues : Can't yet deal with 3D PDFs." << endl;
+				std::cerr << "WARNING in LauSimpleFitModel::setSPlotNtupleBranchValues : Can't yet deal with 3D PDFs." << std::endl;
 			}
 		}
 	}
@@ -1798,7 +1795,7 @@ LauSPlot::TwoDMap LauSimpleFitModel::twodimPDFs() const
 
 void LauSimpleFitModel::storePerEvtLlhds()
 {
-	cout << "Storing per-event likelihood values..." << endl;
+	std::cout << "INFO in LauSimpleFitModel::storePerEvtLlhds : Storing per-event likelihood values..." << std::endl;
 
 	// if we've not been using the DP model then we need to cache all
 	// the info here so that we can get the efficiency from it
@@ -1905,7 +1902,7 @@ void LauSimpleFitModel::storePerEvtLlhds()
 		// fill the tree
 		this->fillSPlotNtupleBranches();
 	}
-	cout << "Finished storing per-event likelihood values." << endl;
+	std::cout << "INFO in LauSimpleFitModel::storePerEvtLlhds : Finished storing per-event likelihood values." << std::endl;
 }
 
 void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& treeName,
@@ -1913,12 +1910,12 @@ void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& tree
 		Bool_t useReweighting)
 {
 	if (signalTree_) {
-		cerr << "ERROR in LauSimpleFitModel::embedSignal : Already embedding signal from a file." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::embedSignal : Already embedding signal from a file." << std::endl;
 		return;
 	}
 
 	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		cerr << "WARNING in LauSimpleFitModel::embedSignal : Conflicting options provided, will not reuse events at all." << endl;
+		std::cerr << "WARNING in LauSimpleFitModel::embedSignal : Conflicting options provided, will not reuse events at all." << std::endl;
 		reuseEventsWithinExperiment = kFALSE;
 	}
 
@@ -1927,7 +1924,7 @@ void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& tree
 	Bool_t dataOK = signalTree_->findBranches();
 	if (!dataOK) {
 		delete signalTree_; signalTree_ = 0;
-		cerr << "ERROR in LauSimpleFitModel::embedSignal : Problem creating data tree for embedding." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::embedSignal : Problem creating data tree for embedding." << std::endl;
 		return;
 	}
 
@@ -1943,20 +1940,20 @@ void LauSimpleFitModel::embedBkgnd(const TString& bkgndClass, const TString& fil
 		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment)
 {
 	if ( ! this->validBkgndClass( bkgndClass ) ) {
-		cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Invalid background class \"" << bkgndClass << "\"." << std::endl;
-		cerr << "                                       : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Invalid background class \"" << bkgndClass << "\"." << std::endl;
+		std::cerr << "                                       : Background class names must be provided in \"setBkgndClassNames\" before any other background-related actions can be performed." << std::endl;
 		return;
 	}
 
 	UInt_t bkgndID = this->bkgndClassID( bkgndClass );
 
 	if (bkgndTree_[bkgndID]) {
-		cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Already embedding background from a file." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Already embedding background from a file." << std::endl;
 		return;
 	}
 
 	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		cerr << "WARNING in LauSimpleFitModel::embedBkgnd : Conflicting options provided, will not reuse events at all." << endl;
+		std::cerr << "WARNING in LauSimpleFitModel::embedBkgnd : Conflicting options provided, will not reuse events at all." << std::endl;
 		reuseEventsWithinExperiment = kFALSE;
 	}
 
@@ -1965,7 +1962,7 @@ void LauSimpleFitModel::embedBkgnd(const TString& bkgndClass, const TString& fil
 	Bool_t dataOK = bkgndTree_[bkgndID]->findBranches();
 	if (!dataOK) {
 		delete bkgndTree_[bkgndID]; bkgndTree_[bkgndID] = 0;
-		cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Problem creating data tree for embedding." << endl;
+		std::cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Problem creating data tree for embedding." << std::endl;
 		return;
 	}
 

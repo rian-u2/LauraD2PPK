@@ -38,6 +38,7 @@ class LauAbsResonance {
 		enum LauResonanceModel {
 			BW,		/*!< simple Breit-Wigner */
 			RelBW,		/*!< relativistic Breit-Wigner */
+			GS,		/*!< a modified Breit-Wigner from Gounaris-Sakurai */
 			Flatte,		/*!< Flatte or coupled-channel Breit-Wigner */
 			Sigma,		/*!< special shape for the sigma or f_0(600) */
 			Kappa,		/*!< special shape for the kappa, a low-mass Kpi scalar */
@@ -45,10 +46,10 @@ class LauAbsResonance {
 			LASS,		/*!< the LASS amplitude to describe the Kpi S-wave */
 			LASS_BW,	/*!< the resonant part of the LASS amplitude */
 			LASS_NR,	/*!< the nonresonant part of the LASS amplitude */
+			KMatrix,	/*!< S-wave description using K-matrix and P-vector */
+			FlatNR,		/*!< a uniform nonresonant amplitude */
 			NRModel,	/*!< a theoretical model nonresonant amplitude */
 			BelleNR,	/*!< an empirical exponential nonresonant amplitude */
-			GS,		/*!< a modified Breit-Wigner from Gounaris-Sakurai */
-			KMatrix,	/*!< S-wave description using K-matrix and P-vector */
 			PolNR		/*!< an empirical polynomial nonresonant amplitude */
 		};
 

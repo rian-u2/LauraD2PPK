@@ -82,7 +82,7 @@ int main( int argc, char** argv )
 	negSigModel->addResonance("rho0(770)",   1, "RelBW"); // resPairAmpInt = 1 => resonance mass is m23.
 	negSigModel->addResonance("f_0(980)",    1, "Flatte");
 	negSigModel->addResonance("chi_c0",      1, "RelBW");
-	negSigModel->addResonance("NonReson",    0);
+	negSigModel->addResonance("NonReson",    0, "FlatNR");
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, 0);
 	posSigModel->addResonance("K*0(892)",    2, "RelBW");
@@ -90,7 +90,7 @@ int main( int argc, char** argv )
 	posSigModel->addResonance("rho0(770)",   1, "RelBW");
 	posSigModel->addResonance("f_0(980)",    1, "Flatte");
 	posSigModel->addResonance("chi_c0",      1, "RelBW");
-	posSigModel->addResonance("NonReson",    0);
+	posSigModel->addResonance("NonReson",    0, "FlatNR");
 
 	// Set the file names for the integrals information (can be useful for debugging)
 	negSigModel->setIntFileName("integ_neg.dat");
@@ -101,7 +101,7 @@ int main( int argc, char** argv )
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and
 	// error.
-	Double_t aSqMaxValue = 1.45;
+	Double_t aSqMaxValue = 1.62;
 	negSigModel->setASqMaxValue(aSqMaxValue);  
 	posSigModel->setASqMaxValue(aSqMaxValue);  
 
@@ -115,13 +115,35 @@ int main( int argc, char** argv )
 	// b is a CP violating magnitude,
 	// delta is the strong phase
 	// and phi is the weak phase.
+	// The last two arguments indicate that the CP-violating parameters
+	// should only be floated in the second-stage of the two-stage fit
+	LauAbsCoeffSet* a0CoeffSet = new LauBelleCPCoeffSet("K*0(892)",    1.00,  0.00, 0.00, 0.00,  kTRUE,  kTRUE, kFALSE,  kTRUE, kTRUE, kTRUE);
+
+	// Here we show how to use the coefficient cloning mechanism to clone
+	// only the CP-violating parameters.  This means that the K*0_0(1430)
+	// component will have identical CPV parameters to the K*0(892).
+	// But the CP-conserving parameters will be independent and as such we
+	// need to set their values and, in this case because we're cloning
+	// from the reference amplitude, also set them to float.
+	//LauAbsCoeffSet* a1CoeffSet = new LauBelleCPCoeffSet("K*0_0(1430)", 2.00,  3.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a1CoeffSet = a0CoeffSet->createClone("K*0_0(1430)", LauAbsCoeffSet::TieCPPars);
+	a1CoeffSet->setParameterValue("A",2.0,kTRUE);
+	a1CoeffSet->setParameterValue("Delta",3.0,kTRUE);
+	a1CoeffSet->floatParameter("A");
+	a1CoeffSet->floatParameter("Delta");
+
+	LauAbsCoeffSet* a2CoeffSet = new LauBelleCPCoeffSet("rho0(770)",   0.66,  1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a3CoeffSet = new LauBelleCPCoeffSet("f_0(980)",    1.00, -1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a4CoeffSet = new LauBelleCPCoeffSet("chi_c0",      0.33,  0.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a5CoeffSet = new LauBelleCPCoeffSet("NonReson",    0.50,  1.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+
 	std::vector<LauAbsCoeffSet*> coeffset;
-	coeffset.push_back( new LauBelleCPCoeffSet("K*0(892)",    1.00,  0.00, 0.00, 0.00,  kTRUE,  kTRUE, kFALSE,  kTRUE) );
-	coeffset.push_back( new LauBelleCPCoeffSet("K*0_0(1430)", 2.00,  3.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE) );
-	coeffset.push_back( new LauBelleCPCoeffSet("rho0(770)",   0.66,  1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE) );
-	coeffset.push_back( new LauBelleCPCoeffSet("f_0(980)",    1.00, -1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE) );
-	coeffset.push_back( new LauBelleCPCoeffSet("chi_c0",      0.33,  0.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE) );
-	coeffset.push_back( new LauBelleCPCoeffSet("NonReson",    0.50,  1.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE) );
+	coeffset.push_back( a0CoeffSet );
+	coeffset.push_back( a1CoeffSet );
+	coeffset.push_back( a2CoeffSet );
+	coeffset.push_back( a3CoeffSet );
+	coeffset.push_back( a4CoeffSet );
+	coeffset.push_back( a5CoeffSet );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
@@ -148,6 +170,9 @@ int main( int argc, char** argv )
 	// Switch on/off Extended ML Fit option
 	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
 	fitModel->doEMLFit(emlFit);
+
+	// Switch on/off two-stage fit
+	fitModel->twoStageFit(kTRUE);
 
 	// Set the names of the files to read/write
 	TString dataFile("gen.root");

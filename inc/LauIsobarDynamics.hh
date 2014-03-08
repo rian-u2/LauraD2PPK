@@ -83,7 +83,7 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		    \param [in] newWidth set a custom width for the resonance
 		    \param [in] newSpin set a custom spin for the resonance
 		*/
-		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType = "RelBW",
+		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
 				  Double_t newMass = -1.0, Double_t newWidth = -1.0, Int_t newSpin = -1);
 
 		//! Define a new K-matrix Propagator

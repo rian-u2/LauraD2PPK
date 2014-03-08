@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -38,8 +35,6 @@ LauRealImagCoeffSet::LauRealImagCoeffSet(const TString& compName, Double_t x, Do
 	y_(new LauParameter("Y",y,minRealImagPart_,maxRealImagPart_,yFixed)),
 	coeff_(x,y)
 {
-	// Print message
-	cout<<"Set component \""<<this->name()<<"\" to have real part = "<<x_->value()<<" and imaginary part = "<<y_->value()<<"."<<endl;
 }
 
 LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
@@ -68,15 +63,20 @@ std::vector<LauParameter*> LauRealImagCoeffSet::getParameters()
 	return pars;
 }
 
-void LauRealImagCoeffSet::printTableHeading(std::ostream& stream)
+void LauRealImagCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & Real Part & Imaginary Part \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout<<"INFO in LauRealImagCoeffSet::printParValues : Component \""<<this->name()<<"\" has real part = "<<x_->value()<<" and imaginary part = "<<y_->value()<<"."<<std::endl;
 }
 
-void LauRealImagCoeffSet::printTableRow(std::ostream& stream)
+void LauRealImagCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & Real Part & Imaginary Part \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauRealImagCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -89,7 +89,7 @@ void LauRealImagCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, y_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, y_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauRealImagCoeffSet::randomiseInitValues()
@@ -123,14 +123,25 @@ const LauComplex& LauRealImagCoeffSet::antiparticleCoeff()
 	return this->particleCoeff();
 }
 
-void LauRealImagCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauRealImagCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
 	LauComplex average( coeff );
 	average += coeffBar;
 	average.rescale( 0.5 );
 
-	x_->value( average.re() );
-	y_->value( average.im() );
+	Double_t xVal( average.re() );
+	Double_t yVal( average.im() );
+
+	x_->value( xVal );
+	y_->value( yVal );
+
+	if ( init ) {
+		x_->genValue( xVal );
+		y_->genValue( yVal );
+
+		x_->initValue( xVal );
+		y_->initValue( yVal );
+	}
 }
 
 LauParameter LauRealImagCoeffSet::acp()

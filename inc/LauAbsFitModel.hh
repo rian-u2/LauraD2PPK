@@ -63,6 +63,7 @@ class TMessage;
 class TMonitor;
 class TSocket;
 class TTree;
+class LauAbsCoeffSet;
 class LauAbsPdf;
 class LauComplex;
 class LauFitDataTree;
@@ -234,6 +235,12 @@ class LauAbsFitModel : public LauFitObject {
 
 		*/	
 		virtual void setNBkgndEvents(LauParameter* nBkgndEvents) = 0;
+
+		//! Set the DP amplitude coefficients
+		/*!
+			\param [in] coeffSet the set of coefficients
+		*/
+		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet) = 0;
 
 		//! Specify that a toy MC sample should be created for a successful fit to an experiment
 		/*!

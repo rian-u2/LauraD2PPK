@@ -62,17 +62,20 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		*/
 		virtual std::vector<LauParameter*> getParameters();
 
+		//! Print the current values of the parameters
+		virtual void printParValues() const;
+
 		//! Print the column headings for a results table
 		/*!
                     \param [out] stream the stream to print to
 		*/
-		virtual void printTableHeading(std::ostream& stream);
+		virtual void printTableHeading(std::ostream& stream) const;
 
 		//! Print the parameters of the complex coefficient as a row in the results table
 		/*!
                     \param [out] stream the stream to print to
 		*/
-		virtual void printTableRow(std::ostream& stream);
+		virtual void printTableRow(std::ostream& stream) const;
 
 		//! Randomise the starting values of the parameters for a fit
 		virtual void randomiseInitValues();
@@ -96,8 +99,9 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \param [in] coeff the complex coefficient for a particle
 		    \param [in] coeffBar the complex coefficient for an antiparticle
+		    \param [in] init whether or not the initial and generated values should also be adjusted
 		*/
-		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar );
+		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init );
 
 		//! Calculate the CP asymmetry
 		/*!

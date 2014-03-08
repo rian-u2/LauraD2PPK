@@ -54,6 +54,7 @@
 #pragma link C++ class LauFitter;
 #pragma link C++ class LauFitObject;
 #pragma link C++ class LauFlatteRes;
+#pragma link C++ class LauFlatNR;
 #pragma link C++ class LauFormulaPar;
 #pragma link C++ class LauGaussPdf;
 #pragma link C++ class LauGenNtuple;

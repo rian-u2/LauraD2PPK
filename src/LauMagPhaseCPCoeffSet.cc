@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -43,10 +40,6 @@ LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const TString& compName, Double_t m
 	antiparticleCoeff_( magBar*TMath::Cos(phaseBar), magBar*TMath::Sin(phaseBar) ),
 	acp_("ACP", (magBar*magBar - mag*mag)/(magBar*magBar + mag*mag), -1.0, 1.0)
 {
-	// Print message
-	cout<<"Set component \""<<this->name()<<"\" to have mag = "<<mag_->value()<<",\tphase = "<<phase_->value()<<",\t";
-	cout<<"magBar = "<<magBar_->value()<<",\tphaseBar = "<<phaseBar_->value()<<"."<<endl;
-
 }
 
 LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const LauMagPhaseCPCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
@@ -85,15 +78,24 @@ std::vector<LauParameter*> LauMagPhaseCPCoeffSet::getParameters()
 	return pars;
 }
 
-void LauMagPhaseCPCoeffSet::printTableHeading(std::ostream& stream)
+void LauMagPhaseCPCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & Magnitude & Phase & Magnitude_bar & Phase_bar \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout<<"INFO in LauMagPhaseCPCoeffSet::printParValues : Component \""<<this->name()<<"\" has ";
+	std::cout<<"mag = "<<mag_->value()<<",\t";
+	std::cout<<"phase = "<<phase_->value()<<",\t";
+	std::cout<<"magBar = "<<magBar_->value()<<",\t";
+	std::cout<<"phaseBar = "<<phaseBar_->value()<<"."<<std::endl;
 }
 
-void LauMagPhaseCPCoeffSet::printTableRow(std::ostream& stream)
+void LauMagPhaseCPCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & Magnitude & Phase & Magnitude_bar & Phase_bar \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauMagPhaseCPCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -114,7 +116,7 @@ void LauMagPhaseCPCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, phaseBar_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, phaseBar_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauMagPhaseCPCoeffSet::randomiseInitValues()
@@ -228,13 +230,29 @@ const LauComplex& LauMagPhaseCPCoeffSet::antiparticleCoeff()
 	return antiparticleCoeff_;
 }
 
-void LauMagPhaseCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauMagPhaseCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
-	mag_->value( coeff.abs() );
-	phase_->value( coeff.arg() );
+	Double_t magVal( coeff.abs() );
+	Double_t phaseVal( coeff.arg() );
+	Double_t magBarVal( coeffBar.abs() );
+	Double_t phaseBarVal( coeffBar.arg() );
 
-	magBar_->value( coeffBar.abs() );
-	phaseBar_->value( coeffBar.arg() );
+	mag_->value( magVal );
+	phase_->value( phaseVal );
+	magBar_->value( magBarVal );
+	phaseBar_->value( phaseBarVal );
+
+	if ( init ) {
+		mag_->genValue( magVal );
+		phase_->genValue( phaseVal );
+		magBar_->genValue( magBarVal );
+		phaseBar_->genValue( phaseBarVal );
+
+		mag_->initValue( magVal );
+		phase_->initValue( phaseVal );
+		magBar_->initValue( magBarVal );
+		phaseBar_->initValue( phaseBarVal );
+	}
 }
 
 LauParameter LauMagPhaseCPCoeffSet::acp()

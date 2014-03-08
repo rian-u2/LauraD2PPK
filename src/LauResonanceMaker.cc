@@ -13,8 +13,6 @@
 */
 
 #include <iostream>
-using std::cout;
-using std::endl;
 
 #include "LauAbsResonance.hh"
 #include "LauBelleNR.hh"
@@ -23,6 +21,7 @@ using std::endl;
 #include "LauDabbaRes.hh"
 #include "LauDaughters.hh"
 #include "LauFlatteRes.hh"
+#include "LauFlatNR.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauKappaRes.hh"
 #include "LauLASSRes.hh"
@@ -55,7 +54,7 @@ void LauResonanceMaker::createResonanceVector()
 	// Also add in the sigma and kappa - but a special paramterisation is used
 	// instead of the PDG "pole mass and width" values.
 
-	cout<<"In createResonanceVector: setting up possible resonance states..."<<endl;
+	std::cout<<"INFO in LauResonanceMaker::createResonanceVector : Setting up possible resonance states..."<<std::endl;
 
 	// Define the resonance names and store them in the array
 	resInfo_.clear();
@@ -266,7 +265,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 
 		if (resName == (*iter).getName()) {
 			// We have recognised the resonance name. 
-			cout<<"Creating resonance: "<<resName<<endl;
+			std::cout<<"INFO in LauResonanceMaker::getResonance : Creating resonance: "<<resName<<std::endl;
 
 			resMass = (*iter).getMass();
 			resWidth = (*iter).getWidth();
@@ -295,6 +294,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	if (!resTypeName.CompareTo("flatte")) {
 
 		// Flatte distribution - coupled channel Breit-Wigner
+		std::cout<<"                                        : Using Flatte lineshape. "<<std::endl;
 		theResonance = 
 			new LauFlatteRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -302,6 +302,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("relbw")) {
 
 		// Relativistic Breit-Wigner with Blatt-Weisskopf factors.
+		std::cout<<"                                        : Using relativistic Breit-Wigner lineshape. "<<std::endl;
 		theResonance = 
 			new LauRelBreitWignerRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -313,6 +314,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("dabba")) {
 
 		// Dabba model - should only be used for the D-pi system
+		std::cout<<"                                        : Using Dabba lineshape. "<<std::endl;
 		theResonance = 
 			new LauDabbaRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -320,6 +322,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("kappa")) {
 
 		// Kappa model - should only be used for the K-pi system
+		std::cout<<"                                        : Using Kappa lineshape. "<<std::endl;
 		theResonance = 
 			new LauKappaRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -327,6 +330,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("sigma")) {
 
 		// Sigma model - should only be used for the pi-pi system
+		std::cout<<"                                        : Using Sigma lineshape. "<<std::endl;
 		theResonance = 
 			new LauSigmaRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -334,6 +338,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("lass-bw")) {
 
 		// LASS function to try and model the K-pi S-wave better
+		std::cout<<"                                        : Using LASS lineshape (resonant part only). "<<std::endl;
 		theResonance = 
 			new LauLASSBWRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
@@ -341,6 +346,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("lass-nr")) {
 
 		// LASS function to try and model the K-pi S-wave better
+		std::cout<<"                                        : Using LASS lineshape (nonresonant part only). "<<std::endl;
 		theResonance = 
 			new LauLASSNRRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
@@ -348,6 +354,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("lass")) {
 
 		// LASS function to try and model the K-pi S-wave better
+		std::cout<<"                                        : Using LASS lineshape. "<<std::endl;
 		theResonance = 
 			new LauLASSRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
@@ -355,13 +362,23 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("gs")) {
 
 		// Gounaris-Sakurai function to try and model the rho(770) better
+		std::cout<<"                                        : Using Gounaris-Sakurai lineshape. "<<std::endl;
 		theResonance = 
 			new LauGounarisSakuraiRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
 
+	} else if (!resTypeName.CompareTo("flatnr")) {
+
+		// uniform NR amplitude - arguments are there to preserve the interface
+		std::cout<<"                                        : Using uniform NR lineshape. "<<std::endl;
+		theResonance =
+			new LauFlatNR(resName, resMass, resWidth, resSpin, resCharge,
+					resPairAmpInt, daughters_);
+
 	} else if (!resTypeName.CompareTo("nrmodel")) {
 
 		// NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using NR-model lineshape. "<<std::endl;
 		theResonance =
 			new LauNRAmplitude(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -369,6 +386,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if ( !resTypeName.CompareTo("bellesymnr")  || !resTypeName.CompareTo("nrtaylor") ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using Belle symmetric NR lineshape. "<<std::endl;
 		theResonance =
 			new LauBelleSymNR(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -376,23 +394,29 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if ( !resTypeName.CompareTo("bellenr") ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using Belle NR lineshape. "<<std::endl;
 		theResonance =
 			new LauBelleNR(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
 	} else if ( !resTypeName.CompareTo("polnr") ) {
 
 		// Polynomial NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
 		theResonance =
 			new LauPolNR(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
 
-	} else {
+	} else if (!resTypeName.CompareTo("bw")) {
 
 		// Simple non-relativistic Breit-Wigner
+		std::cout<<"                                        : Using simple Breit-Wigner lineshape. "<<std::endl;
 		theResonance = 
 			new LauBreitWignerRes(resName, resMass, resWidth, resSpin,  resCharge,
 					resPairAmpInt, daughters_);
 
+	} else {
+		std::cerr << "ERROR in LauResonanceMaker::getResonance : Could not match resonace type \"" << resTypeName << "\"." << std::endl;
+		return 0;
 	}
 
 	return theResonance;
@@ -407,21 +431,14 @@ Int_t LauResonanceMaker::resTypeInt(const TString& name) const
 	Int_t resTypInt(-99);
 	Int_t i(0);
 
-	if (name.Contains("NonReson")) {
+	for (std::vector<LauResonanceInfo>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
 
-		resTypInt = -1;
-
-	} else {
-
-		for (std::vector<LauResonanceInfo>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
-
-			if (name.BeginsWith((*iter).getName(), TString::kExact) == kTRUE) {
-				// We have recognised the resonance from those that are available
-				resTypInt = i;
-				return resTypInt;
-			}
-			++i;
+		if (name.BeginsWith((*iter).getName(), TString::kExact) == kTRUE) {
+			// We have recognised the resonance from those that are available
+			resTypInt = i;
+			return resTypInt;
 		}
+		++i;
 	}
 
 	return resTypInt;

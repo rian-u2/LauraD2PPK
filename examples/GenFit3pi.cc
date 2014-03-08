@@ -109,7 +109,7 @@ int main( int argc, char** argv )
 	sigModel->addResonance("rho0(1450)", 1, "RelBW");
 	sigModel->addResonance("f_0(980)",   1, "Flatte");
 	sigModel->addResonance("f_2(1270)",  1, "RelBW");
-	sigModel->addResonance("NonReson",   0);
+	sigModel->addResonance("NonReson",   0, "FlatNR");
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme

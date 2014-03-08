@@ -4,6 +4,23 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v2r0
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+8th March 2014 Thomas Latham
+
+* Some additional functionality for the CoeffSet classes:
+  - allow the parameter values to be set (optionally setting the initial and generated values as well)
+  - allow the parameters to be set to float or to be fixed in the fit
+  These are needed when cloning but wanting some of the parameters to have different values and/or floating behaviour from the cloned set.
+* Improve the printout of the setting of the coefficient values in the fit models and the creation of resonances
+* Add LauFlatNR for the unform NR model - ends its rather strange special treatment
+* Fix bug setting resAmpInt to 0 for LauPolNR
+* Many other improvements to the info/warning/error printouts
+* Modify GenFitBelleCPKpipi example to demonstrate cloning in action
+* Add -Werror to compiler flags (treats warnings as errors)
+
 5th March 2014 Thomas Latham
 
 * Some improvements to LauPolNR to speed up amplitude calculation

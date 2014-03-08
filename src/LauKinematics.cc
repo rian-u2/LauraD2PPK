@@ -13,9 +13,6 @@
 */
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TF2.h"
 #include "TMath.h"
@@ -71,9 +68,9 @@ LauKinematics::LauKinematics(Double_t m1, Double_t m2, Double_t m3, Double_t mPa
 	}
 
 	if (this->squareDP()) {
-		cout<<"LauKinematics: squareDP = kTRUE."<<endl;
+		std::cout<<"INFO in LauKinematics::LauKinematics : squareDP = kTRUE"<<std::endl;
 	} else {
-		cout<<"LauKinematics: squareDP = kFALSE."<<endl;
+		std::cout<<"INFO in LauKinematics::LauKinematics : squareDP = kFALSE"<<std::endl;
 	}
 }
 
@@ -243,15 +240,15 @@ Double_t LauKinematics::cFromM(Double_t mijSq, Double_t mikSq, Double_t mij, Int
 
 	if (EiCmsij < mass_[i]) {
 		if (warnings_) {
-			cerr<<"Warning: EiCmsij = "<<EiCmsij<<" too small < mass_["<<i<<"] = "<<mass_[i]<<" in cFromM, i, j, k = "<<i<<", "<<j<<", "<<k<<endl;
-			cerr<<"mijSq = "<<mijSq<<"; mij = "<<mij<<"; mSq_["<<j<<"] = "<<mSq_[j]
-				<<"; mSq_["<<i<<"] = "<<mSq_[i]<<endl;
+			std::cerr<<"WARNING in LauKinematics::cFromM : EiCmsij = "<<EiCmsij<<" too small < mass_["<<i<<"] = "<<mass_[i]<<" in cFromM, i, j, k = "<<i<<", "<<j<<", "<<k<<std::endl;
+			std::cerr<<"                                 : mijSq = "<<mijSq<<"; mij = "<<mij<<"; mSq_["<<j<<"] = "<<mSq_[j]<<"; mSq_["<<i<<"] = "<<mSq_[i]<<std::endl;
 		}
 		return 0.0;
 	}
 	if (EkCmsij < mass_[k]) {
 		if (warnings_) {
-			cerr<<"Warning: EkCmsij = "<<EkCmsij<<" too small < mass_["<<k<<"] = "<<mass_[k]<<" in cFromM, i, j, k = "<<i<<", "<<j<<", "<<k<<endl;
+			std::cerr<<"WARNING in LauKinematics::cFromM : EkCmsij = "<<EkCmsij<<" too small < mass_["<<k<<"] = "<<mass_[k]<<" in cFromM, i, j, k = "<<i<<", "<<j<<", "<<k<<std::endl;
+			std::cerr<<"                                 : mijSq = "<<mijSq<<"; mij = "<<mij<<"; mSq_["<<j<<"] = "<<mSq_[j]<<"; mSq_["<<i<<"] = "<<mSq_[i]<<std::endl;
 		}
 		return 0.0;
 	}
@@ -287,13 +284,13 @@ Double_t LauKinematics::mFromC(Double_t mijSq, Double_t cij, Double_t mij, Int_t
 
 	if (TMath::Abs(EiCmsij - mass_[i]) > 1e-6 && EiCmsij < mass_[i]) {
 		if (warnings_) {
-			cerr<<"Warning: EiCmsij = "<<EiCmsij<<" < "<<mass_[i]<<" in mFromC, i, j, k = "<<i<<", "<<j<<", "<<k<<endl;
+			std::cerr<<"WARNING in LauKinematics::mFromC : EiCmsij = "<<EiCmsij<<" < "<<mass_[i]<<" in mFromC, i, j, k = "<<i<<", "<<j<<", "<<k<<std::endl;
 		}
 		return 0.0;
 	}
 	if (TMath::Abs(EkCmsij - mass_[k]) > 1e-6 && EkCmsij < mass_[k]) {
 		if (warnings_) {
-			cerr<<"Warning: EkCmsij = "<<EkCmsij<<" < "<<mass_[k]<<" in mFromC, i, j, k = "<<i<<", "<<j<<", "<<k<<endl;
+			std::cerr<<"WARNING in LauKinematics::mFromC : EkCmsij = "<<EkCmsij<<" < "<<mass_[k]<<" in mFromC, i, j, k = "<<i<<", "<<j<<", "<<k<<std::endl;
 		}
 		return 0.0;
 	}
@@ -307,7 +304,7 @@ Double_t LauKinematics::mFromC(Double_t mijSq, Double_t cij, Double_t mij, Int_t
 
 	if (massSq < mSqMin_[j]) {
 		if (warnings_) {
-			cerr<<"Warning: mFromC below bound: i, j, k = "<<i<<", "<<j<<", "<<k<<endl;
+			std::cerr<<"WARNING in LauKinematics::mFromC : mFromC below bound: i, j, k = "<<i<<", "<<j<<", "<<k<<std::endl;
 		}
 		massSq = mSqMin_[j];
 	}
@@ -467,7 +464,7 @@ Double_t LauKinematics::pCalc(Double_t energy, Double_t massSq) const
 
 	if (arg < 0.0) {
 		//if (warnings_) {
-			//cerr<<"Warning. In pcalc, arg < 0.0: "<<arg<<" for e = "<<energy<<", mSq = "<<massSq<<endl;
+			//std::cerr<<"WARNING in LauKinematics::pCalc : arg < 0.0: "<<arg<<" for e = "<<energy<<", mSq = "<<massSq<<std::endl;
 		//}
 		arg = 0.0;
 	}
@@ -590,7 +587,7 @@ void LauKinematics::drawDPContour(Int_t orientation, Int_t nbins)
 		xMin = m23SqMin-1.0; xMax = m23SqMax+1.0;
 		yMin = m12SqMin-1.0; yMax = m12SqMax+1.0;
 	} else {
-		cerr<<"Unrecognised orientation, not drawing contour."<<endl;
+		std::cerr<<"ERROR in LauKinematics::drawDPContour : Unrecognised orientation, not drawing contour."<<std::endl;
 		return;
 	}
 

@@ -62,17 +62,20 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		*/
 		virtual std::vector<LauParameter*> getParameters();
 
+		//! Print the current values of the parameters
+		virtual void printParValues() const;
+
 		//! Print the column headings for a results table
 		/*!
                     \param [out] stream the stream to print to
 		*/
-		virtual void printTableHeading(std::ostream& stream);
+		virtual void printTableHeading(std::ostream& stream) const;
 
 		//! Print the parameters of the complex coefficient as a row in the results table
 		/*!
                     \param [out] stream the stream to print to
 		*/
-		virtual void printTableRow(std::ostream& stream);
+		virtual void printTableRow(std::ostream& stream) const;
 
 		//! Randomise the starting values of the parameters for a fit
 		virtual void randomiseInitValues();
@@ -96,8 +99,9 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		/*!
 		    \param [in] coeff the complex coefficient for a particle
 		    \param [in] coeffBar the complex coefficient for an antiparticle
+		    \param [in] init whether or not the initial and generated values should also be adjusted
 		*/
-		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar );
+		virtual void setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init );
 
 		//! Calculate the CP asymmetry
 		/*!
@@ -108,36 +112,27 @@ class LauCartesianCPCoeffSet : public LauAbsCoeffSet {
 		//! Create a clone of the coefficient set
 		/*!
 		    \param [in] newName the clone's name
+		    \param [in] cloneOption special option for the cloning operation
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		    \return a clone of the coefficient set
 		*/
-		virtual LauAbsCoeffSet* createClone(const TString& newName, Double_t constFactor = 1.0);
+		virtual LauAbsCoeffSet* createClone(const TString& newName, CloneOption cloneOption = All, Double_t constFactor = 1.0);
 
-	protected:
+	private:
 		//! Copy constructor
 		/*!
 		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
+		    \param [in] cloneOption special option for the cloning operation
 		    \param [in] constFactor a constant factor to multiply the clone's parameters by
 		*/
-		LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs, Double_t constFactor = 1.0);
+		LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs, CloneOption cloneOption = All, Double_t constFactor = 1.0);
 
-		//! Copy assignment operator
+		//! Copy assignment operator (not implemented)
 		/*!
-		    This creates cloned parameters, not copies.
 		    \param [in] rhs the coefficient to clone
 		*/
 		LauCartesianCPCoeffSet& operator=(const LauCartesianCPCoeffSet& rhs);
-
-	private:
-		//! The minimum allowed value for the average parts
-		Double_t minPar_;
-		//! The maximum allowed value for the average parts
-		Double_t maxPar_;
-		//! The minimum allowed value for the asymmetric parts
-		Double_t minDeltaPar_;
-		//! The maximum allowed value for the asymmetric parts
-		Double_t maxDeltaPar_;
 
 		// the actual fit parameters
 		// (need to be pointers so they can be cloned)

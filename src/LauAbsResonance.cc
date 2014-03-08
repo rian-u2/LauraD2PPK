@@ -48,6 +48,7 @@ ClassImp(LauAbsResonance)
 		resCharge_(resCharge),
 		resPairAmpInt_(resPairAmpInt),
 		flipHelicity_(kFALSE),
+  ignoreMomenta_(kFALSE),
 		q_(0.0),
 		p_(0.0),
 		pstar_(0.0)
@@ -124,6 +125,11 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 
 	if (this->flipHelicity()) {
 		cosHel *= -1.0;
+	}
+
+	if (this->ignoreMomenta()) {
+	  q_ = 1;
+	  p_ = 1;
 	}
 
 	Double_t spinTerm(1.0);

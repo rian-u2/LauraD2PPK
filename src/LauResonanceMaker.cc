@@ -13,8 +13,6 @@
 */
 
 #include <iostream>
-using std::cout;
-using std::endl;
 
 #include "LauAbsResonance.hh"
 #include "LauBelleNR.hh"
@@ -23,12 +21,14 @@ using std::endl;
 #include "LauDabbaRes.hh"
 #include "LauDaughters.hh"
 #include "LauFlatteRes.hh"
+#include "LauFlatNR.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauKappaRes.hh"
 #include "LauLASSRes.hh"
 #include "LauLASSBWRes.hh"
 #include "LauLASSNRRes.hh"
 #include "LauNRAmplitude.hh"
+#include "LauPolNR.hh"
 #include "LauRelBreitWignerRes.hh"
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
@@ -54,7 +54,7 @@ void LauResonanceMaker::createResonanceVector()
 	// Also add in the sigma and kappa - but a special paramterisation is used
 	// instead of the PDG "pole mass and width" values.
 
-	cout<<"In createResonanceVector: setting up possible resonance states..."<<endl;
+	std::cout<<"INFO in LauResonanceMaker::createResonanceVector : Setting up possible resonance states..."<<std::endl;
 
 	// Define the resonance names and store them in the array
 	resInfo_.clear();
@@ -114,6 +114,8 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back(LauResonanceInfo("f_0(1500)",     1.505,    0.109,   0,     0          ));
 	// f'_2(1525)
 	resInfo_.push_back(LauResonanceInfo("f'_2(1525)",    1.525,    0.073,   2,     0          ));
+	// f_0(1710)
+	resInfo_.push_back(LauResonanceInfo("f_0(1710)",     1.720,    0.135,   0,     0          ));
 
 	// omega resonances                 name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)
         // omega(782)
@@ -210,21 +212,34 @@ void LauResonanceMaker::createResonanceVector()
 	// Bs*
 	resInfo_.push_back(LauResonanceInfo("Bs*0",          5.4154,   0.00,    1,    0          ));
 	
-	// nonresonant models               name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)
-	// Phase-space nonresonant model
-	resInfo_.push_back(LauResonanceInfo("NonReson",      0.0,      0.0,     0,     0          ));
-	// Theory-based nonresonant model
-	resInfo_.push_back(LauResonanceInfo("NRModel",       0.0,      0.0,     0,     0          ));
-	// Belle nonresonant models
-	resInfo_.push_back(LauResonanceInfo("BelleSymNR",    0.0,      0.0,     0,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR",       0.0,      0.0,     0,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR_Swave", 0.0,      0.0,     0,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR_Pwave", 0.0,      0.0,     1,     0          ));
-	resInfo_.push_back(LauResonanceInfo("BelleNR_Dwave", 0.0,      0.0,     2,     0          ));
-	// Taylor expansion nonresonant model
-	resInfo_.push_back(LauResonanceInfo("NRTaylor",      0.0,      0.0,     0,     0          ));
-	// LASS nonresonant model
-	resInfo_.push_back(LauResonanceInfo("LASSNR",        1.412,    0.294,   0,     0          ));
+        // nonresonant models               name,            mass,     width,   spin, charge, range parameter (defaults to 4.0)               
+        // Phase-space nonresonant model                                                                                                      
+        resInfo_.push_back(LauResonanceInfo("NonReson",      0.0,      0.0,     0,     0          ));
+        // Theory-based nonresonant model                                                                                                     
+        resInfo_.push_back(LauResonanceInfo("NRModel",       0.0,      0.0,     0,     0          ));
+        // Babar nonresonant polynomial model                                                                                                 
+        resInfo_.push_back(LauResonanceInfo("BabarNR",       0.0,      0.0,     0,     0          ));
+        // Belle nonresonant models                                                                                                           
+        resInfo_.push_back(LauResonanceInfo("BelleSymNR",    0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR",       0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR_Swave", 0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR_Pwave", 0.0,      0.0,     1,     0          ));
+        resInfo_.push_back(LauResonanceInfo("BelleNR_Dwave", 0.0,      0.0,     2,     0          ));
+
+	// Polynomial nonresonant models
+        resInfo_.push_back(LauResonanceInfo("PolNR",         0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_S0",      0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_S1",      0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_S2",      0.0,      0.0,     0,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_P0",      0.0,      0.0,     1,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_P1",      0.0,      0.0,     1,     0          ));
+        resInfo_.push_back(LauResonanceInfo("PolNR_P2",      0.0,      0.0,     1,     0          ));
+
+
+        // Taylor expansion nonresonant model                                                                                                 
+        resInfo_.push_back(LauResonanceInfo("NRTaylor",      0.0,      0.0,     0,     0          ));
+        // LASS nonresonant model                                                                                                             
+        resInfo_.push_back(LauResonanceInfo("LASSNR",        1.412,    0.294,   0,     0          ));
 
 	nResDefMax_ = resInfo_.size();
 }
@@ -250,7 +265,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 
 		if (resName == (*iter).getName()) {
 			// We have recognised the resonance name. 
-			cout<<"Creating resonance: "<<resName<<endl;
+			std::cout<<"INFO in LauResonanceMaker::getResonance : Creating resonance: "<<resName<<std::endl;
 
 			resMass = (*iter).getMass();
 			resWidth = (*iter).getWidth();
@@ -279,6 +294,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	if (!resTypeName.CompareTo("flatte")) {
 
 		// Flatte distribution - coupled channel Breit-Wigner
+		std::cout<<"                                        : Using Flatte lineshape. "<<std::endl;
 		theResonance = 
 			new LauFlatteRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -286,6 +302,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("relbw")) {
 
 		// Relativistic Breit-Wigner with Blatt-Weisskopf factors.
+		std::cout<<"                                        : Using relativistic Breit-Wigner lineshape. "<<std::endl;
 		theResonance = 
 			new LauRelBreitWignerRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -297,6 +314,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("dabba")) {
 
 		// Dabba model - should only be used for the D-pi system
+		std::cout<<"                                        : Using Dabba lineshape. "<<std::endl;
 		theResonance = 
 			new LauDabbaRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -304,6 +322,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("kappa")) {
 
 		// Kappa model - should only be used for the K-pi system
+		std::cout<<"                                        : Using Kappa lineshape. "<<std::endl;
 		theResonance = 
 			new LauKappaRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -311,6 +330,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("sigma")) {
 
 		// Sigma model - should only be used for the pi-pi system
+		std::cout<<"                                        : Using Sigma lineshape. "<<std::endl;
 		theResonance = 
 			new LauSigmaRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -318,6 +338,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("lass-bw")) {
 
 		// LASS function to try and model the K-pi S-wave better
+		std::cout<<"                                        : Using LASS lineshape (resonant part only). "<<std::endl;
 		theResonance = 
 			new LauLASSBWRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
@@ -325,6 +346,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("lass-nr")) {
 
 		// LASS function to try and model the K-pi S-wave better
+		std::cout<<"                                        : Using LASS lineshape (nonresonant part only). "<<std::endl;
 		theResonance = 
 			new LauLASSNRRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
@@ -332,6 +354,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("lass")) {
 
 		// LASS function to try and model the K-pi S-wave better
+		std::cout<<"                                        : Using LASS lineshape. "<<std::endl;
 		theResonance = 
 			new LauLASSRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
@@ -339,13 +362,23 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if (!resTypeName.CompareTo("gs")) {
 
 		// Gounaris-Sakurai function to try and model the rho(770) better
+		std::cout<<"                                        : Using Gounaris-Sakurai lineshape. "<<std::endl;
 		theResonance = 
 			new LauGounarisSakuraiRes(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);		  
 
+	} else if (!resTypeName.CompareTo("flatnr")) {
+
+		// uniform NR amplitude - arguments are there to preserve the interface
+		std::cout<<"                                        : Using uniform NR lineshape. "<<std::endl;
+		theResonance =
+			new LauFlatNR(resName, resMass, resWidth, resSpin, resCharge,
+					resPairAmpInt, daughters_);
+
 	} else if (!resTypeName.CompareTo("nrmodel")) {
 
 		// NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using NR-model lineshape. "<<std::endl;
 		theResonance =
 			new LauNRAmplitude(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -353,6 +386,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if ( !resTypeName.CompareTo("bellesymnr")  || !resTypeName.CompareTo("nrtaylor") ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using Belle symmetric NR lineshape. "<<std::endl;
 		theResonance =
 			new LauBelleSymNR(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
@@ -360,17 +394,29 @@ LauAbsResonance* LauResonanceMaker::getResonance(const TString& resName, Int_t r
 	} else if ( !resTypeName.CompareTo("bellenr") ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using Belle NR lineshape. "<<std::endl;
 		theResonance =
 			new LauBelleNR(resName, resMass, resWidth, resSpin, resCharge,
 					resPairAmpInt, daughters_);
+	} else if ( !resTypeName.CompareTo("polnr") ) {
 
-	} else {
+		// Polynomial NR amplitude model - arguments are there to preserve the interface
+		std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
+		theResonance =
+			new LauPolNR(resName, resMass, resWidth, resSpin, resCharge,
+					resPairAmpInt, daughters_);
+
+	} else if (!resTypeName.CompareTo("bw")) {
 
 		// Simple non-relativistic Breit-Wigner
+		std::cout<<"                                        : Using simple Breit-Wigner lineshape. "<<std::endl;
 		theResonance = 
 			new LauBreitWignerRes(resName, resMass, resWidth, resSpin,  resCharge,
 					resPairAmpInt, daughters_);
 
+	} else {
+		std::cerr << "ERROR in LauResonanceMaker::getResonance : Could not match resonace type \"" << resTypeName << "\"." << std::endl;
+		return 0;
 	}
 
 	return theResonance;
@@ -385,21 +431,14 @@ Int_t LauResonanceMaker::resTypeInt(const TString& name) const
 	Int_t resTypInt(-99);
 	Int_t i(0);
 
-	if (name.Contains("NonReson")) {
+	for (std::vector<LauResonanceInfo>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
 
-		resTypInt = -1;
-
-	} else {
-
-		for (std::vector<LauResonanceInfo>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
-
-			if (name.BeginsWith((*iter).getName(), TString::kExact) == kTRUE) {
-				// We have recognised the resonance from those that are available
-				resTypInt = i;
-				return resTypInt;
-			}
-			++i;
+		if (name.BeginsWith((*iter).getName(), TString::kExact) == kTRUE) {
+			// We have recognised the resonance from those that are available
+			resTypInt = i;
+			return resTypInt;
 		}
+		++i;
 	}
 
 	return resTypInt;

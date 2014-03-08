@@ -14,50 +14,58 @@
 #include "LauEffModel.hh"
 #include "LauIsobarDynamics.hh"
 #include "LauMagPhaseCoeffSet.hh"
+#include "LauRandom.hh"
 #include "LauVetoes.hh"
 
 void usage( std::ostream& out, const TString& progName )
 {
 	out<<"Usage:\n";
-	out<<progName<<" gen [nExpt = 1] [firstExpt = 0]\n";
+	out<<progName<<" gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]\n";
 	out<<"or\n";
-	out<<progName<<" fit <iFit> [nExpt = 1] [firstExpt = 0]"<<std::endl;
+	out<<progName<<" fit <category = DD or LL> <iFit> <port> [nExpt = 1] [firstExpt = 0]"<<std::endl;
 }
 
 int main( int argc, char** argv )
 {
 	// Process command-line arguments
 	// Usage:
-	// ./GenFit3pi gen [nExpt = 1] [firstExpt = 0]
+	// ./Slave gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]
 	// or
-	// ./GenFit3pi fit <iFit> [nExpt = 1] [firstExpt = 0]
-	if ( argc < 2 ) {
+	// ./Slave fit <category = DD or LL> <iFit> <port> [nExpt = 1] [firstExpt = 0]
+	if ( argc < 3 ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
 	}
 
 	TString command = argv[1];
 	command.ToLower();
+	TString category = argv[2];
+	if ( category != "DD" && category != "LL" ) {
+		usage( std::cerr, argv[0] );
+		return EXIT_FAILURE;
+	}
 	Int_t iFit(0);
+	UInt_t port(5000);
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
 	if ( command == "gen" ) {
-		if ( argc > 2 ) {
-			nExpt = atoi( argv[2] );
-			if ( argc > 3 ) {
-				firstExpt = atoi( argv[3] );
-			}
-		}
-	} else if ( command == "fit" ) {
-		if ( argc < 3 ) {
-			usage( std::cerr, argv[0] );
-			return EXIT_FAILURE;
-		}
-		iFit = atoi( argv[2] );
 		if ( argc > 3 ) {
 			nExpt = atoi( argv[3] );
 			if ( argc > 4 ) {
 				firstExpt = atoi( argv[4] );
+			}
+		}
+	} else if ( command == "fit" ) {
+		if ( argc < 5 ) {
+			usage( std::cerr, argv[0] );
+			return EXIT_FAILURE;
+		}
+		iFit = atoi( argv[3] );
+		port = atoi( argv[4] );
+		if ( argc > 5 ) {
+			nExpt = atoi( argv[5] );
+			if ( argc > 6 ) {
+				firstExpt = atoi( argv[6] );
 			}
 		}
 	} else {
@@ -65,38 +73,28 @@ int main( int argc, char** argv )
 		return EXIT_FAILURE;
 	}
 
+	LauRandom::setSeed(0);
+
 	// If you want to use square DP histograms for efficiency,
 	// backgrounds or you just want the square DP co-ordinates
 	// stored in the toy MC ntuple then set this to kTRUE
 	Bool_t squareDP = kFALSE;
 
-	// This defines the DP => decay is B+ -> pi+ pi+ pi-
-	// Particle 1 = pi+
-	// Particle 2 = pi+
-	// Particle 3 = pi-
+	// This defines the DP => decay is B0 -> pi0 pi0 K_S0
+	// Particle 1 = pi0
+	// Particle 2 = pi0
+	// Particle 3 = KS_0
 	// The DP is defined in terms of m13Sq and m23Sq
-	LauDaughters* daughters = new LauDaughters("B+", "pi+", "pi+", "pi-", squareDP);
+	LauDaughters* daughters = new LauDaughters("B0", "pi0", "pi0", "K_S0", squareDP);
 
 	// Optionally apply some vetoes to the DP
 	LauVetoes* vetoes = new LauVetoes();
-	//Double_t DMin = 1.70;
-	//Double_t DMax = 1.925;
-	//Double_t JpsiMin = 3.051;
-	//Double_t JpsiMax = 3.222;
-	//Double_t psi2SMin = 3.676;
-	//Double_t psi2SMax = 3.866;
-	//vetoes->addMassVeto(2, DMin, DMax); // D0 veto, m13
-	//vetoes->addMassVeto(2, JpsiMin, JpsiMax); // J/psi veto, m13
-	//vetoes->addMassVeto(2, psi2SMin, psi2SMax); // psi(2S) veto, m13
-	//vetoes->addMassVeto(1, DMin, DMax); // D0 veto, m23
-	//vetoes->addMassVeto(1, JpsiMin, JpsiMax); // J/psi veto, m23
-	//vetoes->addMassVeto(1, psi2SMin, psi2SMax); // psi(2S) veto, m23
 
 	// Define the efficiency model (defaults to unity everywhere)
 	// Can optionally provide a histogram to model variation over DP
 	// (example syntax given in commented-out section)
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);
-	//TFile *effHistFile = TFile::Open("histoFiles/B3piNRDPEff.root", "read");
+	//TFile *effHistFile = TFile::Open("histoFiles/efficiency.root", "read");
 	//TH2* effHist = dynamic_cast<TH2*>(effHistFile->Get("effHist"));
 	//Bool_t useInterpolation = kTRUE;
 	//Bool_t fluctuateBins = kFALSE;
@@ -105,18 +103,22 @@ int main( int argc, char** argv )
 
 	// Create the isobar model
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-	sigModel->addResonance("rho0(770)",  1, "RelBW"); // resPairAmpInt = 1 => resonance mass is m23.
-	sigModel->addResonance("rho0(1450)", 1, "RelBW");
-	sigModel->addResonance("f_0(980)",   1, "Flatte");
-	sigModel->addResonance("f_2(1270)",  1, "RelBW");
-	sigModel->addResonance("NonReson",   0, "FlatNR");
+	sigModel->addResonance("f_0(980)",    3, "Flatte"); // resPairAmpInt = 3 => resonance mass is m12.
+	sigModel->addResonance("f_2(1270)",   3, "RelBW");
+	sigModel->addResonance("K*0(892)",    1, "RelBW");
+	sigModel->addResonance("K*0_0(1430)", 1, "LASS");
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and
 	// error.
-	sigModel->setASqMaxValue(0.27);  
+	sigModel->setASqMaxValue(1.25);  
+
+	TString integralsFileName("integ-");
+	integralsFileName += category;
+	integralsFileName += ".dat";
+	sigModel->setIntFileName( integralsFileName );
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
@@ -125,17 +127,21 @@ int main( int argc, char** argv )
 	// Here we're using the magnitude and phase form:
 	// c_j = a_j exp(i*delta_j)
 	std::vector<LauAbsCoeffSet*> coeffset;
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",  1.00,  0.00,  kTRUE,  kTRUE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)", 0.37,  1.99, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",   0.27, -1.59, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)",  0.53,  1.39, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",   0.54, -0.84, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",    1.00,  0.00,  kTRUE,  kTRUE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)",   0.53,  1.39, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)",    0.87,  1.99, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("K*0_0(1430)", 1.17, -1.59, kFALSE, kFALSE) );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	LauParameter * nSigEvents = new LauParameter("nSigEvents",500.0,-1000.0,1000.0,kFALSE);
+	TString sigEventsName = "signalEvents" + category;
+	Double_t nSig(500.0);
+	if ( category == "DD" ) {
+		nSig = 750.0;
+	}
+	LauParameter * nSigEvents = new LauParameter(sigEventsName,nSig,-2.0*nSig,2.0*nSig,kFALSE);
 	fitModel->setNSigEvents(nSigEvents);
 
 	// Set the number of experiments to generate or fit and which
@@ -145,19 +151,23 @@ int main( int argc, char** argv )
 	// Optionally load in continuum background DP model histogram
 	// (example syntax given in commented-out section)
 	std::vector<TString> bkgndNames(1);
-	bkgndNames[0] = "qqbar";
+	bkgndNames[0] = "comb" + category;
 	fitModel->setBkgndClassNames( bkgndNames );
-	LauParameter* nBkgndEvents = new LauParameter("qqbar",1200.0,-2400.0,2400.0,kFALSE);
+	Double_t nBkgnd = 1200.0;
+	if ( category == "DD" ) {
+		nBkgnd = 2500.0;
+	}
+	LauParameter* nBkgndEvents = new LauParameter(bkgndNames[0],nBkgnd,-2.0*nBkgnd,2.0*nBkgnd,kFALSE);
 	fitModel->setNBkgndEvents( nBkgndEvents );
-	//TString qqFileName("histoFiles/offResDP.root");
-	//TFile* qqFile = TFile::Open(qqFileName.Data(), "read");
-	//TH2* qqDP = dynamic_cast<TH2*>(qqFile->Get("AllmTheta")); // m', theta'
-	LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
-	//qqbarModel->setBkgndHisto(qqDP, useInterpolation, fluctuateBins, useUpperHalf, squareDP);
-	fitModel->setBkgndDPModel( "qqbar", qqbarModel );
+	//TString bkgndFileName("histoFiles/bkgndDPs.root");
+	//TFile* bkgndFile = TFile::Open(bkgndFileName.Data(), "read");
+	//TH2* bkgndDP = dynamic_cast<TH2*>(bkgndFile->Get("AllmTheta")); // m', theta'
+	LauBkgndDPModel* bkgndModel = new LauBkgndDPModel(daughters, vetoes);
+	//bkgndModel->setBkgndHisto(bkgndDP, useInterpolation, fluctuateBins, useUpperHalf, squareDP);
+	fitModel->setBkgndDPModel( bkgndNames[0], bkgndModel );
 
 	// Switch on/off calculation of asymmetric errors.
-	fitModel->useAsymmFitErrors(kFALSE);
+	//fitModel->useAsymmFitErrors(kFALSE);
 
 	// Randomise initial fit values for the signal mode
 	fitModel->useRandomInitFitPars(kTRUE);
@@ -170,14 +180,14 @@ int main( int argc, char** argv )
 	fitModel->doEMLFit(emlFit);
 
 	// Set the names of the files to read/write
-	TString dataFile("gen.root");
+	TString dataFile("gen-"); dataFile += category; dataFile += ".root";
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
 	TString fitToyFileName("fitToyMC_");
 	TString splotFileName("splot_");
 	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += iFit;
+		rootFileName = "fit"; rootFileName += category; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
@@ -198,7 +208,11 @@ int main( int argc, char** argv )
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Execute the generation/fit
-	fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );
+	if ( command == "fit" ) {
+		fitModel->runSlave( dataFile, treeName, rootFileName, tableFileName, "localhost", port );
+	} else {
+		fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );
+	}
 
 	return EXIT_SUCCESS;
 }

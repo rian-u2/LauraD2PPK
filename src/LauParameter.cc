@@ -40,6 +40,10 @@ LauParameter::LauParameter() :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -60,6 +64,10 @@ LauParameter::LauParameter(const TString& parName) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -80,6 +88,10 @@ LauParameter::LauParameter(Double_t parValue) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -100,6 +112,10 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -120,6 +136,10 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max) :
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -141,6 +161,10 @@ LauParameter::LauParameter(Double_t parValue, Double_t parError, Double_t min, D
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -162,6 +186,10 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max, Bool_t
 	fixed_(parFixed),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -183,6 +211,10 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -204,6 +236,10 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	fixed_(parFixed),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -225,6 +261,10 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	fixed_(kTRUE),
 	firstStage_(kFALSE),
 	secondStage_(kFALSE),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0),
+	gcc_(0.0),
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
@@ -233,7 +273,7 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	this->checkRange();
 }
 
-LauParameter::LauParameter(const LauParameter& rhs)
+LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs)
 {
 	this->name(rhs.name());
 	this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());
@@ -242,26 +282,40 @@ LauParameter::LauParameter(const LauParameter& rhs)
 	this->fixed(rhs.fixed());
 	this->firstStage(rhs.firstStage());
 	this->secondStage(rhs.secondStage());
+	if ( rhs.gaussConstraint() ) {
+		this->addGaussianConstraint( rhs.constraintMean(), rhs.constraintWidth() );
+	} else {
+		this->removeGaussianConstraint();
+	}
 	this->errors(rhs.error(), rhs.negError(), rhs.posError());
+	this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
 	this->clone(rhs.parent());
 	clones_ = rhs.clones_;
+	this->updatePull();
 }
 
 LauParameter& LauParameter::operator=(const LauParameter& rhs)
 {
-	if (&rhs == this) {
-		return *this;
+	if (&rhs != this) {
+		TObject::operator=(rhs);
+		this->name(rhs.name());
+		this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());
+		this->genValue(rhs.genValue());
+		this->initValue(rhs.initValue());
+		this->fixed(rhs.fixed());
+		this->firstStage(rhs.firstStage());
+		this->secondStage(rhs.secondStage());
+		if ( rhs.gaussConstraint() ) {
+			this->addGaussianConstraint( rhs.constraintMean(), rhs.constraintWidth() );
+		} else {
+			this->removeGaussianConstraint();
+		}
+		this->errors(rhs.error(), rhs.negError(), rhs.posError());
+		this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
+		this->clone(rhs.parent());
+		clones_ = rhs.clones_;
+		this->updatePull();
 	}
-	this->name(rhs.name());
-	this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());
-	this->genValue(rhs.genValue());
-	this->initValue(rhs.initValue());
-	this->fixed(rhs.fixed());
-	this->firstStage(rhs.firstStage());
-	this->secondStage(rhs.secondStage());
-	this->errors(rhs.error(), rhs.negError(), rhs.posError());
-	this->clone(rhs.parent());
-	clones_ = rhs.clones_;
 	return *this;
 }
 
@@ -316,6 +370,11 @@ void LauParameter::valueAndErrors(Double_t newValue, Double_t newError, Double_t
 	if (!this->clone()) {
 		this->updateClones();
 	}
+}
+
+void LauParameter::globalCorrelationCoeff(Double_t newGCCValue)
+{
+	gcc_ = newGCCValue;
 }
 
 void LauParameter::genValue(Double_t newGenValue)
@@ -392,6 +451,24 @@ void LauParameter::firstStage(Bool_t firstStagePar)
 void LauParameter::secondStage(Bool_t secondStagePar)
 {
 	secondStage_ = secondStagePar;
+	if (!this->clone()) {
+		this->updateClones();
+	}
+}
+
+void LauParameter::addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth)
+{
+	gaussConstraint_ = kTRUE;
+	constraintMean_ = newGaussMean;
+	constraintWidth_ = newGaussWidth;
+	if (!this->clone()) {
+		this->updateClones();
+	}
+}
+
+void LauParameter::removeGaussianConstraint()
+{
+	gaussConstraint_ = kFALSE;
 	if (!this->clone()) {
 		this->updateClones();
 	}
@@ -544,6 +621,11 @@ void LauParameter::updateClones(Bool_t justValue)
 			clonePar->fixed(this->fixed());
 			clonePar->firstStage(this->firstStage());
 			clonePar->secondStage(this->secondStage());
+			if ( this->gaussConstraint() ) {
+				clonePar->addGaussianConstraint( this->constraintMean(), this->constraintWidth() );
+			} else {
+				clonePar->removeGaussianConstraint();
+			}
 		}
 	}
 }

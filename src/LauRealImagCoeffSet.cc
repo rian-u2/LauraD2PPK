@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -34,36 +31,28 @@ ClassImp(LauRealImagCoeffSet)
 
 LauRealImagCoeffSet::LauRealImagCoeffSet(const TString& compName, Double_t x, Double_t y, Bool_t xFixed, Bool_t yFixed) :
 	LauAbsCoeffSet(compName),
-	minPar_(-10.0),
-	maxPar_(+10.0),
-	x_(new LauParameter("X",x,minPar_,maxPar_,xFixed)),
-	y_(new LauParameter("Y",y,minPar_,maxPar_,yFixed)),
+	x_(new LauParameter("X",x,minRealImagPart_,maxRealImagPart_,xFixed)),
+	y_(new LauParameter("Y",y,minRealImagPart_,maxRealImagPart_,yFixed)),
 	coeff_(x,y)
 {
-	// Print message
-	cout<<"Set component \""<<this->name()<<"\" to have real part = "<<x_->value()<<" and imaginary part = "<<y_->value()<<"."<<endl;
 }
 
-LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
+LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	x_(0),
+	y_(0),
+	coeff_( rhs.coeff_ )
 {
-	minPar_ = rhs.minPar_;
-	maxPar_ = rhs.maxPar_;
-	y_ = rhs.x_->createClone(constFactor);
-	y_ = rhs.y_->createClone(constFactor);
-	coeff_ = rhs.coeff_;
-}
-
-LauRealImagCoeffSet& LauRealImagCoeffSet::operator=(const LauRealImagCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minPar_ = rhs.minPar_;
-		maxPar_ = rhs.maxPar_;
-		y_ = rhs.x_->createClone();
-		y_ = rhs.y_->createClone();
-		coeff_ = rhs.coeff_;
+	if ( cloneOption == All || cloneOption == TieRealPart ) {
+		x_ = rhs.x_->createClone(constFactor);
+	} else {
+		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
 	}
-	return *this;
+
+	if ( cloneOption == All || cloneOption == TieImagPart ) {
+		y_ = rhs.y_->createClone(constFactor);
+	} else {
+		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+	}
 }
 
 std::vector<LauParameter*> LauRealImagCoeffSet::getParameters()
@@ -74,15 +63,20 @@ std::vector<LauParameter*> LauRealImagCoeffSet::getParameters()
 	return pars;
 }
 
-void LauRealImagCoeffSet::printTableHeading(std::ostream& stream)
+void LauRealImagCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & Real Part & Imaginary Part \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout<<"INFO in LauRealImagCoeffSet::printParValues : Component \""<<this->name()<<"\" has real part = "<<x_->value()<<" and imaginary part = "<<y_->value()<<"."<<std::endl;
 }
 
-void LauRealImagCoeffSet::printTableRow(std::ostream& stream)
+void LauRealImagCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & Real Part & Imaginary Part \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauRealImagCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -95,7 +89,7 @@ void LauRealImagCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, y_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, y_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauRealImagCoeffSet::randomiseInitValues()
@@ -129,14 +123,25 @@ const LauComplex& LauRealImagCoeffSet::antiparticleCoeff()
 	return this->particleCoeff();
 }
 
-void LauRealImagCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauRealImagCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
 	LauComplex average( coeff );
 	average += coeffBar;
 	average.rescale( 0.5 );
 
-	x_->value( average.re() );
-	y_->value( average.im() );
+	Double_t xVal( average.re() );
+	Double_t yVal( average.im() );
+
+	x_->value( xVal );
+	y_->value( yVal );
+
+	if ( init ) {
+		x_->genValue( xVal );
+		y_->genValue( yVal );
+
+		x_->initValue( xVal );
+		y_->initValue( yVal );
+	}
 }
 
 LauParameter LauRealImagCoeffSet::acp()
@@ -145,10 +150,15 @@ LauParameter LauRealImagCoeffSet::acp()
 	return LauParameter(parName,0.0);
 }
 
-LauAbsCoeffSet* LauRealImagCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauRealImagCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauRealImagCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TieRealPart || cloneOption == TieImagPart ) {
+		clone = new LauRealImagCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauRealImagCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

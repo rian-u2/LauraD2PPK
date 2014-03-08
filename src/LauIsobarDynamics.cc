@@ -15,12 +15,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::setprecision;
-using std::ifstream;
-using std::ofstream;
 
 #include "TFile.h"
 #include "TRandom.h"
@@ -42,6 +36,7 @@ using std::ofstream;
 #include "LauKMatrixProdPole.hh"
 #include "LauKMatrixProdSVP.hh"
 #include "LauNRAmplitude.hh"
+#include "LauPolNR.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"
 #include "LauRelBreitWignerRes.hh"
@@ -181,12 +176,12 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	this->initSummary();
 
 	if ( nAmp_ == 0 ) {
-		cout << "No contributions to DP model, not performing normalisation integrals." << endl;
+		std::cout << "INFO in LauIsobarDynamics::initialise : No contributions to DP model, not performing normalisation integrals." << std::endl;
 	} else {
 
 		// We need to calculate the normalisation constants for the
 		// Dalitz plot generation/fitting.
-		cout<<"Starting special run to generate the integrals for normalising the PDF..."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::initialise : Starting special run to generate the integrals for normalising the PDF..."<<std::endl;
 		this->calcDPNormalisation();
 
 		// Write the integrals to a file (mainly for debugging purposes)
@@ -196,7 +191,7 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 	integralsDone_ = kTRUE;
 
-	cout << setprecision(10);
+	std::cout << std::setprecision(10);
 
 	// Calculate and cache the relative normalisations of each resonance _dynamic_ amplitude
 	// (e.g. Breit-Wigner contribution, not from the complex amplitude/phase) w.r.t. the
@@ -211,25 +206,26 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	// events in the DP, accounting for the total DP area and the
 	// dynamics of the resonance.
 
+	std::cout<<"INFO in LauIsobarDynamics::initialise : Summary of the integrals:"<<std::endl;
 	for (UInt_t i = 0; i < nAmp_; i++) {
 		fNorm_[i] = 0.0;
 		if (fSqSum_[i] > 0.0) {fNorm_[i] = TMath::Sqrt(1.0/(fSqSum_[i]));}
-		cout<<" fNorm["<<i<<"] = "<<fNorm_[i]<<endl;
-		cout<<" fSqSum["<<i<<"] = "<<fSqSum_[i]<<endl;
+		std::cout<<" fNorm["<<i<<"] = "<<fNorm_[i]<<std::endl;
+		std::cout<<" fSqSum["<<i<<"] = "<<fSqSum_[i]<<std::endl;
 	}
 
 	for (UInt_t i = 0; i < nAmp_; i++) {    
 		for (UInt_t j = 0; j < nAmp_; j++) {
-			cout<<" fifjEffSum["<<i<<"]["<<j<<"] = "<<fifjEffSum_[i][j];
+			std::cout<<" fifjEffSum["<<i<<"]["<<j<<"] = "<<fifjEffSum_[i][j];
 		}
-		cout<<endl;
+		std::cout<<std::endl;
 	}
 
 	for (UInt_t i = 0; i < nAmp_; i++) {    
 		for (UInt_t j = 0; j < nAmp_; j++) {
-			cout<<" fifjSum["<<i<<"]["<<j<<"] = "<<fifjSum_[i][j];
+			std::cout<<" fifjSum["<<i<<"]["<<j<<"] = "<<fifjSum_[i][j];
 		}
-		cout<<endl;
+		std::cout<<std::endl;
 	}
 
 	// Calculate the initial fit fractions (for later comparison with Toy MC, if required)
@@ -237,13 +233,13 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	this->calcExtraInfo(kTRUE);
 	for (UInt_t i = 0; i < nAmp_; i++) {
 		for (UInt_t j = i; j < nAmp_; j++) {
-			cout<<"Initial fit fraction for amplitude ("<<i<<","<<j<<") = "<<fitFrac_[i][j].genValue()<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::initialise : Initial fit fraction for amplitude ("<<i<<","<<j<<") = "<<fitFrac_[i][j].genValue()<<std::endl;
 		}
 	}
 
-	cout<<"Initial efficiency = "<<meanDPEff_.initValue()<<endl;
+	std::cout<<"INFO in LauIsobarDynamics::initialise : Initial efficiency = "<<meanDPEff_.initValue()<<std::endl;
 
-	cout<<"Initial DPRate = "<<DPRate_.initValue()<<endl;
+	std::cout<<"INFO in LauIsobarDynamics::initialise : Initial DPRate = "<<DPRate_.initValue()<<std::endl;
 }
 
 void LauIsobarDynamics::initSummary()
@@ -255,44 +251,44 @@ void LauIsobarDynamics::initSummary()
 	TString name2 = daughters_->getNameDaug2();
 	TString name3 = daughters_->getNameDaug3();
 
-	cout<<"We are going to do a DP with "<<nameP<<" going to "<<name1<<" "<<name2<<" "<<name3<<endl;
+	std::cout<<"INFO in LauIsobarDynamics::initSummary : We are going to do a DP with "<<nameP<<" going to "<<name1<<" "<<name2<<" "<<name3<<std::endl;
 
-	cout<<"For the following resonance combinations:"<<endl;
+	std::cout<<"                                       : For the following resonance combinations:"<<std::endl;
 
-	cout<<"In tracks 2 and 3:"<<endl;
+	std::cout<<"                                       : In tracks 2 and 3:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 1) {
-			cout<<"  "<<resTypAmp_[i]<<" to " <<name2<<", "<< name3<<endl;
+			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name2<<", "<< name3<<std::endl;
 		}
 	}
 
-	cout<<endl;
+	std::cout<<std::endl;
 
-	cout<<"In tracks 1 and 3:"<<endl;
+	std::cout<<"                                       : In tracks 1 and 3:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 2) {
-			cout<<"  "<<resTypAmp_[i]<<" to "<<name1<<", "<< name3<<endl;
+			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name1<<", "<< name3<<std::endl;
 		}
 	}
 
-	cout<<endl;
+	std::cout<<std::endl;
 
-	cout<<"In tracks 1 and 2:"<<endl;
+	std::cout<<"                                       : In tracks 1 and 2:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 3) {
-			cout<<"  "<<resTypAmp_[i]<<" to "<<name1<<", "<< name2<<endl;
+			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name1<<", "<< name2<<std::endl;
 		}
 	}
 
-	cout<<endl;
+	std::cout<<std::endl;
 
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 0) {
-			cout<<"and a non-resonant amplitude."<<endl;
+			std::cout<<"                                       : and a non-resonant amplitude."<<std::endl;
 		}
 	}
 
-	cout<<endl;
+	std::cout<<std::endl;
 }
 
 void LauIsobarDynamics::initialiseVectors()
@@ -336,12 +332,12 @@ void LauIsobarDynamics::writeIntegralsFile()
 	// Routine to end integration calculation for loglike normalisation.
 	// This writes out the normalisation integral output into the file named
 	// outputFileName.
-	cout<<"Writing integral output to integrals file "<<intFileName_.Data()<<endl;
+	std::cout<<"INFO in LauIsobarDynamics::writeIntegralsFile : Writing integral output to integrals file "<<intFileName_.Data()<<std::endl;
 
 	UInt_t i(0), j(0);
-	ofstream getChar(intFileName_.Data());
+	std::ofstream getChar(intFileName_.Data());
 
-	getChar << setprecision(10);
+	getChar << std::setprecision(10);
 
 	// Write out daughter types (pi, pi0, K, K0s?)
 	for (i = 0; i < 3; i++) {    
@@ -349,14 +345,14 @@ void LauIsobarDynamics::writeIntegralsFile()
 	}
 
 	// Write out number of resonances in the Dalitz plot model
-	getChar << nAmp_ << endl;
+	getChar << nAmp_ << std::endl;
 
 	// Write out the resonances
 	for (i = 0; i < nAmp_; i++) {
 		getChar << resTypAmp_[i] << " ";
 	}
 
-	getChar << endl;
+	getChar << std::endl;
 
 	// Write out the resonance model types (BW, RelBW etc...)
 	for (i = 0; i < nAmp_; i++) {
@@ -365,7 +361,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 		getChar << resModelInt << " ";
 	}
 
-	getChar << endl;
+	getChar << std::endl;
 
 	// Write out the track pairings for each resonance. This is specified
 	// by the resPairAmpInt integer in the addResonance function.
@@ -373,14 +369,14 @@ void LauIsobarDynamics::writeIntegralsFile()
 		getChar << resPairAmp_[i] << " ";
 	}
 
-	getChar << endl;
+	getChar << std::endl;
 
 	// Write out the fSqSum = |ff|^2, where ff = resAmp()
 	for (i = 0; i < nAmp_; i++) {
 		getChar << fSqSum_[i] << " ";
 	}
 
-	getChar << endl;
+	getChar << std::endl;
 
 	// Write out the f_i*f_j_conj*eff values = resAmp_i*resAmp_j_conj*eff.
 	// Note that only the top half of the i*j "matrix" is required, as it
@@ -391,7 +387,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 		}
 	}
 
-	getChar << endl;
+	getChar << std::endl;
 
 	// Similar to fifjEffSum, but without the efficiency term included.
 	for (i = 0; i < nAmp_; i++) {
@@ -400,41 +396,32 @@ void LauIsobarDynamics::writeIntegralsFile()
 		}
 	}
 
-	getChar << endl;
+	getChar << std::endl;
 
 }
 
 void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Double_t newMass, Double_t newWidth, Int_t newSpin)
 {
-	// Function to add a resonance in a Dalitz plot (for signal). To add a resonance
-	// in the continuum background, please use addBgResonance().
-	// No check is made w.r.t flavour
-	// and charge conservation rules, and so the user is responsible for checking the
-	// internal consistency of their function statements with these laws. For example,
-	// the program will not prevent the user from asking for a rho resonance
-	// in a K-pi pair or a K* resonance in a pi-pi pair.
+	// Function to add a resonance in a Dalitz plot.
+	// No check is made w.r.t flavour and charge conservation rules, and so
+	// the user is responsible for checking the internal consistency of
+	// their function statements with these laws. For example, the program
+	// will not prevent the user from asking for a rho resonance in a K-pi
+	// pair or a K* resonance in a pi-pi pair.
 	// However, to assist the user, a summary of the resonant structure requested
 	// by the user is printed before the program runs. It is important to check this
 	// information when you first define your Dalitz plot model before doing
 	// any fitting/generating.
 	// Arguments are: resonance name, integer to specify the resonance track pairing
 	// (1 => m_23, 2 => m_13, 3 => m_12), i.e. the bachelor track number.
-	// Also required are the initial values of the magnitude and phase of the amplitude
-	// for this resonance, and whether they are to be fixed in any fit.
-	// Supported resonances for the resName (1st) argument are (case-sensitive):
-	// Rho, Kst, f0_980, phi1020, f2_1270, Kst1410, Kst1430
-	// K2*1430, Rho1450, Kst1680, Chic0, NonReson, f2_1525, f0_1500, 
-	// Rho1700, f0_1370, (alternative) NRModel, a2_1320, Rho3_1690, a0_980
-	// a0_1450, phi1680, a6_2450, phi3_1850.
-	// The final argument resType specifies whether the resonance is a Breit-Wigner (BW)
+	// The third argument resType specifies whether the resonance is a Breit-Wigner (BW)
 	// Relativistic Breit-Wigner (RelBW) or Flatte distribution (Flatte), for example.
 
 	LauAbsResonance *theResonance = 
 		resonanceMaker_->getResonance(resName, resPairAmpInt, resType);
 
 	if (theResonance == 0) {
-		cout<<"Error. Couldn't find the resonance "<<resName<<endl;
-		cout<<"Sorry. Resonance type is not recognised. Not added."<<endl;
+		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
 		return;
 	}
 
@@ -497,17 +484,25 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 		if (belleNR != 0) {
 			belleNR->setAlpha(BelleNRAlpha_);
 		} else {
-			cout<<"Belle non-resonant object is null"<<endl;
+			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Belle non-resonant object is null"<<std::endl;
 		}
 	} else if ( resonanceName.BeginsWith("BelleSymNR", TString::kExact) ) {
 		LauBelleSymNR* belleNR = dynamic_cast<LauBelleSymNR*>(theResonance);
 		if (belleNR != 0) {
 			belleNR->initialise(symmetricalDP_, BelleNRAlpha_, resTypeName);
 		} else {
-			cout<<"Belle non-resonant object is null"<<endl;
+			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Symmetric Belle non-resonant object is null"<<std::endl;
+		}
+
+	} else if ( resonanceName.BeginsWith("PolNR", TString::kExact) ) {
+		LauPolNR* polNR = dynamic_cast<LauPolNR*>(theResonance);
+		Double_t omega = 0.5*(daughters_->getMassParent()+(1./3)*(daughters_->getMassDaug1()+daughters_->getMassDaug2()+daughters_->getMassDaug3()));
+		if (polNR != 0) {
+		  polNR->setOmega(omega);
+		} else {
+			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Polynomial non-resonant object is null"<<std::endl;
 		}
 	}
-
 	// Initialise the resonance model
 	theResonance->initialise();
 
@@ -520,89 +515,89 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 	if (    (resonanceName.BeginsWith("NonReson",   TString::kExact) == kTRUE) || 
 		(resonanceName.BeginsWith("BelleSymNR", TString::kExact) == kTRUE) ||
 		(resonanceName.BeginsWith("NRModel",    TString::kExact) == kTRUE)) {
-	        cout<<"Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::addResonance : Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<std::endl;
 		resPairAmp_.push_back(0);
 	} else {
 		resPairAmp_.push_back(resPairAmpInt);
 	}
 
 	// Increment the number of resonance amplitudes we have so far
-	nAmp_++;
+	++nAmp_;
 
 	// Finally, add the resonance object to the internal array
 	sigResonances_.push_back(theResonance);
 
-	cout<<"Successfully added resonance. Total number of resonances so far = "<<nAmp_<<endl;
+	std::cout<<"INFO in LauIsobarDynamics::addResonance : Successfully added resonance. Total number of resonances so far = "<<nAmp_<<std::endl;
 
 }
 
 void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const TString& paramFileName, Int_t resPairAmpInt, 
 						Int_t nChannels, Int_t nPoles, Int_t rowIndex)
 {
-  // Define the K-matrix propagator. The resPairAmpInt integer specifies which mass combination should be used
-  // for the invariant mass-squared variable "s". The pole masses and coupling constants are defined in the
-  // paramFileName parameter file. The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
-  // The integer rowIndex specifies which row of the propagator should be used when 
-  // summing over all amplitude channels: S-wave will be the first row, so rowIndex = 1.
+	// Define the K-matrix propagator. The resPairAmpInt integer specifies which mass combination should be used
+	// for the invariant mass-squared variable "s". The pole masses and coupling constants are defined in the
+	// paramFileName parameter file. The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
+	// The integer rowIndex specifies which row of the propagator should be used when 
+	// summing over all amplitude channels: S-wave will be the first row, so rowIndex = 1.
 
-  if (rowIndex < 1) {
-    cerr<<"Error in defineKMatrixPropagator: rowIndex must be > 0 but is equal to "<<rowIndex<<endl;
-    return;
-  }
+	if (rowIndex < 1) {
+		std::cerr<<"Error in defineKMatrixPropagator: rowIndex must be > 0 but is equal to "<<rowIndex<<std::endl;
+		return;
+	}
 
-  TString propagatorName(propName), parameterFile(paramFileName);
+	TString propagatorName(propName), parameterFile(paramFileName);
 
-  LauKMatrixPropagator* thePropagator = LauKMatrixPropFactory::getInstance()->getPropagator(propagatorName, parameterFile,
-											    resPairAmpInt, nChannels,
-											    nPoles, rowIndex);
-  kMatrixPropagators_[propagatorName] = thePropagator;
+	LauKMatrixPropagator* thePropagator = LauKMatrixPropFactory::getInstance()->getPropagator(propagatorName, parameterFile,
+			resPairAmpInt, nChannels,
+			nPoles, rowIndex);
+	kMatrixPropagators_[propagatorName] = thePropagator;
 
 }
 
 void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex)
 {
 
-  // Add a K-matrix production pole term, using the K-matrix propagator given by the propName.
-  // Here, poleIndex is the integer specifying the pole number.
+	// Add a K-matrix production pole term, using the K-matrix propagator given by the propName.
+	// Here, poleIndex is the integer specifying the pole number.
 
-  // First, find the K-matrix propagator.
-  KMPropMap::iterator mapIter = kMatrixPropagators_.find(propName);
-  if (mapIter != kMatrixPropagators_.end()) {
+	// First, find the K-matrix propagator.
+	KMPropMap::iterator mapIter = kMatrixPropagators_.find(propName);
+	if (mapIter != kMatrixPropagators_.end()) {
 
-    LauKMatrixPropagator* thePropagator = mapIter->second;
+		LauKMatrixPropagator* thePropagator = mapIter->second;
 
-    // Make sure the pole index is valid
-    Int_t nPoles = thePropagator->getNPoles();
-    if (poleIndex < 1 || poleIndex > nPoles) {
-      cerr<<"Error in LauIsobarDynamics::addKMatrixProdPole. The pole index "<<poleIndex
-	  <<" is not between 1 and "<<nPoles<<". Not adding production pole "<<poleName
-	  <<" for K-matrix propagator "<<propName<<endl;
-      return;
-    }
+		// Make sure the pole index is valid
+		Int_t nPoles = thePropagator->getNPoles();
+		if (poleIndex < 1 || poleIndex > nPoles) {
+			std::cerr<<"ERROR in LauIsobarDynamics::addKMatrixProdPole : The pole index "<<poleIndex
+				<<" is not between 1 and "<<nPoles<<". Not adding production pole "<<poleName
+				<<" for K-matrix propagator "<<propName<<std::endl;
+			return;
+		}
 
-    // Now add the K-matrix production pole amplitude to the vector of LauAbsResonance pointers.
-    Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
-    LauAbsResonance* prodPole = new LauKMatrixProdPole(poleName, poleIndex, resPairAmpInt, thePropagator, daughters_);
+		// Now add the K-matrix production pole amplitude to the vector of LauAbsResonance pointers.
+		Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
+		LauAbsResonance* prodPole = new LauKMatrixProdPole(poleName, poleIndex, resPairAmpInt, thePropagator, daughters_);
 
-    resTypAmp_.push_back(poleName);
-    resIntAmp_.push_back(0);
-    resPairAmp_.push_back(resPairAmpInt);
+		resTypAmp_.push_back(poleName);
+		resIntAmp_.push_back(0);
+		resPairAmp_.push_back(resPairAmpInt);
 
-    nAmp_++;
-    sigResonances_.push_back(prodPole);
+		nAmp_++;
+		sigResonances_.push_back(prodPole);
 
-    // Also store the propName-poleName pair for calculating total fit fractions later on 
-    // (avoiding the need to use dynamic casts to check which resonances are of the K-matrix type)
-    kMatrixPropSet_[poleName] = propName;
+		// Also store the propName-poleName pair for calculating total fit fractions later on 
+		// (avoiding the need to use dynamic casts to check which resonances are of the K-matrix type)
+		kMatrixPropSet_[poleName] = propName;
 
-    cout<<"Successfully added K-matrix production pole term. Total number of resonances so far = "<<nAmp_<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::addKMatrixProdPole : Successfully added K-matrix production pole term. Total number of resonances so far = "<<nAmp_<<std::endl;
 
-  } else {
+	} else {
 
-    cerr<<"Error in LauIsobarDynamics::addKMatrixProdPole. The propagator of the name "<<propName
-	<<" could not be found for the production pole "<<poleName<<endl;
+		std::cerr<<"ERROR in LauIsobarDynamics::addKMatrixProdPole : The propagator of the name "<<propName
+			<<" could not be found for the production pole "<<poleName<<std::endl;
 
-  }
+	}
 
 }
 
@@ -610,49 +605,47 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex)
 {
 
-  // Add a K-matrix production "slowly-varying part" (SVP) term, using the K-matrix propagator 
-  // given by the propName. Here, channelIndex is the integer specifying the channel number.
+	// Add a K-matrix production "slowly-varying part" (SVP) term, using the K-matrix propagator 
+	// given by the propName. Here, channelIndex is the integer specifying the channel number.
 
-  // First, find the K-matrix propagator.
-  KMPropMap::iterator mapIter = kMatrixPropagators_.find(propName);
-  if (mapIter != kMatrixPropagators_.end()) {
+	// First, find the K-matrix propagator.
+	KMPropMap::iterator mapIter = kMatrixPropagators_.find(propName);
+	if (mapIter != kMatrixPropagators_.end()) {
 
-    LauKMatrixPropagator* thePropagator = mapIter->second;
+		LauKMatrixPropagator* thePropagator = mapIter->second;
 
-    // Make sure the channel index is valid
-    Int_t nChannels = thePropagator->getNChannels();
-    if (channelIndex < 1 || channelIndex > nChannels) {
-      cerr<<"Error in LauIsobarDynamics::addKMatrixProdSVP. The channel index "<<channelIndex
-	  <<" is not between 1 and "<<nChannels<<". Not adding production slowly-varying part "<<SVPName
-	  <<" for K-matrix propagator "<<propName<<endl;
-      return;
-    }
+		// Make sure the channel index is valid
+		Int_t nChannels = thePropagator->getNChannels();
+		if (channelIndex < 1 || channelIndex > nChannels) {
+			std::cerr<<"ERROR in LauIsobarDynamics::addKMatrixProdSVP : The channel index "<<channelIndex
+				<<" is not between 1 and "<<nChannels<<". Not adding production slowly-varying part "<<SVPName
+				<<" for K-matrix propagator "<<propName<<std::endl;
+			return;
+		}
 
-    // Now add the K-matrix production SVP amplitude to the vector of LauAbsResonance pointers.
-    Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
-    LauAbsResonance* prodSVP = new LauKMatrixProdSVP(SVPName, channelIndex, resPairAmpInt, thePropagator, daughters_);
+		// Now add the K-matrix production SVP amplitude to the vector of LauAbsResonance pointers.
+		Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
+		LauAbsResonance* prodSVP = new LauKMatrixProdSVP(SVPName, channelIndex, resPairAmpInt, thePropagator, daughters_);
 
-    resTypAmp_.push_back(SVPName);
-    resIntAmp_.push_back(0);
-    resPairAmp_.push_back(resPairAmpInt);
+		resTypAmp_.push_back(SVPName);
+		resIntAmp_.push_back(0);
+		resPairAmp_.push_back(resPairAmpInt);
 
-    nAmp_++;
-    sigResonances_.push_back(prodSVP);
+		nAmp_++;
+		sigResonances_.push_back(prodSVP);
 
-    // Also store the SVPName-propName pair for calculating total fit fractions later on 
-    // (avoiding the need to use dynamic casts to check which resonances are of the K-matrix type)
-    kMatrixPropSet_[SVPName] = propName;
+		// Also store the SVPName-propName pair for calculating total fit fractions later on 
+		// (avoiding the need to use dynamic casts to check which resonances are of the K-matrix type)
+		kMatrixPropSet_[SVPName] = propName;
 
-    cout<<"Successfully added K-matrix production slowly-varying (SVP) term. Total number of resonances so far = "
-	<<nAmp_<<endl;    
+		std::cout<<"INFO in LauIsobarDynamics::addKMatrixProdSVP : Successfully added K-matrix production slowly-varying (SVP) term. Total number of resonances so far = "<<nAmp_<<std::endl;
 
-  } else {
+	} else {
 
-    cerr<<"Error in LauIsobarDynamics::addKMatrixProdSVP. The propagator of the name "<<propName
-	<<" could not be found for the production slowly-varying part "<<SVPName<<endl;
+		std::cerr<<"ERROR in LauIsobarDynamics::addKMatrixProdSVP : The propagator of the name "<<propName
+			 <<" could not be found for the production slowly-varying part "<<SVPName<<std::endl;
 
-  }
-
+	}
 }
 
 LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name)
@@ -672,7 +665,7 @@ LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name)
 		}
 	}
 
-	cout<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<endl;
+	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<std::endl;
 	return 0;
 }
 
@@ -693,7 +686,7 @@ const LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name) con
 		}
 	}
 
-	cout<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<endl;
+	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<std::endl;
 	return 0;
 }
 
@@ -714,7 +707,7 @@ void LauIsobarDynamics::changeResonance(const TString& resName, Double_t newMass
 	// Change the mass, width or spin of a resonance.
 
 	if (newMass > 0.0 || newWidth > 0.0 || newSpin > -1) {
-		cout<<"ERROR in LauIsobarDynamics::changeResonance : mass, width and spin parameters all out of range."<<endl;
+		std::cerr<<"ERROR in LauIsobarDynamics::changeResonance : mass, width and spin parameters all out of range."<<std::endl;
 		return;
 	}
 
@@ -747,7 +740,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		Double_t mass = (*iter)->getMass();
 		Int_t pair = (*iter)->getPairInt();
 		TString name = (*iter)->getResonanceName();
-		cout<<"Found narrow resonance: "<<name<<", mass = "<<mass<<", width = "<<width<<", pair int = "<<pair<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Found narrow resonance: "<<name<<", mass = "<<mass<<", width = "<<width<<", pair int = "<<pair<<std::endl;
 		if ( pair == 1 ) {
 			if ( mass < minm23 || mass > maxm23 ){ continue; }
 			m23NarrowRes.insert( std::make_pair(width,mass) );
@@ -758,7 +751,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			if ( mass < minm12 || mass > maxm12 ){ continue; }
 			m12NarrowRes.insert( std::make_pair(width,mass) );
 		} else {
-			cerr<<"WARNING in LauIsobarDynamics::calcDPNormalisation : strange pair integer, "<<pair<<", for resonance \""<<(*iter)->getResonanceName()<<endl;
+			std::cerr<<"WARNING in LauIsobarDynamics::calcDPNormalisation : strange pair integer, "<<pair<<", for resonance \""<<(*iter)->getResonanceName()<<std::endl;
 		}
 	}
 
@@ -782,14 +775,14 @@ void LauIsobarDynamics::calcDPNormalisation()
 	if ( e12 && e13 && e23 ) {
 		// If we have no narrow resonances just integrate the whole
 		// DP with the standard bin widths
-		cout<<"No narrow resonances found, integrating over whole Dalitz plot..."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : No narrow resonances found, integrating over whole Dalitz plot..."<<std::endl;
 		this->calcDPPartialIntegral(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
 	} else if ( ! e12 ) {
 		// If we have a narrow resonance on the diagonal then we'll have to
 		// just use a narrow bin width over the whole DP (1/10 of the width
 		// of the narrowest resonance in any mass pair)
 		m13BinWidth = m23BinWidth = 10.0*TMath::Min( w12, TMath::Min( w13, w23 ) );
-		cout<<"One or more narrow resonances found in m12, integrating over whole Dalitz plot with bin width of "<<m13BinWidth<<" GeV/c2..."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One or more narrow resonances found in m12, integrating over whole Dalitz plot with bin width of "<<m13BinWidth<<" GeV/c2..."<<std::endl;
 		this->calcDPPartialIntegral(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
 	} else if ( s13==1 && e23 ) {
 		// We have a single narrow resonance in m13
@@ -803,12 +796,12 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( resMin < (minm13+50.0*m13BinWidth_) ) {
-			cout<<"One narrow resonance found in m13, close to threshold, dividing Dalitz plot into two regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m13, close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
 			this->calcDPPartialIntegral(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
 			m13BinWidth = w13;
 			this->calcDPPartialIntegral(minm13, resMax, minm23, maxm23, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"One narrow resonance found in m13, dividing Dalitz plot into three regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m13, dividing Dalitz plot into three regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, resMin, minm23, maxm23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
 			m13BinWidth = w13;
@@ -834,7 +827,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( res1Min < (minm13+50.0*m13BinWidth_) ) {
-			cout<<"Two narrow resonances found in m13, one close to threshold, dividing Dalitz plot into four regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			this->calcDPPartialIntegral(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
 			m13BinWidth = res1Width/100.0;
@@ -842,7 +835,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m13BinWidth = res2Width/100.0;
 			this->calcDPPartialIntegral(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"Two narrow resonances found in m13, dividing Dalitz plot into five regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, dividing Dalitz plot into five regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
@@ -863,12 +856,12 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( resMin < (minm23+50.0*m23BinWidth_) ) {
-			cout<<"One narrow resonance found in m23, close to threshold, dividing Dalitz plot into two regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m23, close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth);
 			m23BinWidth = w23;
 			this->calcDPPartialIntegral(minm13, maxm13, minm23, resMax, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"One narrow resonance found in m23, dividing Dalitz plot into three regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m23, dividing Dalitz plot into three regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, maxm13, minm23, resMin, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth);
 			m23BinWidth = w23;
@@ -894,7 +887,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( res1Min < (minm23+50.0*m23BinWidth_) ) {
-			cout<<"Two narrow resonances found in m23, one close to threshold, dividing Dalitz plot into four regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
 			m23BinWidth = res1Width/100.0;
@@ -902,7 +895,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m23BinWidth = res2Width/100.0;
 			this->calcDPPartialIntegral(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"Two narrow resonances found in m23, dividing Dalitz plot into five regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, dividing Dalitz plot into five regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
@@ -928,7 +921,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( resMin13 < (minm13+50.0*m13BinWidth_) && resMin23 < (minm23+50.0*m23BinWidth_) ) {
-			cout<<"One narrow resonance found in m13 and one in m23, both close to threshold, dividing Dalitz plot into four regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m13 and one in m23, both close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
 			this->calcDPPartialIntegral(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth);
@@ -942,7 +935,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m23BinWidth = w23;
 			this->calcDPPartialIntegral(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth);
 		} else if ( resMin13 < (minm13+50.0*m13BinWidth_) ) {
-			cout<<"One narrow resonance found in m13, close to threshold, and one in m23, not close to threshold, dividing Dalitz plot into six regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m13, close to threshold, and one in m23, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
 			this->calcDPPartialIntegral(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth);
 			m13BinWidth = m13BinWidth_;
@@ -956,7 +949,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m23BinWidth = w23;
 			this->calcDPPartialIntegral(minm13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth);
 		} else if ( resMin23 < (minm23+50.0*m23BinWidth_) ) {
-			cout<<"One narrow resonance found in m23, close to threshold, and one in m13, not close to threshold, dividing Dalitz plot into six regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in m23, close to threshold, and one in m13, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth);
 			m13BinWidth = m13BinWidth_;
@@ -970,7 +963,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m23BinWidth = w23;
 			this->calcDPPartialIntegral(resMin13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"One narrow resonance found in both m13 and m23, neither close to threshold, dividing Dalitz plot into nine regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : One narrow resonance found in both m13 and m23, neither close to threshold, dividing Dalitz plot into nine regions..."<<std::endl;
 			this->calcDPPartialIntegral(minm13, resMin13, minm23, resMin23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth);
@@ -991,7 +984,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// We have multiple narrow resonances in m13 only.
 		// Divide the plot into 2 regions: threshold to the most
 		// massive of the narrow resonances, and the rest
-		cout<<"Multiple narrow resonances found in m13, dividing Dalitz plot into two regions..."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in m13, dividing Dalitz plot into two regions..."<<std::endl;
 		Double_t mass = 0.0;
 		Double_t width = 0.0;
 		for ( std::map<Double_t,Double_t>::const_iterator iter = m13NarrowRes.begin(); iter != m13NarrowRes.end(); ++iter ) {
@@ -1008,7 +1001,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// We have multiple narrow resonances in m23 only.
 		// Divide the plot into 2 regions: threshold to the most
 		// massive of the narrow resonances, and the rest
-		cout<<"Multiple narrow resonances found in m23, dividing Dalitz plot into two regions..."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in m23, dividing Dalitz plot into two regions..."<<std::endl;
 		Double_t mass = 0.0;
 		Double_t width = 0.0;
 		for ( std::map<Double_t,Double_t>::const_iterator iter = m23NarrowRes.begin(); iter != m23NarrowRes.end(); ++iter ) {
@@ -1041,7 +1034,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( resMin13 < (minm13+50.0*m13BinWidth_) ) {
-			cout<<"Multiple narrow resonances found in m23 and one in m13, close to threshold, dividing Dalitz plot into four regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in m23 and one in m13, close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
 			this->calcDPPartialIntegral(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth);
@@ -1055,7 +1048,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m23BinWidth = w23;
 			this->calcDPPartialIntegral(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"Multiple narrow resonances found in m23 and one in m13, not close to threshold, dividing Dalitz plot into six regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in m23 and one in m13, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
 			this->calcDPPartialIntegral(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth);
@@ -1091,7 +1084,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( resMin23 < (minm23+50.0*m23BinWidth_) ) {
-			cout<<"Multiple narrow resonances found in m13 and one in m23, close to threshold, dividing Dalitz plot into four regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in m13 and one in m23, close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
 			this->calcDPPartialIntegral(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth);
@@ -1105,7 +1098,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 			m23BinWidth = w23;
 			this->calcDPPartialIntegral(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth);
 		} else {
-			cout<<"Multiple narrow resonances found in m13 and one in m23, not close to threshold, dividing Dalitz plot into six regions..."<<endl;
+			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in m13 and one in m23, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
 			this->calcDPPartialIntegral(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth);
 			this->calcDPPartialIntegral(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth);
 			m13BinWidth = m13BinWidth_;
@@ -1122,7 +1115,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 	} else {
 		// We've got multiple narrow resonances in both m13 and m23.
 		// Divide the plot into 4 regions.
-		cout<<"Multiple narrow resonances found in both m13 and m23, dividing Dalitz plot into four regions..."<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Multiple narrow resonances found in both m13 and m23, dividing Dalitz plot into four regions..."<<std::endl;
 		Double_t mass13 = 0.0;
 		Double_t width13 = 0.0;
 		for ( std::map<Double_t,Double_t>::const_iterator iter = m13NarrowRes.begin(); iter != m13NarrowRes.end(); ++iter ) {
@@ -1195,9 +1188,9 @@ void LauIsobarDynamics::calcDPPartialIntegral(Double_t minm13, Double_t maxm13, 
 	// Avoid integral if we have no points in either x or y space
 	if (nm13Points == 0 || nm23Points == 0) {return;}
 
-	cout<<"nm13Points = "<<nm13Points<<", nm23Points = "<<nm23Points<<endl;
-	cout<<"m13BinWidth = "<<m13BinWidth<<", m23BinWidth = "<<m23BinWidth<<endl;
-	cout<<"Integrating over m13 = "<<minm13<<" to "<<maxm13<<", m23 = "<<minm23<<" to "<<maxm23<<endl;
+	std::cout<<"INFO in LauIsobarDynamics::calcDPPartialIntegral : nm13Points = "<<nm13Points<<", nm23Points = "<<nm23Points<<std::endl;
+	std::cout<<"                                                 : m13BinWidth = "<<m13BinWidth<<", m23BinWidth = "<<m23BinWidth<<std::endl;
+	std::cout<<"                                                 : Integrating over m13 = "<<minm13<<" to "<<maxm13<<", m23 = "<<minm23<<" to "<<maxm23<<std::endl;
 
 	LauIntegrals DPIntegrals(precision);
 	std::vector<Double_t> m13Weights, m23Weights;
@@ -1209,7 +1202,7 @@ void LauIsobarDynamics::calcDPPartialIntegral(Double_t minm13, Double_t maxm13, 
 	Int_t nm13Weights = static_cast<Int_t>(m13Weights.size());
 	Int_t nm23Weights = static_cast<Int_t>(m23Weights.size());
 
-	//cout<<"nm13Weights = "<<nm13Weights<<", nm23Weights = "<<nm23Weights<<endl;
+	//std::cout<<"                                                 : nm13Weights = "<<nm13Weights<<", nm23Weights = "<<nm23Weights<<std::endl;
 	// Print out abscissas and weights for the integration
 	Double_t totm13Weight(0.0), totm23Weight(0.0);
 	for (i = 0; i < nm13Weights; i++) {
@@ -1218,7 +1211,7 @@ void LauIsobarDynamics::calcDPPartialIntegral(Double_t minm13, Double_t maxm13, 
 	for (i = 0; i < nm23Weights; i++) {
 		totm23Weight += m23Weights[i];
 	}
-	cout<<"totm13Weight = "<<totm13Weight<<", totm23Weight = "<<totm23Weight<<endl;
+	std::cout<<"                                                 : totm13Weight = "<<totm13Weight<<", totm23Weight = "<<totm23Weight<<std::endl;
 
 	std::vector<Double_t> m13(nm13Weights), m23(nm23Weights);
 	std::vector<Double_t> m13Sq(nm13Weights), m23Sq(nm23Weights);
@@ -1281,7 +1274,7 @@ void LauIsobarDynamics::calcDPPartialIntegral(Double_t minm13, Double_t maxm13, 
 	} // i weights loop
 
 	// Print out DP area to check whether we have a sensible output
-	cout<<"dpArea = "<<dpArea<<endl;
+	std::cout<<"                                                 : dpArea = "<<dpArea<<std::endl;
 
 }
 
@@ -1306,7 +1299,7 @@ void LauIsobarDynamics::dynamics(Bool_t cacheResData, Double_t weight, Bool_t us
 			// Calculate the dynamics for this resonance, using the resAmp function.
 			ff_[i] = resAmp(i);
 
-			//cout<<"ff_["<<i<<"] = "<<ff_[i]<<endl;
+			//std::cout<<"ff_["<<i<<"] = "<<ff_[i]<<std::endl;
 
 			// If we have a symmetrical Dalitz plot, flip the m_13^2 and m_23^2
 			// variables, recalculate the dynamics, and average both contributions.
@@ -1338,7 +1331,7 @@ void LauIsobarDynamics::dynamics(Bool_t cacheResData, Double_t weight, Bool_t us
 			ATerm.rescale(fNorm_[i]);
 
 			// Add this partial amplitude to the sum
-			//cout<<"For i = "<<i<<", ATerm = "<<ATerm<<", Amp = "<<Amp_[i]<<", ff = "<<ff_[i]<<endl;
+			//std::cout<<"For i = "<<i<<", ATerm = "<<ATerm<<", Amp = "<<Amp_[i]<<", ff = "<<ff_[i]<<std::endl;
 			totAmp_ += ATerm;
 
 		} // Loop over amplitudes
@@ -1392,7 +1385,7 @@ LauComplex LauIsobarDynamics::resAmp(Int_t index)
 	LauAbsResonance* sigResonance = sigResonances_[index];
 
 	if (sigResonance == 0) {
-		cout<<"Error in resAmp. Couldn't retrieve resonance with index = "<<index<<endl;
+		std::cout<<"ERROR in LauIsobarDynamics::resAmp : Couldn't retrieve resonance with index = "<<index<<std::endl;
 		return LauComplex(0.0, 0.0);
 	}
 
@@ -1401,15 +1394,9 @@ LauComplex LauIsobarDynamics::resAmp(Int_t index)
 
 	LauComplex resAmplitude(0.0, 0.0);
 
-	// Fortran code has this set to 0 -> set NR index to -1
-	if (resInt == -1) {
+	if (resInt < 0 || resInt >= static_cast<Int_t>(this->getnDefinedResonances())) {
 
-		// Non-resonant
-		resAmplitude = LauComplex(0.3, 0.0);
-
-	} else if (resInt < -1 || resInt >= static_cast<Int_t>(this->getnDefinedResonances())) {
-
-		cout<<"Error in resAmp. Probably bad resonance name."<<endl;
+		std::cout<<"ERROR in LauIsobarDynamics::resAmp : Probably bad resonance name."<<std::endl;
 		resAmplitude = LauComplex(0.0, 0.0);
 
 	} else {
@@ -1425,13 +1412,11 @@ void LauIsobarDynamics::setFFTerm(UInt_t index, Double_t realPart, Double_t imag
 {  
 	// Function to set the internal ff = resAmp() term.  
 	if ( index >= nAmp_ ) {
-		cout<<"Warning in setFFTerm. index = "<<index<<" is not within the range 0 and "
-			<<nAmp_-1<<". Bailing out."<<endl;
+		std::cerr<<"ERROR in LauIsobarDynamics::setFFTerm : index = "<<index<<" is not within the range 0 and "<<nAmp_-1<<". Bailing out."<<std::endl;
 		return;
 	}
 
 	ff_[index].setRealImagPart( realPart, imagPart );
-
 }
 
 void LauIsobarDynamics::calcExtraInfo(Bool_t init)
@@ -1554,7 +1539,7 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		        extraParameters_[propInt].initValue(kMatrixTotFitFrac);
 		}
 
-		cout<<"Total K-matrix fit fraction for propagator "<<propName<<" is "<<kMatrixTotFitFrac<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::calcExtraInfo : Total K-matrix fit fraction for propagator "<<propName<<" is "<<kMatrixTotFitFrac<<std::endl;
 		
 		++propInt;
 
@@ -1693,26 +1678,26 @@ LauAbsDPDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMes
 
 	if (nSigGenLoop_ >= iterationsMax_) {
 		if (printErrorMessages) {
-			cerr<<"Error in sigGen. More than "<<iterationsMax_<<" iterations required."<<endl;
-			cerr<<"Try to decrease the maximum allowed value of the total amplitude squared using the "
-				<<"LauIsobarDynamics::setASqMaxValue(Double_t) function and re-run."<<endl;
-			cerr<<"This needs to be, perhaps significantly, less than "<<aSqMaxSet_<<endl;
-			cerr<<"Maximum value of ASq so far = "<<aSqMaxVar_<<endl;
+			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : More than "<<iterationsMax_<<" iterations required."<<std::endl;
+			std::cerr<<"                                         : Try to decrease the maximum allowed value of the total amplitude squared using the "
+				 <<"LauIsobarDynamics::setASqMaxValue(Double_t) function and re-run."<<std::endl;
+			std::cerr<<"                                         : This needs to be, perhaps significantly, less than "<<aSqMaxSet_<<std::endl;
+			std::cerr<<"                                         : Maximum value of ASq so far = "<<aSqMaxVar_<<std::endl;
 		}
 		aSqMaxSet_ = 1.01 * aSqMaxVar_;
-                cout<<"|A|^2 max reset to "<<aSqMaxSet_<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::checkToyMC : |A|^2 max reset to "<<aSqMaxSet_<<std::endl;
 		ok = MaxIterError;
 	} else if (aSqMaxVar_ > aSqMaxSet_) {
 		if (printErrorMessages) {
-			cerr<<"Warning in LauIsobarDynamics::checkToyMC : aSqMaxSet_ was set to "<<aSqMaxSet_<<" but actual aSqMax was "<<aSqMaxVar_<<endl;
-			cerr<<"Run was invalid, as any generated MC will be biased, according to the accept/reject method!"<<endl;
-			cerr<<"Please set aSqMaxSet >= "<<aSqMaxVar_<<" using the LauIsobarDynamics::setASqMaxValue(Double_t) function and re-run."<<endl;
+			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : aSqMaxSet_ was set to "<<aSqMaxSet_<<" but actual aSqMax was "<<aSqMaxVar_<<std::endl;
+			std::cerr<<"                                         : Run was invalid, as any generated MC will be biased, according to the accept/reject method!"<<std::endl;
+			std::cerr<<"                                         : Please set aSqMaxSet >= "<<aSqMaxVar_<<" using the LauIsobarDynamics::setASqMaxValue(Double_t) function and re-run."<<std::endl;
 		}
 		aSqMaxSet_ = 1.01 * aSqMaxVar_;
-                cout<<"|A|^2 max reset to "<<aSqMaxSet_<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::checkToyMC : |A|^2 max reset to "<<aSqMaxSet_<<std::endl;
 		ok = ASqMaxError;
 	} else if (printInfoMessages) {
-		cout<<"aSqMaxSet = "<<aSqMaxSet_<<" and aSqMaxVar = "<<aSqMaxVar_<<endl;
+		std::cout<<"INFO in LauIsobarDynamics::checkToyMC : aSqMaxSet = "<<aSqMaxSet_<<" and aSqMaxVar = "<<aSqMaxVar_<<std::endl;
 	}
 
 	return ok;
@@ -1797,9 +1782,9 @@ void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 	UInt_t nBranches = inputFitTree.nBranches();
 
 	if (nBranches < 2) {
-		cout<<"Error in LauIsobarDynamics::fillDataTree. Expecting at least 2 variables "
+		std::cout<<"ERROR in LauIsobarDynamics::fillDataTree : Expecting at least 2 variables "
 			<<"in input data tree, but there are "<<nBranches<<"! Make sure you have "
-			<<"the right number of variables in your input data file!"<<endl;
+			<<"the right number of variables in your input data file!"<<std::endl;
 		gSystem->Exit(-1);
 	}
 

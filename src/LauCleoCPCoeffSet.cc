@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -33,57 +30,58 @@ ClassImp(LauCleoCPCoeffSet)
 
 
 LauCleoCPCoeffSet::LauCleoCPCoeffSet(const TString& compName, Double_t a, Double_t delta, Double_t b, Double_t phi,
-		Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed) :
+		Bool_t aFixed, Bool_t deltaFixed, Bool_t bFixed, Bool_t phiFixed, Bool_t bSecondStage, Bool_t phiSecondStage) :
 	LauAbsCoeffSet(compName),
-	minMag_(-10.0),
-	maxMag_(+10.0),
-	minPhase_(-LauConstants::threePi),
-	maxPhase_(+LauConstants::threePi),
-	a_(new LauParameter("A", a, minMag_, maxMag_, aFixed)),
-	b_(new LauParameter("B", b, minMag_, maxMag_, bFixed)),
+	a_(new LauParameter("A", a, minMagnitude_, maxMagnitude_, aFixed)),
+	b_(new LauParameter("B", b, minMagnitude_, maxMagnitude_, bFixed)),
 	delta_(new LauParameter("Delta", delta, minPhase_, maxPhase_, deltaFixed)),
 	phi_(new LauParameter("Phi", phi, minPhase_, maxPhase_, phiFixed)),
 	particleCoeff_( (a+b)*TMath::Cos(delta+phi), (a+b)*TMath::Sin(delta+phi) ),
 	antiparticleCoeff_( (a-b)*TMath::Cos(delta-phi), (a-b)*TMath::Sin(delta-phi) ),
 	acp_("ACP", (-2.0*a*b)/(a*a+b*b), -1.0, 1.0, bFixed&&phiFixed)
 {
-	// Print message
-	cout<<"Set component \""<<this->name()<<"\" to have a-magnitude = "<<a_->value()<<",\tdelta = "<<delta_->value()<<",\t";
-	cout<<"b-magnitude = "<<b_->value()<<",\tphi = "<<phi_->value()<<"."<<endl;
-}
-
-LauCleoCPCoeffSet::LauCleoCPCoeffSet(const LauCleoCPCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
-{
-	minMag_ = rhs.minMag_;
-	maxMag_ = rhs.maxMag_;
-	minPhase_ = rhs.minPhase_;
-	maxPhase_ = rhs.maxPhase_;
-	a_ = rhs.a_->createClone(constFactor);
-	b_ = rhs.b_->createClone(constFactor);
-	delta_ = rhs.delta_->createClone(constFactor);
-	phi_ = rhs.phi_->createClone(constFactor);
-	particleCoeff_ = rhs.particleCoeff_;
-	antiparticleCoeff_ = rhs.antiparticleCoeff_;
-	acp_ = rhs.acp_;
-}
-
-LauCleoCPCoeffSet& LauCleoCPCoeffSet::operator=(const LauCleoCPCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minMag_ = rhs.minMag_;
-		maxMag_ = rhs.maxMag_;
-		minPhase_ = rhs.minPhase_;
-		maxPhase_ = rhs.maxPhase_;
-		a_ = rhs.a_->createClone();
-		b_ = rhs.b_->createClone();
-		delta_ = rhs.delta_->createClone();
-		phi_ = rhs.phi_->createClone();
-		particleCoeff_ = rhs.particleCoeff_;
-		antiparticleCoeff_ = rhs.antiparticleCoeff_;
-		acp_ = rhs.acp_;
+	if (bSecondStage && !bFixed) {
+		b_->secondStage(kTRUE);
+		b_->initValue(0.0);
 	}
-	return *this;
+	if (phiSecondStage && !phiFixed) {
+		phi_->secondStage(kTRUE);
+		phi_->initValue(0.0);
+	}
+}
+
+LauCleoCPCoeffSet::LauCleoCPCoeffSet(const LauCleoCPCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	a_(0),
+	b_(0),
+	delta_(0),
+	phi_(0),
+	particleCoeff_( rhs.particleCoeff_ ),
+	antiparticleCoeff_( rhs.antiparticleCoeff_ ),
+	acp_( rhs.acp_ )
+{
+	if ( cloneOption == All || cloneOption == TieMagnitude ) {
+		a_ = rhs.a_->createClone(constFactor);
+	} else {
+		a_ = new LauParameter("A", rhs.a_->value(), minMagnitude_, maxMagnitude_, rhs.a_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TieCPPars ) {
+		b_ = rhs.b_->createClone(constFactor);
+	} else {
+		b_ = new LauParameter("B", rhs.b_->value(), minMagnitude_, maxMagnitude_, rhs.b_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TiePhase ) {
+		delta_ = rhs.delta_->createClone(constFactor);
+	} else {
+		delta_ = new LauParameter("Delta", rhs.delta_->value(), minPhase_, maxPhase_, rhs.delta_->fixed());
+	}
+
+	if ( cloneOption == All || cloneOption == TieCPPars ) {
+		phi_ = rhs.phi_->createClone(constFactor);
+	} else {
+		phi_ = new LauParameter("Phi", rhs.phi_->value(), minPhase_, maxPhase_, rhs.phi_->fixed());
+	}
 }
 
 std::vector<LauParameter*> LauCleoCPCoeffSet::getParameters()
@@ -96,15 +94,24 @@ std::vector<LauParameter*> LauCleoCPCoeffSet::getParameters()
 	return pars;
 }
 
-void LauCleoCPCoeffSet::printTableHeading(std::ostream& stream)
+void LauCleoCPCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & a-Magnitude & delta & b-Magnitude & phi \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout<<"INFO in LauCleoCPCoeffSet::printParValues : Component \""<<this->name()<<"\" has ";
+	std::cout<<"a-magnitude = "<<a_->value()<<",\t";
+	std::cout<<"delta = "<<delta_->value()<<",\t";
+	std::cout<<"b-magnitude = "<<b_->value()<<",\t";
+	std::cout<<"phi = "<<phi_->value()<<"."<<std::endl;
 }
 
-void LauCleoCPCoeffSet::printTableRow(std::ostream& stream)
+void LauCleoCPCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & a-Magnitude & delta & b-Magnitude & phi \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauCleoCPCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -125,7 +132,7 @@ void LauCleoCPCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, phi_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, phi_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauCleoCPCoeffSet::randomiseInitValues()
@@ -135,7 +142,7 @@ void LauCleoCPCoeffSet::randomiseInitValues()
 		Double_t mag = LauRandom::zeroSeedRandom()->Rndm()*2.0;
 		a_->initValue(mag); a_->value(mag);
 	}
-	if (b_->fixed() == kFALSE) {
+	if (b_->fixed() == kFALSE && b_->secondStage() == kFALSE) {
 		// Choose a b-magnitude between 0.0 and 0.1
 		Double_t mag = LauRandom::zeroSeedRandom()->Rndm()*0.1;
 		b_->initValue(mag);  b_->value(mag);
@@ -145,7 +152,7 @@ void LauCleoCPCoeffSet::randomiseInitValues()
 		Double_t phase = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		delta_->initValue(phase); delta_->value(phase);
 	}
-	if (phi_->fixed() == kFALSE) {
+	if (phi_->fixed() == kFALSE && phi_->secondStage() == kFALSE) {
 		// Choose a phase between +- pi
 		Double_t phase = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		phi_->initValue(phase); phi_->value(phase);
@@ -238,18 +245,34 @@ const LauComplex& LauCleoCPCoeffSet::antiparticleCoeff()
 	return antiparticleCoeff_;
 }
 
-void LauCleoCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauCleoCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
 	Double_t mag = coeff.abs();
 	Double_t magBar = coeffBar.abs();
 	Double_t phase = coeff.arg();
 	Double_t phaseBar = coeffBar.arg();
 
-	a_->value( 0.5 * ( mag + magBar ) );
-	delta_->value( 0.5 * ( phase + phaseBar ) );
+	Double_t aVal( 0.5 * ( mag + magBar ) );
+	Double_t deltaVal( 0.5 * ( phase + phaseBar ) );
+	Double_t bVal( 0.5 * ( mag - magBar ) );
+	Double_t phiVal( 0.5 * ( phase - phaseBar ) );
 
-	b_->value( 0.5 * ( mag - magBar ) );
-	phi_->value( 0.5 * ( phase - phaseBar ) );
+	a_->value( aVal );
+	delta_->value( deltaVal );
+	b_->value( bVal );
+	phi_->value( phiVal );
+
+	if ( init ) {
+		a_->genValue( aVal );
+		delta_->genValue( deltaVal );
+		b_->genValue( bVal );
+		phi_->genValue( phiVal );
+
+		a_->initValue( aVal );
+		delta_->initValue( deltaVal );
+		b_->initValue( bVal );
+		phi_->initValue( phiVal );
+	}
 }
 
 LauParameter LauCleoCPCoeffSet::acp()
@@ -276,10 +299,15 @@ LauParameter LauCleoCPCoeffSet::acp()
 	return acp_;
 }
 
-LauAbsCoeffSet* LauCleoCPCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauCleoCPCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauCleoCPCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TiePhase || cloneOption == TieMagnitude || cloneOption == TieCPPars ) {
+		clone = new LauCleoCPCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauCleoCPCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

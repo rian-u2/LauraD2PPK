@@ -5,6 +5,44 @@
 ///////////////////////////////////////////////////////////////
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v2r0
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+8th March 2014 Thomas Latham
+
+* Some additional functionality for the CoeffSet classes:
+  - allow the parameter values to be set (optionally setting the initial and generated values as well)
+  - allow the parameters to be set to float or to be fixed in the fit
+  These are needed when cloning but wanting some of the parameters to have different values and/or floating behaviour from the cloned set.
+* Improve the printout of the setting of the coefficient values in the fit models and the creation of resonances
+* Add LauFlatNR for the unform NR model - ends its rather strange special treatment
+* Fix bug setting resAmpInt to 0 for LauPolNR
+* Many other improvements to the info/warning/error printouts
+* Modify GenFitBelleCPKpipi example to demonstrate cloning in action
+* Add -Werror to compiler flags (treats warnings as errors)
+
+5th March 2014 Thomas Latham
+
+* Some improvements to LauPolNR to speed up amplitude calculation
+
+2nd March 2014 Thomas Latham
+
+* A number of updates to the CoeffSet classes:
+  - allow specification of the basename just after construction (before being given to the fit model)
+  - allow configuration of the parameter fit ranges (through static methods of base class)
+  - more adaptable cloning of the parameters (e.g. can only clone phase but allow magnitude to float independently)
+  - allow CP-violating parameters to be second-stage in Belle and CLEO formats
+* Some improvements to the Doxygen and runtime information printouts
+
+20th February 2014 Louis Henry
+
+* Add LauPolNR - class for modelling the nonresonant contribution based on BaBar 3K model (arXiv:1201.5897)
+
+6th February 2014 Thomas Latham
+
+* Correct helicity convention information in Doxygen for LauKinematics
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v1r2
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -16,6 +54,13 @@
 
 * Fixed bug in Lau2DSplineDPPdf - normalisation was not being calculated
 * Added out-of-range warning in LauBkgndDPModel and supressed excessive warnings
+
+3rd February 2014 Mark Whitehead
+(in branch for release in v2r0)
+
+* Added a new class to allow parameters to be a function of other parameters
+  - inc/LauFormulaPar.hh
+  - src/LauFormulaPar.cc
 
 28th January 2014 Daniel Craik
 
@@ -54,6 +99,17 @@
     Lau2DHistDP
   - setEffSpline method added to LauEffModel and useSpline flag added to constructor for 
     LauDPDepSumPdf to allow use of splines
+
+18th December 2013 Mark Whitehead
+(in branch for release in v2r0)
+
+* Added functionality to include Gaussian constraints on floated
+  parameters in the fit.
+  The files updated are:
+  - inc/LauAbsFitModel.hh
+  - inc/LauParameter.hh
+  - src/LauAbsFitModel.cc
+  - src/LauParameter.cc
 
 5th December 2013 Thomas Latham
 

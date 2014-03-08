@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -35,49 +32,40 @@ ClassImp(LauRealImagCPCoeffSet)
 LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const TString& compName, Double_t x, Double_t y, Double_t xbar, Double_t ybar,
 		Bool_t xFixed, Bool_t yFixed, Bool_t xbarFixed, Bool_t ybarFixed) :
 	LauAbsCoeffSet(compName),
-	minPar_(-10.0),
-	maxPar_(+10.0),
-	x_(new LauParameter("X", x, minPar_, maxPar_, xFixed)),
-	y_(new LauParameter("Y", y, minPar_, maxPar_, yFixed)),
-	xbar_(new LauParameter("Xbar", xbar, minPar_, maxPar_, xbarFixed)),
-	ybar_(new LauParameter("Ybar", ybar, minPar_, maxPar_, ybarFixed)),
+	x_(new LauParameter("X", x, minRealImagPart_, maxRealImagPart_, xFixed)),
+	y_(new LauParameter("Y", y, minRealImagPart_, maxRealImagPart_, yFixed)),
+	xbar_(new LauParameter("Xbar", xbar, minRealImagPart_, maxRealImagPart_, xbarFixed)),
+	ybar_(new LauParameter("Ybar", ybar, minRealImagPart_, maxRealImagPart_, ybarFixed)),
 	particleCoeff_(x,y),
 	antiparticleCoeff_(xbar,ybar),
 	acp_("ACP", 0.0, -1.0, 1.0, kTRUE)
 {
-	// Print message
-	std::cout << "Set component \"" << this->name() << "\" to have x = " << x_->value() << ",\ty = " << y_->value() << ",\t";
-	std::cout << "xbar = " << xbar_->value() << ",\tybar = " << ybar_->value() << "." << std::endl;
 }
 
-LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, Double_t constFactor) : LauAbsCoeffSet(rhs.name())
+LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, CloneOption cloneOption, Double_t constFactor) : LauAbsCoeffSet(rhs.name()),
+	x_(0),
+	y_(0),
+	xbar_(0),
+	ybar_(0),
+	particleCoeff_( rhs.particleCoeff_ ),
+	antiparticleCoeff_( rhs.antiparticleCoeff_ ),
+	acp_( rhs.acp_ )
 {
-	minPar_ = rhs.minPar_;
-	maxPar_ = rhs.maxPar_;
-	x_ = rhs.x_->createClone(constFactor);
-	y_ = rhs.y_->createClone(constFactor);
-	xbar_ = rhs.xbar_->createClone(constFactor);
-	ybar_ = rhs.ybar_->createClone(constFactor);
-	particleCoeff_ = rhs.particleCoeff_;
-	antiparticleCoeff_ = rhs.antiparticleCoeff_;
-	acp_ = rhs.acp_;
-}
-
-LauRealImagCPCoeffSet& LauRealImagCPCoeffSet::operator=(const LauRealImagCPCoeffSet& rhs)
-{
-	if (&rhs != this) {
-		this->name(rhs.name());
-		minPar_ = rhs.minPar_;
-		maxPar_ = rhs.maxPar_;
-		x_ = rhs.x_->createClone();
-		y_ = rhs.y_->createClone();
-		xbar_ = rhs.xbar_->createClone();
-		ybar_ = rhs.ybar_->createClone();
-		particleCoeff_ = rhs.particleCoeff_;
-		antiparticleCoeff_ = rhs.antiparticleCoeff_;
-		acp_ = rhs.acp_;
+	if ( cloneOption == All || cloneOption == TieRealPart ) {
+		x_ = rhs.x_->createClone(constFactor);
+		xbar_ = rhs.xbar_->createClone(constFactor);
+	} else {
+		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
+		xbar_ = new LauParameter("Xbar", rhs.xbar_->value(), minRealImagPart_, maxRealImagPart_, rhs.xbar_->fixed());
 	}
-	return *this;
+
+	if ( cloneOption == All || cloneOption == TieImagPart ) {
+		y_ = rhs.y_->createClone(constFactor);
+		ybar_ = rhs.ybar_->createClone(constFactor);
+	} else {
+		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+		ybar_ = new LauParameter("Ybar", rhs.ybar_->value(), minRealImagPart_, maxRealImagPart_, rhs.ybar_->fixed());
+	}
 }
 
 std::vector<LauParameter*> LauRealImagCPCoeffSet::getParameters()
@@ -90,15 +78,24 @@ std::vector<LauParameter*> LauRealImagCPCoeffSet::getParameters()
 	return pars;
 }
 
-void LauRealImagCPCoeffSet::printTableHeading(std::ostream& stream)
+void LauRealImagCPCoeffSet::printParValues() const
 {
-	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<endl;
-	stream<<"\\hline"<<endl;
-	stream<<"Component & Particle Real Part & Particle Imaginary Part & Antiparticle Real Part & Antiparticle Imaginary Part \\\\"<<endl;
-	stream<<"\\hline"<<endl;
+	std::cout << "INFO in LauRealImagCPCoeffSet::printParValues : Component \"" << this->name() << "\" has ";
+	std::cout << "x = " << x_->value() << ",\t";
+	std::cout << "y = " << y_->value() << ",\t";
+	std::cout << "xbar = " << xbar_->value() << ",\t";
+	std::cout << "ybar = " << ybar_->value() << "." << std::endl;
 }
 
-void LauRealImagCPCoeffSet::printTableRow(std::ostream& stream)
+void LauRealImagCPCoeffSet::printTableHeading(std::ostream& stream) const
+{
+	stream<<"\\begin{tabular}{|l|c|c|c|c|}"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+	stream<<"Component & Particle Real Part & Particle Imaginary Part & Antiparticle Real Part & Antiparticle Imaginary Part \\\\"<<std::endl;
+	stream<<"\\hline"<<std::endl;
+}
+
+void LauRealImagCPCoeffSet::printTableRow(std::ostream& stream) const
 {
 	LauPrint print;
 	TString resName = this->name();
@@ -119,28 +116,28 @@ void LauRealImagCPCoeffSet::printTableRow(std::ostream& stream)
 	print.printFormat(stream, ybar_->value());
 	stream<<" \\pm ";
 	print.printFormat(stream, ybar_->error());
-	stream<<"$ \\\\"<<endl;
+	stream<<"$ \\\\"<<std::endl;
 }
 
 void LauRealImagCPCoeffSet::randomiseInitValues()
 {
-	if (x_->fixed() == kFALSE && x_->secondStage() == kFALSE) {
+	if (x_->fixed() == kFALSE) {
 		// Choose a value for "X" between -3.0 and 3.0
 		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
 		x_->initValue(value); x_->value(value);
 	}
-	if (y_->fixed() == kFALSE && y_->secondStage() == kFALSE) {
+	if (y_->fixed() == kFALSE) {
 		// Choose a value for "Y" between -3.0 and 3.0
 		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
 		y_->initValue(value);  y_->value(value);
 	}
-	if (xbar_->fixed() == kFALSE && xbar_->secondStage() == kFALSE) {
-		// Choose a value for "Delta X" between -3.0 and 3.0
+	if (xbar_->fixed() == kFALSE) {
+		// Choose a value for "Xbar" between -3.0 and 3.0
 		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
 		xbar_->initValue(value); xbar_->value(value);
 	}
-	if (ybar_->fixed() == kFALSE && ybar_->secondStage() == kFALSE) {
-		// Choose a value for "Delta Y" between -3.0 and 3.0
+	if (ybar_->fixed() == kFALSE) {
+		// Choose a value for "Ybar" between -3.0 and 3.0
 		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
 		ybar_->initValue(value); ybar_->value(value);
 	}
@@ -167,12 +164,29 @@ const LauComplex& LauRealImagCPCoeffSet::antiparticleCoeff()
 	return antiparticleCoeff_;
 }
 
-void LauRealImagCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar )
+void LauRealImagCPCoeffSet::setCoeffValues( const LauComplex& coeff, const LauComplex& coeffBar, Bool_t init )
 {
-	x_->value( coeff.re() );
-	y_->value( coeff.im() );
-	xbar_->value( coeffBar.re() );
-	ybar_->value( coeffBar.im() );
+	Double_t xVal( coeff.re() );
+	Double_t yVal( coeff.im() );
+	Double_t xBarVal( coeffBar.re() );
+	Double_t yBarVal( coeffBar.im() );
+
+	x_->value( xVal );
+	y_->value( yVal );
+	xbar_->value( xBarVal );
+	ybar_->value( yBarVal );
+
+	if ( init ) {
+		x_->genValue( xVal );
+		y_->genValue( yVal );
+		xbar_->genValue( xBarVal );
+		ybar_->genValue( yBarVal );
+
+		x_->initValue( xVal );
+		y_->initValue( yVal );
+		xbar_->initValue( xBarVal );
+		ybar_->initValue( yBarVal );
+	}
 }
 
 LauParameter LauRealImagCPCoeffSet::acp()
@@ -201,10 +215,15 @@ LauParameter LauRealImagCPCoeffSet::acp()
 	return acp_;
 }
 
-LauAbsCoeffSet* LauRealImagCPCoeffSet::createClone(const TString& newName, Double_t constFactor)
+LauAbsCoeffSet* LauRealImagCPCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
-	LauAbsCoeffSet* clone = new LauRealImagCPCoeffSet( *this, constFactor );
-	clone->name( newName );
+	LauAbsCoeffSet* clone(0);
+	if ( cloneOption == All || cloneOption == TieRealPart || cloneOption == TieImagPart ) {
+		clone = new LauRealImagCPCoeffSet( *this, cloneOption, constFactor );
+		clone->name( newName );
+	} else {
+		std::cerr << "ERROR in LauRealImagCPCoeffSet::createClone : Invalid clone option" << std::endl;
+	}
 	return clone;
 }
 

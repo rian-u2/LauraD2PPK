@@ -13,9 +13,6 @@
 */
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TSystem.h"
 
@@ -123,13 +120,13 @@ void LauDaughters::setParentType(const TString& nameParent)
 		const Int_t code = (*iter)->code();
 		if ( codeParent == code ) {
 			parent_ = (*iter);
-			cout<<"INFO in LauDaughters::setParentType : Setting parent to be "<<parent_->string()<<" == "<<parent_->code()<<endl;
+			std::cout<<"INFO in LauDaughters::setParentType : Setting parent to be "<<parent_->string()<<" == "<<parent_->code()<<std::endl;
 			break;
 		}
 	}
 
 	if ( ! parent_ ) {
-		cerr<<"ERROR in LauDaughters::setParentType : Couldn't find a valid parent called \""<<nameParent<<"\"."<<endl;
+		std::cerr<<"ERROR in LauDaughters::setParentType : Couldn't find a valid parent called \""<<nameParent<<"\"."<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 }
@@ -147,12 +144,12 @@ void LauDaughters::setDaugType(const TString& name1, const TString& name2, const
 			Int_t code = (*iter)->code();
 			if ( codes[i] == code ) {
 				daughters_[i] = (*iter);
-				cout<<"INFO in LauDaughters::setDaugType : Setting daughter "<<i+1<<" to be "<<daughters_[i]->string()<<" == "<<daughters_[i]->code()<<endl;
+				std::cout<<"INFO in LauDaughters::setDaugType : Setting daughter "<<i+1<<" to be "<<daughters_[i]->string()<<" == "<<daughters_[i]->code()<<std::endl;
 				break;
 			}
 		}
 		if ( ! daughters_[i] ) {
-			cerr<<"ERROR in LauDaughters::setDaugType : Couldn't find a valid daughter called \""<<names[i]<<"\"."<<endl;
+			std::cerr<<"ERROR in LauDaughters::setDaugType : Couldn't find a valid daughter called \""<<names[i]<<"\"."<<std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -170,12 +167,12 @@ void LauDaughters::testDPSymmetry()
 
 	symmetricalDP_ = kFALSE;
         if ( daughters_[0]->code() == daughters_[1]->code() ) {
-		cout<<"We have a symmetrical DP. "<<endl;
+		std::cout<<"INFO in LauDaughters::testDPSymmetry : We have a symmetrical DP. "<<std::endl;
 		symmetricalDP_ = kTRUE;
 	} else if ( daughters_[0]->code() == daughters_[2]->code() ) {
-		cerr<<"WARNING in LauDaughters::testDPSymmetry : daughter 0 and daughter 2 are both "<<daughters_[0]->string()<<" but DP can only fold on daughers 0 and 1."<<endl;
+		std::cerr<<"WARNING in LauDaughters::testDPSymmetry : daughter 0 and daughter 2 are both "<<daughters_[0]->string()<<" but DP can only fold on daughers 0 and 1."<<std::endl;
 	} else if ( daughters_[1]->code() == daughters_[2]->code() ) {
-		cerr<<"WARNING in LauDaughters::testDPSymmetry : daughter 1 and daughter 2 are both "<<daughters_[1]->string()<<" but DP can only fold on daughers 0 and 1."<<endl;
+		std::cerr<<"WARNING in LauDaughters::testDPSymmetry : daughter 1 and daughter 2 are both "<<daughters_[1]->string()<<" but DP can only fold on daughers 0 and 1."<<std::endl;
 	}
 
 }
@@ -193,12 +190,12 @@ void LauDaughters::sanityCheck()
 	}
 
 	if (totCharge != parent_->charge()) {
-		cerr<<"ERROR in LauDaughters::sanityCheck : Total charge of daughters ("<<totCharge<<") not equal to charge of parent ("<<parent_->charge()<<")."<<endl;
+		std::cerr<<"ERROR in LauDaughters::sanityCheck : Total charge of daughters ("<<totCharge<<") not equal to charge of parent ("<<parent_->charge()<<")."<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	if (totMass > parent_->mass()) {
-		cerr<<"ERROR in LauDaughters::sanityCheck : Total mass of daughters ("<<totMass<<") greater than mass of parent ("<<parent_->mass()<<")."<<endl;
+		std::cerr<<"ERROR in LauDaughters::sanityCheck : Total mass of daughters ("<<totMass<<") greater than mass of parent ("<<parent_->mass()<<")."<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 }

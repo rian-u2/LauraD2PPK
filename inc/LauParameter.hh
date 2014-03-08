@@ -25,10 +25,11 @@
 #include <map>
 #include <vector>
 
+#include "TObject.h"
 #include "TString.h"
 
 
-class LauParameter {
+class LauParameter : public TObject {
 
 	public:
 		//! Default constructor
@@ -203,6 +204,30 @@ class LauParameter {
 		*/
 		inline Bool_t secondStage() const {return secondStage_;}
 
+		//! Check whether a Gaussian constraints is applied
+		/*!
+		    \return the boolean flag true/false whether a Gaussian constraint is applied
+		*/
+		inline Bool_t gaussConstraint() const {return gaussConstraint_;}
+
+		//! The mean of the Gaussian constraint
+		/*!
+		    \return the mean value of the Gaussian constraint
+		*/
+		inline Double_t constraintMean() const {return constraintMean_;}
+
+		//! The width of the Gaussian constraint
+		/*!
+		    \return the width of the Gaussian constraint
+		*/
+		inline Double_t constraintWidth() const {return constraintWidth_;}
+
+		//! The parameter global correlation coefficient
+		/*!
+		    \return the global correlation coefficient
+		*/
+		inline Double_t globalCorrelationCoeff() const {return gcc_;}
+
 		//! The bias in the parameter
 		/*!
 		    \return the bias in the parameter, defined as the difference between the value and the generated value
@@ -264,6 +289,12 @@ class LauParameter {
 		*/
 		void valueAndErrors(Double_t newValue, Double_t newError, Double_t newNegError = 0.0, Double_t newPosError = 0.0);
 
+		//! Set the global correlation coefficient
+		/*!
+		    \param [in] newGCCValue the value of the coefficient
+		*/
+		void globalCorrelationCoeff(Double_t newGCCValue);
+
 		//! Set the generated value for the parameter
 		/*!
 		    \param [in] newGenValue the generated value for the parameter
@@ -320,6 +351,16 @@ class LauParameter {
 		    \param [in] secondStagePar boolean flag to check whether is a second-stage parameter
 		*/
 		void secondStage(Bool_t secondStagePar);
+
+		//! Add a Gaussian constraint (or modify an existing one)
+		/*!
+		    \param [in] newGaussMean the new value of the Gaussian constraint mean
+		    \param [in] newGaussWidth the new value of the Gaussian constraint width
+		*/
+		void addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth);
+
+		//! Remove the Gaussian constraint
+		void removeGaussianConstraint();
 
 		// operators
 
@@ -461,12 +502,23 @@ class LauParameter {
 		Double_t minValue_;
 		//! Maximum value for the parameter
 		Double_t maxValue_;
+
 		//! Fix/float option for parameter
 		Bool_t fixed_;
 		//! Flag whether it is floated only in the first stage of the fit
 		Bool_t firstStage_;
 		//! Flag whether it is floated only in the second stage of the fit
 		Bool_t secondStage_;
+
+		//! Choice to use Gaussian constraint
+		Bool_t gaussConstraint_;
+		//! Mean value of the Gaussian constraint
+		Double_t constraintMean_;
+		//! Width of the Gaussian constraint
+		Double_t constraintWidth_;
+
+		//! Global correlation coefficient
+		Double_t gcc_;
 
 		//! Parameter bias
 		Double_t bias_;
@@ -481,7 +533,7 @@ class LauParameter {
 		//! The clones of this parameter
 		std::map<LauParameter*, Double_t> clones_;
 
-		ClassDef(LauParameter, 0)
+		ClassDef(LauParameter, 1)
 
 };
 

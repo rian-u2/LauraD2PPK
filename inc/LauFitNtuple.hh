@@ -30,6 +30,7 @@
 
 #include <vector>
 
+#include "TMatrixDfwd.h"
 #include "TString.h"
 
 class TFile;
@@ -44,8 +45,9 @@ class LauFitNtuple {
 		//! Constructor
 		/*!
 		    \param [in] fileName the name for the ntuple
+		    \param [in] storeAsymErrors whether or not to store the asymmetric error variables
 		*/
-		LauFitNtuple(const TString& fileName);
+		LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors);
 		
 		//! Destructor
 		virtual ~LauFitNtuple();
@@ -55,8 +57,9 @@ class LauFitNtuple {
 		    \param [in] iExpt the experiment number
 		    \param [in] NLL the minimised negative log likelihood
 		    \param [in] fitStatus the status of the fit
+		    \param [in] covMatrix the fit covariance matrix
 		*/
-		void storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus);
+		void storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD& covMatrix);
 
 		//! Store parameters and their errors
 		/*!
@@ -84,21 +87,22 @@ class LauFitNtuple {
 		//! Extra variables
 		std::vector<LauParameter> extraVars_;
 
-		//! Global correlation coefficients
-		std::vector <Double_t> globalCC_;
 		//! Correlation matrix
-		std::vector< std::vector <Double_t> > corrMatrix_;
+		std::vector< std::vector<Double_t> > corrMatrix_;
 
 		//! Flags whether the fit tree has been defined
 		Bool_t definedFitTree_;
+		//! Flags whether or not to store the asymmetric error information
+		Bool_t storeAsymErrors_;
+
 		//! Status of fit
 		Int_t fitStatus_;
 		//! Number of fit parameters
-		Int_t nFitPars_;
+		UInt_t nFitPars_;
 		//! Number of free parameters
-		Int_t nFreePars_;
+		UInt_t nFreePars_;
 		//! Number of extra parameters
-		Int_t nExtraPars_;
+		UInt_t nExtraPars_;
 		//! Minimised negative log likelihood
 		Double_t NLL_;
 		//! Experiment number

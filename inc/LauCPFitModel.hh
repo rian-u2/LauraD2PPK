@@ -202,7 +202,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		/*!
 			\param [in] coeffSet the set of coefficients
 		*/
-		void setAmpCoeffSet(LauAbsCoeffSet* coeffSet);
+		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet);
 
 		//! Weight events based on the DP model
 		/*!

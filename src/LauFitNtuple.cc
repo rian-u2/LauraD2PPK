@@ -19,10 +19,11 @@ using std::endl;
 
 #include "TFile.h"
 #include "TMath.h"
+#include "TMatrixD.h"
 #include "TSystem.h"
 #include "TTree.h"
-#include "TVirtualFitter.h"
 
+#include "LauAbsFitter.hh"
 #include "LauFitNtuple.hh"
 #include "LauFitter.hh"
 #include "LauParamFixed.hh"
@@ -30,11 +31,12 @@ using std::endl;
 ClassImp(LauFitNtuple)
 
 
-LauFitNtuple::LauFitNtuple(const TString& fileName) :
+LauFitNtuple::LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors) :
 	rootFileName_(fileName),
 	rootFile_(0),
 	fitResults_(0),
 	definedFitTree_(kFALSE),
+	storeAsymErrors_(storeAsymErrors),
 	fitStatus_(0),
 	nFitPars_(0),
 	nFreePars_(0),
@@ -58,66 +60,41 @@ LauFitNtuple::~LauFitNtuple()
 	delete rootFile_; rootFile_ = 0;
 }
 
-void LauFitNtuple::storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus)
+void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD& covMatrix )
 {
 	// store the minimised NLL value, correlation matrix status and experiment number
 	iExpt_ = iExpt;
 	NLL_ = NLL;
 	fitStatus_ = fitStatus;
 
-	// get a pointer to the fitter
-	TVirtualFitter* fitter = LauFitter::fitter();
-
-	// make a few checks on the number of parameters
-	Int_t nFitPars = fitter->GetNumberTotalParameters();
-	Int_t nFreePars = fitter->GetNumberFreeParameters();
-	if (nFitPars != nFitPars_) {
-		cerr << "WARNING in LauFitNtuple::storeCorrMatrix : total number of parameters from fitter (" << nFitPars
-			 << ") not the same as the number held here (" << nFitPars_ << ")." << endl;
-	}
-	if (nFreePars != nFreePars_) {
-		cerr << "WARNING in LauFitNtuple::storeCorrMatrix : number of free parameters from fitter (" << nFreePars
-			 << ") not the same as the number held here (" << nFreePars_ << ")." << endl;
-	}
-
-	// make the two correlation matrices the correct dimensions
+	// make the correlation matrix the correct dimensions
 	if (definedFitTree_ == kFALSE) {
-		globalCC_.clear();
-		globalCC_.resize(nFitPars_);
-
 		corrMatrix_.clear();
-		corrMatrix_.resize(nFitPars_);
-		for (Int_t i = 0; i < nFitPars_; ++i) {corrMatrix_[i].resize(nFitPars_);}
+		if ( covMatrix.GetNoElements() != 0 ) {
+			corrMatrix_.resize(nFitPars_);
+			for (UInt_t i = 0; i < nFitPars_; ++i) {corrMatrix_[i].resize(nFitPars_);}
+		}
 	}
 
-	// get correlation matrix information from the fitter
-	Double_t error(0.0);
-	Double_t negError(0.0);
-	Double_t posError(0.0);
-	Double_t globalcc(0.0);
+	if ( covMatrix.GetNoElements() == 0 ) {
+		return;
+	}
+
+	// calculate the  correlation matrix information from the fitter covariance matrix
 	Bool_t iFixed(kFALSE);
 	Bool_t jFixed(kFALSE);
-	Int_t iFree(0);
-	Int_t jFree(0);
+	UInt_t iFree(0);
+	UInt_t jFree(0);
 
-	for (Int_t i = 0; i < nFitPars_; i++) {      
+	for (UInt_t i = 0; i < nFitPars_; ++i) {      
 
 		iFixed = fitVars_[i]->fixed();
-
-		// get the global correlation factor for each parameter
-		if (iFixed) {
-			globalcc = 0.0;
-		} else {
-			fitter->GetErrors(i, posError, negError, error, globalcc);
-		}
-		globalCC_[i] = globalcc;
 
 		// reset the "j" free parameter counter
 		jFree = 0;
 
-		// the GetCovarianceMatrixElement method returns elements of the external error matrix,
-		// which is of dimension nFreePars_ x nFreePars_
-		for (Int_t j = 0; j < nFitPars_; j++) {
+		// NB the supplied covariance matrix is of dimension nFreePars_ x nFreePars_
+		for (UInt_t j = 0; j < nFitPars_; ++j) {
 
 			jFixed = fitVars_[j]->fixed();
 
@@ -126,9 +103,9 @@ void LauFitNtuple::storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus)
 			} else if (iFixed == kTRUE || jFixed == kTRUE) {
 				corrMatrix_[i][j] = 0.0;
 			} else {
-				Double_t r_ij = fitter->GetCovarianceMatrixElement(iFree,jFree);
-				Double_t r_ii = fitter->GetCovarianceMatrixElement(iFree,iFree);
-				Double_t r_jj = fitter->GetCovarianceMatrixElement(jFree,jFree);
+				Double_t r_ij = covMatrix(iFree,jFree);
+				Double_t r_ii = covMatrix(iFree,iFree);
+				Double_t r_jj = covMatrix(jFree,jFree);
 				Double_t denom = r_ii * r_jj;
 				if (denom < 0.0) {
 					r_ij = 0.0;
@@ -156,7 +133,8 @@ void LauFitNtuple::storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus)
 void LauFitNtuple::storeParsAndErrors(const std::vector<LauParameter*>& fitVars, const std::vector<LauParameter>& extraVars)
 {
 	fitVars_ = fitVars; 
-	Int_t nFitPars = fitVars_.size();
+	UInt_t nFitPars = fitVars_.size();
+
 	// the number of parameters being given to us should be the same as the number from the last fit
 	// OR it's the first time so the "last" number is zero
 	if (nFitPars_ != 0 && nFitPars_ != nFitPars) {
@@ -166,7 +144,8 @@ void LauFitNtuple::storeParsAndErrors(const std::vector<LauParameter*>& fitVars,
 	}
 
 	LauParamFixed pred;
-	Int_t nFreePars = nFitPars - std::count_if(fitVars_.begin(),fitVars_.end(),pred);
+	UInt_t nFreePars = nFitPars - std::count_if(fitVars_.begin(),fitVars_.end(),pred);
+
 	// the number of free parameters being given to us should be the same as the number from the last fit
 	// OR it's the first time so the "last" number is zero
 	// (NB we check whether nFitPars_ is zero for this since it is possible to have zero free parameters, albeit rather daft)
@@ -197,7 +176,7 @@ void LauFitNtuple::updateFitNtuple()
 		// Add NLL (negative log-likelihood) value from fit
 		fitResults_->Branch("NLL", &NLL_, "NLL/D");
 
-		for (Int_t i = 0; i < nFitPars_; i++) {
+		for (UInt_t i = 0; i < nFitPars_; i++) {
 
 			TString parName = fitVars_[i]->name();
 			TString parNameD(parName); parNameD += "/D";
@@ -212,6 +191,16 @@ void LauFitNtuple::updateFitNtuple()
 				TString parErrNameD(parErrName); parErrNameD += "/D";
 				fitResults_->Branch(parErrName.Data(), &fitVars_[i]->error_, parErrNameD.Data());
 
+				if ( storeAsymErrors_ ) {
+					TString parNegErrName(parName); parNegErrName += "_NegError";
+					TString parNegErrNameD(parNegErrName); parNegErrNameD += "/D";
+					fitResults_->Branch(parNegErrName.Data(), &fitVars_[i]->negError_, parNegErrNameD.Data());
+
+					TString parPosErrName(parName); parPosErrName += "_PosError";
+					TString parPosErrNameD(parPosErrName); parPosErrNameD += "/D";
+					fitResults_->Branch(parPosErrName.Data(), &fitVars_[i]->posError_, parPosErrNameD.Data());
+				}
+
 				TString parPullName(parName); parPullName += "_Pull";
 				TString parPullNameD(parPullName); parPullNameD += "/D";
 				fitResults_->Branch(parPullName.Data(), &fitVars_[i]->pull_, parPullNameD.Data());
@@ -222,24 +211,26 @@ void LauFitNtuple::updateFitNtuple()
 				// First the global correlation coeffs
 				TString parGCCName(parName); parGCCName += "_GCC";
 				TString parGCCNameD(parGCCName); parGCCNameD += "/D";
-				fitResults_->Branch(parGCCName.Data(), &globalCC_[i], parGCCNameD.Data());
+				fitResults_->Branch(parGCCName.Data(), &fitVars_[i]->gcc_, parGCCNameD.Data());
 
-				// Then the rest
-				for (Int_t j = 0; j < nFitPars_; j++) {
-					if (!fitVars_[j]->fixed() && i!=j) {
-						TString parName2 = fitVars_[j]->name();
-						TString corrName("corr__");
-						corrName += parName; corrName += "__"; corrName += parName2;
+				if ( ! corrMatrix_.empty() ) {
+					// Then the rest
+					for (UInt_t j = 0; j < nFitPars_; j++) {
+						if (!fitVars_[j]->fixed() && i!=j) {
+							TString parName2 = fitVars_[j]->name();
+							TString corrName("corr__");
+							corrName += parName; corrName += "__"; corrName += parName2;
 
-						TString corrNameD(corrName); corrNameD += "/D";	
-						fitResults_->Branch(corrName.Data(), &corrMatrix_[i][j], corrNameD.Data());
+							TString corrNameD(corrName); corrNameD += "/D";	
+							fitResults_->Branch(corrName.Data(), &corrMatrix_[i][j], corrNameD.Data());
+						}
 					}
 				}
 			}
 		}
 
 		// Update extra parameter values...
-		for (Int_t i = 0; i < nExtraPars_; i++) {
+		for (UInt_t i = 0; i < nExtraPars_; i++) {
 
 			TString parName = extraVars_[i].name();
 			TString parNameD(parName); parNameD += "/D";

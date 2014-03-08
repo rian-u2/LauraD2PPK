@@ -35,10 +35,30 @@ class LauAbsResonance {
 
 	public:
 		//! Define the allowed resonance types
-		enum LauResonanceModel {BW, RelBW, Flatte, Sigma, Kappa, Dabba, LASS_BW, LASS_NR, LASS, NRModel, BelleNR, GS, KMatrix};
+		enum LauResonanceModel {
+			BW,		/*!< simple Breit-Wigner */
+			RelBW,		/*!< relativistic Breit-Wigner */
+			GS,		/*!< a modified Breit-Wigner from Gounaris-Sakurai */
+			Flatte,		/*!< Flatte or coupled-channel Breit-Wigner */
+			Sigma,		/*!< special shape for the sigma or f_0(600) */
+			Kappa,		/*!< special shape for the kappa, a low-mass Kpi scalar */
+			Dabba,		/*!< special shape for the dabba, a low-mass Dpi scalar */
+			LASS,		/*!< the LASS amplitude to describe the Kpi S-wave */
+			LASS_BW,	/*!< the resonant part of the LASS amplitude */
+			LASS_NR,	/*!< the nonresonant part of the LASS amplitude */
+			KMatrix,	/*!< S-wave description using K-matrix and P-vector */
+			FlatNR,		/*!< a uniform nonresonant amplitude */
+			NRModel,	/*!< a theoretical model nonresonant amplitude */
+			BelleNR,	/*!< an empirical exponential nonresonant amplitude */
+			PolNR		/*!< an empirical polynomial nonresonant amplitude */
+		};
 
 		//! Define the allowed types of barrier factors 
-		enum BarrierType { BWBarrier, BWPrimeBarrier, ExpBarrier };
+		enum BarrierType {
+			BWBarrier,	/*!< Blatt-Weisskopf barrier factor (for use when momentum terms not used in angular term) */
+			BWPrimeBarrier,	/*!< Blatt-Weisskopf barrier factor (for use when momentum terms are used in angular term) - the default */
+			ExpBarrier	/*!< expoential barrier factor (mostly used for virtual contributions) */
+		};
 
 		//! Constructor
 		/*!
@@ -117,9 +137,21 @@ class LauAbsResonance {
 
 		//! Set the helicity flip flag
 		/*!
-			\param [in] boolean the helcity flip status
+			\param [in] boolean the helicity flip status
 		*/
 		void flipHelicity(Bool_t boolean) {flipHelicity_ = boolean;}
+	
+		//! Get the ignore momenta flag
+		/*! 
+			\return the ignore momenta flag
+		*/
+		Bool_t ignoreMomenta() const {return ignoreMomenta_;}
+
+  //! Set the ignore p_ and q_ flag
+		/*!
+			\param [in] boolean the ignore momenta status
+		*/
+		void ignoreMomenta(Bool_t boolean) {ignoreMomenta_ = boolean;}
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
@@ -225,6 +257,8 @@ class LauAbsResonance {
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
+  //! Boolean to ignore q_ and p_ in spinTerm
+  Bool_t ignoreMomenta_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;

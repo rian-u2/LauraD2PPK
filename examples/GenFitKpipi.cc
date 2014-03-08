@@ -151,7 +151,7 @@ int main( int argc, char** argv )
 	negSigModel->addResonance("rho0(770)",   1, "RelBW");
 	negSigModel->addResonance("f_0(980)",    1, "Flatte", 0.965);
 	negSigModel->addResonance("chi_c0",      1, "RelBW");
-	negSigModel->addResonance("NonReson",    0);
+	negSigModel->addResonance("NonReson",    0, "FlatNR");
 
 	negSigModel->addResonance("K*0_2(1430)", 2, "RelBW");
 	negSigModel->addResonance("omega(782)",  1, "RelBW");
@@ -168,7 +168,7 @@ int main( int argc, char** argv )
 	posSigModel->addResonance("rho0(770)",   1, "RelBW");
 	posSigModel->addResonance("f_0(980)",    1, "Flatte", 0.965);
 	posSigModel->addResonance("chi_c0",      1, "RelBW");
-	posSigModel->addResonance("NonReson",    0);
+	posSigModel->addResonance("NonReson",    0, "FlatNR");
 
 	posSigModel->addResonance("K*0_2(1430)", 2, "RelBW");
 	posSigModel->addResonance("omega(782)",  1, "RelBW");

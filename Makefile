@@ -134,11 +134,17 @@ $(SHLIBFILE): $(OLIST) $(CINTOBJ)
 	@mkdir -p $(LIBDIR)
 	@rm -f $(SHLIBFILE)
 	@$(CXX) $(OLIST) $(CINTOBJ) $(SOFLAGS) -o $(SHLIBFILE)
-	@rlibmap -f -o $(ROOTMAPFILE) -l $(SHLIBFILE) -d libMatrix libHist libTree -c $(INCDIR)/$(PACKAGE)_LinkDef.h
+
+# Rule to create rootmap file
+$(ROOTMAPFILE): $(SHLIBFILE)
+	@echo "Making $(ROOTMAPFILE)"
+	@mkdir -p $(LIBDIR)
+	@rm -f $(ROOTMAPFILE)
+	@rlibmap -f -o $(ROOTMAPFILE) -l $(SHLIBFILE) -d libCore.so libEG.so libHist.so libMathCore.so libMatrix.so libNet.so libRIO.so libTree.so -c $(INCDIR)/$(PACKAGE)_LinkDef.h
 
 # Useful build targets
 lib: $(LIBFILE) 
-shlib: $(SHLIBFILE)
+shlib: $(SHLIBFILE) $(ROOTMAPFILE)
 clean:
 	rm -rf $(WORKDIR)
 	rm -f $(LIBFILE)

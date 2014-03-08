@@ -155,7 +155,7 @@ class LauAbsCoeffSet {
 		/*!
 		    \param [in] parName the name of the parameter to adjust
 		    \param [in] value the new value for the parameter to take
-		    \parma [in] init whether or not the initial and generated values should also be adjusted
+		    \param [in] init whether or not the initial and generated values should also be adjusted
 		*/
 		virtual void setParameterValue(const TString& parName, Double_t value, Bool_t init);
 

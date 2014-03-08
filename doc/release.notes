@@ -125,9 +125,24 @@
 * Generalise the Makefile in the examples directory
   - results in minor changes to the names of 3 of the binaries
 
+3rd December 2013 Thomas Latham
+(in branch for release in v2r0)
+
+* Have the master save an ntuple with all fitter parameters and the full correlation matrix information.
+
 29th November 2013 Thomas Latham
 
 * Fixed bug in ResultsExtractor where the output file was not written
+
+29th November 2013 Thomas Latham
+(in branch for release in v2r0)
+
+* Allow the slave ntuples to store the partial covariance matrices in the simultaneous fitting
+
+26th November 2013 Thomas Latham
+(in branch for release in v2r0)
+
+* Added first version of the simultaneous fitting framework
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v1r1p1

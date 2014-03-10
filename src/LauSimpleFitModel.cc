@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -37,6 +37,7 @@
 #include "LauKinematics.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"
+#include "LauResonanceMaker.hh"
 #include "LauScfMap.hh"
 #include "LauSimpleFitModel.hh"
 
@@ -381,6 +382,14 @@ void LauSimpleFitModel::initialiseDPModels()
 	}
 }
 
+void LauSimpleFitModel::recalculateNormalisation()
+{
+	std::cout << "INFO in LauSimpleFitModel::recalculateNormalizationInDPModels : Recalc Norm in DP model" << std::endl;
+	sigDPModel_->recalculateNormalisation();
+	LauFitDataTree* inputFitData = this->fitData();
+	sigDPModel_->fillDataTree(*inputFitData);
+}
+
 void LauSimpleFitModel::setSignalDPParameters()
 {
 	// Set the fit parameters for the signal model.
@@ -409,6 +418,20 @@ void LauSimpleFitModel::setSignalDPParameters()
 				fitVars.push_back(*iter);
 				++nSigDPPar_;
 			}
+		}
+	}
+
+	// get the resonanceMaker from any of the two {pos,neg}SigModel_
+	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
+
+	//Obtain the Resonance Parameters
+	std::vector<LauParameter*> resPars = resonanceMaker.getFloatingParameters();
+	for (LauParameterPList::iterator iter = resPars.begin(); iter != resPars.end(); ++iter) {
+		//cout << "resName = " << (*iter)->name() << ", fixed = "<< (*iter)->fixed() << endl;
+		if ( !(*iter)->clone() ) {
+			//cout << "adding " << (*iter)->name() << endl;
+			fitVars.push_back(*iter);
+			++nSigDPPar_;
 		}
 	}
 }

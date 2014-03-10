@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2006 - 2013.
+// Copyright University of Warwick 2006 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -19,7 +19,11 @@
 #ifndef LAU_RESONANCE_INFO
 #define LAU_RESONANCE_INFO
 
+#include <iosfwd>
+
 #include "TString.h"
+
+class LauParameter;
 
 
 class LauResonanceInfo {
@@ -37,7 +41,7 @@ class LauResonanceInfo {
 		LauResonanceInfo(const TString& name, Double_t mass, Double_t width, Int_t spin, Int_t charge, Double_t range = 4.0);
 
 		//! Destructor
-		virtual ~LauResonanceInfo(){}
+		virtual ~LauResonanceInfo();
 
 		//! Retrieve the name of the resonant particle
 		/*!
@@ -49,13 +53,13 @@ class LauResonanceInfo {
 		/*!
 		    \return the mass of the resonant particle
 		*/
-		Double_t getMass() const {return mass_;}
+		LauParameter* getMass() const {return mass_;}
 
 		//! Retrieve the width of the resonant particle
 		/*!
 		    \return the width of the resonant particle
 		*/
-		Double_t getWidth() const {return width_;}
+		LauParameter* getWidth() const {return width_;}
 
 		//! Retrieve the spin of the resonant particle
 		/*!
@@ -75,17 +79,32 @@ class LauResonanceInfo {
 		*/
 		Double_t getRange() const {return range_;}
 
+		//! Create the charge conjugate particle info record
+		/*!
+		    The mass and width parameters are cloned
+		*/
+		LauResonanceInfo* createChargeConjugate() const;
+
 	protected:
 
 	private:
+		//! Copy constructor
+		LauResonanceInfo( const LauResonanceInfo& other );
+
+		//! Copy constructor (with new name and charge)
+		LauResonanceInfo( const LauResonanceInfo& other, const TString& newName, const Int_t newCharge );
+
+		//! Copy assignment operator (not implemented)
+		LauResonanceInfo& operator=( const LauResonanceInfo& other );
+
 		//! The name of the resonant particle
 		TString name_;
 
 		//! The mass of the resonant particle
-		Double_t mass_;
+		LauParameter* mass_;
 
 		//! The width of the resonant particle
-		Double_t width_;
+		LauParameter* width_;
 
 		//! The spin of the resonant particle
 		Int_t spin_;
@@ -99,5 +118,7 @@ class LauResonanceInfo {
 		ClassDef(LauResonanceInfo, 0)   // Specify each allowed resonance
 
 };
+
+ostream& operator<<( ostream& stream, const LauResonanceInfo& infoRecord );
 
 #endif

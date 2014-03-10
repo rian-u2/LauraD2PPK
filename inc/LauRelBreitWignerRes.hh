@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -41,7 +41,7 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauRelBreitWignerRes(TString resName, Double_t resMass, Double_t resWidth,
+		LauRelBreitWignerRes(TString resName, LauParameter* resMass, LauParameter* resWidth,
 				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
 				const LauDaughters* daughters);
 
@@ -88,8 +88,12 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 		Double_t p0_;
 		//! Momentum of the bachelor in the parent rest frame (at pole mass)
 		Double_t pstar0_;
+		//! The resonance mass
+		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
+		//! The resonance width
+		Double_t resWidth_;
 		//! Sum of the two daughter masses
 		Double_t mDaugSum_;
 		//! Square of the sum of the two daughter masses

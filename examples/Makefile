@@ -23,7 +23,7 @@ ifeq ($(findstring linux, $(ARCH)),linux)
 # This set here should work for Linux.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC
+CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
 MFLAGS   = -MM
 LDFLAGS  = -g
 SOFLAGS  = -shared
@@ -33,7 +33,7 @@ ifeq ($(ARCH),macosx64)
 # For Mac OS X you may need to put -m64 in CXXFLAGS and SOFLAGS.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -m64
+CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -m64
 MFLAGS   = -MM
 LDFLAGS  = -g
 SOFLAGS  = -m64 -dynamiclib -single_module -undefined dynamic_lookup
@@ -44,15 +44,14 @@ INCDIR=../inc
 DEPDIR=$(WORKDIR)/dependencies
 OBJDIR=$(WORKDIR)/objects
 
-SHLIBFILE=$(PWD)/$(WORKDIR)/libLauraUtils.so
+LAURALIBDIR=$(shell pwd | xargs dirname)/lib
+LAURALIB = $(LAURALIBDIR)/libLaura++.so
+UTILSLIB = $(PWD)/$(WORKDIR)/libLauraUtils.so
 
 ROOTLIBS      = $(shell root-config --libs)
-NLIBS         = $(ROOTLIBS) 
-NLIBS        += -lEG
-NLIBS        += -lMinuit
-NLIBS        += -lTreePlayer
-NLIBS        += ${PWD}/../lib/libLaura++.so
-LIBS          = $(filter-out -lNew, $(NLIBS))
+ROOTLIBS     += -lEG
+ROOTLIBS     += -lMinuit
+ROOTLIBS     += -lTreePlayer
 
 INCLUDES += -I$(INCDIR) -I$(shell $(ROOTBINDIR)/root-config --incdir)
 CXXFLAGS += $(INCLUDES)
@@ -95,21 +94,21 @@ $(OBJDIR)/%.o : %.cc
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Rule to combine objects into a shared library
-$(SHLIBFILE): $(LIBOLIST)
-	@echo "Making $(SHLIBFILE)"
-	@rm -f $(SHLIBFILE)
-	@$(CXX) $(LIBOLIST) $(SOFLAGS) -o $(SHLIBFILE)
+$(UTILSLIB): $(LIBOLIST)
+	@echo "Making $(UTILSLIB)"
+	@rm -f $(UTILSLIB)
+	@$(CXX) $(LIBOLIST) $(SOFLAGS) -o $(UTILSLIB)
 
 # Rule to compile all binaries
-% : $(OBJDIR)/%.o $(SHLIBFILE)
+% : $(OBJDIR)/%.o $(UTILSLIB)
 	@echo "Linking $@"
-	@$(CXX) $(LDFLAGS) $< -o $@ $(LIBS) $(SHLIBFILE)
+	@$(CXX) $(LDFLAGS) $< -o $@ $(LAURALIB) $(UTILSLIB) $(ROOTLIBS)
 
 bin: $(BINLIST)
 
 clean:
 	rm -f $(BINLIST)
-	rm -f $(SHLIBFILE)
+	rm -f $(UTILSLIB)
 	rm -rf $(WORKDIR)
 
 .PHONY : bin default clean

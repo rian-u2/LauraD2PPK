@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2005 - 2013.
+// Copyright University of Warwick 2005 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -24,18 +24,15 @@ using std::endl;
 #include "LauDaughters.hh"
 #include "LauEffModel.hh"
 #include "LauKinematics.hh"
-#include "LauResonanceMaker.hh"
 
 ClassImp(LauAbsDPDynamics)
 
 
 LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel) :
 	daughters_(daughters),
-	resonanceMaker_(new LauResonanceMaker(daughters)),
 	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
 	effModel_(effModel),
 	nAmp_(0),
-	nResDefMax_(resonanceMaker_ ? resonanceMaker_->getNResDefMax() : 0),
 	DPNorm_(0.0),
 	DPRate_("DPRate", 0.0, 0.0, 1000.0),
 	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
@@ -49,12 +46,10 @@ LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effMode
 
 LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel) :
 	daughters_(daughters),
-	resonanceMaker_(new LauResonanceMaker(daughters)),
 	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
 	effModel_(effModel),
 	scfFractionModel_(scfFractionModel),
 	nAmp_(0),
-	nResDefMax_(resonanceMaker_ ? resonanceMaker_->getNResDefMax() : 0),
 	DPNorm_(0.0),
 	DPRate_("DPRate", 0.0, 0.0, 1000.0),
 	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
@@ -65,9 +60,6 @@ LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effMode
 
 LauAbsDPDynamics::~LauAbsDPDynamics()
 {
-	if (resonanceMaker_ != 0) {
-		delete resonanceMaker_; resonanceMaker_ = 0;
-	}
 	extraParameters_.clear();
 
 	for ( std::vector<LauCacheData*>::iterator iter = data_.begin(); iter != data_.end(); ++iter ) {
@@ -98,10 +90,12 @@ void LauAbsDPDynamics::updateCoeffs(const std::vector<LauComplex>& coeffs)
 	if (changed) {
 		// Copy the coeffs
 		Amp_ = coeffs;
-
-		// Update the total normalisation for the signal likelihood
-		this->calcSigDPNorm();
 	}
+
+	// TODO should perhaps keep track of whether the resonance parameters have changed here and if none of those and none of the coeffs have changed then we don't need to update the norm
+
+	// Update the total normalisation for the signal likelihood
+	this->calcSigDPNorm();
 }
 
 Bool_t LauAbsDPDynamics::hasResonance(const TString& resName) const

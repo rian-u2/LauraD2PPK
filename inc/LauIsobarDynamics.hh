@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2005 - 2013.
+// Copyright University of Warwick 2005 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -60,6 +60,9 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		*/
 		virtual void initialise(const std::vector<LauComplex>& coeffs);
 
+		//! recalculate Normalization
+		virtual void recalculateNormalisation();
+
 		//! Set the name of the file to which to save the results of the integrals
 		/*!
 		    \param [in] fileName the name of the file
@@ -79,12 +82,15 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the type of the resonance. Allowed types are: flatte, relbw, dabba, kappa, sigma, lass-bw, lass-nr, lass, gs, nrmodel, bellesymnr and bellenr
+		    \param [in] fixMass fix or release the mass to be fited
+		    \param [in] fixWidth fix or release the width to be fited
 		    \param [in] newMass set a custom mass for the resonance
 		    \param [in] newWidth set a custom width for the resonance
 		    \param [in] newSpin set a custom spin for the resonance
 		*/
 		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
-				  Double_t newMass = -1.0, Double_t newWidth = -1.0, Int_t newSpin = -1);
+				Bool_t fixMass = kTRUE,  Bool_t fixWidth = kTRUE,
+				Double_t newMass = -1.0, Double_t newWidth = -1.0, Int_t newSpin = -1);
 
 		//! Define a new K-matrix Propagator
 		/*!
@@ -755,6 +761,9 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 
 		//! The helicity flip flag for new amplitude components
 		Bool_t flipHelicity_;
+
+		//! Flag to recalculate the normalisation
+		Bool_t recalcNormalisation_;
 
 		ClassDef(LauIsobarDynamics,0)
 

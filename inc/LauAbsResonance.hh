@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -27,6 +27,7 @@
 #include "TString.h"
 
 #include "LauComplex.hh"
+#include "LauParameter.hh"
 
 class LauDaughters;
 class LauKinematics;
@@ -70,7 +71,7 @@ class LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauAbsResonance(const TString& resName, Double_t resMass, Double_t resWidth,
+		LauAbsResonance(const TString& resName, LauParameter* resMass, LauParameter* resWidth,
 				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
 				const LauDaughters* daughters);
 
@@ -121,13 +122,19 @@ class LauAbsResonance {
 		/*! 
 			\return the resonance mass
 		*/
-		Double_t getMass() const {return resMass_;}
+		Double_t getMass() const {return (resMass_!=0) ? resMass_->value() : -1.0;}
 
 		//! Get the width of the resonance
 		/*! 
 			\return the resonance width
 		*/
-		Double_t getWidth() const {return resWidth_;}
+		Double_t getWidth() const {return (resWidth_!=0) ? resWidth_->value() : -1.0;}
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return parameters of the resonance
+		*/
+		const std::vector<LauParameter*>& getParameters() const {return resParameters_;}
 
 		//! Get the helicity flip flag
 		/*! 
@@ -167,6 +174,30 @@ class LauAbsResonance {
 			\param [in] name the updated parameter name
 		*/
 		virtual void setResonanceParameter(Double_t value, const TString& name);
+
+		//! Fix or release the resonance mass
+		/*!
+			\param [in] parFixed new status of mass
+		*/
+		void fixMass(Bool_t parFixed) { if (resMass_!=0) { resMass_->fixed(parFixed); } }
+
+		//! Fix or release the resonance width
+		/*!
+			\param [in] parFixed new status of width
+		*/
+		void fixWidth(Bool_t parFixed) { if (resWidth_!=0) { resWidth_->fixed(parFixed); } }
+
+		//! Get the status of resonance mass (fixed or released)
+		/*!
+			\return the status of resonance mass (fixed or released)
+		*/
+		Bool_t fixMass() const { return (resMass_!=0) ? resMass_->fixed() : kTRUE; }
+
+		//! Get the status of resonance width (fixed or released)
+		/*!
+			\return the status of resonance width (fixed or released)
+		*/
+		Bool_t fixWidth() const { return (resWidth_!=0) ? resWidth_->fixed() : kTRUE; }
 
 	protected:
 		//! Get the name of the parent particle
@@ -244,10 +275,15 @@ class LauAbsResonance {
 
 		//! Resonance name
 		TString resName_;
+
 		//! Resonance mass 
-		Double_t resMass_; 
+		LauParameter* resMass_; 
 		//! Resonance width
-		Double_t resWidth_;
+		LauParameter* resWidth_;
+
+		//! All parameters of the resonance
+		std::vector<LauParameter*> resParameters_;
+
 		//! Resonance spin
 		Int_t resSpin_; 
 		//! Resonance charge
@@ -257,8 +293,8 @@ class LauAbsResonance {
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
-  //! Boolean to ignore q_ and p_ in spinTerm
-  Bool_t ignoreMomenta_;
+		//! Boolean to ignore q_ and p_ in spinTerm
+		Bool_t ignoreMomenta_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;

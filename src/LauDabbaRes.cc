@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2010 - 2013.
+// Copyright University of Warwick 2010 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,15 +10,8 @@
 
 /*! \file LauDabbaRes.cc
     \brief File containing implementation of LauDabbaRes class.
+    Formulae and data values from arXiv:0901.2217 - author D.V.Bugg
 */
-
-//****************************************************************************
-// Class for defining the Dabba resonance model
-//****************************************************************************
-
-// --CLASS DESCRIPTION [MODEL] --
-// Class for defining the Dabba resonance model
-// Formulae and data values from arXiv:0901.2217 - author D.V.Bugg
 
 #include <iostream>
 
@@ -28,7 +21,7 @@
 ClassImp(LauDabbaRes)
 
 
-LauDabbaRes::LauDabbaRes(TString resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
+LauDabbaRes::LauDabbaRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
 		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
 	mSumSq_(0.0),

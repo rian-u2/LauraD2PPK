@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -1060,14 +1060,32 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 		}
 	}
 
+	Bool_t recalcNorm(kFALSE);
+
 	// Despite npar being the number of free parameters
 	// the par array actually contains all the parameters,
 	// free and floating...
 	// Update all the floating ones with their new values.
 	for (UInt_t i(0); i<nParams_; ++i) {
 		if (!fitVars_[i]->fixed()) {
+			std::cout << "par["<< i << "] = " << par[i] << std::endl;
+			std::cout << "fitVars_[" << i << "]->value() = " << fitVars_[i]->value() << std::endl;
+			std::cout << "name = " << fitVars_[i]->name() << std::endl;
+
+			// TODO - obviously we want a way that does not involve string comparisons here
+			if (fitVars_[i]->name().Contains("_MASS")||fitVars_[i]->name().Contains("_WIDTH")){
+				std::cout << "they are mass or width" << std::endl;
+				if ( par[i] != fitVars_[i]->value() ) {
+					std::cout << "they are different" << std::endl;
+					recalcNorm = kTRUE;
+				}
+			}
 			fitVars_[i]->value(par[i]);
 		}
+	}
+
+	if (recalcNorm) {
+		this->recalculateNormalisation();
 	}
 
 	this->propagateParUpdates();

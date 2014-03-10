@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2008 - 2013.
+// Copyright University of Warwick 2008 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -41,7 +41,7 @@ class LauLASSNRRes : public LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/	
-		LauLASSNRRes(TString resName, Double_t resMass, Double_t resWidth,
+		LauLASSNRRes(TString resName, LauParameter* resMass, LauParameter* resWidth,
 				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
 				const LauDaughters* daughters);
 

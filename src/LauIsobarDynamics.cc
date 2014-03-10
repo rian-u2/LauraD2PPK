@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2005 - 2013.
+// Copyright University of Warwick 2005 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -88,7 +88,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	resBarrierRadius_(4.0),
 	parBarrierRadius_(4.0),
 	barrierType_( LauAbsResonance::BWPrimeBarrier ),
-	flipHelicity_(kTRUE)
+	flipHelicity_(kTRUE),
+	recalcNormalisation_(kFALSE)
 {
 	// Constructor for the isobar signal model
 	if (daughters != 0) {
@@ -146,7 +147,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	resBarrierRadius_(4.0),
 	parBarrierRadius_(4.0),
 	barrierType_( LauAbsResonance::BWPrimeBarrier ),
-	flipHelicity_(kTRUE)
+	flipHelicity_(kTRUE),
+	recalcNormalisation_(kFALSE)
 {
 	// Constructor for the isobar signal model
 	if (daughters != 0) {
@@ -162,6 +164,28 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 
 LauIsobarDynamics::~LauIsobarDynamics()
 {
+}
+
+void LauIsobarDynamics::recalculateNormalisation()
+{
+	this->initialiseVectors();
+
+	integralsDone_ = kFALSE;
+
+	if ( nAmp_ == 0 ) {
+		std::cout << "No contributions to DP model, not performing normalisation integrals." << std::endl;
+	} else {
+
+		// We need to calculate the normalisation constants for the
+		// Dalitz plot generation/fitting.
+		this->calcDPNormalisation();
+
+		for (UInt_t i = 0; i < nAmp_; i++) {
+			fNorm_[i] = 0.0;
+			if (fSqSum_[i] > 0.0) {fNorm_[i] = TMath::Sqrt(1.0/(fSqSum_[i]));}
+		}
+	}
+	integralsDone_ = kTRUE;
 }
 
 void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
@@ -400,7 +424,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 }
 
-void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Double_t newMass, Double_t newWidth, Int_t newSpin)
+void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Bool_t fixMass,  Bool_t fixWidth,  Double_t newMass, Double_t newWidth, Int_t newSpin)
 {
 	// Function to add a resonance in a Dalitz plot.
 	// No check is made w.r.t flavour and charge conservation rules, and so
@@ -417,8 +441,8 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 	// The third argument resType specifies whether the resonance is a Breit-Wigner (BW)
 	// Relativistic Breit-Wigner (RelBW) or Flatte distribution (Flatte), for example.
 
-	LauAbsResonance *theResonance = 
-		resonanceMaker_->getResonance(resName, resPairAmpInt, resType);
+	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
+	LauAbsResonance *theResonance = resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType);
 
 	if (theResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
@@ -429,6 +453,18 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 	if (newMass > 0.0 || newWidth > 0.0 || newSpin > -1) {
 		theResonance->changeResonance(newMass, newWidth, newSpin);
 	}
+
+	// mass and width of resonances are fixed as default. Here we change the status if it's false
+	if (!fixMass) {
+		recalcNormalisation_ = kTRUE;
+		theResonance->fixMass(fixMass);
+	}
+	if (!fixWidth) {
+		recalcNormalisation_ = kTRUE;
+		theResonance->fixWidth(fixWidth);
+	}
+
+	std::cout << "INFO in LauIsobarDynamics::addResonance : resName: " << resName <<  ", fixMass = " << theResonance->fixMass() <<  ", fixWidth = " << theResonance->fixWidth() << std::endl;
 
 	// implement the helicity flip here
 	if (flipHelicity_ && daughters_->getCharge(resPairAmpInt) == 0) {	  
@@ -508,7 +544,7 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 
 	// Set the resonance name and what track is the bachelor
 	resTypAmp_.push_back(resonanceName);
-	resIntAmp_.push_back(resonanceMaker_->resTypeInt(resonanceName));
+	resIntAmp_.push_back(resonanceMaker.resTypeInt(resonanceName));
 
 	// Always force the non-resonant amplitude pair to have resPairAmp = 0
 	// in case the user chooses the wrong number.
@@ -1394,7 +1430,7 @@ LauComplex LauIsobarDynamics::resAmp(Int_t index)
 
 	LauComplex resAmplitude(0.0, 0.0);
 
-	if (resInt < 0 || resInt >= static_cast<Int_t>(this->getnDefinedResonances())) {
+	if ( resInt < 0 || resInt >= static_cast<Int_t>(LauResonanceMaker::get().getNResDefMax()) ) {
 
 		std::cout<<"ERROR in LauIsobarDynamics::resAmp : Probably bad resonance name."<<std::endl;
 		resAmplitude = LauComplex(0.0, 0.0);

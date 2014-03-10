@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -29,6 +29,7 @@
     - initialise()
     - initialiseDPModels()
     - propagateParUpdates()
+    - recalculateNormalisation()
     - scfDPSmear()
     - setNBkgndEvents()
     - setNSigEvents()
@@ -394,6 +395,9 @@ class LauAbsFitModel : public LauFitObject {
 			initial, min, max and fixed values
 		*/
 		virtual void initialise() = 0;
+
+		//! Recalculate normalisation the signal DP model(s)
+		virtual void recalculateNormalisation() = 0;
 
 		//! Initialise the DP models
 		virtual void initialiseDPModels() = 0;

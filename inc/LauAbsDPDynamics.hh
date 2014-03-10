@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2005 - 2013.
+// Copyright University of Warwick 2005 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -33,7 +33,6 @@ class LauDaughters;
 class LauEffModel;
 class LauFitDataTree;
 class LauKinematics;
-class LauResonanceMaker;
 
 
 class LauAbsDPDynamics {
@@ -73,11 +72,13 @@ class LauAbsDPDynamics {
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance (the bachelor)
 		    \param [in] resType the type of the resonance. Allowed types are: flatte, relbw, dabba, kappa, sigma, lass-bw, lass-nr, lass, gs, nrmodel, bellesymnr and bellenr
+		    \param [in] fixMass fix or release the mass to be fitted
+		    \param [in] fixWidth fix or release the width to be fitted
 		    \param [in] newMass set a custom mass for the resonance
 		    \param [in] newWidth set a custom width for the resonance
 		    \param [in] newSpin set a custom spin for the resonance
 		*/
-		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
+		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Bool_t fixMass, Bool_t fixWidth,
 				Double_t newMass, Double_t newWidth, Int_t newSpin) = 0;
 
 		//! Initialise the Dalitz plot dynamics
@@ -85,6 +86,9 @@ class LauAbsDPDynamics {
 		    \param [in] coeffs the complex coefficients for the resonances
 		*/
 		virtual void initialise(const std::vector<LauComplex>& coeffs) = 0;
+
+		//! Recalculate the normalisation
+		virtual void recalculateNormalisation() = 0;
 
 		//! Obtain the efficiency of the current event from the model
 		/*!
@@ -256,12 +260,6 @@ class LauAbsDPDynamics {
 		*/
 		inline const LauParArray& getFitFractions() const {return fitFrac_;}
 
-		//! Retrieve the number of defined resonances in the resonance maker
-		/*!
-		    \return the number of defined resonances
-		*/
-		inline UInt_t getnDefinedResonances() const {return nResDefMax_;}
-
 		//! Retrieve the number of amplitude components
 		/*!
 		    \return the number of amplitude components
@@ -291,12 +289,6 @@ class LauAbsDPDynamics {
 		    \return the daughters
 		*/
 		inline LauDaughters* getDaughters() {return daughters_;}
-
-		//! Retrieve the resonance maker object
-		/*!
-		    \return the resonance maker
-		*/
-		inline LauResonanceMaker* getResonanceMaker() {return resonanceMaker_;}
 
 		//! Retrieve the Dalitz plot kinematics
 		/*!
@@ -358,9 +350,6 @@ class LauAbsDPDynamics {
 		//! The daughters of the decay
 		LauDaughters* daughters_;
 
-		//! Object to create resonances
-		LauResonanceMaker* resonanceMaker_;
-
 		//! The kinematics of the decay
 		LauKinematics* kinematics_;
 
@@ -376,9 +365,6 @@ class LauAbsDPDynamics {
 
 		//! The number of amplitude components
 		UInt_t nAmp_;
-
-		//! The number of resonances defined in the resonance maker
-		UInt_t nResDefMax_;
 
 		//! The complex coefficients for the amplitude components
 		std::vector<LauComplex> Amp_;

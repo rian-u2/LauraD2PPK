@@ -352,7 +352,7 @@ int main( int argc, char** argv )
 	LauParameter* mes_mean2_neg  = new LauParameter("mes_mean2_neg",  mes_mean2_value,  5.272, 5.286, kTRUE);
         LauParameter* mes_sigma2_neg = mes_sigma1_neg->createClone();
 	LauParameter* mes_frac_neg   = new LauParameter("mes_frac_neg",   mes_frac_value,   0.000, 1.000, kTRUE);
-	std::vector<LauParameter*> mesPars; mesPars.reserve(2);
+	std::vector<LauAbsRValue*> mesPars; mesPars.reserve(2);
         mesPars.push_back(mes_mean1_neg);
         mesPars.push_back(mes_sigma1_neg);
 	LauAbsPdf* sigNegMESPdf1 = new LauGaussPdf("mES", mesPars, mesMin, mesMax);
@@ -433,7 +433,7 @@ int main( int argc, char** argv )
 	LauParameter* de_sig_mean2_neg  = new LauParameter("de_sig_mean2_neg",  de_mean2_value,  -4.0, 4.0, kTRUE);
 	LauParameter* de_sig_sigma2_neg = new LauParameter("de_sig_sigma2_neg", de_sigma2_value,  0.0, 4.0, kTRUE);
 	LauParameter* de_sig_frac_neg   = new LauParameter("de_sig_frac_neg",   de_frac_value,    0.0, 1.0, kTRUE);
-	std::vector<LauParameter*> dePars; dePars.reserve(2);
+	std::vector<LauAbsRValue*> dePars; dePars.reserve(2);
 	dePars.push_back(de_sig_mean1_neg); 
 	dePars.push_back(de_sig_sigma1_neg); 
 	LauAbsPdf* sigNegDE1Pdf = new LauGaussPdf("deltaEsig", dePars, deMin, deMax);

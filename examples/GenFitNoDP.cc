@@ -122,7 +122,7 @@ int main( int argc, char** argv )
 	// m_B PDFs
 	Double_t mbMin = 5.150;
 	Double_t mbMax = 5.400;
-	std::vector<LauParameter*> mbPars; mbPars.reserve(2);
+	std::vector<LauAbsRValue*> mbPars; mbPars.reserve(2);
 
 	// Signal PDF is a double Gaussian with the means constrained to be the same
 	LauParameter* sig_mb_mean1  = new LauParameter("sig_mb_mean1",  sig_mb_mean1_value,  5.2, 5.3, kTRUE);
@@ -154,7 +154,7 @@ int main( int argc, char** argv )
 	fitModel->setBkgndPdf( bkgndNames[0], combMBPdf );
 
 	// Partially reconstructed background PDF is an exponential function
-	LauParameter* pr_mb_slope = new LauParameter("pr_mb_slope", -2.0, -10.0, 10.0, kTRUE);
+	LauParameter* pr_mb_slope = new LauParameter("pr_mb_slope", -0.05, -10.0, 10.0, kTRUE);
 
 	mbPars.clear();
 	mbPars.push_back(pr_mb_slope);

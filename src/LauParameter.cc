@@ -319,6 +319,13 @@ LauParameter& LauParameter::operator=(const LauParameter& rhs)
 	return *this;
 }
 
+std::vector<LauParameter*> LauParameter::getPars() 
+{
+	std::vector<LauParameter*> list;
+	list.push_back(this);
+	return list;
+}
+
 void LauParameter::value(Double_t newValue)
 {
 	this->checkRange(newValue,this->minValue(),this->maxValue());

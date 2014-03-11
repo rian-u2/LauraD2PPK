@@ -28,7 +28,7 @@ using std::vector;
 ClassImp(LauGaussPdf)
 
 
-LauGaussPdf::LauGaussPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauGaussPdf::LauGaussPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	mean_(0),
 	sigma_(0)

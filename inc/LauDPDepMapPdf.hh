@@ -103,9 +103,6 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		*/
 		virtual void calcLikelihoodInfo(UInt_t iEvt);
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness(); // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		

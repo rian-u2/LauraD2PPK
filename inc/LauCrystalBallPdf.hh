@@ -57,7 +57,7 @@ class LauCrystalBallPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauCrystalBallPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauCrystalBallPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauCrystalBallPdf();
@@ -72,9 +72,6 @@ class LauCrystalBallPdf : public LauAbsPdf {
 		virtual void calcLikelihoodInfo(const LauAbscissas& abscissas);
 		
 		using LauAbsPdf::calcLikelihoodInfo;
-
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
 
 		//! Calculate the normalisation
 		virtual void calcNorm();
@@ -96,13 +93,13 @@ class LauCrystalBallPdf : public LauAbsPdf {
 
 	private:
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Gaussian sigma
-		LauParameter* sigma_;
+		LauAbsRValue* sigma_;
 		//! Alpha - distance from the mean in which the Gaussian and the tail are matched up
-		LauParameter* alpha_;
+		LauAbsRValue* alpha_;
 		//! Power for tail (goes as 1/x^n)
-		LauParameter* n_;
+		LauAbsRValue* n_;
 
 		ClassDef(LauCrystalBallPdf,0) // Define the Crystal Ball PDF
 };

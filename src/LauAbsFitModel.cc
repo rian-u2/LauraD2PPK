@@ -9,8 +9,8 @@
 // Paul Harrison
 
 /*! \file LauAbsFitModel.cc
-    \brief File containing implementation of LauAbsFitModel class.
-*/
+  \brief File containing implementation of LauAbsFitModel class.
+ */
 
 #include <iostream>
 #include <limits>
@@ -40,51 +40,51 @@
 ClassImp(LauAbsFitModel)
 
 
-LauAbsFitModel::LauAbsFitModel() :
-	twoStageFit_(kFALSE),
-	useAsymmFitErrors_(kFALSE),
-	compareFitData_(kFALSE),
-	writeLatexTable_(kFALSE),
-	writeSPlotData_(kFALSE),
-	storeDPEff_(kFALSE),
-	randomFit_(kFALSE),
-	emlFit_(kFALSE),
-	poissonSmear_(kFALSE),
-	enableEmbedding_(kFALSE),
-	usingDP_(kTRUE),
-	pdfsDependOnDP_(kFALSE),
-	firstExpt_(0),
-	nExpt_(0),
-	evtsPerExpt_(0),
-	iExpt_(0),
-	inputFitData_(0),
-	fitNtuple_(0),
-	genNtuple_(0),
-	sPlotNtuple_(0),
-	fitStatus_(0),
-	NLL_(0),
-	numberOKFits_(0),
-	numberBadFits_(0),
-	nParams_(0),
-	nFreeParams_(0),
-	worstLogLike_(std::numeric_limits<Double_t>::max()),
-	withinAsymErrorCalc_(kFALSE),
-	nullString_(""),
-	doSFit_(kFALSE),
-	sWeightBranchName_(""),
-	sWeightScaleFactor_(1.0),
-	fitToyMCFileName_("fitToyMC.root"),
-	fitToyMCTableName_("fitToyMCTable"),
-	fitToyMCScale_(10),
-	fitToyMCPoissonSmear_(kFALSE),
-	sPlotFileName_(""),
-	sPlotTreeName_(""),
-	sPlotVerbosity_(""),
-	sMaster_(0),
-	messageFromMaster_(0),
-	slaveId_(-1),
-	nSlaves_(0),
-	parValues_(0)
+	LauAbsFitModel::LauAbsFitModel() :
+		twoStageFit_(kFALSE),
+		useAsymmFitErrors_(kFALSE),
+		compareFitData_(kFALSE),
+		writeLatexTable_(kFALSE),
+		writeSPlotData_(kFALSE),
+		storeDPEff_(kFALSE),
+		randomFit_(kFALSE),
+		emlFit_(kFALSE),
+		poissonSmear_(kFALSE),
+		enableEmbedding_(kFALSE),
+		usingDP_(kTRUE),
+		pdfsDependOnDP_(kFALSE),
+		firstExpt_(0),
+		nExpt_(0),
+		evtsPerExpt_(0),
+		iExpt_(0),
+		inputFitData_(0),
+		fitNtuple_(0),
+		genNtuple_(0),
+		sPlotNtuple_(0),
+		fitStatus_(0),
+		NLL_(0),
+		numberOKFits_(0),
+		numberBadFits_(0),
+		nParams_(0),
+		nFreeParams_(0),
+		worstLogLike_(std::numeric_limits<Double_t>::max()),
+		withinAsymErrorCalc_(kFALSE),
+		nullString_(""),
+		doSFit_(kFALSE),
+		sWeightBranchName_(""),
+		sWeightScaleFactor_(1.0),
+		fitToyMCFileName_("fitToyMC.root"),
+		fitToyMCTableName_("fitToyMCTable"),
+		fitToyMCScale_(10),
+		fitToyMCPoissonSmear_(kFALSE),
+		sPlotFileName_(""),
+		sPlotTreeName_(""),
+		sPlotVerbosity_(""),
+		sMaster_(0),
+		messageFromMaster_(0),
+		slaveId_(-1),
+		nSlaves_(0),
+		parValues_(0)
 {
 }
 
@@ -147,8 +147,8 @@ void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFile
 }
 
 void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTreeName,
-			      const TString& histFileName, const TString& tableFileName,
-			      const TString& addressMaster, const UInt_t portMaster)
+		const TString& histFileName, const TString& tableFileName,
+		const TString& addressMaster, const UInt_t portMaster)
 {
 	if ( sMaster_ != 0 ) {
 		std::cerr << "ERROR in LauAbsFitModel::runSlave : master socket already present" << std::endl;
@@ -1041,7 +1041,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 	} else if (logLike < worstLogLike_) {
 		worstLogLike_ = logLike;
 	}
-	
+
 	return logLike;
 }
 
@@ -1081,12 +1081,15 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 		if ( pdf->isDPDependent() ) {
 			this->pdfsDependOnDP( kTRUE );
 		}
-		LauParameterPList& pars = pdf->getParameters();
-		for (LauParameterPList::iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
-			if ( !(*pars_iter)->clone() && 	( !(*pars_iter)->fixed() ||
-						(this->twoStageFit() && ( (*pars_iter)->secondStage() || (*pars_iter)->firstStage())) ) ) {
-				fitVars_.push_back(*pars_iter);
-				++nParsAdded;
+		LauAbsRValuePList& pars = pdf->getParameters();
+		for (LauAbsRValuePList::iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
+			LauParameterPList params = (*pars_iter)->getPars();
+			for (LauParameterPList::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter) {
+				if ( !(*params_iter)->clone() && ( !(*params_iter)->fixed() ||
+							(this->twoStageFit() && ( (*params_iter)->secondStage() || (*params_iter)->firstStage())) ) ) {
+					fitVars_.push_back(*params_iter);
+					++nParsAdded;
+				}
 			}
 		}
 	}
@@ -1115,17 +1118,20 @@ void LauAbsFitModel::printFitParameters(const LauPdfList& pdfList, std::ostream&
 {
 	LauPrint print;
 	for (LauPdfList::const_iterator pdf_iter = pdfList.begin(); pdf_iter != pdfList.end(); ++pdf_iter) {
-		const LauParameterPList& pars = (*pdf_iter)->getParameters();
-		for (LauParameterPList::const_iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
-			if (!(*pars_iter)->clone()) {
-				fout << (*pars_iter)->name() << "  &  $";
-				print.printFormat(fout, (*pars_iter)->value());
-				if ((*pars_iter)->fixed() == kTRUE) {
-					fout << "$ (fixed) \\\\";
-				} else {
-					fout << " \\pm ";
-					print.printFormat(fout, (*pars_iter)->error());
-					fout << "$ \\\\" << std::endl;
+		const LauAbsRValuePList& pars = (*pdf_iter)->getParameters();
+		for (LauAbsRValuePList::const_iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
+			LauParameterPList params = (*pars_iter)->getPars();
+			for (LauParameterPList::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter) {
+				if (!(*params_iter)->clone()) {
+					fout << (*params_iter)->name() << "  &  $";
+					print.printFormat(fout, (*params_iter)->value());
+					if ((*params_iter)->fixed() == kTRUE) {
+						fout << "$ (fixed) \\\\";
+					} else {
+						fout << " \\pm ";
+						print.printFormat(fout, (*params_iter)->error());
+						fout << "$ \\\\" << std::endl;
+					}
 				}
 			}
 		}

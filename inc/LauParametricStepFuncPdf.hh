@@ -64,7 +64,7 @@ class LauParametricStepFuncPdf : public LauAbsPdf {
 		    \param [in] limits the limits of the bins (lower limit of all bins and upper limit of the last), so (N_bins + 1) entries
 		    \param [in] normalisationBin the normalisation bin
 		*/
-		LauParametricStepFuncPdf(const TString& theVarName, const std::vector<LauParameter*>& params, const std::vector<Double_t>& limits, NormBin normalisationBin = Last);
+		LauParametricStepFuncPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, const std::vector<Double_t>& limits, NormBin normalisationBin = Last);
 
 		//! Destructor
 		virtual ~LauParametricStepFuncPdf();
@@ -79,9 +79,6 @@ class LauParametricStepFuncPdf : public LauAbsPdf {
 		virtual void calcLikelihoodInfo(const LauAbscissas& abscissas);
 		
 		using LauAbsPdf::calcLikelihoodInfo;
-
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
 
 		//! Calculate the normalisation
 		virtual void calcNorm();

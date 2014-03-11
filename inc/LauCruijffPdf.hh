@@ -57,7 +57,7 @@ class LauCruijffPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauCruijffPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauCruijffPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 		
 		//! Destructor
 		virtual ~LauCruijffPdf();
@@ -73,9 +73,6 @@ class LauCruijffPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the PDF height
 		/*!
 		    \param [in] kinematics the current DP kinematics
@@ -86,15 +83,15 @@ class LauCruijffPdf : public LauAbsPdf {
 
 	private:
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Sigma of left Gaussian
-		LauParameter* sigmaL_;
+		LauAbsRValue* sigmaL_;
 		//! Sigma of right Gaussian
-		LauParameter* sigmaR_;
+		LauAbsRValue* sigmaR_;
 		//! Alpha of left Gaussian
-		LauParameter* alphaL_;
+		LauAbsRValue* alphaL_;
 		//! Alpha of right Gaussian
-		LauParameter* alphaR_;
+		LauAbsRValue* alphaR_;
 
 		ClassDef(LauCruijffPdf,0) // Define the Cruijff PDF
 };

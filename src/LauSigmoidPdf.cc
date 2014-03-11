@@ -29,7 +29,7 @@ using std::vector;
 ClassImp(LauSigmoidPdf)
 
 
-LauSigmoidPdf::LauSigmoidPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauSigmoidPdf::LauSigmoidPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	a_(0),
 	b_(0)

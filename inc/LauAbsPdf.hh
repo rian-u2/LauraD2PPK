@@ -31,6 +31,7 @@
 #include "TString.h"
 
 #include "LauFitDataTree.hh"
+#include "LauAbsRValue.hh"
 #include "LauParameter.hh"
 #include "LauParamFixed.hh"
 
@@ -56,7 +57,7 @@ class LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauAbsPdf(const TString& theVarName, const std::vector<LauParameter*>& params,
+		LauAbsPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
 				Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Constructor for a multidimensional PDF
@@ -66,7 +67,7 @@ class LauAbsPdf {
 		    \param [in] minAbscissas the minimum values of the abscissas
 		    \param [in] maxAbscissas the maximum values of the abscissas
 		*/
-		LauAbsPdf(const std::vector<TString>& theVarNames, const std::vector<LauParameter*>& params,
+		LauAbsPdf(const std::vector<TString>& theVarNames, const std::vector<LauAbsRValue*>& params,
 				const LauFitData& minAbscissas, const LauFitData& maxAbscissas);
 
 		//! Destructor
@@ -108,48 +109,6 @@ class LauAbsPdf {
 		    \return true if the PDF is DP-dependent, false otherwise (the default)
 		*/
 		virtual Bool_t isDPDependent() const {return kFALSE;}
-
-		//! Retrieve the value of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter
-		    \return the current value of the parameter
-		*/
-		virtual Double_t getParValue(const TString& parName) const;
-
-		//! Retrieve the minimum value of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter
-		    \return the minimum value of the parameter
-		*/
-		virtual Double_t getParMin(const TString& parName) const;
-
-		//! Retrieve the maximum value of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter
-		    \return the maximum value of the parameter
-		*/
-		virtual Double_t getParMax(const TString& parName) const;
-
-		//! Retrieve the range of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter
-		    \return the range of the parameter
-		*/
-		virtual Double_t getParRange(const TString& parName) const;
-
-		//! Retrieve whether the specified parameter is fixed
-		/*!
-		    \param [in] parName the name of the parameter
-		    \return true if the parameter is fixed
-		*/
-		virtual Bool_t parFixed(const TString& parName) const;
-
-		//! Retrieve whether the specified parameter is a clone
-		/*!
-		    \param [in] parName the name of the parameter
-		    \return true if the parameter is a clone
-		*/
-		virtual Bool_t parClone(const TString& parName) const;
 
 		//! Retrieve the minimum value of the (primary) abscissa
 		/*!
@@ -207,47 +166,6 @@ class LauAbsPdf {
 		    \return the ranges of the abscissas
 		*/
 		virtual LauFitData getRanges() const;
-
-		//! Change the value of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter to be changed
-		    \param [in] value the new value of the parameter
-		*/
-		virtual void setParValue(const TString& parName, Double_t value);
-
-		//! Change the minimum value of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter to be changed
-		    \param [in] minValue the new minimum value of the parameter
-		*/
-		virtual void setParMin(const TString& parName, Double_t minValue);
-
-		//! Change the maximum value of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter to be changed
-		    \param [in] maxValue the new maximum value of the parameter
-		*/
-		virtual void setParMax(const TString& parName, Double_t maxValue);
-
-		//! Change the range of the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter to be changed
-		    \param [in] minValue the new minimum value of the parameter
-		    \param [in] maxValue the new maximum value of the parameter
-		*/
-		virtual void setParRange(const TString& parName, Double_t minValue, Double_t maxValue);
-
-		//! Fix the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter to be fixed
-		*/
-		virtual void fixPar(const TString& parName);
-
-		//! Float the specified parameter
-		/*!
-		    \param [in] parName the name of the parameter to be floated
-		*/
-		virtual void floatPar(const TString& parName);
 
 		//! Update the pulls for all parameters
 		virtual void updatePulls();
@@ -318,16 +236,13 @@ class LauAbsPdf {
 		/*!
 		    \return the parameters of the PDF
 		*/
-		virtual const std::vector<LauParameter*>& getParameters() const { return param_; }
+		virtual const std::vector<LauAbsRValue*>& getParameters() const { return param_; }
 
 		//! Retrieve the parameters of the PDF, e.g. so that they can be loaded into a fit
 		/*!
 		    \return the parameters of the PDF
 		*/
-		virtual std::vector<LauParameter*>& getParameters() { return param_; }
-
-		//! Ensure the PDF is positive definite
-		virtual void checkPositiveness() = 0;
+		virtual std::vector<LauAbsRValue*>& getParameters() { return param_; }
 
 		//! Calculate the normalisation factor of the PDF
 		/*!
@@ -457,13 +372,13 @@ class LauAbsPdf {
 		/*!
 		    \param [in] parName the parameter to retrieve
 		*/
-		virtual LauParameter* findParameter(const TString& parName);
+		virtual LauAbsRValue* findParameter(const TString& parName);
 
 		//! Retrieve the specified parameter
 		/*!
 		    \param [in] parName the parameter to retrieve
 		*/
-		virtual const LauParameter* findParameter(const TString& parName) const;
+		virtual const LauAbsRValue* findParameter(const TString& parName) const;
 
 		//! Retrieve the random function used for MC generation
 		/*!
@@ -499,7 +414,7 @@ class LauAbsPdf {
 		/*!
 		    \param [in] params the parameters to add
 		*/
-		virtual void addParameters(std::vector<LauParameter*>& params);
+		virtual void addParameters(std::vector<LauAbsRValue*>& params);
 
 		//! Check whether the calcNorm method is running
 		/*!
@@ -557,7 +472,7 @@ class LauAbsPdf {
 		std::map<UInt_t,TString> varNames_;
 
 		//! The parameters of the PDF (if any)
-		std::vector<LauParameter*> param_;
+		std::vector<LauAbsRValue*> param_;
 
 		//! Normalisation factor of the PDF
 		Double_t norm_;

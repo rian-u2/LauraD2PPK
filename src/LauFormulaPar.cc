@@ -81,3 +81,10 @@ Double_t LauFormulaPar::value() const
 	return formula_.EvalPar(dummy_,paramArray_);
 }
 
+Bool_t LauFormulaPar::fixed() const
+{
+	for ( std::vector<LauParameter*>::const_iterator iter = paramVec_.begin(); iter != paramVec_.end(); ++iter ) {
+		if ( !(*iter)->fixed() ) { return kFALSE; }
+	}
+	return kTRUE;
+}

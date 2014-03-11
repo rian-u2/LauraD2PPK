@@ -69,6 +69,7 @@ class LauComplex;
 class LauFitDataTree;
 class LauFitNtuple;
 class LauGenNtuple;
+class LauAbsRValue;
 class LauParameter;
 
 class LauAbsFitModel : public LauFitObject {
@@ -310,6 +311,8 @@ class LauAbsFitModel : public LauFitObject {
 		typedef std::vector<LauAbsPdf*> LauPdfList;
 		//! List of parameter pointers
 		typedef std::vector<LauParameter*> LauParameterPList;
+		//! List of parameter pointers
+		typedef std::vector<LauAbsRValue*> LauAbsRValuePList;
 		//! List of parameters
 		typedef std::vector<LauParameter> LauParameterList;
 		//! A type to store background classes 

@@ -42,7 +42,7 @@ class LauExponentialPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauExponentialPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauExponentialPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauExponentialPdf();
@@ -58,9 +58,6 @@ class LauExponentialPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -74,7 +71,7 @@ class LauExponentialPdf : public LauAbsPdf {
 
 	private:
 		//! Exponential slope ie exp(slope*x)
-		LauParameter* slope_;
+		LauAbsRValue* slope_;
 
 		ClassDef(LauExponentialPdf,0) // Define the Exponential PDF
 };

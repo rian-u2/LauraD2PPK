@@ -4,6 +4,15 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+11th March 2014 Mark Whitehead 
+(in branch for release in v2r1)
+
+* Added the functionality to make LauFormulaPars usable in fits
+  - Added a new class LauAbsRValue which LauParameter and LauFormularPar inherit from
+  - Many files updated to accept LauAbsRValues instead of LauParameters
+* Fairly major clean up of obsolete functions in LauAbsPdf
+  - Only LauLinearPdf used any of them, this has now been updated
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r0
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

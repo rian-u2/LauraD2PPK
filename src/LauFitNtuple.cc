@@ -26,6 +26,7 @@ using std::endl;
 #include "LauAbsFitter.hh"
 #include "LauFitNtuple.hh"
 #include "LauFitter.hh"
+#include "LauParameter.hh"
 #include "LauParamFixed.hh"
 
 ClassImp(LauFitNtuple)

@@ -97,13 +97,6 @@ class Lau2DHistPdf : public LauAbsPdf {
 		virtual Double_t getLikelihood( const TString& theVarName ) const;
 		using LauAbsPdf::getLikelihood;
 
-		//! Check that PDF is positive
-		/*!
-		    Check that PDF is positive.
-		    Dealt with in getBinHistValue, so nothing to do here.
-		*/
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 

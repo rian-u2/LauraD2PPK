@@ -28,10 +28,11 @@
 
 #include "TString.h"
 #include "TFormula.h"
+#include "LauAbsRValue.hh"
 #include "LauParameter.hh"
 
 
-class LauFormulaPar {
+class LauFormulaPar : public LauAbsRValue {
 
 	public:
 		//! Constructor double limit parameter
@@ -56,6 +57,24 @@ class LauFormulaPar {
 		    \return the name of the parameter
 		*/
 		inline const TString& name() const {return name_;}
+
+		//! Get the LauParameters used in LauFormulaPar
+		/*!
+		    \return the list of LauParameters
+		*/
+		std::vector<LauParameter*> getPars() {return paramVec_;}
+
+		//! Boolean to say it is not an L value
+		/*!
+		    \return kFALSE, LauFormulaPars are not L values
+		*/
+		inline Bool_t isLValue() const {return kFALSE;}
+
+		//! Boolean to say if the LauFormulaPar is fixed
+		/*!
+		    \return kFALSE unless all LauParameters in the formula are fixed
+		*/
+		Bool_t fixed() const;
 
 	protected:
 

@@ -33,7 +33,7 @@ ClassImp(Lau2DHistPdf)
 Lau2DHistPdf::Lau2DHistPdf(const std::vector<TString>& theVarNames, const TH2* hist,
 		const LauFitData& minVals, const LauFitData& maxVals,
 		Bool_t useInterpolation, Bool_t fluctuateBins) :
-	LauAbsPdf(theVarNames, std::vector<LauParameter*>(), minVals, maxVals),
+	LauAbsPdf(theVarNames, std::vector<LauAbsRValue*>(), minVals, maxVals),
 	hist_(hist ? dynamic_cast<TH2*>(hist->Clone()) : 0),
 	xProj_(0),
 	yProj_(0),

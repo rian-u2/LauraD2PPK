@@ -9,8 +9,8 @@
 // Paul Harrison
 
 /*! \file LauAbsPdf.cc
-    \brief File containing implementation of LauAbsPdf class.
-*/
+  \brief File containing implementation of LauAbsPdf class.
+ */
 
 #include <algorithm>
 #include <iostream>
@@ -26,24 +26,24 @@
 
 ClassImp(LauAbsPdf)
 
-// Constructor for the abstract PDF class.
-LauAbsPdf::LauAbsPdf(const TString& theVarName, const std::vector<LauParameter*>& params,
-		Double_t minAbscissa, Double_t maxAbscissa) :
-	varNames_(),
-	param_(params),
-	norm_(0.0),
-	maxHeight_(0.0),
-	heightUpToDate_(kFALSE),
-	minAbscissas_(),
-	maxAbscissas_(),
-	randomFun_(LauRandom::randomFun()),
-	cachePDF_(kFALSE),
-	unNormPDFVal_(0.0),
-	nNormPoints_(50),
-	integMethod_(GaussLegendre),
-	withinNormCalc_(kFALSE),
-	withinGeneration_(kFALSE),
-	normWeightsDone_(kFALSE)
+	// Constructor for the abstract PDF class.
+	LauAbsPdf::LauAbsPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
+			Double_t minAbscissa, Double_t maxAbscissa) :
+		varNames_(),
+		param_(params),
+		norm_(0.0),
+		maxHeight_(0.0),
+		heightUpToDate_(kFALSE),
+		minAbscissas_(),
+		maxAbscissas_(),
+		randomFun_(LauRandom::randomFun()),
+		cachePDF_(kFALSE),
+		unNormPDFVal_(0.0),
+		nNormPoints_(50),
+		integMethod_(GaussLegendre),
+		withinNormCalc_(kFALSE),
+		withinGeneration_(kFALSE),
+		normWeightsDone_(kFALSE)
 {
 	// Store the variable name
 	varNames_.insert( std::make_pair( 0, theVarName ) );
@@ -53,7 +53,7 @@ LauAbsPdf::LauAbsPdf(const TString& theVarName, const std::vector<LauParameter*>
 	maxAbscissas_.push_back( maxAbscissa );
 }
 
-LauAbsPdf::LauAbsPdf(const std::vector<TString>& theVarNames, const std::vector<LauParameter*>& params,
+LauAbsPdf::LauAbsPdf(const std::vector<TString>& theVarNames, const std::vector<LauAbsRValue*>& params,
 		const LauFitData& minAbscissas, const LauFitData& maxAbscissas) :
 	varNames_(),
 	param_(params),
@@ -378,150 +378,51 @@ void LauAbsPdf::calcLikelihoodInfo(UInt_t iEvt)
 	}
 }
 
-LauParameter* LauAbsPdf::findParameter(const TString& parName)
+LauAbsRValue* LauAbsPdf::findParameter(const TString& parName)
 {
-	for ( std::vector<LauParameter*>::iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
+	for ( std::vector<LauAbsRValue*>::iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
+		//	std::vector<LauParameter*> params = (*iter)->getPars();
+		//	for (std::vector<LauParameter*>::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter ) {
 		if ((*iter)->name().Contains(parName)) {
 			return (*iter);
 		}
+		//	}
 	}
 
 	std::cerr << "ERROR in LauAbsPdf::findParameter : Parameter \"" << parName << "\" not found." << std::endl;
 	return 0;
 }
 
-const LauParameter* LauAbsPdf::findParameter(const TString& parName) const
+const LauAbsRValue* LauAbsPdf::findParameter(const TString& parName) const
 {
-	for ( std::vector<LauParameter*>::const_iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
+	for ( std::vector<LauAbsRValue*>::const_iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
+		//	std::vector<LauParameter*> params = (*iter)->getPars();
+		//	for (std::vector<LauParameter*>::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter ) {
 		if ((*iter)->name().Contains(parName)) {
 			return (*iter);
-		}
+			//		}
+	}
 	}
 
 	std::cerr << "ERROR in LauAbsPdf::findParameter : Parameter \"" << parName << "\" not found." << std::endl;
 	return 0;
-}
-
-Double_t LauAbsPdf::getParValue(const TString& parName) const
-{
-	const LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		return par->value();
-	} else {
-		return 0.0;
-	}
-}
-
-Double_t LauAbsPdf::getParMin(const TString& parName) const
-{
-	const LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		return par->minValue();
-	} else {
-		return 0.0;
-	}
-}
-
-Double_t LauAbsPdf::getParMax(const TString& parName) const
-{
-	const LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		return par->maxValue();
-	} else {
-		return 0.0;
-	}
-}
-
-Double_t LauAbsPdf::getParRange(const TString& parName) const
-{
-	const LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		return (par->maxValue() - par->minValue());
-	} else {
-		return 0.0;
-	}
-}
-
-Bool_t LauAbsPdf::parFixed(const TString& parName) const
-{
-	const LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		return par->fixed();
-	} else {
-		return kTRUE;
-	}
-}
-
-Bool_t LauAbsPdf::parClone(const TString& parName) const
-{
-	const LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		return par->clone();
-	} else {
-		return kTRUE;
-	}
-}
-
-void LauAbsPdf::setParValue(const TString& parName, Double_t value)
-{
-	LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		par->value(value);
-	}
-}
-
-void LauAbsPdf::setParMin(const TString& parName, Double_t minValue)
-{
-	LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		par->minValue(minValue);
-	}
-}
-
-void LauAbsPdf::setParMax(const TString& parName, Double_t maxValue)
-{
-	LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		par->maxValue(maxValue);
-	}
-}
-
-void LauAbsPdf::setParRange(const TString& parName, Double_t minValue, Double_t maxValue)
-{
-	LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		par->range(minValue, maxValue);
-	}
-}
-
-void LauAbsPdf::fixPar(const TString& parName)
-{
-	LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		par->fixed(kTRUE);
-	}
-}
-
-void LauAbsPdf::floatPar(const TString& parName)
-{
-	LauParameter* par = this->findParameter(parName);
-	if (par != 0) {
-		par->fixed(kFALSE);
-	}
 }
 
 void LauAbsPdf::updatePulls()
 {
-	for ( std::vector<LauParameter*>::iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
-		if (!(*iter)->fixed()) {
-			(*iter)->updatePull();
+	for ( std::vector<LauAbsRValue*>::iterator iter = param_.begin(); iter != param_.end(); ++iter ) {
+		std::vector<LauParameter*> params = (*iter)->getPars();
+		for (std::vector<LauParameter*>::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter ) {
+			if (!(*iter)->fixed()) {
+				(*params_iter)->updatePull();
+			}
 		}
 	}
 }
 
-void LauAbsPdf::addParameters(std::vector<LauParameter*>& params)
+void LauAbsPdf::addParameters(std::vector<LauAbsRValue*>& params)
 {
-	for ( std::vector<LauParameter*>::iterator iter = params.begin(); iter != params.end(); ++iter ) {
+	for ( std::vector<LauAbsRValue*>::iterator iter = params.begin(); iter != params.end(); ++iter ) {
 		param_.push_back(*iter);
 	}
 }
@@ -558,7 +459,7 @@ Double_t LauAbsPdf::integrGaussLegendre()
 		Double_t intFactor = 0.5 * this->getRange();
 		norm += normWeights_[i]*intFactor*fun;
 	} 
-	
+
 	//std::cout<<"====================================================="<<std::endl;	
 	//std::cout<<"NORM = "<<norm<<std::endl;
 
@@ -595,7 +496,7 @@ void LauAbsPdf::getNormWeights()
 	//std::cout<<"NORM POINTS = "<<nNormPoints_<<std::endl;
 
 	//std::cout<<"====================================================="<<std::endl;	
-	
+
 	Int_t nWeights = static_cast<Int_t>(normWeights_.size());
 	normAbscissas_.resize(nWeights);
 

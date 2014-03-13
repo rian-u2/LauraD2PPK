@@ -56,7 +56,7 @@ void LauGounarisSakuraiRes::initialise()
 	// of a resonance changes...  
 
 	Int_t resSpin = this->getSpin();
-	Double_t resMass = this->getMass();
+	resMass_ = this->getMass();
 	Double_t massDaug1 = this->getMassDaug1();
 	Double_t massDaug2 = this->getMassDaug2();
 	Double_t massBachelor = this->getMassBachelor();
@@ -70,7 +70,7 @@ void LauGounarisSakuraiRes::initialise()
 	}
 
 	// Create the mass squares, sums, differences etc.
-	resMassSq_ = resMass*resMass;
+	resMassSq_ = resMass_*resMass_;
 	mDaugSum_  = massDaug1 + massDaug2;
 	mDaugSumSq_ = mDaugSum_*mDaugSum_;
 	mDaugDiff_ = massDaug1 - massDaug2;
@@ -84,14 +84,14 @@ void LauGounarisSakuraiRes::initialise()
 	Double_t term2 = resMassSq_ - mDaugDiffSq_;
 	Double_t term12 = term1*term2;
 	if (term12 > 0.0) {
-		q0_ = TMath::Sqrt(term12)/(2.0*resMass);
+		q0_ = TMath::Sqrt(term12)/(2.0*resMass_);
 	} else {
 		q0_ = 0.0;
 	}
 
 	// Momentum of the bachelor particle in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t eBach = (mParentSq_ - resMassSq_ - mBachSq_)/(2.0*resMass);
+	Double_t eBach = (mParentSq_ - resMassSq_ - mBachSq_)/(2.0*resMass_);
 	Double_t termBach = eBach*eBach - mBachSq_;
 	if ( eBach<0.0 || termBach<0.0 ) {
 		p0_ = 0.0;
@@ -114,12 +114,12 @@ void LauGounarisSakuraiRes::initialise()
 	this->setBarrierRadii(resR_, parR_, barrierType_);
 
 	// Calculate the extra things needed by the G-S shape
-	h0_ = 2.0*LauConstants::invPi * q0_/resMass * TMath::Log((resMass + 2.0*q0_)/(2.0*LauConstants::mPi));
+	h0_ = 2.0*LauConstants::invPi * q0_/resMass_ * TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi));
 	dhdm0_ = h0_ * (1.0/(8.0*q0_*q0_) - 1.0/(2.0*resMassSq_)) + 1.0/(LauConstants::twoPi*resMassSq_);
 	d_ = 3.0*LauConstants::invPi * LauConstants::mPi*LauConstants::mPi/(q0_*q0_)
-		* TMath::Log((resMass + 2.0*q0_)/(2.0*LauConstants::mPi))
-		+ resMass/(LauConstants::twoPi*q0_)
-		- LauConstants::mPi*LauConstants::mPi*resMass/(LauConstants::pi*q0_*q0_*q0_);
+		* TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi))
+		+ resMass_/(LauConstants::twoPi*q0_)
+		- LauConstants::mPi*LauConstants::mPi*resMass_/(LauConstants::pi*q0_*q0_*q0_);
 }
 
 void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type)
@@ -180,6 +180,13 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	Double_t resMass = this->getMass();
 	Double_t resWidth = this->getWidth();
+
+	// If the mass is floating and their value have changed
+	// we need to recalculate everything that assumes this value
+	if ( (!this->fixMass()) && resMass != resMass_ ) {
+		this->initialise();
+	}
+
 	Double_t q = this->getQ();
 	Double_t p = this->getP();
 	//Double_t pstar = this->getPstar();

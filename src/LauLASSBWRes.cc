@@ -66,10 +66,10 @@ void LauLASSBWRes::initialise()
 	// Decay momentum of either daughter in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
 
-	Double_t resMass = this->getMass();
-	resMassSq_ = resMass*resMass;
+	resMass_ = this->getMass();
+	resMassSq_ = resMass_*resMass_;
 
-	q0_ = TMath::Sqrt((resMassSq_ - mDaugSumSq_)*(resMassSq_ - mDaugDiffSq_))/(2.0*resMass);
+	q0_ = TMath::Sqrt((resMassSq_ - mDaugSumSq_)*(resMassSq_ - mDaugDiffSq_))/(2.0*resMass_);
 
 	Int_t resSpin = this->getSpin();
 	if (resSpin != 0) {
@@ -96,6 +96,12 @@ LauComplex LauLASSBWRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t q = this->getQ();
 	Double_t resMass = this->getMass();
 	Double_t resWidth = this->getWidth();
+
+	// If the mass is floating and their value have changed
+	// we need to recalculate everything that assumes this value
+	if ( (!this->fixMass()) && resMass != resMass_ ) {
+		this->initialise();
+	}
 
 	Double_t qRatio = q/q0_;
 	Double_t totWidth = resWidth*qRatio*(resMass/mass);

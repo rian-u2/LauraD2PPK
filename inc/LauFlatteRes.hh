@@ -107,6 +107,8 @@ class LauFlatteRes : public LauAbsResonance {
 		//! Define allowed types
 		enum FlattePartType {FlattePi, FlatteK};
 
+		//! The resonance mass
+		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
 		//! Constant factor (default value from BES data)

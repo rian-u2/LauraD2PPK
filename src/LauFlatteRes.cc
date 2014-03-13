@@ -51,8 +51,8 @@ LauFlatteRes::~LauFlatteRes()
 
 void LauFlatteRes::initialise()
 {
-	Double_t resMass = this->getMass();
-	resMassSq_ = resMass*resMass;
+	resMass_ = this->getMass();
+	resMassSq_ = resMass_*resMass_;
 
 	const TString& resName = this->getResonanceName();
 	if (resName != "f_0(980)") {
@@ -94,6 +94,13 @@ LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	Double_t resMass = this->getMass();
 	Double_t s = mass*mass; // Invariant mass squared combination for the system
+
+	// If the mass is floating and their value have changed
+	// we need to recalculate everything that assumes this value
+	if ( (!this->fixMass()) && resMass != resMass_ ) {
+		this->initialise();
+	}
+
 	Double_t dMSq = resMassSq_ - s;
 
 	Double_t rho1(0.0), rho2(0.0);

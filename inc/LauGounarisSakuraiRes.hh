@@ -87,6 +87,8 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		Double_t p0_;
 		//! Momentum of the bachelor in the parent rest frame (at pole mass)
 		Double_t pstar0_;
+		//! The resonance mass
+		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
 		//! Sum of the two daughter masses 

@@ -155,6 +155,8 @@ class LauLASSBWRes : public LauAbsResonance {
 		Double_t mDaugDiff_;
 		//! Square of mDaugDiff
 		Double_t mDaugDiffSq_; 
+		//! The resonance mass
+		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
 		//! LASS effective range parameter

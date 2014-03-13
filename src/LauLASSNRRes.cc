@@ -1,4 +1,3 @@
-
 // Copyright University of Warwick 2008 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -23,12 +22,12 @@ ClassImp(LauLASSNRRes)
 LauLASSNRRes::LauLASSNRRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
 		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
-	q0_(0.0),
+//	q0_(0.0),
 	mDaugSum_(0.0),
 	mDaugSumSq_(0.0),
 	mDaugDiff_(0.0),
 	mDaugDiffSq_(0.0),
-	resMassSq_(0.0),
+//	resMassSq_(0.0),
 	r_(0.0),
 	a_(0.0),
 	B_(0.0),
@@ -66,10 +65,12 @@ void LauLASSNRRes::initialise()
 	// Decay momentum of either daughter in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
 
-	Double_t resMass = this->getMass();
-	resMassSq_ = resMass*resMass;
+    //jotalo: I commented this 3 lines since resMassSq_ and q0_ are not used nowhere in the code
+	// and if that is the case we don't need to initialise this class all the time resAmp is called
+	//Double_t resMass = this->getMass();
+	//resMassSq_ = resMass*resMass;
 
-	q0_ = TMath::Sqrt((resMassSq_ - mDaugSumSq_)*(resMassSq_ - mDaugDiffSq_))/(2.0*resMass);
+	//q0_ = TMath::Sqrt((resMassSq_ - mDaugSumSq_)*(resMassSq_ - mDaugDiffSq_))/(2.0*resMass);
 
 	Int_t resSpin = this->getSpin();
 	if (resSpin != 0) {

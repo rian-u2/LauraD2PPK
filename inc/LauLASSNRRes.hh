@@ -146,7 +146,7 @@ class LauLASSNRRes : public LauAbsResonance {
 
 	private:
 		//! Decay momentum of either daughter in the resonance rest frame
-		Double_t q0_; 
+		//Double_t q0_;
 		//! Sum of the daughter masses
 		Double_t mDaugSum_; 
 		//! Square of mDaugSum
@@ -156,7 +156,7 @@ class LauLASSNRRes : public LauAbsResonance {
 		//! Square of mDaugDiff
 		Double_t mDaugDiffSq_; 
 		//! Square of the resonance mass
-		Double_t resMassSq_;
+		//Double_t resMassSq_;
 		//! LASS effective range parameter
 		Double_t r_; 
 		//! LASS scattering length parameter

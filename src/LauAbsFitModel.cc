@@ -514,15 +514,10 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 			this->storePerEvtLlhds();
 		}
 
-		// Create a toy MC sample for the 1st successful experiment
-		// using the fitted parameters so that the user can compare
-		// the fit to the actual data. The toy MC stats are a
-		// factor of 10 higher than the number of events specified
-		// via setNEvGen. This is to reduce the statistical
-		// fluctuations for the toy MC data.
+		// Create a toy MC sample using the fitted parameters so that
+		// the user can compare the fit to the data.
 		if (compareFitData_ == kTRUE && fitStatus_ == 3) {
 			this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
-			compareFitData_ = kFALSE; // only do this for the first successful experiment
 		}
 
 		// Keep track of how many fits worked or failed
@@ -874,10 +869,10 @@ void LauAbsFitModel::compareFitData(UInt_t toyMCScale, const TString& mcFileName
 
 void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& tableFileName)
 {
-	// Create a toy MC sample so that the user can eventually 
-	// compare the "fitted" result with the data
-	// Generate more toy MC to reduce statistical fluctuations. Use the
-	// rescaling value fitToyMCScale_.
+	// Create a toy MC sample so that the user can compare the fitted
+	// result with the data.
+	// Generate more toy MC to reduce statistical fluctuations:
+	// - use the rescaling value fitToyMCScale_
 
 	// Store the info on the number of experiments, first expt and current expt
 	UInt_t oldNExpt(this->nExpt());
@@ -902,8 +897,8 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 
 	// Generate the toy MC
 	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Generating toy MC in " << mcFileName << " to compare fit with data..." << std::endl;
-	std::cout << "                                       : Number of experiments to generate = " << this->nExpt() << ", which is a factor of " <<fitToyMCScale_ << " higher than that originally specified." << std::endl;
-	std::cout <<"                                        : This is to allow the toy MC to be made with reduced statistical fluctuations." << std::endl;
+	std::cout << "                                       : Number of experiments to generate = " << fitToyMCScale_ << "." << std::endl;
+	std::cout << "                                       : This is to allow the toy MC to be made with reduced statistical fluctuations." << std::endl;
 
 	// Set the genValue of each parameter to its current (fitted) value
 	// but first store the original genValues for restoring later
@@ -917,7 +912,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	// up into multiple files since otherwise can run into memory issues
 	// when building the index
 
-	UInt_t totalExpts = oldNExpt * fitToyMCScale_;
+	UInt_t totalExpts = fitToyMCScale_;
 	if ( totalExpts > 100 ) {
 		UInt_t nFiles = totalExpts/100;
 		if ( totalExpts%100 ) {
@@ -940,7 +935,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 		}
 	} else {
 		// Set number of experiments to new value
-		this->setNExpts(oldNExpt*fitToyMCScale_, 0);
+		this->setNExpts(fitToyMCScale_, 0);
 		// Generate the toy
 		this->generate(mcFileName, "genResults", "dummy.root", tableFileName);
 	}

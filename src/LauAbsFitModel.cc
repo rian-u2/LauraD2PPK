@@ -895,8 +895,14 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 		this->initialiseDPModels();
 	}
 
+	// Construct a unique filename for this experiment
+	TString exptString("_expt");
+	exptString += oldIExpt;
+	TString fileName( mcFileName );
+	fileName.Insert( fileName.Last('.'), exptString );
+
 	// Generate the toy MC
-	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Generating toy MC in " << mcFileName << " to compare fit with data..." << std::endl;
+	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Generating toy MC in " << fileName << " to compare fit with data..." << std::endl;
 	std::cout << "                                       : Number of experiments to generate = " << fitToyMCScale_ << "." << std::endl;
 	std::cout << "                                       : This is to allow the toy MC to be made with reduced statistical fluctuations." << std::endl;
 
@@ -929,15 +935,14 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 			// Create a unique filename and generate the events
 			TString extraname = "_file";
 			extraname += iFile;
-			TString filename(mcFileName);
-			filename.Insert( filename.Index("."), extraname );
-			this->generate(filename, "genResults", "dummy.root", tableFileName);
+			fileName.Insert( fileName.Last('.'), extraname );
+			this->generate(fileName, "genResults", "dummy.root", tableFileName);
 		}
 	} else {
 		// Set number of experiments to new value
 		this->setNExpts(fitToyMCScale_, 0);
 		// Generate the toy
-		this->generate(mcFileName, "genResults", "dummy.root", tableFileName);
+		this->generate(fileName, "genResults", "dummy.root", tableFileName);
 	}
 
 	// Reset number of experiments to original value

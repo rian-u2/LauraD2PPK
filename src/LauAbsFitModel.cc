@@ -41,6 +41,7 @@ ClassImp(LauAbsFitModel)
 
 
 	LauAbsFitModel::LauAbsFitModel() :
+		storeCon_(0),
 		twoStageFit_(kFALSE),
 		useAsymmFitErrors_(kFALSE),
 		compareFitData_(kFALSE),
@@ -97,6 +98,14 @@ LauAbsFitModel::~LauAbsFitModel()
 	delete sPlotNtuple_; sPlotNtuple_ = 0;
 	delete sMaster_; sMaster_ = 0;
 	delete[] parValues_; parValues_ = 0;
+
+	// Remove the components created to apply constraints to fit parameters
+	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
+		if ( !(*iter)->isLValue() ){
+			delete (*iter);
+			(*iter) = 0;
+		}
+	}
 }
 
 void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFileName, const TString& dataTreeName,
@@ -121,6 +130,8 @@ void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFile
 
 	// Add variables to Gaussian constrain to a list
 	this->addConParameters();
+
+	// Add formula Gaussian constraints to the list
 
 	if (dataFileNameCopy == "") {dataFileNameCopy = "data.root";}
 	if (dataTreeNameCopy == "") {dataTreeNameCopy = "genResults";}
@@ -993,7 +1004,7 @@ Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 {
 	Double_t penalty(0.0);
 
-	for ( LauParameterPList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
+	for ( LauAbsRValuePList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
 		Double_t val = (*iter)->value();
 		Double_t mean = (*iter)->constraintMean();
 		Double_t width = (*iter)->constraintWidth();
@@ -1096,6 +1107,15 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 	return nParsAdded;
 }
 
+void LauAbsFitModel::addConstraint(TString formula, std::vector<TString> pars, Double_t mean, Double_t width){
+	storeConstraints newCon;
+	newCon.formula_ = formula;
+	newCon.conPars_ = pars;
+	newCon.mean_ = mean;
+	newCon.width_ = width;
+	storeCon_.push_back(newCon);
+}
+
 void LauAbsFitModel::addConParameters()
 {
 	for ( LauParameterPList::const_iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
@@ -1104,7 +1124,33 @@ void LauAbsFitModel::addConParameters()
 			std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
 		}
 	}
+	// Add penalties from the constraints to fit parameters
+	for ( std::vector<storeConstraints>::iterator iter = storeCon_.begin(); iter != storeCon_.end(); ++iter ) {
+		std::vector<TString> names = (*iter).conPars_;
+		std::vector<LauParameter*> params;
+		for ( std::vector<TString>::iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
+			for ( LauParameterPList::const_iterator iterfit = fitVars_.begin(); iterfit != fitVars_.end(); ++iterfit ) {
+				if ( (*iternames) == (*iterfit)->name() ){
+					params.push_back(*iterfit);
+				}
+			}
+		}
+		// If the parameters are not found, skip it
+		if ( params.size() != (*iter).conPars_.size() ) {
+			std::cout << "WARNING in LauAbsFitModel::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
+			continue;
+		}
 
+		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_,(*iter).formula_, params );
+		formPar->addGaussianConstraint( (*iter).mean_,(*iter).width_ );
+		conVars_.push_back(formPar);
+		std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to formula " << std::endl;
+		std::cout << "INFO in LauAbsFitModel::addConParameters: Formula: " << (*iter).formula_ << std::endl;
+		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
+			std::cout << "INFO in LauAbsFitModel::addConParameters: Parameter: " << (*iterparam)->name() << std::endl;
+		}
+	}
+	
 }
 
 void LauAbsFitModel::updateFitParameters(LauPdfList& pdfList)

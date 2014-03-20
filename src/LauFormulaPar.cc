@@ -9,7 +9,7 @@
 // Paul Harrison
 
 /*! \file LauFormulaPar.cc
-    \brief File containing implementation of LauFormulaPar class.
+  \brief File containing implementation of LauFormulaPar class.
 */
 
 #include <iostream>
@@ -33,13 +33,15 @@ using std::vector;
 ClassImp(LauFormulaPar)
 
 
-LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, const std::vector<LauParameter*>& params) :
-	name_(forName),
-	formula_(forName,formula),
-	paramVec_(params),
-	dummy_(0),
-	paramArray_(0)
-
+	LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, const std::vector<LauParameter*>& params) :
+		name_(forName),
+		formula_(forName,formula),
+		paramVec_(params),
+		dummy_(0),
+		paramArray_(0),
+		gaussConstraint_(kFALSE),
+		constraintMean_(0.0),
+		constraintWidth_(0.0)
 {
 	// Dummy array for TFormula
 	dummy_ = new Double_t[1];
@@ -59,7 +61,6 @@ LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, con
 		cerr<<"ERROR in LauFormulaPar::evaluate : Given formula of dimension: "<<formula_.GetNdim()<<" and not 1"<<endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
-
 }
 
 LauFormulaPar::~LauFormulaPar()
@@ -73,7 +74,7 @@ Double_t LauFormulaPar::value() const
 
 	//Assign vector values to array
 	Int_t pars = paramVec_.size();
-	
+
 	for(Int_t i=0; i<pars; ++i){
 		paramArray_[i] = paramVec_[i]->value();
 	}
@@ -88,3 +89,16 @@ Bool_t LauFormulaPar::fixed() const
 	}
 	return kTRUE;
 }
+
+void LauFormulaPar::addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth)
+{
+	gaussConstraint_ = kTRUE;
+	constraintMean_ = newGaussMean;
+	constraintWidth_ = newGaussWidth;
+}
+
+void LauFormulaPar::removeGaussianConstraint()
+{
+	gaussConstraint_ = kFALSE;
+}
+

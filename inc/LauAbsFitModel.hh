@@ -56,6 +56,7 @@
 #include <iosfwd>
 
 #include "LauFitObject.hh"
+#include "LauFormulaPar.hh"
 // LauSPlot included to get LauSPlot::NameSet typedef
 #include "LauSPlot.hh"
 
@@ -302,6 +303,15 @@ class LauAbsFitModel : public LauFitObject {
 			It should not be called otherwise!
 		*/
 		Double_t getTotNegLogLikelihood();
+
+		//! Store constraint information for fit parameters
+		/*!
+			\param [in] formula the formula to be used in the LauFormulaPar
+			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
+			\param [in] mean the value of the mean of the Gaussian constraint 
+			\param [in] width the value of the width of the Gaussian constraint 
+		*/	
+		void addConstraint(TString formula, std::vector<TString> pars, Double_t mean, Double_t width);
 
 	protected:
 
@@ -649,8 +659,8 @@ class LauAbsFitModel : public LauFitObject {
 		LauParameterList& extraPars() {return extraVars_;}
 
 		//! Access the Gaussian constrained variables
-		const LauParameterPList& conPars() const {return conVars_;}
-		LauParameterPList& conPars() {return conVars_;}
+		const LauAbsRValuePList& conPars() const {return conVars_;}
+		LauAbsRValuePList& conPars() {return conVars_;}
 
 		//! Access the fit ntuple
 		const LauFitNtuple* fitNtuple() const {return fitNtuple_;}
@@ -678,6 +688,27 @@ class LauAbsFitModel : public LauFitObject {
 		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
 
 	private:
+		// Setup a struct to store information on constrained fit parameters
+		/*!
+		  \struct storeConstraints
+		  \brief struct to store constraint information until the fit is run
+
+		  Struct to store constraint information until the fit is run
+		*/ 
+		struct storeConstraints {
+		  	//! The formula to be used in the LauFormulaPar
+			TString formula_;
+		  	//! The list of LauParameter names to be used in the LauFormulaPar
+			std::vector<TString> conPars_;
+		  	//! The mean value of the Gaussian constraint to be applied
+			Double_t mean_;
+		  	//! The width of the Gaussian constraint to be applied
+			Double_t width_;
+		};
+
+		//! Store the constraints for fit parameters until initialisation is complete
+		std::vector<storeConstraints> storeCon_;
+
 		// Various control booleans
 
 		//! Option to perform a two stage fit
@@ -723,7 +754,7 @@ class LauAbsFitModel : public LauFitObject {
 		LauParameterList extraVars_;
 
 		//! Internal vectors of Gaussian  parameters
-		LauParameterPList conVars_;
+		LauAbsRValuePList conVars_;
 
 		// Input data and output ntuple
 

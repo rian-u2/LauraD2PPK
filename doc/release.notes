@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+20th March 2014 Mark Whitehead
+(in branch for release in v2r1)
+
+* Added the ability to add Gaussian contraints to LauFormulaPars of fit parameters
+  - User supplies the information but the LauFormulaPar is constructed behind the scenes
+
 11th March 2014 Mark Whitehead 
 (in branch for release in v2r1)
 

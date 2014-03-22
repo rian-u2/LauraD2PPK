@@ -21,6 +21,12 @@
 LauAbsFitter* LauFitter::theInstance_ = 0;
 LauFitter::Type LauFitter::fitterType_ = LauFitter::Minuit;
 
+
+LauFitter::~LauFitter()
+{
+}
+
+
 void LauFitter::setFitterType( Type type )
 {
 	if ( theInstance_ != 0 ) {

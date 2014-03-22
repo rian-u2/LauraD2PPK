@@ -149,14 +149,14 @@ int main( int argc, char** argv )
 	negSigModel->addResonance("K*0(892)",    2, "RelBW");
 	negSigModel->addResonance("K*0_0(1430)", 2, "LASS");
 	negSigModel->addResonance("rho0(770)",   1, "RelBW");
-	negSigModel->addResonance("f_0(980)",    1, "Flatte", 0.965);
+	negSigModel->addResonance("f_0(980)",    1, "Flatte", kTRUE, kTRUE, 0.965);
 	negSigModel->addResonance("chi_c0",      1, "RelBW");
 	negSigModel->addResonance("NonReson",    0, "FlatNR");
 
 	negSigModel->addResonance("K*0_2(1430)", 2, "RelBW");
 	negSigModel->addResonance("omega(782)",  1, "RelBW");
 	negSigModel->addResonance("f_2(1270)",   1, "RelBW");
-	negSigModel->addResonance("f'_0(1300)",  1, "RelBW", 1.479, 0.080);
+	negSigModel->addResonance("f'_0(1300)",  1, "RelBW", kTRUE, kTRUE, 1.479, 0.080);
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, posEffModel);
 	posSigModel->setIntFileName("integ_pos.dat");
@@ -166,14 +166,14 @@ int main( int argc, char** argv )
 	posSigModel->addResonance("K*0(892)",    2, "RelBW");
 	posSigModel->addResonance("K*0_0(1430)", 2, "LASS");
 	posSigModel->addResonance("rho0(770)",   1, "RelBW");
-	posSigModel->addResonance("f_0(980)",    1, "Flatte", 0.965);
+	posSigModel->addResonance("f_0(980)",    1, "Flatte", kTRUE, kTRUE, 0.965);
 	posSigModel->addResonance("chi_c0",      1, "RelBW");
 	posSigModel->addResonance("NonReson",    0, "FlatNR");
 
 	posSigModel->addResonance("K*0_2(1430)", 2, "RelBW");
 	posSigModel->addResonance("omega(782)",  1, "RelBW");
 	posSigModel->addResonance("f_2(1270)",   1, "RelBW");
-	posSigModel->addResonance("f'_0(1300)",  1, "RelBW", 1.479, 0.080);
+	posSigModel->addResonance("f'_0(1300)",  1, "RelBW", kTRUE, kTRUE, 1.479, 0.080);
 
 
 	// Create the fit model, passing it the two signal dynamics models

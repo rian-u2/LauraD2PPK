@@ -46,6 +46,8 @@ class LauFitter {
 		*/
 		static LauAbsFitter* fitter();
 
+		virtual ~LauFitter();
+
 	private:
 		//! Pointer to the singleton instance
 		static LauAbsFitter* theInstance_;

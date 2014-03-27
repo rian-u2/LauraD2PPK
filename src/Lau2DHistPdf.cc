@@ -440,7 +440,7 @@ void Lau2DHistPdf::cacheInfo(const LauFitDataTree& inputData)
 
 void Lau2DHistPdf::doBinFluctuation()
 {
-	TRandom* random(LauRandom::zeroSeedRandom());
+	TRandom* random(LauRandom::randomFun());
 	for (Int_t i(0); i<nBinsX_; i++) {
 		for (Int_t j(0); j<nBinsY_; j++) {
 			Double_t currentContent = hist_->GetBinContent(i+1,j+1);

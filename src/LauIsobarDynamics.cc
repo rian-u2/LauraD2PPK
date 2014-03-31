@@ -57,7 +57,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	m23Sq_(0.0),
 	mPrime_(0.0),
 	thPrime_(0.0),
-	eff_(0.0),
+	eff_(1.0),
 	scfFraction_(0.0),
 	jacobian_(0.0),
 	ASq_(0.0),

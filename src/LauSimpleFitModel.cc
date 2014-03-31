@@ -829,6 +829,8 @@ Bool_t LauSimpleFitModel::genExpt()
 		for (Int_t iEvt(0); iEvt<nEvtsGen; ++iEvt) {
 
 			this->setGenNtupleDoubleBranchValue( "evtWeight", evtWeight );
+			// Add efficiency information
+			this->setGenNtupleDoubleBranchValue( "efficiency", 1 );
 
 			if (type == "signal") {
 				this->setGenNtupleIntegerBranchValue("genSig",1);
@@ -836,6 +838,7 @@ Bool_t LauSimpleFitModel::genExpt()
 					this->setGenNtupleIntegerBranchValue( bkgndClassNamesGen[iBkgnd], 0 );
 				}
 				genOK = this->generateSignalEvent();
+				this->setGenNtupleDoubleBranchValue( "efficiency", sigDPModel_->getEvtEff() );
 			} else {
 				this->setGenNtupleIntegerBranchValue("genSig",0);
 				if ( storeSCFTruthInfo ) {
@@ -1097,6 +1100,7 @@ void LauSimpleFitModel::setupGenNtupleBranches()
 	// Setup the required ntuple branches
 	this->addGenNtupleDoubleBranch("evtWeight");
 	this->addGenNtupleIntegerBranch("genSig");
+	this->addGenNtupleDoubleBranch("efficiency");
 	if ( useSCF_ || ( this->enableEmbedding() && signalTree_ != 0 && signalTree_->haveBranch("mcMatch") ) ) {
 		this->addGenNtupleIntegerBranch("genTMSig");
 		this->addGenNtupleIntegerBranch("genSCFSig");

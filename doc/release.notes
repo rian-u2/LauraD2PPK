@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+31st March 2014 Mark Whitehead
+(in branch for release in v2r1)
+
+* Added an efficiency branch to the ntuple produced for toy data samples
+  - Both LauSimpleFitModel and LauCPFitModel updated
+
 20th March 2014 Mark Whitehead
 (in branch for release in v2r1)
 

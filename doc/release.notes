@@ -4,6 +4,17 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v2r1
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+1st April 2014 Thomas Latham
+
+* Fix issue in LauFitter that prevents compilation with g++ 4.8
+  - Missing virtual destructor
+  - Take opportunity to audit other special functions
+
 31st March 2014 Mark Whitehead
 (in branch for release in v2r1)
 
@@ -12,7 +23,8 @@
 
 27th March 2014 Daniel Craik
 
-* Changed histogram classes to use seeded random number generator for fluctuation and raising or lowering of bins and updated doxygen.
+* Changed histogram classes to use seeded random number generator for
+  fluctuation and raising or lowering of bins and updated doxygen.
 
 20th March 2014 Mark Whitehead
 (in branch for release in v2r1)

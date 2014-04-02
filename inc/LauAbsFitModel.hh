@@ -30,6 +30,7 @@
     - initialiseDPModels()
     - propagateParUpdates()
     - scfDPSmear()
+    - setAmpCoeffSet()
     - setNBkgndEvents()
     - setNSigEvents()
     - setupBkgndVectors()
@@ -691,9 +692,7 @@ class LauAbsFitModel : public LauFitObject {
 		// Setup a struct to store information on constrained fit parameters
 		/*!
 		  \struct StoreConstraints
-		  \brief struct to store constraint information until the fit is run
-
-		  Struct to store constraint information until the fit is run
+		  \brief Struct to store constraint information until the fit is run
 		*/ 
 		struct StoreConstraints {
 		  	//! The formula to be used in the LauFormulaPar

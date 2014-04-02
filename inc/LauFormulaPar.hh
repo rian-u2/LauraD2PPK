@@ -35,7 +35,7 @@
 class LauFormulaPar : public LauAbsRValue {
 
 	public:
-		//! Constructor double limit parameter
+		//! Constructor
 		/*!
 		  \param [in] forName the name of the formula
 		  \param [in] formula the desired expression, using TFormula syntax
@@ -46,7 +46,7 @@ class LauFormulaPar : public LauAbsRValue {
 		// Destructor
 		virtual ~LauFormulaPar();
 
-		// Return the value of the LauFormalaPar
+		//! Return the value of the LauFormalaPar
 		/*!
 		  \return the value of the formula
 		*/
@@ -111,7 +111,7 @@ class LauFormulaPar : public LauAbsRValue {
 		//! The parameter name
 		TString name_;
 
-		//! The parameter name
+		//! The formula
 		mutable TFormula formula_;
 
 		//! Vector of LauParameters in the formula

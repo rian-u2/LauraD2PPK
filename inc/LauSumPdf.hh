@@ -76,9 +76,6 @@ class LauSumPdf : public LauAbsPdf {
 		*/
 		virtual void calcLikelihoodInfo(UInt_t iEvt);
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness();
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -98,7 +95,7 @@ class LauSumPdf : public LauAbsPdf {
 		LauAbsPdf* pdf2_;
 
 		//! Fractional contribution of first PDF to the final PDF
-		LauParameter* frac_;
+		LauAbsRValue* frac_;
 
 		ClassDef(LauSumPdf,0) // Define the sum PDF
 };

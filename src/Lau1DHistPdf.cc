@@ -31,7 +31,7 @@ ClassImp(Lau1DHistPdf)
 
 Lau1DHistPdf::Lau1DHistPdf(const TString& theVarName, const TH1* hist, Double_t minAbscissa, Double_t maxAbscissa,
 		Bool_t useInterpolation, Bool_t fluctuateBins) :
-	LauAbsPdf(theVarName, std::vector<LauParameter*>(), minAbscissa, maxAbscissa),
+	LauAbsPdf(theVarName, std::vector<LauAbsRValue*>(), minAbscissa, maxAbscissa),
 	hist_(hist ? dynamic_cast<TH1*>(hist->Clone()) : 0),
 	useInterpolation_(useInterpolation),
 	fluctuateBins_(fluctuateBins),

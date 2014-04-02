@@ -24,7 +24,7 @@
 ClassImp(LauBifurcatedGaussPdf)
 
 
-LauBifurcatedGaussPdf::LauBifurcatedGaussPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauBifurcatedGaussPdf::LauBifurcatedGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	mean_(0),
 	sigmaL_(0),

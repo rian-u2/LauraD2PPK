@@ -1327,6 +1327,7 @@ Bool_t LauCPFitModel::genExpt()
 		for (Int_t iEvt(0); iEvt<nEvtsGen; ++iEvt) {
 
 			this->setGenNtupleDoubleBranchValue( "evtWeight", evtWeight );
+			this->setGenNtupleDoubleBranchValue( "efficiency", 1.0 );
 
 			if (type == "signal") {
 				this->setGenNtupleIntegerBranchValue("genSig",1);
@@ -1334,6 +1335,12 @@ Bool_t LauCPFitModel::genExpt()
 					this->setGenNtupleIntegerBranchValue( bkgndClassNamesGen[iBkgnd], 0 );
 				}
 				genOK = this->generateSignalEvent();
+				if ( curEvtCharge_ > 0 ){ 
+					this->setGenNtupleDoubleBranchValue( "efficiency", posSigModel_->getEvtEff() );
+				} else {
+					this->setGenNtupleDoubleBranchValue( "efficiency", negSigModel_->getEvtEff() );
+				}
+
 			} else {
 				this->setGenNtupleIntegerBranchValue("genSig",0);
 				if ( storeSCFTruthInfo ) {
@@ -1656,6 +1663,7 @@ void LauCPFitModel::setupGenNtupleBranches()
 	// Setup the required ntuple branches
 	this->addGenNtupleDoubleBranch("evtWeight");
 	this->addGenNtupleIntegerBranch("genSig");
+	this->addGenNtupleDoubleBranch("efficiency");
 	if ( useSCF_ || ( this->enableEmbedding() &&
 				negSignalTree_ != 0 && negSignalTree_->haveBranch("mcMatch") &&
 				posSignalTree_ != 0 && posSignalTree_->haveBranch("mcMatch") ) ) {

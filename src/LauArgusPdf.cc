@@ -24,7 +24,7 @@
 ClassImp(LauArgusPdf)
 
 
-LauArgusPdf::LauArgusPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauArgusPdf::LauArgusPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	xi_(0),
 	m0_(0)

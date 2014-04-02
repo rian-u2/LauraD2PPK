@@ -41,7 +41,7 @@ class LauBifurcatedGaussPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauBifurcatedGaussPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauBifurcatedGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauBifurcatedGaussPdf();
@@ -57,9 +57,6 @@ class LauBifurcatedGaussPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -73,13 +70,13 @@ class LauBifurcatedGaussPdf : public LauAbsPdf {
 
 	private:
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 
 		//! Sigma of left Gaussian
-		LauParameter* sigmaL_;
+		LauAbsRValue* sigmaL_;
 
 		//! Sigma of right Gaussian
-		LauParameter* sigmaR_;
+		LauAbsRValue* sigmaR_;
 
 		ClassDef(LauBifurcatedGaussPdf,0) // Define the Bifurcated Gaussian PDF
 };

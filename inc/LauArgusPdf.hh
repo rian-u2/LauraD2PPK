@@ -41,7 +41,7 @@ class LauArgusPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauArgusPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauArgusPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauArgusPdf();
@@ -57,9 +57,6 @@ class LauArgusPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 
@@ -73,10 +70,10 @@ class LauArgusPdf : public LauAbsPdf {
 
 	private:
 		//! Shape of curve
-		LauParameter* xi_;
+		LauAbsRValue* xi_;
 
 		//! Endpoint of curve
-		LauParameter* m0_;
+		LauAbsRValue* m0_;
 
 		ClassDef(LauArgusPdf,0) // Define the ARGUS PDF
 };

@@ -58,13 +58,6 @@ class Lau1DHistPdf : public LauAbsPdf {
 
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		/*!
-		    Check that PDF is positive.
-		    Dealt with in getBinHistValue, so nothing to do here.
-		*/
-		virtual void checkPositiveness() {};
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 

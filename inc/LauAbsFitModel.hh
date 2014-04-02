@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -30,6 +30,7 @@
     - initialiseDPModels()
     - propagateParUpdates()
     - scfDPSmear()
+    - setAmpCoeffSet()
     - setNBkgndEvents()
     - setNSigEvents()
     - setupBkgndVectors()
@@ -56,6 +57,7 @@
 #include <iosfwd>
 
 #include "LauFitObject.hh"
+#include "LauFormulaPar.hh"
 // LauSPlot included to get LauSPlot::NameSet typedef
 #include "LauSPlot.hh"
 
@@ -69,6 +71,7 @@ class LauComplex;
 class LauFitDataTree;
 class LauFitNtuple;
 class LauGenNtuple;
+class LauAbsRValue;
 class LauParameter;
 
 class LauAbsFitModel : public LauFitObject {
@@ -302,6 +305,15 @@ class LauAbsFitModel : public LauFitObject {
 		*/
 		Double_t getTotNegLogLikelihood();
 
+		//! Store constraint information for fit parameters
+		/*!
+			\param [in] formula the formula to be used in the LauFormulaPar
+			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
+			\param [in] mean the value of the mean of the Gaussian constraint 
+			\param [in] width the value of the width of the Gaussian constraint 
+		*/	
+		void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
+
 	protected:
 
 		// Some typedefs
@@ -310,6 +322,8 @@ class LauAbsFitModel : public LauFitObject {
 		typedef std::vector<LauAbsPdf*> LauPdfList;
 		//! List of parameter pointers
 		typedef std::vector<LauParameter*> LauParameterPList;
+		//! List of parameter pointers
+		typedef std::vector<LauAbsRValue*> LauAbsRValuePList;
 		//! List of parameters
 		typedef std::vector<LauParameter> LauParameterList;
 		//! A type to store background classes 
@@ -646,8 +660,8 @@ class LauAbsFitModel : public LauFitObject {
 		LauParameterList& extraPars() {return extraVars_;}
 
 		//! Access the Gaussian constrained variables
-		const LauParameterPList& conPars() const {return conVars_;}
-		LauParameterPList& conPars() {return conVars_;}
+		const LauAbsRValuePList& conPars() const {return conVars_;}
+		LauAbsRValuePList& conPars() {return conVars_;}
 
 		//! Access the fit ntuple
 		const LauFitNtuple* fitNtuple() const {return fitNtuple_;}
@@ -675,6 +689,25 @@ class LauAbsFitModel : public LauFitObject {
 		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
 
 	private:
+		// Setup a struct to store information on constrained fit parameters
+		/*!
+		  \struct StoreConstraints
+		  \brief Struct to store constraint information until the fit is run
+		*/ 
+		struct StoreConstraints {
+		  	//! The formula to be used in the LauFormulaPar
+			TString formula_;
+		  	//! The list of LauParameter names to be used in the LauFormulaPar
+			std::vector<TString> conPars_;
+		  	//! The mean value of the Gaussian constraint to be applied
+			Double_t mean_;
+		  	//! The width of the Gaussian constraint to be applied
+			Double_t width_;
+		};
+
+		//! Store the constraints for fit parameters until initialisation is complete
+		std::vector<StoreConstraints> storeCon_;
+
 		// Various control booleans
 
 		//! Option to perform a two stage fit
@@ -720,7 +753,7 @@ class LauAbsFitModel : public LauFitObject {
 		LauParameterList extraVars_;
 
 		//! Internal vectors of Gaussian  parameters
-		LauParameterPList conVars_;
+		LauAbsRValuePList conVars_;
 
 		// Input data and output ntuple
 

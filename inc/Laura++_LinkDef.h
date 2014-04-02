@@ -22,6 +22,7 @@
 #pragma link C++ class LauAbsFitModel;
 #pragma link C++ class LauAbsPdf;
 #pragma link C++ class LauAbsResonance;
+#pragma link C++ class LauAbsRValue;
 #pragma link C++ class LauArgusPdf;
 #pragma link C++ class LauAsymmCalc;
 #pragma link C++ class LauBelleCPCoeffSet;

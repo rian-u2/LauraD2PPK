@@ -56,7 +56,7 @@ class LauDPDepGaussPdf : public LauAbsPdf {
 		    \param [in] sigmaCoeffs the coefficients of the DP dependence of the Gaussian sigma
 		    \param [in] dpAxis the DP axis that defines the parameter dependence
 		*/
-		LauDPDepGaussPdf(const TString& theVarName, const std::vector<LauParameter*>& params,
+		LauDPDepGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
 				Double_t minAbscissa, Double_t maxAbscissa,
 				const LauDaughters* daughters,
 				const std::vector<Double_t>& meanCoeffs,
@@ -83,9 +83,6 @@ class LauDPDepGaussPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -107,9 +104,9 @@ class LauDPDepGaussPdf : public LauAbsPdf {
 		const LauKinematics* kinematics_;
 
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Gaussian sigma
-		LauParameter* sigma_;
+		LauAbsRValue* sigma_;
 
 		//! Gaussian mean
 		Double_t meanVal_;

@@ -20,7 +20,7 @@
 #include "LauConstants.hh"
 #include "LauParameter.hh"
 
-ClassImp(LauAbsCoeffSet)
+ClassImp(LauAbsCoeffSet);
 
 Double_t LauAbsCoeffSet::minMagnitude_ = -10.0;
 Double_t LauAbsCoeffSet::maxMagnitude_ =  10.0;

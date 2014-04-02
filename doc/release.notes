@@ -4,13 +4,46 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v2r1
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+1st April 2014 Thomas Latham
+
+* Fix issue in LauFitter that prevents compilation with g++ 4.8
+  - Missing virtual destructor
+  - Take opportunity to audit other special functions
+
+31st March 2014 Mark Whitehead
+(in branch for release in v2r1)
+
+* Added an efficiency branch to the ntuple produced for toy data samples
+  - Both LauSimpleFitModel and LauCPFitModel updated
+
 28th March 2014 Daniel Craik
 
 * Added support for asymmetric errors to Lau2DHistDP, Lau2DSplineDP and LauEffModel.
 
 27th March 2014 Daniel Craik
 
-* Changed histogram classes to use seeded random number generator for fluctuation and raising or lowering of bins and updated doxygen.
+* Changed histogram classes to use seeded random number generator for
+  fluctuation and raising or lowering of bins and updated doxygen.
+
+20th March 2014 Mark Whitehead
+(in branch for release in v2r1)
+
+* Added the ability to add Gaussian contraints to LauFormulaPars of fit parameters
+  - User supplies the information but the LauFormulaPar is constructed behind the scenes
+
+11th March 2014 Mark Whitehead 
+(in branch for release in v2r1)
+
+* Added the functionality to make LauFormulaPars usable in fits
+  - Added a new class LauAbsRValue which LauParameter and LauFormularPar inherit from
+  - Many files updated to accept LauAbsRValues instead of LauParameters
+* Fairly major clean up of obsolete functions in LauAbsPdf
+  - Only LauLinearPdf used any of them, this has now been updated
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r0

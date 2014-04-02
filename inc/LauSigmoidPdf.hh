@@ -43,7 +43,7 @@ class LauSigmoidPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauSigmoidPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauSigmoidPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 		
 		//! Destructor
 		virtual ~LauSigmoidPdf();
@@ -59,9 +59,6 @@ class LauSigmoidPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -75,9 +72,9 @@ class LauSigmoidPdf : public LauAbsPdf {
 
 	private:
 		//! Parameter a
-		LauParameter* a_;
+		LauAbsRValue* a_;
 		//! Parameter b
-		LauParameter* b_;
+		LauAbsRValue* b_;
 
 		ClassDef(LauSigmoidPdf,0) // Define the Sigmoid PDF
 };

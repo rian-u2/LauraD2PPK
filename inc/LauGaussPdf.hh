@@ -40,7 +40,7 @@ class LauGaussPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauGaussPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauGaussPdf();
@@ -56,9 +56,6 @@ class LauGaussPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -72,9 +69,9 @@ class LauGaussPdf : public LauAbsPdf {
 
 	private:
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Gaussian sigma
-		LauParameter* sigma_;
+		LauAbsRValue* sigma_;
 
 		ClassDef(LauGaussPdf,0) // Define the Gaussian PDF
 };

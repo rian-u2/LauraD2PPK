@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2005 - 2013.
+// Copyright University of Warwick 2005 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -9,13 +9,13 @@
 // Paul Harrison
 
 /*! \file LauFitter.hh
-    \brief File containing LauFitter namespace.
+    \brief File containing LauFitter class.
 */
 
-/*! \namespace LauFitter
-    \brief Namespace for holding the fitter
+/*! \class LauFitter
+    \brief Factory class for creating and providing access to the fitter.
 
-    Namespace that holds the fitter returning a pointer to a TVirtualFitter object.
+    The fitter type can be set before first access to determine which fitter is used.
 */
 
 #ifndef LAU_FITTER
@@ -36,7 +36,7 @@ class LauFitter {
 
 		//! Set the type of the fitter
 		/*!
-		  \param [in] type the type of the fitter (default set to Minuit)
+		    \param [in] type the type of the fitter (default set to Minuit)
 		*/
 		static void setFitterType( Type type );
 
@@ -47,7 +47,19 @@ class LauFitter {
 		static LauAbsFitter* fitter();
 
 	private:
-		//! Pointer to the singleton instance
+		//! Constructor
+		LauFitter() {}
+
+		//! Destructor
+		virtual ~LauFitter() {}
+
+		//! Copy constructor (not implemented)
+		LauFitter( const LauFitter& );
+
+		//! Copy assignment operator (not implemented)
+		LauFitter& operator=( const LauFitter& );
+
+		//! Pointer to the singleton fitter instance
 		static LauAbsFitter* theInstance_;
 
 		//! The fitter type

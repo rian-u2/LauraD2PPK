@@ -54,7 +54,9 @@ class LauEffModel {
 		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
 		    \param [in] useInterpolation boolean flag decision to switch on/off linear interpolation between bins should be used or simply the raw bin values.
 		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
-		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
 		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
@@ -70,7 +72,9 @@ class LauEffModel {
 
 		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
 		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
-		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
 		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates

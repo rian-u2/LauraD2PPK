@@ -57,7 +57,7 @@ void Lau2DAbsHistDPPdf::doBinFluctuation(TH2* hist)
 		return;
 	}
 
-	TRandom* random = LauRandom::zeroSeedRandom();
+	TRandom* random = LauRandom::randomFun();
 
 	Int_t nBinsX = static_cast<Int_t>(hist->GetNbinsX());
 	Int_t nBinsY = static_cast<Int_t>(hist->GetNbinsY());

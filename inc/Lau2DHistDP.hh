@@ -39,8 +39,10 @@ class Lau2DHistDP : public Lau2DAbsHistDP {
 		    \param [in] hist the 2D DP histogram
 		    \param [in] daughters the daughter particles
 		    \param [in] useInterpolation boolean flag to determine whether linear interpolation between bins should be used or simply the raw bin values
-		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors (useful for systematic error evaluation)
-		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors (useful for systematic error evaluation).
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] avEffError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins
 		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP
 		    \param [in] squareDP boolean flag to specify whether the supplied histogram is in square DP coordinates

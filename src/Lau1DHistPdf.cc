@@ -245,7 +245,7 @@ Double_t Lau1DHistPdf::interpolate(Double_t x) const
 
 void Lau1DHistPdf::doBinFluctuation()
 {
-	TRandom* random = LauRandom::zeroSeedRandom();
+	TRandom* random = LauRandom::randomFun();
 	for (Int_t bin(0); bin<nBins_; bin++) {
 		Double_t currentContent = hist_->GetBinContent(bin+1);
 		Double_t currentError   = hist_->GetBinError(bin+1);

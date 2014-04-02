@@ -10,6 +10,10 @@
 * Added an efficiency branch to the ntuple produced for toy data samples
   - Both LauSimpleFitModel and LauCPFitModel updated
 
+27th March 2014 Daniel Craik
+
+* Changed histogram classes to use seeded random number generator for fluctuation and raising or lowering of bins and updated doxygen.
+
 20th March 2014 Mark Whitehead
 (in branch for release in v2r1)
 

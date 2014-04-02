@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2006 - 2013.
+// Copyright University of Warwick 2013 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,11 +16,6 @@
 #include <iomanip>
 #include <vector>
 #include <cstdlib>
-
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::vector;
 
 #include "TRandom.h"
 #include "TMessage.h"
@@ -47,18 +42,18 @@ ClassImp(LauFormulaPar)
 	dummy_ = new Double_t[1];
 
 	// Array of input parameters
-	Int_t pars = paramVec_.size();
+	Int_t nPars = paramVec_.size();
 
 	// Check length of vector matches number of parameter in the formula
-	if (formula_.GetNpar()!=pars){
-		cerr<<"ERROR in LauFormulaPar::evaluate : Number of parameters in the formula is : "<<formula_.GetNpar()<< " and the number of LauParameters is : "<<pars<<endl;
+	if (formula_.GetNpar() != nPars){
+		std::cerr<<"ERROR in LauFormulaPar::evaluate : Number of parameters in the formula is : "<<formula_.GetNpar()<< " and the number of LauParameters is : "<<nPars<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	paramArray_ = new Double_t[pars];
+	paramArray_ = new Double_t[nPars];
 
-	if (formula_.GetNdim()!=1){
-		cerr<<"ERROR in LauFormulaPar::evaluate : Given formula of dimension: "<<formula_.GetNdim()<<" and not 1"<<endl;
+	if (formula_.GetNdim() != 1){
+		std::cerr<<"ERROR in LauFormulaPar::evaluate : Given formula of dimension: "<<formula_.GetNdim()<<" and not 1"<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 }
@@ -73,9 +68,9 @@ Double_t LauFormulaPar::value() const
 {
 
 	//Assign vector values to array
-	Int_t pars = paramVec_.size();
+	Int_t nPars = paramVec_.size();
 
-	for(Int_t i=0; i<pars; ++i){
+	for(Int_t i=0; i<nPars; ++i){
 		paramArray_[i] = paramVec_[i]->value();
 	}
 

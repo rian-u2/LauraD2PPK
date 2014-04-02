@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -311,7 +311,7 @@ class LauAbsFitModel : public LauFitObject {
 			\param [in] mean the value of the mean of the Gaussian constraint 
 			\param [in] width the value of the width of the Gaussian constraint 
 		*/	
-		void addConstraint(TString formula, std::vector<TString> pars, Double_t mean, Double_t width);
+		void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
 	protected:
 
@@ -690,12 +690,12 @@ class LauAbsFitModel : public LauFitObject {
 	private:
 		// Setup a struct to store information on constrained fit parameters
 		/*!
-		  \struct storeConstraints
+		  \struct StoreConstraints
 		  \brief struct to store constraint information until the fit is run
 
 		  Struct to store constraint information until the fit is run
 		*/ 
-		struct storeConstraints {
+		struct StoreConstraints {
 		  	//! The formula to be used in the LauFormulaPar
 			TString formula_;
 		  	//! The list of LauParameter names to be used in the LauFormulaPar
@@ -707,7 +707,7 @@ class LauAbsFitModel : public LauFitObject {
 		};
 
 		//! Store the constraints for fit parameters until initialisation is complete
-		std::vector<storeConstraints> storeCon_;
+		std::vector<StoreConstraints> storeCon_;
 
 		// Various control booleans
 

@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -281,8 +281,16 @@ const TString& LauAbsFitModel::bkgndClassName( UInt_t classID ) const
 void LauAbsFitModel::clearFitParVectors()
 {
 	std::cout << "INFO in LauAbsFitModel::clearFitParVectors : Clearing fit variable vectors" << std::endl;
-	fitVars_.clear();
+
+	// Remove the components created to apply constraints to fit parameters
+	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
+		if ( !(*iter)->isLValue() ){
+			delete (*iter);
+			(*iter) = 0;
+		}
+	}
 	conVars_.clear();
+	fitVars_.clear();
 }
 
 void LauAbsFitModel::clearExtraVarVectors()
@@ -1107,8 +1115,9 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 	return nParsAdded;
 }
 
-void LauAbsFitModel::addConstraint(TString formula, std::vector<TString> pars, Double_t mean, Double_t width){
-	storeConstraints newCon;
+void LauAbsFitModel::addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width)
+{
+	StoreConstraints newCon;
 	newCon.formula_ = formula;
 	newCon.conPars_ = pars;
 	newCon.mean_ = mean;
@@ -1121,11 +1130,12 @@ void LauAbsFitModel::addConParameters()
 	for ( LauParameterPList::const_iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
 		if ( (*iter)->gaussConstraint() ) {
 			conVars_.push_back( *iter );
-			std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+			std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
 		}
 	}
+
 	// Add penalties from the constraints to fit parameters
-	for ( std::vector<storeConstraints>::iterator iter = storeCon_.begin(); iter != storeCon_.end(); ++iter ) {
+	for ( std::vector<StoreConstraints>::iterator iter = storeCon_.begin(); iter != storeCon_.end(); ++iter ) {
 		std::vector<TString> names = (*iter).conPars_;
 		std::vector<LauParameter*> params;
 		for ( std::vector<TString>::iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
@@ -1135,19 +1145,21 @@ void LauAbsFitModel::addConParameters()
 				}
 			}
 		}
+
 		// If the parameters are not found, skip it
 		if ( params.size() != (*iter).conPars_.size() ) {
-			std::cout << "WARNING in LauAbsFitModel::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
+			std::cerr << "WARNING in LauAbsFitModel::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
 			continue;
 		}
 
-		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_,(*iter).formula_, params );
-		formPar->addGaussianConstraint( (*iter).mean_,(*iter).width_ );
+		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_, (*iter).formula_, params );
+		formPar->addGaussianConstraint( (*iter).mean_, (*iter).width_ );
 		conVars_.push_back(formPar);
-		std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to formula " << std::endl;
-		std::cout << "INFO in LauAbsFitModel::addConParameters: Formula: " << (*iter).formula_ << std::endl;
+
+		std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to formula\n";
+		std::cout << "                                         : Formula: " << (*iter).formula_ << std::endl;
 		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
-			std::cout << "INFO in LauAbsFitModel::addConParameters: Parameter: " << (*iterparam)->name() << std::endl;
+			std::cout << "INFO in LauAbsFitModel::addConParameters : Parameter: " << (*iterparam)->name() << std::endl;
 		}
 	}
 	

@@ -59,6 +59,33 @@ void Lau2DAbsHistDP::doBinFluctuation(TH2* hist)
 	}
 }
 
+void Lau2DAbsHistDP::doBinFluctuation(TH2* hist, TH2* errorHi, TH2* errorLo)
+{
+	TRandom* random = LauRandom::randomFun();
+
+	Int_t nBinsX = static_cast<Int_t>(hist->GetNbinsX());
+	Int_t nBinsY = static_cast<Int_t>(hist->GetNbinsY());
+
+	for (Int_t i(0); i<nBinsX; ++i) {
+		for (Int_t j(0); j<nBinsY; ++j) {
+			Double_t currentContent = hist->GetBinContent(i+1,j+1);
+			Double_t currentErrorHi = errorHi->GetBinContent(i+1,j+1);
+			Double_t currentErrorLo = errorLo->GetBinContent(i+1,j+1);
+			Double_t shift = random->Gaus(0.,1.);
+			Double_t newContent(currentContent);
+
+			if(shift>0) newContent += shift*currentErrorHi;
+			else newContent += shift*currentErrorLo;
+
+			if (newContent<0.0) {
+				hist->SetBinContent(i+1,j+1,0.0);
+			} else {
+				hist->SetBinContent(i+1,j+1,newContent);
+			}
+		}
+	}
+}
+
 void Lau2DAbsHistDP::raiseOrLowerBins(TH2* hist, Double_t avEff, Double_t avEffError)
 {
 	TRandom* random = LauRandom::randomFun();

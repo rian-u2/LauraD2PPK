@@ -63,6 +63,14 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		*/
 		void doBinFluctuation(TH2* hist);
 
+		//! Fluctuate the contents of each histogram bin independently, in accordance with their errors
+		/*!
+		    \param [in,out] hist the histogram
+		    \param [in] errorHi the histogram containing the upper uncertainties on the bins 
+		    \param [in] errorLo the histogram containing the lower uncertainties on the bins
+		*/
+		void doBinFluctuation(TH2* hist, TH2* errorHi, TH2* errorLo);
+
 		//! Rescale the histogram bin contents based on the desired average efficiency and its uncertainty
 		/*!
 		    The new average is sampled from a Gaussian distribution G(x;avEff,avEffError).

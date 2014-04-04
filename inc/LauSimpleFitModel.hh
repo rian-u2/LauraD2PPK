@@ -387,6 +387,9 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Fit fractions
 		LauParArray fitFrac_;
 
+		//! Fit fractions (uncorrected for the efficiency)
+		LauParArray fitFracEffUnCorr_;
+
 		//! The mean efficiency
 		LauParameter meanEff_;
 

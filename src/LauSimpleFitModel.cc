@@ -505,9 +505,23 @@ void LauSimpleFitModel::setExtraNtupleVars()
 		}
 	}
 
+	// Add the fit fraction that has not been corrected for the efficiency for each signal component
+	fitFracEffUnCorr_ = sigDPModel_->getFitFractionsEfficiencyUncorrected();
+	if (fitFracEffUnCorr_.size() != nSigComp_) {
+		std::cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr_.size() << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	for (UInt_t i(0); i<nSigComp_; ++i) {
+		if (fitFracEffUnCorr_[i].size() != nSigComp_) {
+			std::cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr_[i].size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
+
 	for (UInt_t i = 0; i < nSigComp_; i++) {
 		for (UInt_t j = i; j < nSigComp_; j++) {
 			extraVars.push_back(fitFrac_[i][j]);
+			extraVars.push_back(fitFracEffUnCorr_[i][j]);
 		}
 	}
 
@@ -592,9 +606,22 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 			}
 		}
 
+		LauParArray fitFracEffUnCorr = sigDPModel_->getFitFractionsEfficiencyUncorrected();
+		if (fitFracEffUnCorr.size() != nSigComp_) {
+			std::cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr.size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			if (fitFracEffUnCorr[i].size() != nSigComp_) {
+				std::cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr[i].size() << std::endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+		}
+
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			for (UInt_t j(i); j<nSigComp_; ++j) {
 				fitFrac_[i][j].value(fitFrac[i][j].value());
+				fitFracEffUnCorr_[i][j].value(fitFracEffUnCorr[i][j].value());
 			}
 		}
 
@@ -609,6 +636,7 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			for (UInt_t j(i); j<nSigComp_; ++j) {
 				extraVars.push_back(fitFrac_[i][j]);
+				extraVars.push_back(fitFracEffUnCorr_[i][j]);
 			}
 		}
 

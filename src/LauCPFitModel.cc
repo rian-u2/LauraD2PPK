@@ -687,6 +687,8 @@ void LauCPFitModel::setExtraNtupleVars()
 	// First clear the vectors so we start from scratch
 	this->clearExtraVarVectors();
 
+	LauParameterList& extraVars = this->extraPars();
+
 	// Add the positive and negative fit fractions for each signal component
 	negFitFrac_ = negSigModel_->getFitFractions();
 	if (negFitFrac_.size() != nSigComp_) {
@@ -697,17 +699,6 @@ void LauCPFitModel::setExtraNtupleVars()
 		if (negFitFrac_[i].size() != nSigComp_) {
 			std::cerr << "ERROR in LauCPFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << negFitFrac_[i].size() << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
-		}
-	}
-
-	LauParameterList& extraVars = this->extraPars();
-
-	for (UInt_t i(0); i<nSigComp_; ++i) {
-		for (UInt_t j(i); j<nSigComp_; ++j) {
-			TString name = negFitFrac_[i][j].name();
-			name.Insert( name.Index("FitFrac"), "Neg" );
-			negFitFrac_[i][j].name(name);
-			extraVars.push_back(negFitFrac_[i][j]);
 		}
 	}
 
@@ -722,12 +713,53 @@ void LauCPFitModel::setExtraNtupleVars()
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
+
+	// Add the positive and negative fit fractions that have not been corrected for the efficiency for each signal component
+	negFitFracEffUnCorr_ = negSigModel_->getFitFractionsEfficiencyUncorrected();
+	if (negFitFracEffUnCorr_.size() != nSigComp_) {
+		std::cerr << "ERROR in LauCPFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << negFitFracEffUnCorr_.size() << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	for (UInt_t i(0); i<nSigComp_; ++i) {
+		if (negFitFracEffUnCorr_[i].size() != nSigComp_) {
+			std::cerr << "ERROR in LauCPFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << negFitFracEffUnCorr_[i].size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
+
+	posFitFracEffUnCorr_ = posSigModel_->getFitFractionsEfficiencyUncorrected();
+	if (posFitFracEffUnCorr_.size() != nSigComp_) {
+		std::cerr << "ERROR in LauCPFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << posFitFracEffUnCorr_.size() << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	for (UInt_t i(0); i<nSigComp_; ++i) {
+		if (posFitFracEffUnCorr_[i].size() != nSigComp_) {
+			std::cerr << "ERROR in LauCPFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << posFitFracEffUnCorr_[i].size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
+
 	for (UInt_t i(0); i<nSigComp_; ++i) {
 		for (UInt_t j(i); j<nSigComp_; ++j) {
-			TString name = posFitFrac_[i][j].name();
+			TString name = negFitFrac_[i][j].name();
+			name.Insert( name.Index("FitFrac"), "Neg" );
+			negFitFrac_[i][j].name(name);
+			extraVars.push_back(negFitFrac_[i][j]);
+
+			name = posFitFrac_[i][j].name();
 			name.Insert( name.Index("FitFrac"), "Pos" );
 			posFitFrac_[i][j].name(name);
 			extraVars.push_back(posFitFrac_[i][j]);
+
+			name = negFitFracEffUnCorr_[i][j].name();
+			name.Insert( name.Index("FitFrac"), "Neg" );
+			negFitFracEffUnCorr_[i][j].name(name);
+			extraVars.push_back(negFitFracEffUnCorr_[i][j]);
+
+			name = posFitFracEffUnCorr_[i][j].name();
+			name.Insert( name.Index("FitFrac"), "Pos" );
+			posFitFracEffUnCorr_[i][j].name(name);
+			extraVars.push_back(posFitFracEffUnCorr_[i][j]);
 		}
 	}
 
@@ -956,10 +988,36 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 			}
 		}
 
+		LauParArray negFitFracEffUnCorr = negSigModel_->getFitFractionsEfficiencyUncorrected();
+		if (negFitFracEffUnCorr.size() != nSigComp_) {
+			std::cerr << "ERROR in LauCPFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << negFitFracEffUnCorr.size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			if (negFitFracEffUnCorr[i].size() != nSigComp_) {
+				std::cerr << "ERROR in LauCPFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << negFitFracEffUnCorr[i].size() << std::endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+		}
+
+		LauParArray posFitFracEffUnCorr = posSigModel_->getFitFractionsEfficiencyUncorrected();
+		if (posFitFracEffUnCorr.size() != nSigComp_) {
+			std::cerr << "ERROR in LauCPFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << posFitFracEffUnCorr.size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			if (posFitFracEffUnCorr[i].size() != nSigComp_) {
+				std::cerr << "ERROR in LauCPFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << posFitFracEffUnCorr[i].size() << std::endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+		}
+
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			for (UInt_t j(i); j<nSigComp_; ++j) {
 				negFitFrac_[i][j].value(negFitFrac[i][j].value());
 				posFitFrac_[i][j].value(posFitFrac[i][j].value());
+				negFitFracEffUnCorr_[i][j].value(negFitFracEffUnCorr[i][j].value());
+				posFitFracEffUnCorr_[i][j].value(posFitFracEffUnCorr[i][j].value());
 			}
 		}
 
@@ -981,11 +1039,9 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			for (UInt_t j(i); j<nSigComp_; ++j) {
 				extraVars.push_back(negFitFrac_[i][j]);
-			}
-		}
-		for (UInt_t i(0); i<nSigComp_; ++i) {
-			for (UInt_t j(i); j<nSigComp_; ++j) {
 				extraVars.push_back(posFitFrac_[i][j]);
+				extraVars.push_back(negFitFracEffUnCorr_[i][j]);
+				extraVars.push_back(posFitFracEffUnCorr_[i][j]);
 			}
 		}
 

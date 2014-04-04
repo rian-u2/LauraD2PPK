@@ -299,6 +299,7 @@ void LauIsobarDynamics::initialiseVectors()
 	ff_.clear();         ff_.resize(nAmp_);
 	fNorm_.clear();      fNorm_.resize(nAmp_);
 	fitFrac_.clear();    fitFrac_.resize(nAmp_);
+	fitFracEffUnCorr_.clear();    fitFracEffUnCorr_.resize(nAmp_);
 
 	LauComplex null(0.0, 0.0);
 
@@ -309,11 +310,13 @@ void LauIsobarDynamics::initialiseVectors()
 		fifjEffSum_[i].resize(nAmp_);
 		fifjSum_[i].resize(nAmp_);
 		fitFrac_[i].resize(nAmp_);
+		fitFracEffUnCorr_[i].resize(nAmp_);
 
 		for (UInt_t j = 0; j < nAmp_; j++) {
 			fifjEffSum_[i][j] = null;
 			fifjSum_[i][j] = null;
 			fitFrac_[i][j].valueAndRange(0.0, -100.0, 100.0);
+			fitFracEffUnCorr_[i][j].valueAndRange(0.0, -100.0, 100.0);
 		}
 	}
 
@@ -1431,6 +1434,9 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		TString name = "A"; name += i; name += "Sq_FitFrac";
 		fitFrac_[i][i].name(name);
 
+		name += "EffUnCorr";
+		fitFracEffUnCorr_[i][i].name(name);
+
 		Double_t fifjSumReal = fifjSum_[i][i].re();
 		Double_t sumTerm = Amp_[i].abs2()*fifjSumReal*fNorm_[i]*fNorm_[i];
 		fifjTot += sumTerm;
@@ -1440,6 +1446,7 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		fifjEffTot += sumEffTerm;
 
 		fitFrac_[i][i] = sumTerm;
+		fitFracEffUnCorr_[i][i] = sumEffTerm;
 	}
 
 	for (i = 0; i < nAmp_; i++) {
@@ -1447,6 +1454,9 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 			// Calculate the cross-terms
 			TString name = "A"; name += i; name += "A"; name += j; name += "_FitFrac";
 			fitFrac_[i][j].name(name);
+
+			name += "EffUnCorr";
+			fitFracEffUnCorr_[i][j].name(name);
 
 			LauComplex AmpjConj = Amp_[j].conj();
 			LauComplex AmpTerm = Amp_[i]*AmpjConj;
@@ -1458,6 +1468,7 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 			fifjEffTot += crossEffTerm;
 
 			fitFrac_[i][j] = crossTerm;
+			fitFracEffUnCorr_[i][j] = crossEffTerm;
 		}
 	}
 
@@ -1479,9 +1490,12 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		for (j = i; j < nAmp_; j++) {
 			// Get the actual fractions by dividing by the total DP rate
 			fitFrac_[i][j] /= fifjTot;
+			fitFracEffUnCorr_[i][j] /= fifjEffTot;
 			if (init) {
 				fitFrac_[i][j].genValue( fitFrac_[i][j].value() );
 				fitFrac_[i][j].initValue( fitFrac_[i][j].value() );
+				fitFracEffUnCorr_[i][j].genValue( fitFracEffUnCorr_[i][j].value() );
+				fitFracEffUnCorr_[i][j].initValue( fitFracEffUnCorr_[i][j].value() );
 			}
 		}
 	}

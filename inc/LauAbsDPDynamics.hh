@@ -256,6 +256,12 @@ class LauAbsDPDynamics {
 		*/
 		inline const LauParArray& getFitFractions() const {return fitFrac_;}
 
+		//! Retrieve the fit fractions for the amplitude components
+		/*!
+		    \return the fit fractions
+		*/
+		inline const LauParArray& getFitFractionsEfficiencyUncorrected() const {return fitFracEffUnCorr_;}
+
 		//! Retrieve the number of defined resonances in the resonance maker
 		/*!
 		    \return the number of defined resonances
@@ -388,6 +394,9 @@ class LauAbsDPDynamics {
 
 		//! The fit fractions for the amplitude components
 		LauParArray fitFrac_;
+
+		//! The efficiency-uncorrected fit fractions for the amplitude components
+		LauParArray fitFracEffUnCorr_;
 
 		//! The overall Dalitz plot rate
 		LauParameter DPRate_;

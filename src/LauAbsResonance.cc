@@ -20,9 +20,6 @@
 // Abstract class for defining resonance models (Breit-Wigner, Flatte etc.)
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TSystem.h"
 
@@ -34,24 +31,24 @@ using std::endl;
 ClassImp(LauAbsResonance)
 
 
-	// Constructor
-	LauAbsResonance::LauAbsResonance(const TString& resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-			Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-		daughters_(daughters),
-		nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
-		chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
-		massParent_(0.0), massDaug1_(0.0), massDaug2_(0.0), massBachelor_(0.0),
-		resName_(resName),
-		resMass_(resMass),
-		resWidth_(resWidth),
-		resSpin_(resSpin),
-		resCharge_(resCharge),
-		resPairAmpInt_(resPairAmpInt),
-		flipHelicity_(kFALSE),
-  ignoreMomenta_(kFALSE),
-		q_(0.0),
-		p_(0.0),
-		pstar_(0.0)
+// Constructor
+LauAbsResonance::LauAbsResonance(const TString& resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
+		                 Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
+	daughters_(daughters),
+	nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
+	chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
+	massParent_(0.0), massDaug1_(0.0), massDaug2_(0.0), massBachelor_(0.0),
+	resName_(resName),
+	resMass_(resMass),
+	resWidth_(resWidth),
+	resSpin_(resSpin),
+	resCharge_(resCharge),
+	resPairAmpInt_(resPairAmpInt),
+	flipHelicity_(kFALSE),
+	ignoreMomenta_(kFALSE),
+	q_(0.0),
+	p_(0.0),
+	pstar_(0.0)
 {
 	if (daughters_) {
 		nameParent_ = this->getNameParent();
@@ -67,14 +64,13 @@ ClassImp(LauAbsResonance)
 		chargeDaug2_ = this->getChargeDaug2();
 		chargeBachelor_ = this->getChargeBachelor();
 	} else {
-		cerr<<"ERROR in LauAbsResonance : daughters_ pointer is NULL."<<endl;
+		std::cerr<<"ERROR in LauAbsResonance : daughters_ pointer is NULL."<<std::endl;
 	}
 
 	// check that the total charge adds up to that of the resonance
 	Int_t totalCharge = chargeDaug1_ + chargeDaug2_;
 	if ( (totalCharge != resCharge_) && (resName != "NonReson") && (!resName.BeginsWith("BelleNR")) ) {
-		cerr<<"ERROR in LauAbsResonance : "
-			<<"Total charge of daughters = "<<totalCharge<<". Resonance charge = "<<resCharge_<<"."<<endl;
+		std::cerr<<"ERROR in LauAbsResonance : "<<"Total charge of daughters = "<<totalCharge<<". Resonance charge = "<<resCharge_<<"."<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 }
@@ -120,7 +116,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 		pstar_ = kinematics->getp3_Parent();
 
 	} else {
-		cerr<<"Nonsense setup of resPairAmp array."<<endl;
+		std::cerr<<"WARNING in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array."<<std::endl;
 	}
 
 	if (this->flipHelicity()) {
@@ -155,15 +151,15 @@ void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t
 {
 	if (newMass > 0.0) {
 		resMass_ = newMass;
-		cout << "Setting mass to " << resMass_ << endl;
+		std::cout << "INFO in LauAbsResonance::changeResonance : Setting mass to " << resMass_ << std::endl;
 	}
 	if (newWidth > 0.0) {
 		resWidth_ = newWidth;
-		cout << "Setting width to " << resWidth_ << endl;
+		std::cout << "INFO in LauAbsResonance::changeResonance : Setting width to " << resWidth_ << std::endl;
 	}
 	if (newSpin > -1) {
 		resSpin_ = newSpin;
-		cout << "Setting spin to " << resSpin_ << endl;
+		std::cout << "INFO in LauAbsResonance::changeResonance : Setting spin to " << resSpin_ << std::endl;
 	}
 	this->initialise();
 }
@@ -171,7 +167,7 @@ void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t
 void LauAbsResonance::setResonanceParameter(Double_t value, const TString& name)
 {
 	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
-	cerr << "WARNING in LauAbsResonance::setResonanceParameter : Unable to set parameter \"" << name << "\" to value: " << value << "." << endl;
+	std::cerr << "WARNING in LauAbsResonance::setResonanceParameter : Unable to set parameter \"" << name << "\" to value: " << value << "." << std::endl;
 }
 
 Double_t LauAbsResonance::getMassParent() const

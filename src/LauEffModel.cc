@@ -14,9 +14,6 @@
 
 #include <cstdlib>
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TSystem.h"
 #include "Lau2DHistDP.hh"
@@ -39,19 +36,10 @@ LauEffModel::LauEffModel(const LauDaughters* daughters, const LauVetoes* vetoes)
 	highBinWarningIssued_( kFALSE )
 {
 	if ( daughters_ == 0 ) {
-		cerr << "ERROR in LauEffModel Constructor : invalid pointer to daughters object supplied." << endl;
+		std::cerr << "ERROR in LauEffModel Constructor : invalid pointer to daughters object supplied." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 }
-
-/*LauEffModel::LauEffModel( const LauEffModel& rhs ) :
-	daughters_( rhs.daughters_ ),
-	vetoes_( rhs.vetoes_ ),
-	effHisto_( rhs.effHisto_ ? new Lau2DHistDP( *rhs.effHisto_ ) : 0 ),
-	squareDP_( rhs.squareDP_ ),
-	fluctuateEffHisto_( rhs.fluctuateEffHisto_ )
-{
-}*/
 
 LauEffModel::~LauEffModel()
 {
@@ -68,7 +56,7 @@ void LauEffModel::setEffHisto(const TH2* effHisto, Bool_t useInterpolation,
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	cout<<"Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -96,7 +84,7 @@ void LauEffModel::setEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	cout<<"Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -124,7 +112,7 @@ void LauEffModel::setEffSpline(const TH2* effHisto,
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	cout<<"Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -151,7 +139,7 @@ void LauEffModel::setEffSpline(const TH2* effHisto, const TH2* errorHi, const TH
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	cout<<"Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 

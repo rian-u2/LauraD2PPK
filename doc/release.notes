@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+10th April 2014 Mark Whitehead
+* Fix an issue with the likelihood penalty term for Gaussian constraints
+  - Factor two missing in the denominator
+  - New penalty term is: ( x-mean )^2 / 2*(width^2)
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r1

@@ -1017,8 +1017,8 @@ Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 		Double_t mean = (*iter)->constraintMean();
 		Double_t width = (*iter)->constraintWidth();
 
-		Double_t term = ( val - mean ) / width;
-		penalty += term*term;
+		Double_t term = ( val - mean )*( val - mean );
+		penalty += term/( 2*width*width );
 	}
 
 	return penalty;

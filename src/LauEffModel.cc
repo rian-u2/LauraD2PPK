@@ -43,9 +43,13 @@ LauEffModel::LauEffModel(const LauDaughters* daughters, const LauVetoes* vetoes)
 
 LauEffModel::~LauEffModel()
 {
-	if (effHisto_ != 0) {
-		delete effHisto_; effHisto_ = 0;
+	std::vector<Lau2DAbsDP*>::iterator it = effHisto_.begin();
+	std::vector<Lau2DAbsDP*>::iterator end = effHisto_.end();
+	for( ; it!=end; ++it) {
+		delete *it;
+		*it=0;
 	}
+	effHisto_.clear();
 }
 
 void LauEffModel::setEffHisto(const TH2* effHisto, Bool_t useInterpolation,
@@ -60,15 +64,18 @@ void LauEffModel::setEffHisto(const TH2* effHisto, Bool_t useInterpolation,
 
 	squareDP_ = squareDP;
 
-	if(effHisto_) {
-		delete effHisto_;
-		effHisto_=0;
+	std::vector<Lau2DAbsDP*>::iterator it = effHisto_.begin();
+	std::vector<Lau2DAbsDP*>::iterator end = effHisto_.end();
+	for( ; it!=end; ++it) {
+		delete *it;
+		*it=0;
 	}
+	effHisto_.clear();
 
 	// Copy the histogram.
-	effHisto_ = new Lau2DHistDP(effHisto, daughters_,
+	effHisto_.push_back(new Lau2DHistDP(effHisto, daughters_,
 			useInterpolation, fluctuateBins,
-			avEff, absError, upperHalf, squareDP);
+			avEff, absError, upperHalf, squareDP));
 	fluctuateEffHisto_ = fluctuateBins;
 
 	if (avEff > 0.0 && absError > 0.0) {
@@ -88,15 +95,18 @@ void LauEffModel::setEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2
 
 	squareDP_ = squareDP;
 
-	if(effHisto_) {
-		delete effHisto_;
-		effHisto_=0;
+	std::vector<Lau2DAbsDP*>::iterator it = effHisto_.begin();
+	std::vector<Lau2DAbsDP*>::iterator end = effHisto_.end();
+	for( ; it!=end; ++it) {
+		delete *it;
+		*it=0;
 	}
+	effHisto_.clear();
 
 	// Copy the histogram.
-	effHisto_ = new Lau2DHistDP(effHisto, errorHi, errorLo, daughters_,
+	effHisto_.push_back(new Lau2DHistDP(effHisto, errorHi, errorLo, daughters_,
 			useInterpolation, fluctuateBins,
-			avEff, absError, upperHalf, squareDP);
+			avEff, absError, upperHalf, squareDP));
 	fluctuateEffHisto_ = fluctuateBins;
 
 	if (avEff > 0.0 && absError > 0.0) {
@@ -116,14 +126,17 @@ void LauEffModel::setEffSpline(const TH2* effHisto,
 
 	squareDP_ = squareDP;
 
-	if(effHisto_) {
-		delete effHisto_;
-		effHisto_=0;
+	std::vector<Lau2DAbsDP*>::iterator it = effHisto_.begin();
+	std::vector<Lau2DAbsDP*>::iterator end = effHisto_.end();
+	for( ; it!=end; ++it) {
+		delete *it;
+		*it=0;
 	}
+	effHisto_.clear();
 
 	// Copy the histogram.
-	effHisto_ = new Lau2DSplineDP(effHisto, daughters_,
-			fluctuateBins, avEff, absError, upperHalf, squareDP);
+	effHisto_.push_back(new Lau2DSplineDP(effHisto, daughters_,
+			fluctuateBins, avEff, absError, upperHalf, squareDP));
 	fluctuateEffHisto_ = fluctuateBins;
 
 	if (avEff > 0.0 && absError > 0.0) {
@@ -143,14 +156,17 @@ void LauEffModel::setEffSpline(const TH2* effHisto, const TH2* errorHi, const TH
 
 	squareDP_ = squareDP;
 
-	if(effHisto_) {
-		delete effHisto_;
-		effHisto_=0;
+	std::vector<Lau2DAbsDP*>::iterator it = effHisto_.begin();
+	std::vector<Lau2DAbsDP*>::iterator end = effHisto_.end();
+	for( ; it!=end; ++it) {
+		delete *it;
+		*it=0;
 	}
+	effHisto_.clear();
 
 	// Copy the histogram.
-	effHisto_ = new Lau2DSplineDP(effHisto, errorHi, errorLo, daughters_,
-			fluctuateBins, avEff, absError, upperHalf, squareDP);
+	effHisto_.push_back(new Lau2DSplineDP(effHisto, errorHi, errorLo, daughters_,
+			fluctuateBins, avEff, absError, upperHalf, squareDP));
 	fluctuateEffHisto_ = fluctuateBins;
 
 	if (avEff > 0.0 && absError > 0.0) {
@@ -158,13 +174,85 @@ void LauEffModel::setEffSpline(const TH2* effHisto, const TH2* errorHi, const TH
 	}
 }
 
+void LauEffModel::addEffHisto(const TH2* effHisto, Bool_t useInterpolation,
+		Double_t avEff, Double_t absError,
+		Bool_t useUpperHalfOnly, Bool_t squareDP)
+{
+	// Set the efficiency across the Dalitz plot using a predetermined 2D histogram
+	// with x = m_13^2, y = m_23^2.
+	Bool_t upperHalf( kFALSE );
+	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+
+	squareDP_ = squareDP;
+
+	// Copy the histogram.
+	effHisto_.push_back(new Lau2DHistDP(effHisto, daughters_,
+			useInterpolation, fluctuateEffHisto_,
+			avEff, absError, upperHalf, squareDP));
+}
+
+void LauEffModel::addEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo, Bool_t useInterpolation,
+		Double_t avEff, Double_t absError,
+		Bool_t useUpperHalfOnly, Bool_t squareDP)
+{
+	// Set the efficiency across the Dalitz plot using a predetermined 2D histogram
+	// with x = m_13^2, y = m_23^2.
+	Bool_t upperHalf( kFALSE );
+	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+
+	squareDP_ = squareDP;
+
+	// Copy the histogram.
+	effHisto_.push_back(new Lau2DHistDP(effHisto, errorHi, errorLo, daughters_,
+			useInterpolation, fluctuateEffHisto_,
+			avEff, absError, upperHalf, squareDP));
+}
+
+void LauEffModel::addEffSpline(const TH2* effHisto,
+		Double_t avEff, Double_t absError,
+		Bool_t useUpperHalfOnly, Bool_t squareDP)
+{
+	// Set the efficiency across the Dalitz plot using a predetermined 2D histogram
+	// with x = m_13^2, y = m_23^2.
+	Bool_t upperHalf( kFALSE );
+	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+
+	squareDP_ = squareDP;
+
+	// Copy the histogram.
+	effHisto_.push_back(new Lau2DSplineDP(effHisto, daughters_,
+			fluctuateEffHisto_, avEff, absError, upperHalf, squareDP));
+}
+
+void LauEffModel::addEffSpline(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
+		Double_t avEff, Double_t absError,
+		Bool_t useUpperHalfOnly, Bool_t squareDP)
+{
+	// Set the efficiency across the Dalitz plot using a predetermined 2D histogram
+	// with x = m_13^2, y = m_23^2.
+	Bool_t upperHalf( kFALSE );
+	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
+	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+
+	squareDP_ = squareDP;
+
+	// Copy the histogram.
+	effHisto_.push_back(new Lau2DSplineDP(effHisto, errorHi, errorLo, daughters_,
+			fluctuateEffHisto_, avEff, absError, upperHalf, squareDP));
+}
+
 Double_t LauEffModel::getEffHistValue(Double_t xVal, Double_t yVal) const
 {
 	// Get the efficiency from the 2D histo.
 	Double_t eff(1.0);
 
-	if (effHisto_ != 0) {
-		eff = effHisto_->interpolateXY(xVal, yVal);
+	std::vector<Lau2DAbsDP*>::const_iterator it = effHisto_.begin();
+	std::vector<Lau2DAbsDP*>::const_iterator end = effHisto_.end();
+	for( ; it!=end; ++it) {
+		eff *= (*it)->interpolateXY(xVal, yVal);
 	}
 
 	return eff;

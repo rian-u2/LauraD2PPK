@@ -1023,7 +1023,7 @@ Bool_t LauSimpleFitModel::generateSignalEvent()
 						// Retrieve the migration histogram
 						TH2* histo = scfMap_->trueHist( binNo );
 
-						LauEffModel * effModel = sigDPModel_->getEffModel();
+						LauAbsEffModel * effModel = sigDPModel_->getEffModel();
 						do {
 							// Get a random point from the histogram
 							histo->GetRandom2( xCoord, yCoord );

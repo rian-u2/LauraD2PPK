@@ -30,7 +30,7 @@
 class LauAbsResonance;
 class LauComplex;
 class LauDaughters;
-class LauEffModel;
+class LauAbsEffModel;
 class LauFitDataTree;
 class LauKinematics;
 class LauResonanceMaker;
@@ -40,7 +40,7 @@ class LauAbsDPDynamics {
 
 	public:
 		//! The type used for containing multiple self cross feed fraction models for different categories (e.g. tagging categories)
-		typedef std::map<Int_t,LauEffModel*> LauTagCatScfFractionModelMap;
+		typedef std::map<Int_t,LauAbsEffModel*> LauTagCatScfFractionModelMap;
 
 		//! Constructor
 		/*!
@@ -48,7 +48,7 @@ class LauAbsDPDynamics {
 		    \param [in] effModel the model to describe the efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the model to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot
 		*/
-		LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel = 0);
+		LauAbsDPDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel = 0);
 
 		//! Constructor
 		/*!
@@ -56,7 +56,7 @@ class LauAbsDPDynamics {
 		    \param [in] effModel the model to describe efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the models to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot for various tagging categories
 		*/
-		LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel);
+		LauAbsDPDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel);
 
 		//! Destructor
 		virtual ~LauAbsDPDynamics();
@@ -314,19 +314,19 @@ class LauAbsDPDynamics {
 		/*!
 		    \return the efficiency model
 		*/
-		inline LauEffModel* getEffModel() {return effModel_;}
+		inline LauAbsEffModel* getEffModel() {return effModel_;}
 
 		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for the first (or only) tagging category
 		/*!
 		    \return the self cross feed fraction model
 		*/
-		inline LauEffModel* getScfFractionModel() {return scfFractionModel_[0];}
+		inline LauAbsEffModel* getScfFractionModel() {return scfFractionModel_[0];}
 
 		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for all tagging categories
 		/*!
 		    \return the self cross feed fraction models
 		*/
-		inline std::map <Int_t,LauEffModel*> getScfFractionModels() {return scfFractionModel_;}
+		inline std::map <Int_t,LauAbsEffModel*> getScfFractionModels() {return scfFractionModel_;}
 
 		//! Check whether a self cross feed fraction model is being used
 		/*!
@@ -371,7 +371,7 @@ class LauAbsDPDynamics {
 		LauKinematics* kinematics_;
 
 		//! The efficiency model across the Dalitz plot
-		LauEffModel* effModel_;
+		LauAbsEffModel* effModel_;
 
 		//! The self cross feed fraction models across the Dalitz plot
 		/*!

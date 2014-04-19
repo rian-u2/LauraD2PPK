@@ -28,7 +28,7 @@
 #include "LauComplex.hh"
 
 class LauDaughters;
-class LauEffModel;
+class LauAbsEffModel;
 class LauFitDataTree;
 class LauKMatrixPropagator;
 
@@ -41,7 +41,7 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		    \param [in] effModel the model to describe the efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the model to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot
 		*/
-		LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel = 0);
+		LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel = 0);
 
 		//! Constructor
 		/*!
@@ -49,7 +49,7 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		    \param [in] effModel the model to describe the efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the models to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot for various tagging categories
 		*/
-		LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel);
+		LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel);
 
 		//! Destructor
 		virtual ~LauIsobarDynamics();

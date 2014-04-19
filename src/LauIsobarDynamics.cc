@@ -25,7 +25,7 @@
 #include "LauBelleSymNR.hh"
 #include "LauConstants.hh"
 #include "LauDaughters.hh"
-#include "LauEffModel.hh"
+#include "LauAbsEffModel.hh"
 #include "LauFitDataTree.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauIntegrals.hh"
@@ -46,7 +46,7 @@ ClassImp(LauIsobarDynamics)
 
 
 // for Kpipi: only one scfFraction 2D histogram is needed
-LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel) :
+LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel) :
 	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
@@ -104,7 +104,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 
 // for Kspipi, we need a scfFraction 2D histogram for each tagging category. They are provided by the map.
 // Also, we need to know the place that the tagging category of the current event occupies in the data structure inputFitTree
-LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel) :
+LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel) :
 	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),

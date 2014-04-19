@@ -262,7 +262,7 @@ Double_t LauEffModel::calcEfficiency( const LauKinematics* kinematics ) const
 {
 	// Routine to calculate the efficiency for the given event/point in
 	// the Dalitz plot. This routine uses the 2D histogram set by the
-	// setEffHisto() funciton.
+	// setEffHisto() function.
 	Double_t eff(1.0);
 
 	// Check for vetoes

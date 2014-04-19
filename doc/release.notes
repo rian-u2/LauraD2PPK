@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+19th April 2014 Daniel Craik
+
+* Add LauWeightedSumEffModel which gives an efficiency model from the weighted sum of several LauEffModel objects.
+* Added pABC, LauAbsEffModel, for LauEffModel and LauWeightedSumEffModel.
+* Various classes updated to use pointers to LauAbsEffModel instead of LauEffModel.
+
 15th April 2014 Daniel Craik
 
 * Enable LauEfficiencyModel to contain several Lau2DAbsDP objects with the total efficiency calculated as the product.

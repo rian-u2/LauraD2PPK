@@ -22,14 +22,14 @@ using std::endl;
 #include "LauAbsDPDynamics.hh"
 #include "LauComplex.hh"
 #include "LauDaughters.hh"
-#include "LauEffModel.hh"
+#include "LauAbsEffModel.hh"
 #include "LauKinematics.hh"
 #include "LauResonanceMaker.hh"
 
 ClassImp(LauAbsDPDynamics)
 
 
-LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel) :
+LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel) :
 	daughters_(daughters),
 	resonanceMaker_(new LauResonanceMaker(daughters)),
 	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
@@ -47,7 +47,7 @@ LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effMode
 	extraParameters_.clear();
 }
 
-LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel) :
+LauAbsDPDynamics::LauAbsDPDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel) :
 	daughters_(daughters),
 	resonanceMaker_(new LauResonanceMaker(daughters)),
 	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
@@ -145,7 +145,7 @@ Double_t LauAbsDPDynamics::retrieveScfFraction(Int_t tagCat)
 	Double_t scfFraction(0.0);
 
 	// scf model and eff model are exactly the same, functionally
-	// so we use an instance of LauEffModel, and the method
+	// so we use an instance of LauAbsEffModel, and the method
 	// calcEfficiency actually calculates the scf fraction
 	if (tagCat == -1) {
 		if (!scfFractionModel_.empty()) {

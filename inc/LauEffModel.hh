@@ -24,7 +24,7 @@
 #ifndef LAUEFFMODEL
 #define LAUEFFMODEL
 
-#include "Rtypes.h"
+#include "LauAbsEffModel.hh"
 
 class TH2;
 
@@ -34,7 +34,7 @@ class LauVetoes;
 class Lau2DAbsDP;
 
 
-class LauEffModel {
+class LauEffModel : public LauAbsEffModel {
 
 	public:
 		//! Constructor
@@ -211,6 +211,18 @@ class LauEffModel {
 
 		//! Determine whether the efficiency histogram has had its bins fluctuated within their errors
 		Bool_t fluctuateEffHisto() const {return fluctuateEffHisto_;}
+
+		//! Return the daughters object
+		/*
+		    \return the LauDaughters object associated with the DP
+		*/
+		const LauDaughters* getDaughters() const {return daughters_;}
+
+		//! Determine whether the efficiency histogram is in the square DP
+		/*
+		    \return kTRUE if the square DP is being used, kFALSE otherwise
+		*/
+		Bool_t usingSquareDP() const {return squareDP_;}
 
 	private:
 		//! Copy constructor - not implemented

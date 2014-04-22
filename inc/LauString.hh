@@ -51,6 +51,12 @@ class LauString {
 		*/
 		LauString(const TString& s);
 
+		//! Copy constructor
+		LauString(const LauString& s);
+
+		//! Copy assignment operator
+		LauString& operator=(const LauString& s);
+
 		//! Destructor
 		virtual ~LauString();
 

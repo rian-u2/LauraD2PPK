@@ -77,6 +77,12 @@ class Lau2DSplineDPPdf: public Lau2DAbsHistDPPdf {
 		void calcHistNorm();
 
 	private:
+		//! Copy constructor - not implemented
+		Lau2DSplineDPPdf( const Lau2DSplineDPPdf& rhs );
+
+		//! Copy assignment operator - not implemented
+		Lau2DSplineDPPdf& operator=(const Lau2DSplineDPPdf& rhs);
+	
 		//! The maximum height of 2D histogram
 		Double_t maxHeight_;
 		

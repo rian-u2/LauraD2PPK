@@ -114,8 +114,8 @@ void LauRelBreitWignerRes::initialise()
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
 	this->setBarrierRadii(resR_, parR_, barrierType_);
 
-	if (resSpin > 3) {
-		std::cerr << "WARNING in LauRelBreitWignerRes::initialise : Resonances spin is > 3.  Blatt-Weisskopf form factors will be set to 1.0" << std::endl;
+	if (resSpin > 5) {
+		std::cerr << "WARNING in LauRelBreitWignerRes::initialise : Resonances spin is > 5.  Blatt-Weisskopf form factors will be set to 1.0" << std::endl;
 	}
 }
 
@@ -147,7 +147,7 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 	// For scalars the form factor is always unity
 	// TODO: and we currently don't have formulae for spin > 3
 	Int_t resSpin = this->getSpin();
-	if ( (resSpin == 0) || (resSpin>3) ) {
+	if ( (resSpin == 0) || (resSpin>5) ) {
 		return fFactor;
 	}
 
@@ -158,6 +158,10 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 			fFactor = TMath::Sqrt(13.0*z*z/(z*z + 3.0*z + 9.0));
 		} else if (resSpin == 3) {
 			fFactor = TMath::Sqrt(277.0*z*z*z/(z*z*z + 6.0*z*z + 45.0*z + 225.0));
+		} else if (resSpin == 4) {
+			fFactor = TMath::Sqrt(12746.0*z*z*z*z/(z*z*z*z + 10.0*z*z*z + 135.0*z*z + 1575.0*z + 11025.0));
+		} else if (resSpin == 5) {
+			fFactor = TMath::Sqrt(998881.0*z*z*z*z*z/(z*z*z*z*z + 15.0*z*z*z*z + 315.0*z*z*z + 6300.0*z*z + 99225.0*z + 893025.0));
 		}
 	} else if ( barrierType_ == LauAbsResonance::BWPrimeBarrier ) {
 		if (resSpin == 1) {
@@ -166,6 +170,10 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 			fFactor = TMath::Sqrt(1.0/(z*z + 3.0*z + 9.0));
 		} else if (resSpin == 3) {
 			fFactor = TMath::Sqrt(1.0/(z*z*z + 6.0*z*z + 45.0*z + 225.0));
+		} else if (resSpin == 4) {
+			fFactor = TMath::Sqrt(1.0/(z*z*z*z + 10.0*z*z*z + 135.0*z*z + 1575.0*z + 11025.0));
+		} else if (resSpin == 5) {
+			fFactor = TMath::Sqrt(1.0/(z*z*z*z*z + 15.0*z*z*z*z + 315.0*z*z*z + 6300.0*z*z + 99225.0*z + 893025.0));
 		}
 	} else if ( barrierType_ == LauAbsResonance::ExpBarrier ) {
 		if (resSpin == 1) {
@@ -174,6 +182,10 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 			fFactor = TMath::Exp( -z );
 		} else if (resSpin == 3) {
 			fFactor = TMath::Exp( -TMath::Sqrt(z*z*z) );
+		} else if (resSpin == 4) {
+			fFactor = TMath::Exp( -z*z );
+		} else if (resSpin == 5) {
+			fFactor = TMath::Exp( -TMath::Sqrt(z*z*z*z*z) );
 		}
 	}
 

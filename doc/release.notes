@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+22nd April 2014 Mark Whitehead
+
+* Update Laura to cope with resonances of spin 4 and spin 5
+  - Zemach spin terms added to src/LauAbsResonance.cc
+  - BW barrier factors added to src/LauRelBreitWignerRes.cc
+
 19th April 2014 Daniel Craik
 
 * Add LauWeightedSumEffModel which gives an efficiency model from the weighted sum of several LauEffModel objects.

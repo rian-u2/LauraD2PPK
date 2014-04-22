@@ -129,6 +129,14 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	}
 
 	Double_t spinTerm(1.0);
+	// These are calculated as follows
+	//
+	// -2^j * (q*p)^j * cj * Pj(cosHel) 
+	//
+	// where Pj(coshHel) is the jth order Legendre polynomial and 
+	//
+	// cj = j! / (2j-1)!!
+	//
 	if (resSpin_ == 1) {
 		// Calculate vector resonance Zemach helicity factor
 		spinTerm = -2.0*q_*p_*cosHel;
@@ -139,7 +147,15 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	} else if (resSpin_ == 3) {
 		// Calculate spin 3 resonance Zemach helicity factor
 		Double_t pProd = q_*p_;
-		spinTerm = -8.0*3.0*(pProd*pProd*pProd)*(5.0*cosHel*cosHel*cosHel - 3.0*cosHel)/15.0;
+		spinTerm = -8.0*(pProd*pProd*pProd)*(5.0*cosHel*cosHel*cosHel - 3.0*cosHel)/5.0;
+	} else if (resSpin_ == 4) {
+		// Calculate spin 4 resonance Zemach helicity factor
+		Double_t pProd = q_*p_;
+		spinTerm = 16.0*(pProd*pProd*pProd*pProd)*(35.0*cosHel*cosHel*cosHel*cosHel - 30.0*cosHel*cosHel + 3.0)/35.0;
+	} else if (resSpin_ == 5) {
+		// Calculate spin 5 resonance Zemach helicity factor
+		Double_t pProd = q_*p_;
+		spinTerm = -32.0*(pProd*pProd*pProd*pProd*pProd)*(63.0*cosHel*cosHel*cosHel*cosHel*cosHel - 70.0*cosHel*cosHel*cosHel + 15.0*cosHel)/63.0;
 	}
 
 	LauComplex resAmplitude = this->resAmp(mass, spinTerm);

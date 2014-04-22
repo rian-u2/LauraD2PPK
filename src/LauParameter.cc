@@ -273,7 +273,7 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	this->checkRange();
 }
 
-LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs)
+LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs), LauAbsRValue(rhs)
 {
 	this->name(rhs.name());
 	this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());

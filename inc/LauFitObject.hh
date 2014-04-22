@@ -55,6 +55,15 @@ class LauFitObject : public TObject {
 		*/	
 		virtual Double_t getTotNegLogLikelihood() = 0;
 
+		//! Store constraint information for fit parameters
+		/*!
+			\param [in] formula the formula to be used in the LauFormulaPar
+			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
+			\param [in] mean the value of the mean of the Gaussian constraint 
+			\param [in] width the value of the width of the Gaussian constraint 
+		*/	
+		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width) = 0;
+
 	protected:
 		//! Constructor
 		LauFitObject() : TObject() {}

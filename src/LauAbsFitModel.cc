@@ -40,52 +40,52 @@
 ClassImp(LauAbsFitModel)
 
 
-	LauAbsFitModel::LauAbsFitModel() :
-		storeCon_(0),
-		twoStageFit_(kFALSE),
-		useAsymmFitErrors_(kFALSE),
-		compareFitData_(kFALSE),
-		writeLatexTable_(kFALSE),
-		writeSPlotData_(kFALSE),
-		storeDPEff_(kFALSE),
-		randomFit_(kFALSE),
-		emlFit_(kFALSE),
-		poissonSmear_(kFALSE),
-		enableEmbedding_(kFALSE),
-		usingDP_(kTRUE),
-		pdfsDependOnDP_(kFALSE),
-		firstExpt_(0),
-		nExpt_(0),
-		evtsPerExpt_(0),
-		iExpt_(0),
-		inputFitData_(0),
-		fitNtuple_(0),
-		genNtuple_(0),
-		sPlotNtuple_(0),
-		fitStatus_(0),
-		NLL_(0),
-		numberOKFits_(0),
-		numberBadFits_(0),
-		nParams_(0),
-		nFreeParams_(0),
-		worstLogLike_(std::numeric_limits<Double_t>::max()),
-		withinAsymErrorCalc_(kFALSE),
-		nullString_(""),
-		doSFit_(kFALSE),
-		sWeightBranchName_(""),
-		sWeightScaleFactor_(1.0),
-		fitToyMCFileName_("fitToyMC.root"),
-		fitToyMCTableName_("fitToyMCTable"),
-		fitToyMCScale_(10),
-		fitToyMCPoissonSmear_(kFALSE),
-		sPlotFileName_(""),
-		sPlotTreeName_(""),
-		sPlotVerbosity_(""),
-		sMaster_(0),
-		messageFromMaster_(0),
-		slaveId_(-1),
-		nSlaves_(0),
-		parValues_(0)
+LauAbsFitModel::LauAbsFitModel() :
+	storeCon_(0),
+	twoStageFit_(kFALSE),
+	useAsymmFitErrors_(kFALSE),
+	compareFitData_(kFALSE),
+	writeLatexTable_(kFALSE),
+	writeSPlotData_(kFALSE),
+	storeDPEff_(kFALSE),
+	randomFit_(kFALSE),
+	emlFit_(kFALSE),
+	poissonSmear_(kFALSE),
+	enableEmbedding_(kFALSE),
+	usingDP_(kTRUE),
+	pdfsDependOnDP_(kFALSE),
+	firstExpt_(0),
+	nExpt_(0),
+	evtsPerExpt_(0),
+	iExpt_(0),
+	inputFitData_(0),
+	fitNtuple_(0),
+	genNtuple_(0),
+	sPlotNtuple_(0),
+	fitStatus_(0),
+	NLL_(0),
+	numberOKFits_(0),
+	numberBadFits_(0),
+	nParams_(0),
+	nFreeParams_(0),
+	worstLogLike_(std::numeric_limits<Double_t>::max()),
+	withinAsymErrorCalc_(kFALSE),
+	nullString_(""),
+	doSFit_(kFALSE),
+	sWeightBranchName_(""),
+	sWeightScaleFactor_(1.0),
+	fitToyMCFileName_("fitToyMC.root"),
+	fitToyMCTableName_("fitToyMCTable"),
+	fitToyMCScale_(10),
+	fitToyMCPoissonSmear_(kFALSE),
+	sPlotFileName_(""),
+	sPlotTreeName_(""),
+	sPlotVerbosity_(""),
+	sMaster_(0),
+	messageFromMaster_(0),
+	slaveId_(-1),
+	nSlaves_(0),
+	parValues_(0)
 {
 }
 
@@ -130,8 +130,6 @@ void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFile
 
 	// Add variables to Gaussian constrain to a list
 	this->addConParameters();
-
-	// Add formula Gaussian constraints to the list
 
 	if (dataFileNameCopy == "") {dataFileNameCopy = "data.root";}
 	if (dataTreeNameCopy == "") {dataTreeNameCopy = "genResults";}
@@ -183,6 +181,11 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 	// i.e. specify parameter names, initial, min, max and fixed values
 	this->initialise();
 
+	// NB call to addConParameters() is intentionally not included here cf.
+	// run() since this has to be dealt with by the master to avoid
+	// multiple inclusions of each penalty term
+
+	// Create array to efficiently exchange parameter values with master
 	nParams_ = fitVars_.size();
 	parValues_ = new Double_t[nParams_];
 	for ( UInt_t iPar(0); iPar < nParams_; ++iPar ) {
@@ -1159,7 +1162,7 @@ void LauAbsFitModel::addConParameters()
 		std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to formula\n";
 		std::cout << "                                         : Formula: " << (*iter).formula_ << std::endl;
 		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
-			std::cout << "INFO in LauAbsFitModel::addConParameters : Parameter: " << (*iterparam)->name() << std::endl;
+			std::cout << "                                         : Parameter: " << (*iterparam)->name() << std::endl;
 		}
 	}
 	

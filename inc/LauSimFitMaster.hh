@@ -35,6 +35,7 @@
 class TMessage;
 class TMonitor;
 class TSocket;
+class LauAbsRValue;
 class LauParameter;
 class LauFitNtuple;
 
@@ -90,6 +91,15 @@ class LauSimFitMaster : public LauFitObject {
 		*/	
 		virtual Double_t getTotNegLogLikelihood();
 
+		//! Store constraint information for fit parameters
+		/*!
+			\param [in] formula the formula to be used in the LauFormulaPar
+			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
+			\param [in] mean the value of the mean of the Gaussian constraint 
+			\param [in] width the value of the width of the Gaussian constraint 
+		*/	
+		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
+
 	protected:
 		//! Print information on the parameters
 		void printParInfo() const;
@@ -111,6 +121,12 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! Check for compatibility between two same-named parameters, which should therefore be identical
 		void checkParameter( const LauParameter* param, UInt_t index ) const;
+
+		//! Add parameters to the list of Gaussian constrained parameters
+		void addConParameters();
+
+		//! Calculate the penalty terms to the log likelihood from Gaussian constraints
+		Double_t getLogLikelihoodPenalty();
 
 		//! Instruct the slaves to read the input data for the given experiment
 		/*!
@@ -138,6 +154,25 @@ class LauSimFitMaster : public LauFitObject {
 
 
 	private:
+		// Setup a struct to store information on constrained fit parameters
+		/*!
+		  \struct StoreConstraints
+		  \brief Struct to store constraint information until the fit is run
+		*/ 
+		struct StoreConstraints {
+		  	//! The formula to be used in the LauFormulaPar
+			TString formula_;
+		  	//! The list of LauParameter names to be used in the LauFormulaPar
+			std::vector<TString> conPars_;
+		  	//! The mean value of the Gaussian constraint to be applied
+			Double_t mean_;
+		  	//! The width of the Gaussian constraint to be applied
+			Double_t width_;
+		};
+
+		//! Store the constraints for fit parameters until initialisation is complete
+		std::vector<StoreConstraints> storeCon_;
+
 		//! The number of slaves
 		const UInt_t nSlaves_;
 
@@ -194,6 +229,9 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! Parameters
 		std::vector<LauParameter*> params_;
+
+		//! Gaussian constraints
+		std::vector<LauAbsRValue*> conVars_;
 
 		//! Parameter values
 		std::vector<Double_t> parValues_;

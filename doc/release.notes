@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+22nd April 2014 Thomas Latham
+
+* Allow Gaussian constraints to be added in simultaneous fitting
+  - constraints will be ignored by the slaves
+  - those added directly to fit parameters will be propogated to the master and handled there
+  - those on combinations of parameters should be added in the master process
+
 22nd April 2014 Mark Whitehead
 
 * Update Laura to cope with resonances of spin 4 and spin 5

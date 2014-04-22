@@ -312,7 +312,7 @@ class LauAbsFitModel : public LauFitObject {
 			\param [in] mean the value of the mean of the Gaussian constraint 
 			\param [in] width the value of the width of the Gaussian constraint 
 		*/	
-		void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
+		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
 	protected:
 

@@ -86,7 +86,7 @@ class LauAbsRValue {
 
 	private:
 
-		ClassDef(LauAbsRValue,0) // Abstract base class for R parameters
+		ClassDef(LauAbsRValue,1) // Abstract base class for R parameters
 };
 
 #endif

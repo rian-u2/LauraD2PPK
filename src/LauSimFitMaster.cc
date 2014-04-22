@@ -27,6 +27,7 @@
 #include "LauAbsFitter.hh"
 #include "LauFitNtuple.hh"
 #include "LauFitter.hh"
+#include "LauFormulaPar.hh"
 #include "LauParameter.hh"
 #include "LauParamFixed.hh"
 #include "LauSimFitMaster.hh"
@@ -59,6 +60,8 @@ LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 LauSimFitMaster::~LauSimFitMaster()
 {
 	delete socketMonitor_; socketMonitor_ = 0;
+
+	// Tell all slaves that they are finished and delete corresponding socket
 	TString msgStr("Finish");
 	TMessage message( kMESS_STRING );
 	message.WriteTString(msgStr);
@@ -68,19 +71,34 @@ LauSimFitMaster::~LauSimFitMaster()
 		delete (*iter);
 	}
 	sSlaves_.clear();
+
+	// Remove the components created to apply constraints to fit parameters
+	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
+		if ( !(*iter)->isLValue() ){
+			delete (*iter);
+			(*iter) = 0;
+		}
+	}
+	conVars_.clear();
+
+	// Remove all fit parameters
 	for ( std::vector<LauParameter*>::iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
 		delete *iter;
 	}
 	params_.clear();
+
 	for ( std::vector<Double_t*>::iterator iter = vectorPar_.begin(); iter != vectorPar_.end(); ++iter ) {
 		delete[] (*iter);
 	}
 	vectorPar_.clear();
+
 	delete messageFromSlave_; messageFromSlave_ = 0;
+
 	for ( std::vector<TMessage*>::iterator iter = messagesToSlaves_.begin(); iter != messagesToSlaves_.end(); ++iter ) {
 		delete (*iter);
 	}
 	messagesToSlaves_.clear();
+
 	delete fitNtuple_;
 }
 
@@ -194,6 +212,9 @@ void LauSimFitMaster::getParametersFromSlaves()
 
 	if ( params_.empty() ) {
 		this->getParametersFromSlavesFirstTime();
+
+		// Add variables to Gaussian constrain to a list
+		this->addConParameters();
 	} else {
 		this->updateParametersFromSlaves();
 	}
@@ -632,8 +653,13 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 	// the par array actually contains all the parameters,
 	// free and floating...
 	// Update all the parameters with their new values.
+	// Change the value in the array to be sent out to the slaves and the
+	// parameters themselves (so that constraints are correctly calculated)
 	for (UInt_t i(0); i<nParams_; ++i) {
-		parValues_[i] = par[i];
+		if (!params_[i]->fixed()) {
+			parValues_[i] = par[i];
+			params_[i]->value(par[i]);
+		}
 	}
 }
 
@@ -676,7 +702,81 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 		++responsesReceived;
 	} 
 
+	// Calculate any penalty terms from Gaussian constrained variables
+	if ( ! conVars_.empty() ){
+		negLogLike += this->getLogLikelihoodPenalty();
+	}
+
 	return negLogLike;
+}
+
+Double_t LauSimFitMaster::getLogLikelihoodPenalty()
+{
+	Double_t penalty(0.0);
+
+	for ( std::vector<LauAbsRValue*>::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
+		Double_t val = (*iter)->value();
+		Double_t mean = (*iter)->constraintMean();
+		Double_t width = (*iter)->constraintWidth();
+
+		Double_t term = ( val - mean )*( val - mean );
+		penalty += term/( 2*width*width );
+	}
+
+	return penalty;
+}
+
+void LauSimFitMaster::addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width)
+{
+	StoreConstraints newCon;
+	newCon.formula_ = formula;
+	newCon.conPars_ = pars;
+	newCon.mean_ = mean;
+	newCon.width_ = width;
+	storeCon_.push_back(newCon);
+}
+
+void LauSimFitMaster::addConParameters()
+{
+	// Add penalties from the constraints to fit parameters
+
+	// First, constraints on the fit parameters themselves
+	for ( std::vector<LauParameter*>::const_iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
+		if ( (*iter)->gaussConstraint() ) {
+			conVars_.push_back( *iter );
+			std::cout << "INFO in LauSimFitMaster::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+		}
+	}
+
+	// Second, constraints on arbitrary combinations
+	for ( std::vector<StoreConstraints>::iterator iter = storeCon_.begin(); iter != storeCon_.end(); ++iter ) {
+		std::vector<TString> names = (*iter).conPars_;
+		std::vector<LauParameter*> params;
+		for ( std::vector<TString>::iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
+			for ( std::vector<LauParameter*>::const_iterator iterfit = params_.begin(); iterfit != params_.end(); ++iterfit ) {
+				if ( (*iternames) == (*iterfit)->name() ){
+					params.push_back(*iterfit);
+				}
+			}
+		}
+
+		// If the parameters are not found, skip it
+		if ( params.size() != (*iter).conPars_.size() ) {
+			std::cerr << "WARNING in LauSimFitMaster::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
+			continue;
+		}
+
+		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_, (*iter).formula_, params );
+		formPar->addGaussianConstraint( (*iter).mean_, (*iter).width_ );
+		conVars_.push_back(formPar);
+
+		std::cout << "INFO in LauSimFitMaster::addConParameters : Added Gaussian constraint to formula\n";
+		std::cout << "                                          : Formula: " << (*iter).formula_ << std::endl;
+		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
+			std::cout << "                                          : Parameter: " << (*iterparam)->name() << std::endl;
+		}
+	}
+	
 }
 
 Bool_t LauSimFitMaster::finalise()

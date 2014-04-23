@@ -51,3 +51,15 @@ LauComplex LauBelleNR::resAmp(Double_t mass, Double_t spinTerm)
 	return resAmplitude;
 }
 
+void LauBelleNR::setResonanceParameter(const TString& name, const Double_t value) 
+{
+	// Set various parameters for the lineshape
+	if (name == "alpha") {
+		this->setAlpha(value);
+		std::cout << "INFO in LauBelleNR::setResonanceParameter : Setting parameter alpha = " << this->getAlpha() << std::endl;
+	}
+	else {
+		std::cerr << "WARNING in LauBelleNR::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+

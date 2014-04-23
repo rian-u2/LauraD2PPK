@@ -63,7 +63,7 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 			\param [in] parRadius the radius of the barrier for the parent decay
 			\param [in] type the form-factor model
 		*/	
-		void setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type);
+		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
 
 	protected:
 		//! Complex resonant amplitude

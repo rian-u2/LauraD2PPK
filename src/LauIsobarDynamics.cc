@@ -66,25 +66,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	nSigGenLoop_(0),
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
-	BelleNRAlpha_(0.0),
-	LASSScatteringLength_(0.0),
-	LASSEffectiveRange_(0.0),
-	LASSResonanceMag_(0.0),
-	LASSResonancePhase_(0.0),
-	LASSBackgroundMag_(0.0),
-	LASSBackgroundPhase_(0.0),
-	LASSCutOff_(0.0),
-	changeLASSScatteringLength_(kFALSE),
-	changeLASSEffectiveRange_(kFALSE),
-	changeLASSResonanceMag_(kFALSE),
-	changeLASSResonancePhase_(kFALSE),
-	changeLASSBackgroundMag_(kFALSE),
-	changeLASSBackgroundPhase_(kFALSE),
-	changeLASSCutOff_(kFALSE),
-	FlatteParameterg1_(0.0),
-	FlatteParameterg2_(0.0),
-	changeFlatteParameterg1_(kFALSE),
-	changeFlatteParameterg2_(kFALSE),
+	setBarrierRadius_(kFALSE),
 	resBarrierRadius_(4.0),
 	parBarrierRadius_(4.0),
 	barrierType_( LauAbsResonance::BWPrimeBarrier ),
@@ -124,25 +106,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	nSigGenLoop_(0),
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
-	BelleNRAlpha_(0.0),
-	LASSScatteringLength_(0.0),
-	LASSEffectiveRange_(0.0),
-	LASSResonanceMag_(0.0),
-	LASSResonancePhase_(0.0),
-	LASSBackgroundMag_(0.0),
-	LASSBackgroundPhase_(0.0),
-	LASSCutOff_(0.0),
-	changeLASSScatteringLength_(kFALSE),
-	changeLASSEffectiveRange_(kFALSE),
-	changeLASSResonanceMag_(kFALSE),
-	changeLASSResonancePhase_(kFALSE),
-	changeLASSBackgroundMag_(kFALSE),
-	changeLASSBackgroundPhase_(kFALSE),
-	changeLASSCutOff_(kFALSE),
-	FlatteParameterg1_(0.0),
-	FlatteParameterg2_(0.0),
-	changeFlatteParameterg1_(kFALSE),
-	changeFlatteParameterg2_(kFALSE),
+	setBarrierRadius_(kFALSE),
 	resBarrierRadius_(4.0),
 	parBarrierRadius_(4.0),
 	barrierType_( LauAbsResonance::BWPrimeBarrier ),
@@ -403,7 +367,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 }
 
-void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Double_t newMass, Double_t newWidth, Int_t newSpin)
+LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Double_t newMass, Double_t newWidth, Int_t newSpin)
 {
 	// Function to add a resonance in a Dalitz plot.
 	// No check is made w.r.t flavour and charge conservation rules, and so
@@ -425,7 +389,7 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 
 	if (theResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
-		return;
+		return 0;
 	}
 
 	// Change resonance and lineshape parameters as required.
@@ -440,76 +404,16 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 		}
 	}
 
-	TString resTypeName(resType);
-
-	// Reset the Blatt-Weisskopf barrier factors as appropriate
-	if (!resTypeName.CompareTo("RelBW")) {
-		LauRelBreitWignerRes* theRBW = dynamic_cast<LauRelBreitWignerRes*>(theResonance);
-		theRBW->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
-	} else if (!resTypeName.CompareTo("GS")) {
-		LauGounarisSakuraiRes* theGS = dynamic_cast<LauGounarisSakuraiRes*>(theResonance);
-		theGS->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
+	// Set the Blatt-Weisskopf barrier factors as appropriate
+	if (setBarrierRadius_) {
+		theResonance->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
 	}
 
-	if (changeLASSScatteringLength_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
-		theResonance->setResonanceParameter(LASSScatteringLength_, "a");
-	}
-	if (changeLASSEffectiveRange_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
-		theResonance->setResonanceParameter(LASSEffectiveRange_, "r");
-	}
-	if (changeLASSResonanceMag_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSResonanceMag_, "R");
-	}
-	if (changeLASSResonancePhase_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSResonancePhase_, "phiR");
-	}
-	if (changeLASSBackgroundMag_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSBackgroundMag_, "B");
-	}
-	if (changeLASSBackgroundPhase_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSBackgroundPhase_, "phiB");
-	}
-	if (changeLASSCutOff_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
-		theResonance->setResonanceParameter(LASSCutOff_, "cutOff");
-	}
-
-	if (changeFlatteParameterg1_ == kTRUE && !resTypeName.CompareTo("Flatte") ) {
-		theResonance->setResonanceParameter(FlatteParameterg1_, "g1");
-	}
-	if (changeFlatteParameterg2_ == kTRUE && !resTypeName.CompareTo("Flatte") ) {
-		theResonance->setResonanceParameter(FlatteParameterg2_, "g2");
-	}
-
-	TString resonanceName = theResonance->getResonanceName();
-
-	if ( resonanceName.BeginsWith("BelleNR", TString::kExact) ) {
-		LauBelleNR* belleNR = dynamic_cast<LauBelleNR*>(theResonance);
-		if (belleNR != 0) {
-			belleNR->setAlpha(BelleNRAlpha_);
-		} else {
-			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Belle non-resonant object is null"<<std::endl;
-		}
-	} else if ( resonanceName.BeginsWith("BelleSymNR", TString::kExact) ) {
-		LauBelleSymNR* belleNR = dynamic_cast<LauBelleSymNR*>(theResonance);
-		if (belleNR != 0) {
-			belleNR->initialise(symmetricalDP_, BelleNRAlpha_, resTypeName);
-		} else {
-			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Symmetric Belle non-resonant object is null"<<std::endl;
-		}
-
-	} else if ( resonanceName.BeginsWith("PolNR", TString::kExact) ) {
-		LauPolNR* polNR = dynamic_cast<LauPolNR*>(theResonance);
-		Double_t omega = 0.5*(daughters_->getMassParent()+(1./3)*(daughters_->getMassDaug1()+daughters_->getMassDaug2()+daughters_->getMassDaug3()));
-		if (polNR != 0) {
-		  polNR->setOmega(omega);
-		} else {
-			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Polynomial non-resonant object is null"<<std::endl;
-		}
-	}
 	// Initialise the resonance model
 	theResonance->initialise();
 
 	// Set the resonance name and what track is the bachelor
+	TString resonanceName = theResonance->getResonanceName();
 	resTypAmp_.push_back(resonanceName);
 	resIntAmp_.push_back(resonanceMaker_->resTypeInt(resonanceName));
 
@@ -532,6 +436,7 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 
 	std::cout<<"INFO in LauIsobarDynamics::addResonance : Successfully added resonance. Total number of resonances so far = "<<nAmp_<<std::endl;
 
+	return theResonance;
 }
 
 void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const TString& paramFileName, Int_t resPairAmpInt, 

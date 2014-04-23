@@ -4,6 +4,15 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+23rd April 2014 Thomas Latham
+
+* Address issue of setting values of resonance parameters for all models
+  - decided to do away with need to have LauIsobarDynamics know everything
+  - LauIsobarDynamics::addResonance now returns a pointer to LauAbsResonance
+  - parameters can be changed through LauAbsResonance::setResonanceParameter
+  - LauIsobarDynamics still knows about Blatt-Weisskopf factors - better to only need to set this once
+  - Update GenFit3pi example to demonstrate mechanism
+
 22nd April 2014 Thomas Latham
 
 * Allow Gaussian constraints to be added in simultaneous fitting

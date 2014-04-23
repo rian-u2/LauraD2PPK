@@ -161,12 +161,25 @@ class LauAbsResonance {
 		*/
 		void changeResonance(Double_t newMass, Double_t newWidth, Int_t newSpin);
 
-		//! Set the updated parameters from changeResonance 
+		//! Set value of the various parameters
 		/*!
-			\param [in] value the updated parameter value
-			\param [in] name the updated parameter name
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
 		*/
-		virtual void setResonanceParameter(Double_t value, const TString& name);
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+		//! Set the form factor model and parameters
+		/*!
+			\param [in] resRadius the radius of the barrier for the resonance decay
+			\param [in] parRadius the radius of the barrier for the parent decay
+			\param [in] type the form-factor model
+		*/
+		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const BarrierType type)
+		{
+			resR_ = resRadius;
+			parR_ = parRadius;
+			barrierType_ = type;
+		}
 
 	protected:
 		//! Get the name of the parent particle
@@ -200,6 +213,13 @@ class LauAbsResonance {
 		Double_t getP() const {return p_;}
 		//! Get the current value of the bachelor momentum in the parent rest frame
 		Double_t getPstar() const {return pstar_;}
+
+		//! Get the radius of the centrifugal barrier for the parent decay
+		Double_t getParBWRadius() const {return parR_;}
+		//! Get the radius of the centrifugal barrier for the resonance decay
+		Double_t getResBWRadius() const {return resR_;}
+		//! Get the form factor model
+		BarrierType getBarrierType() const {return barrierType_;}
 
 		//! Access the daughters object
 		const LauDaughters* getDaughters() const {return daughters_;}
@@ -254,11 +274,17 @@ class LauAbsResonance {
 		Int_t resCharge_; 
 		//! DP axis identifier
 		Int_t resPairAmpInt_;
+		//! Radius of the barrier for parent decay
+		Double_t parR_;
+		//! Radius of the barrier for resonance decay
+		Double_t resR_;
+		//! Model to be used for the form factor
+		BarrierType barrierType_;
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
-  //! Boolean to ignore q_ and p_ in spinTerm
-  Bool_t ignoreMomenta_;
+		//! Boolean to ignore q_ and p_ in spinTerm
+		Bool_t ignoreMomenta_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;

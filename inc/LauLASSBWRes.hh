@@ -129,12 +129,12 @@ class LauLASSBWRes : public LauAbsResonance {
 		*/	
 		virtual void setCutOff(Double_t cutOff) {cutOff_ = cutOff;}
 
-		//! Set value of the various parameters
+		//! Set value of a resonance parameter
 		/*! 
-			\param [in] value value of the parameter
-			\param [in] name nam eof the parameter
-		*/
-		virtual void setResonanceParameter(Double_t value, const TString& name);
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/	
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
 
 	protected:
 		//! Complex resonant amplitude

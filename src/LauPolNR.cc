@@ -43,6 +43,9 @@ void LauPolNR::initialise()
 		std::cerr << "WARNING in LauPolNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
 	}
 
+	Double_t omega = 0.5*(daughters->getMassParent()+(1.0/3.0)*(daughters->getMassDaug1()+daughters->getMassDaug2()+daughters->getMassDaug3()));
+	this->setOmega( omega );
+
 	TString name = this->getResonanceName();
 	if (name.EndsWith("0",TString::kExact)){
 		order_ = 0;

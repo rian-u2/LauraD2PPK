@@ -59,6 +59,14 @@ class LauBelleNR : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::BelleNR;}
 
+		//! Set value of the various parameters
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+	protected:
 		//! Set the parameter alpha, the effective range
 		/*!
 			\param [in] alpha the new effective range parameter value
@@ -71,7 +79,6 @@ class LauBelleNR : public LauAbsResonance {
 		*/
 		virtual Double_t getAlpha() const {return alpha_;}
 
-	protected:
 		//! Complex resonant amplitude
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance

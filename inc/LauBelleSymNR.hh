@@ -50,16 +50,8 @@ class LauBelleSymNR : public LauAbsResonance {
 		//! Destructor 
 		virtual ~LauBelleSymNR();
 
-		//! Dummy initialisation 
-		virtual void initialise() {return;}
-
 		//! Initialise 
-		/*! 
-			\param [in] symmetricalDP flags whether the DP is symmetrical or not
-			\param [in] alpha effective range parameter
-			\param [in] shape name of model choice
-		*/
-		void initialise(Bool_t symmetricalDP, Double_t alpha, const TString& shape);
+		virtual void initialise();
 
 		//! Get the complex dynamical amplitude
 		/*! 
@@ -74,6 +66,14 @@ class LauBelleSymNR : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::BelleNR;}
 
+		//! Set value of the various parameters
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+	protected:
 		//! Set the parameter alpha, the effective range
 		/*!
 			\param [in] alpha the new effective range parameter
@@ -86,7 +86,6 @@ class LauBelleSymNR : public LauAbsResonance {
 		*/
 		virtual Double_t getAlpha() {return alpha_;}
 
-	protected:
 		//! This is not called, amplitude is used directly instead
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 

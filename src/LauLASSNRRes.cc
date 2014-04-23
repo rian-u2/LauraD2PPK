@@ -120,7 +120,7 @@ LauComplex LauLASSNRRes::resAmp(Double_t mass, Double_t spinTerm)
 
 }
 
-void LauLASSNRRes::setResonanceParameter(Double_t value, const TString& name) 
+void LauLASSNRRes::setResonanceParameter(const TString& name, const Double_t value) 
 {
 	// Set various parameters for the LASS lineshape dynamics
 	if (name == "a") {

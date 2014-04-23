@@ -33,13 +33,8 @@ LauRelBreitWignerRes::LauRelBreitWignerRes(TString resName, Double_t resMass, Do
 	mDaugDiffSq_(0.0),
 	mParentSq_(0.0),
 	mBachSq_(0.0),
-	resR_(4.0),
-	parR_(4.0),
-	resRSq_(16.0),
-	parRSq_(16.0),
 	FR0_(1.0),
-	FB0_(1.0),
-	barrierType_(LauAbsResonance::BWPrimeBarrier)
+	FB0_(1.0)
 {
 }
 
@@ -112,30 +107,32 @@ void LauRelBreitWignerRes::initialise()
 
 	// Blatt-Weisskopf barrier factor constant: z = q^2*radius^2
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
-	this->setBarrierRadii(resR_, parR_, barrierType_);
+	const Double_t resR = this->getResBWRadius();
+	const Double_t parR = this->getParBWRadius();
+	const BarrierType barrierType = this->getBarrierType();
+	this->setBarrierRadii(resR, parR, barrierType);
 
 	if (resSpin > 5) {
 		std::cerr << "WARNING in LauRelBreitWignerRes::initialise : Resonances spin is > 5.  Blatt-Weisskopf form factors will be set to 1.0" << std::endl;
 	}
 }
 
-void LauRelBreitWignerRes::setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type)
+void LauRelBreitWignerRes::setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const BarrierType type)
 {
 	// Reset the Blatt-Weisskopf barrier radius for the resonance and its parent
-        resR_ = resRadius;
-	parR_ = parRadius;
+	this->LauAbsResonance::setBarrierRadii( resRadius, parRadius, type );
 
-        resRSq_ = resRadius*resRadius;
-        parRSq_ = parRadius*parRadius;
-
-	barrierType_ = type;
-	
 	// Recalculate the Blatt-Weisskopf form factor for the case when m = m_0
-	Double_t zR0 = q0_*q0_*resRSq_;
-	Double_t zB0 = p0_*p0_*parRSq_;
+	const Double_t resR = this->getResBWRadius();
+	const Double_t parR = this->getParBWRadius();
+
+	std::cout << "INFO in LauRelBreitWignerRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
+
+	Double_t zR0 = q0_*q0_*resR*resR;
+	Double_t zB0 = p0_*p0_*parR*parR;
 	if ( ( type == LauAbsResonance::BWPrimeBarrier ) || ( type == LauAbsResonance::ExpBarrier ) ) {
-		FR0_ = (resR_==0.0) ? 1.0 : this->calcFFactor(zR0);
-		FB0_ = (parR_==0.0) ? 1.0 : this->calcFFactor(zB0);
+		FR0_ = (resR==0.0) ? 1.0 : this->calcFFactor(zR0);
+		FB0_ = (parR==0.0) ? 1.0 : this->calcFFactor(zB0);
 	}
 }
 
@@ -145,13 +142,14 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 	Double_t fFactor(1.0);
 
 	// For scalars the form factor is always unity
-	// TODO: and we currently don't have formulae for spin > 3
+	// TODO: and we currently don't have formulae for spin > 5
 	Int_t resSpin = this->getSpin();
 	if ( (resSpin == 0) || (resSpin>5) ) {
 		return fFactor;
 	}
 
-	if ( barrierType_ == LauAbsResonance::BWBarrier ) {
+	const BarrierType barrierType = this->getBarrierType();
+	if ( barrierType == LauAbsResonance::BWBarrier ) {
 		if (resSpin == 1) {
 			fFactor = TMath::Sqrt(2.0*z/(z + 1.0));
 		} else if (resSpin == 2) {
@@ -163,7 +161,7 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 		} else if (resSpin == 5) {
 			fFactor = TMath::Sqrt(998881.0*z*z*z*z*z/(z*z*z*z*z + 15.0*z*z*z*z + 315.0*z*z*z + 6300.0*z*z + 99225.0*z + 893025.0));
 		}
-	} else if ( barrierType_ == LauAbsResonance::BWPrimeBarrier ) {
+	} else if ( barrierType == LauAbsResonance::BWPrimeBarrier ) {
 		if (resSpin == 1) {
 			fFactor = TMath::Sqrt(1.0/(z + 1.0));
 		} else if (resSpin == 2) {
@@ -175,7 +173,7 @@ Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
 		} else if (resSpin == 5) {
 			fFactor = TMath::Sqrt(1.0/(z*z*z*z*z + 15.0*z*z*z*z + 315.0*z*z*z + 6300.0*z*z + 99225.0*z + 893025.0));
 		}
-	} else if ( barrierType_ == LauAbsResonance::ExpBarrier ) {
+	} else if ( barrierType == LauAbsResonance::ExpBarrier ) {
 		if (resSpin == 1) {
 			fFactor = TMath::Exp( -TMath::Sqrt(z) );
 		} else if (resSpin == 2) {
@@ -222,10 +220,12 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t p = this->getP();
 	//Double_t pstar = this->getPstar();
 
-	Double_t zR = q*q*resRSq_;
-	Double_t zB = p*p*parRSq_;
-	Double_t fFactorR = (resR_==0.0) ? 1.0 : this->calcFFactor(zR);
-	Double_t fFactorB = (parR_==0.0) ? 1.0 : this->calcFFactor(zB);
+	const Double_t resR = this->getResBWRadius();
+	const Double_t parR = this->getParBWRadius();
+	Double_t zR = q*q*resR*resR;
+	Double_t zB = p*p*parR*parR;
+	Double_t fFactorR = (resR==0.0) ? 1.0 : this->calcFFactor(zR);
+	Double_t fFactorB = (parR==0.0) ? 1.0 : this->calcFFactor(zB);
 	Double_t fFactorRRatio = fFactorR/FR0_;
 	Double_t fFactorBRatio = fFactorB/FB0_;
 

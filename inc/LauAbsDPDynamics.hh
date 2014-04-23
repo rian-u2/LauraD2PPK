@@ -76,9 +76,10 @@ class LauAbsDPDynamics {
 		    \param [in] newMass set a custom mass for the resonance
 		    \param [in] newWidth set a custom width for the resonance
 		    \param [in] newSpin set a custom spin for the resonance
+		    \return the newly created resonance
 		*/
-		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
-				Double_t newMass, Double_t newWidth, Int_t newSpin) = 0;
+		virtual LauAbsResonance* addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
+							Double_t newMass, Double_t newWidth, Int_t newSpin) = 0;
 
 		//! Initialise the Dalitz plot dynamics
 		/*!

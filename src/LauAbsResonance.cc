@@ -44,6 +44,9 @@ LauAbsResonance::LauAbsResonance(const TString& resName, Double_t resMass, Doubl
 	resSpin_(resSpin),
 	resCharge_(resCharge),
 	resPairAmpInt_(resPairAmpInt),
+	parR_(4.0),
+	resR_(4.0),
+	barrierType_(BWPrimeBarrier),
 	flipHelicity_(kFALSE),
 	ignoreMomenta_(kFALSE),
 	q_(0.0),
@@ -180,7 +183,7 @@ void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t
 	this->initialise();
 }
 
-void LauAbsResonance::setResonanceParameter(Double_t value, const TString& name)
+void LauAbsResonance::setResonanceParameter(const TString& name, const Double_t value) 
 {
 	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
 	std::cerr << "WARNING in LauAbsResonance::setResonanceParameter : Unable to set parameter \"" << name << "\" to value: " << value << "." << std::endl;

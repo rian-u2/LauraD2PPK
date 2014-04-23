@@ -57,17 +57,25 @@ class LauFlatteRes : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::Flatte;}
 
+		//! Set value of a resonance parameter
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+		
+	protected:
 		//! Get the g1 parameter
 		/*! 
 			\return constant factor g1
 		*/	
-		Double_t getg1Parameter() {return g1_;}
+		Double_t getg1Parameter() const {return g1_;}
 
 		//! Get the g2 parameter
 		/*! 
 			\return constant factor g2
 		*/	
-		Double_t getg2Parameter() {return g2_;}
+		Double_t getg2Parameter() const {return g2_;}
 
 		//! Set the constant g factors
 		/*!
@@ -88,14 +96,6 @@ class LauFlatteRes : public LauAbsResonance {
 		*/	
 		void setg2Parameter(Double_t g2) {g2_ = g2;}
 
-		//! Set resonance parameter
-		/*!
-			\param [in] value value of the parameter to be set
-			\param [in] name name of the parameter to be set
-		*/
-		virtual void setResonanceParameter(Double_t value, const TString& name);
-		
-	protected:
 		//! Complex resonant amplitude
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance

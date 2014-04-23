@@ -72,7 +72,7 @@ void LauFlatteRes::setGFactors(Double_t g1, Double_t g2)
 	this->setg2Parameter(g2);
 }
 
-void LauFlatteRes::setResonanceParameter(Double_t value, const TString& name)
+void LauFlatteRes::setResonanceParameter(const TString& name, const Double_t value) 
 {
 	if (name == "g1") {
 		this->setg1Parameter(value);

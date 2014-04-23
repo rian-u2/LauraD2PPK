@@ -57,6 +57,14 @@ class LauDabbaRes : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::Dabba;}
 
+		//! Set value of the various parameters
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+	protected:
 		//! Set the parameter values
 		/*!
 			\param [in] b constant factor
@@ -65,7 +73,42 @@ class LauDabbaRes : public LauAbsResonance {
 		*/	
 		void setConstants(Double_t b, Double_t alpha, Double_t beta);
 
-	protected:
+		//! Set the b parameter
+		/*!
+			\param [in] b new value for b parameter
+		*/
+		void setBValue(const Double_t b) { b_ = b; }
+
+		//! Set the alpha parameter
+		/*!
+			\param [in] alpha new value for alpha parameter
+		*/
+		void setAlphaValue(const Double_t alpha) { alpha_ = alpha; }
+
+		//! Set the beta parameter
+		/*!
+			\param [in] beta new value for beta parameter
+		*/
+		void setBetaValue(const Double_t beta) { beta_ = beta; }
+
+		//! Get the b parameter value
+		/*!
+			\return value of the b parameter
+		*/
+		Double_t getBValue() const { return b_; }
+
+		//! Get the alpha parameter value
+		/*!
+			\return value of the alpha parameter
+		*/
+		Double_t getAlphaValue() const { return alpha_; }
+
+		//! Get the beta parameter value
+		/*!
+			\return value of the beta parameter
+		*/
+		Double_t getBetaValue() const { return beta_; }
+
 		//! Complex resonant amplitude
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance

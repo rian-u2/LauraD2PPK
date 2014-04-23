@@ -24,10 +24,10 @@
 
 #include "TString.h"
 
-#include "LauCacheData.hh"
+#include "LauAbsResonance.hh"
 #include "LauParameter.hh"
 
-class LauAbsResonance;
+class LauCacheData;
 class LauComplex;
 class LauDaughters;
 class LauAbsEffModel;
@@ -72,14 +72,10 @@ class LauAbsDPDynamics {
 		/*!
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance (the bachelor)
-		    \param [in] resType the type of the resonance. Allowed types are: flatte, relbw, dabba, kappa, sigma, lass-bw, lass-nr, lass, gs, nrmodel, bellesymnr and bellenr
-		    \param [in] newMass set a custom mass for the resonance
-		    \param [in] newWidth set a custom width for the resonance
-		    \param [in] newSpin set a custom spin for the resonance
+		    \param [in] resType the model for the resonance dynamics
 		    \return the newly created resonance
 		*/
-		virtual LauAbsResonance* addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
-							Double_t newMass, Double_t newWidth, Int_t newSpin) = 0;
+		virtual LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType) = 0;
 
 		//! Initialise the Dalitz plot dynamics
 		/*!

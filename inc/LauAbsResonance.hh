@@ -50,6 +50,9 @@ class LauAbsResonance {
 			FlatNR,		/*!< a uniform nonresonant amplitude */
 			NRModel,	/*!< a theoretical model nonresonant amplitude */
 			BelleNR,	/*!< an empirical exponential nonresonant amplitude */
+			PowerLawNR,	/*!< an empirical power law nonresonant amplitude */
+			BelleSymNR,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
+			TaylorNR,	/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR		/*!< an empirical polynomial nonresonant amplitude */
 		};
 
@@ -147,7 +150,7 @@ class LauAbsResonance {
 		*/
 		Bool_t ignoreMomenta() const {return ignoreMomenta_;}
 
-  //! Set the ignore p_ and q_ flag
+		//! Set the ignore p_ and q_ flag
 		/*!
 			\param [in] boolean the ignore momenta status
 		*/
@@ -155,11 +158,15 @@ class LauAbsResonance {
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
+			Negative values wil be ignored, so if, for example, you
+			want to only change the spin you can provide negative
+			values for the mass and width
+
 			\param [in] newMass new value of the resonance mass 
 			\param [in] newWidth new value of the resonance width
 			\param [in] newSpin new value of the resonance spin 
 		*/
-		void changeResonance(Double_t newMass, Double_t newWidth, Int_t newSpin);
+		void changeResonance(const Double_t newMass, const Double_t newWidth, const Int_t newSpin);
 
 		//! Set value of the various parameters
 		/*!

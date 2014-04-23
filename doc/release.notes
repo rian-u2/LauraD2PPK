@@ -6,6 +6,18 @@
 
 23rd April 2014 Thomas Latham
 
+* Attempt to improve clarity of LauIsobarDynamics::addResonance function
+  - the 3rd argument is now an enumeration of the various resonance models
+  - removed the optional arguments regarding the change of mass, width & spin
+  - the same functionality can be obtained by using the returned pointer and calling changeResonance
+  - the resonance name now only affects the lineshape in the LauPolNR case
+  - the BelleSymNR / TaylorNR choice is now made in the 3rd argument
+  - similarly for the BelleNR / (newly introduced) PowerLawNR choice
+* Add new PowerLawNR nonresonant model (part of LauBelleNR)
+* All examples updated to use new interface
+
+23rd April 2014 Thomas Latham
+
 * Address issue of setting values of resonance parameters for all models
   - decided to do away with need to have LauIsobarDynamics know everything
   - LauIsobarDynamics::addResonance now returns a pointer to LauAbsResonance

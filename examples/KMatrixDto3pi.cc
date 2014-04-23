@@ -46,8 +46,8 @@ int main(const int argc, const  char ** argv) {
 	//sigModel->addKMatrixProdSVP("KMSVP4", "KMSWave", 4);
 	//sigModel->addKMatrixProdSVP("KMSVP5", "KMSWave", 5);
 
-	sigModel->addResonance("rho0(770)", 1, "RelBW");
-	sigModel->addResonance("f_2(1270)", 1, "RelBW");
+	sigModel->addResonance("rho0(770)", 1, LauAbsResonance::RelBW);
+	sigModel->addResonance("f_2(1270)", 1, LauAbsResonance::RelBW);
 
 	sigModel->setASqMaxValue(10.0);
 

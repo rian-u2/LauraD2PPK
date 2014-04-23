@@ -20,6 +20,7 @@ using std::endl;
 #include "TSystem.h"
 
 #include "LauAbsDPDynamics.hh"
+#include "LauCacheData.hh"
 #include "LauComplex.hh"
 #include "LauDaughters.hh"
 #include "LauAbsEffModel.hh"

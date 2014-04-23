@@ -23,18 +23,13 @@
 ClassImp(LauBelleSymNR)
 
 
-LauBelleSymNR::LauBelleSymNR(const TString& resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauBelleSymNR::LauBelleSymNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
+			     const Double_t resMass, const Double_t resWidth, const Int_t resSpin,
+			     const Int_t resCharge, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
 	alpha_(0.0),
-	initialised_(kFALSE),
-	shapeNo_(0)
+	model_(resType)
 {
-	if ( !resName.CompareTo("BelleSymNR" ) ) {
-		shapeNo_ = 1;
-	} else if ( !resName.CompareTo("NRTaylor") ) {
-		shapeNo_ = 2;
-	}
 }
 
 LauBelleSymNR::~LauBelleSymNR()
@@ -52,20 +47,14 @@ void LauBelleSymNR::initialise()
 		std::cerr << "WARNING in LauBelleSymNR::initialise : This lineshape is intended to be on the symmetrised axes of the DP." << std::endl;
 	}
 
-	if ( shapeNo_ == 0 ) {
-		std::cerr << "ERROR in LauBelleSymNR::initialise : Non-resonant parameterisation not recognised." << std::endl;
+	if ( model_ != LauAbsResonance::BelleSymNR && model_ != LauAbsResonance::TaylorNR ) {
+		std::cerr << "WARNING in LauBelleSymNR::initialise : Unknown model requested, defaulting to exponential." << std::endl;
+		model_ = LauAbsResonance::BelleSymNR;
 	}
-
-	initialised_ = kTRUE;
 }
 
 LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 {
-	if (initialised_ == kFALSE) {
-		std::cerr<<"ERROR in LauBelleSymNR::amplitude : LauBelleSymNR is not initialised. Returning zero amplitude."<<std::endl;
-		return LauComplex(0.0, 0.0);
-	}
-
 	// This function returns the complex dynamical amplitude for a Belle Non-Resonant distribution
 
 	// Calculate for symmetric DPs, e.g. 3pi or 3K, by using shapeNo = 1 or 2
@@ -83,9 +72,9 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 
 	Double_t magnitude(1.0);
 
-	if (shapeNo_ == 1) {
+	if ( model_ == LauAbsResonance::BelleSymNR ) {
 		magnitude = TMath::Exp(-alpha_*s) + TMath::Exp(-alpha_*t);
-	} else if (shapeNo_ == 2) {
+	} else if ( model_ == LauAbsResonance::TaylorNR ) {
 		Double_t mParentSq = kinematics->getmParentSq();
 		magnitude = alpha_*(s + t)/mParentSq + 1.0;
 	}
@@ -93,7 +82,6 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 	LauComplex resAmplitude(magnitude, 0.0);
 
 	return resAmplitude;
-
 }
 
 LauComplex LauBelleSymNR::resAmp(Double_t mass, Double_t spinTerm)
@@ -109,9 +97,8 @@ void LauBelleSymNR::setResonanceParameter(const TString& name, const Double_t va
 	if (name == "alpha") {
 		this->setAlpha(value);
 		std::cout << "INFO in LauBelleSymNR::setResonanceParameter : Setting parameter alpha = " << this->getAlpha() << std::endl;
-	}
-	else {
-		std::cerr << "WARNING in LauBelleSymNR::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	} else {
+		std::cerr << "WARNING in LauBelleSymNR::setResonanceParameter : Parameter name not reconised.  No parameter changes made." << std::endl;
 	}
 }
 

@@ -63,7 +63,7 @@ class LauPolNR : public LauAbsResonance {
 		/*!
 		    \param [in] omega the new offset parameter
 		*/
-		virtual void setOmega(Double_t omega) {omega_ = omega;}
+		virtual void setOmega(const Double_t omega) {omega_ = omega;}
 
 		//! Get the offset parameter
 		/*!

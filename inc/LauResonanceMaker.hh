@@ -47,10 +47,9 @@ class LauResonanceMaker {
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the type of the resonance.
-		    Allowed types are: flatte, relbw, dabba, kappa, sigma, lass-bw, lass-nr, lass, gs, nrmodel, bellesymnr and bellenr.
 		    \return the resonance
 		*/
-		LauAbsResonance* getResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType);
+		LauAbsResonance* getResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
 
 		//! Retrieve the integer index for the specified resonance
 		/*!

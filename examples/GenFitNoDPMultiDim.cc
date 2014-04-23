@@ -79,7 +79,7 @@ int main( int argc, char** argv )
 	// Create the signal dynamics object and just give it a non-resonant component
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 	sigModel->setIntFileName("integ.dat");
-	sigModel->addResonance("NonReson", 0, "FlatNR");
+	sigModel->addResonance("NonReson", 0, LauAbsResonance::FlatNR);
 
 	// Create the fit model, passing it the signal dynamics model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);

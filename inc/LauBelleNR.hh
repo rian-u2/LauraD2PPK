@@ -36,6 +36,7 @@ class LauBelleNR : public LauAbsResonance {
 		//! Constructor
 		/*!
 			\param [in] resName the name of the resonance
+			\param [in] resType the model of the resonance
 			\param [in] resMass the mass of the resonance
 			\param [in] resWidth the width of the resonance
 			\param [in] resSpin the spin of the resonance
@@ -43,9 +44,10 @@ class LauBelleNR : public LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauBelleNR(const TString& resName, Double_t resMass, Double_t resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt,
-				const LauDaughters* daughters);
+		LauBelleNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
+				const Double_t resMass, const Double_t resWidth,
+				const Int_t resSpin, const Int_t resCharge,
+				const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor
 		virtual ~LauBelleNR();
@@ -57,7 +59,7 @@ class LauBelleNR : public LauAbsResonance {
                 /*!
                         \return the resonance model type
                 */
-		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::BelleNR;}
+		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return model_;}
 
 		//! Set value of the various parameters
 		/*!
@@ -89,6 +91,9 @@ class LauBelleNR : public LauAbsResonance {
 	private:
 		//! The range parameter
 		Double_t alpha_;
+
+		//! The model to use
+		LauAbsResonance::LauResonanceModel model_;
 
 		ClassDef(LauBelleNR,0) // Belle Non-resonant model
 };

@@ -119,7 +119,8 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 		pstar_ = kinematics->getp3_Parent();
 
 	} else {
-		std::cerr<<"WARNING in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array."<<std::endl;
+		std::cerr<<"ERROR in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array."<<std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	if (this->flipHelicity()) {
@@ -127,11 +128,12 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	}
 
 	if (this->ignoreMomenta()) {
-	  q_ = 1;
-	  p_ = 1;
+		q_ = 1.0;
+		p_ = 1.0;
 	}
 
-	Double_t spinTerm(1.0);
+	// Calculate the spin factors
+	//
 	// These are calculated as follows
 	//
 	// -2^j * (q*p)^j * cj * Pj(cosHel) 
@@ -139,7 +141,8 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	// where Pj(coshHel) is the jth order Legendre polynomial and 
 	//
 	// cj = j! / (2j-1)!!
-	//
+
+	Double_t spinTerm(1.0);
 	if (resSpin_ == 1) {
 		// Calculate vector resonance Zemach helicity factor
 		spinTerm = -2.0*q_*p_*cosHel;
@@ -166,7 +169,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	return resAmplitude;
 }
 
-void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t newSpin)
+void LauAbsResonance::changeResonance(const Double_t newMass, const Double_t newWidth, const Int_t newSpin)
 {
 	if (newMass > 0.0) {
 		resMass_ = newMass;
@@ -180,7 +183,6 @@ void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t
 		resSpin_ = newSpin;
 		std::cout << "INFO in LauAbsResonance::changeResonance : Setting spin to " << resSpin_ << std::endl;
 	}
-	this->initialise();
 }
 
 void LauAbsResonance::setResonanceParameter(const TString& name, const Double_t value) 

@@ -23,6 +23,7 @@
 #include "LauAbsResonance.hh"
 #include "LauBelleNR.hh"
 #include "LauBelleSymNR.hh"
+#include "LauCacheData.hh"
 #include "LauConstants.hh"
 #include "LauDaughters.hh"
 #include "LauAbsEffModel.hh"
@@ -134,7 +135,13 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	// the normalisation of the signal likelihood function.
 	this->initialiseVectors();
 
+	// Mark the DP integrals as undetermined
 	integralsDone_ = kFALSE;
+
+	// Initialise all resonance models
+	for ( std::vector<LauAbsResonance*>::iterator iter = sigResonances_.begin(); iter != sigResonances_.end(); ++iter ) {
+		(*iter)->initialise();
+	}
 
 	// Print summary of what we have so far to screen
 	this->initSummary();
@@ -367,7 +374,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 }
 
-LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Double_t newMass, Double_t newWidth, Int_t newSpin)
+LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType)
 {
 	// Function to add a resonance in a Dalitz plot.
 	// No check is made w.r.t flavour and charge conservation rules, and so
@@ -392,11 +399,6 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, Int_t r
 		return 0;
 	}
 
-	// Change resonance and lineshape parameters as required.
-	if (newMass > 0.0 || newWidth > 0.0 || newSpin > -1) {
-		theResonance->changeResonance(newMass, newWidth, newSpin);
-	}
-
 	// implement the helicity flip here
 	if (flipHelicity_ && daughters_->getCharge(resPairAmpInt) == 0) {	  
 		if ( daughters_->getChargeParent() == 0 && daughters_->getTypeParent() > 0 ) {
@@ -409,9 +411,6 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, Int_t r
 		theResonance->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
 	}
 
-	// Initialise the resonance model
-	theResonance->initialise();
-
 	// Set the resonance name and what track is the bachelor
 	TString resonanceName = theResonance->getResonanceName();
 	resTypAmp_.push_back(resonanceName);
@@ -419,9 +418,9 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, Int_t r
 
 	// Always force the non-resonant amplitude pair to have resPairAmp = 0
 	// in case the user chooses the wrong number.
-	if (    (resonanceName.BeginsWith("NonReson",   TString::kExact) == kTRUE) || 
-		(resonanceName.BeginsWith("BelleSymNR", TString::kExact) == kTRUE) ||
-		(resonanceName.BeginsWith("NRModel",    TString::kExact) == kTRUE)) {
+	if ( resType == LauAbsResonance::FlatNR || 
+	     resType == LauAbsResonance::BelleSymNR ||
+	     resType == LauAbsResonance::NRModel ) {
 		std::cout<<"INFO in LauIsobarDynamics::addResonance : Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<std::endl;
 		resPairAmp_.push_back(0);
 	} else {

@@ -22,10 +22,12 @@
 ClassImp(LauBelleNR)
 
 
-LauBelleNR::LauBelleNR(const TString& resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauBelleNR::LauBelleNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
+		       const Double_t resMass, const Double_t resWidth, const Int_t resSpin,
+		       const Int_t resCharge, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
-	alpha_(0.0)
+	alpha_(0.0),
+	model_(resType)
 {
 }
 
@@ -40,11 +42,24 @@ void LauBelleNR::initialise()
 	if ( daughters->gotSymmetricalDP() && resPairAmpInt != 3 ) {
 		std::cerr << "WARNING in LauBelleNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
 	}
+
+	if ( model_ != LauAbsResonance::BelleNR && model_ != LauAbsResonance::PowerLawNR ) {
+		std::cerr << "WARNING in LauBelleNR::initialise : Unknown model requested, defaulting to exponential." << std::endl;
+		model_ = LauAbsResonance::BelleNR;
+	}
+
+	// TODO - should the BelleNR ignore the momenta in the spin term?
 }
 
 LauComplex LauBelleNR::resAmp(Double_t mass, Double_t spinTerm)
 {
-	Double_t magnitude = spinTerm * TMath::Exp(-alpha_*mass*mass);
+	Double_t magnitude(1.0);
+
+	if ( model_ == LauAbsResonance::BelleNR ) {
+		magnitude = spinTerm * TMath::Exp(-alpha_*mass*mass);
+	} else if ( model_ == LauAbsResonance::PowerLawNR ) {
+		magnitude = spinTerm * TMath::Power(mass*mass, -alpha_);
+	}
 
 	LauComplex resAmplitude(magnitude, 0.0);
 
@@ -57,8 +72,7 @@ void LauBelleNR::setResonanceParameter(const TString& name, const Double_t value
 	if (name == "alpha") {
 		this->setAlpha(value);
 		std::cout << "INFO in LauBelleNR::setResonanceParameter : Setting parameter alpha = " << this->getAlpha() << std::endl;
-	}
-	else {
+	} else {
 		std::cerr << "WARNING in LauBelleNR::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
 	}
 }

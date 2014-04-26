@@ -12,7 +12,7 @@ int main(const int argc, const char** argv)
 
 	CalcChiSq a(inputFile);
 
-	//a.setVerbose(kTRUE);
+	a.setVerbose(kTRUE);
 	a.run();
 
 	return 0;

@@ -60,6 +60,7 @@
 #pragma link C++ class LauGenNtuple;
 #pragma link C++ class LauGounarisSakuraiRes;
 #pragma link C++ class LauIntegrals;
+#pragma link C++ class LauDPPartialIntegralInfo;
 #pragma link C++ class LauIsobarDynamics;
 #pragma link C++ class LauKappaRes;
 #pragma link C++ class LauKinematics;

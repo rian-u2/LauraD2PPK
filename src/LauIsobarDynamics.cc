@@ -41,15 +41,16 @@
 #include "LauRandom.hh"
 #include "LauRelBreitWignerRes.hh"
 #include "LauResonanceMaker.hh"
+#include "LauDPPartialIntegralInfo.hh"
 
 ClassImp(LauIsobarDynamics)
-
 
 // for Kpipi: only one scfFraction 2D histogram is needed
 LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel) :
 	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
+	normalizationSchemmeDone_(kFALSE),
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
@@ -109,6 +110,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
+	normalizationSchemmeDone_(kFALSE),
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
@@ -756,7 +758,25 @@ void LauIsobarDynamics::changeResonance(const TString& resName, Double_t newMass
 
 void LauIsobarDynamics::calcDPNormalisation()
 {
+  normalizationSchemmeDone_ = kFALSE;
+  if (!normalizationSchemmeDone_) {
+    calcDPNormalisationSchemme();
+    normalizationSchemmeDone_ = kTRUE;
+    return;
+  }
+
+  std::vector<LauDPPartialIntegralInfo*>::iterator it;
+
+  for (it = dpPartialIntegralInfo.begin(); it != dpPartialIntegralInfo.end(); it++)
+  {
+	  this->calcDPPartialIntegral((*it)->getMinm13(), (*it)->getMaxm13(), (*it)->getMinm23(), (*it)->getMaxm23(), (*it)->getM13BinWidth(), (*it)->getM23BinWidth());
+  }
+}
+
+void LauIsobarDynamics::calcDPNormalisationSchemme()
+{
 	// Use Gauss-Legendre quadrature integration
+
 
 	// Get the rectangle that encloses the DP
 	Double_t minm13 = kinematics_->getm13Min();
@@ -1206,6 +1226,11 @@ void LauIsobarDynamics::calcDPPartialIntegral(Double_t minm13, Double_t maxm13, 
 
 	Int_t i(0), j(0);
 	Double_t precision(1e-6);
+
+    if (!normalizationSchemmeDone_)
+    {
+	  //dpPartialIntegralInfo.push_back(new LauDPPartialIntegralInfo("", minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth));
+    }
 
 	Double_t meanm13 = 0.5*(minm13 + maxm13);
 	Double_t rangem13 = maxm13 - minm13;

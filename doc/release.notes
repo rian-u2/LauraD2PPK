@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+29th April 2014 Thomas Latham
+
+* Fix bug in the determination of the integration scheme
+  - Nearby narrow resonances caused problems if their "zones" overlap
+  - These zones are now merged together
+
 23rd April 2014 Thomas Latham
 
 * Attempt to improve clarity of LauIsobarDynamics::addResonance function

@@ -512,7 +512,7 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		virtual void calcDPNormalisation();
 
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
-		virtual void calcDPNormalisationSchemme();
+		virtual void calcDPNormalisationScheme();
 
 		//! Calculate the Dalitz plot normalisation integrals over a given range
 		/*!
@@ -601,9 +601,6 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		//! The resonances in the model
 		std::vector<LauAbsResonance*> sigResonances_;
 
-		//! The Arguments to calculate the DPPartialIntegral
-		std::vector<LauDPPartialIntegralInfo*> dpPartialIntegralInfo;
-
 		//! The K-matrix propagators
 		KMPropMap kMatrixPropagators_;
 
@@ -628,8 +625,11 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		//! Whether the integrals have been performed
 		Bool_t integralsDone_;
 
-		//! Whether the integrals have been performed
-		Bool_t normalizationSchemmeDone_;
+		//! Whether the scheme for the integration has been determined
+		Bool_t normalizationSchemeDone_;
+
+		//! The storage of the integration scheme
+		std::vector<LauDPPartialIntegralInfo*> dpPartialIntegralInfo_;
 
 		//! The name of the file to save integrals to
 		TString intFileName_;

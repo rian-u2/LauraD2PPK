@@ -734,22 +734,37 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( res1Min < (minm13+50.0*m13BinWidth_) ) {
-			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
-			this->calcDPPartialIntegral(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth);
-			this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
-			m13BinWidth = res1Width/100.0;
-			this->calcDPPartialIntegral(minm13, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth);
-			m13BinWidth = res2Width/100.0;
-			this->calcDPPartialIntegral(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+			if ( res1Max > res2Min ) {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, both close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
+				this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
+				m13BinWidth = TMath::Min(res1Width,res2Width)/100.0;
+				this->calcDPPartialIntegral(minm13, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+			} else {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
+				this->calcDPPartialIntegral(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
+				m13BinWidth = res1Width/100.0;
+				this->calcDPPartialIntegral(minm13, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+				m13BinWidth = res2Width/100.0;
+				this->calcDPPartialIntegral(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+			}
 		} else {
-			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, dividing Dalitz plot into five regions..."<<std::endl;
-			this->calcDPPartialIntegral(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth);
-			this->calcDPPartialIntegral(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth);
-			this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
-			m13BinWidth = res1Width/100.0;
-			this->calcDPPartialIntegral(res1Min, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth);
-			m13BinWidth = res2Width/100.0;
-			this->calcDPPartialIntegral(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+			if ( res1Max > res2Min ) {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found close together in m13, dividing Dalitz plot into three regions..."<<std::endl;
+				this->calcDPPartialIntegral(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
+				m13BinWidth = TMath::Min(res1Width,res2Width)/100.0;
+				this->calcDPPartialIntegral(res1Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+			} else {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m13, dividing Dalitz plot into five regions..."<<std::endl;
+				this->calcDPPartialIntegral(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth);
+				m13BinWidth = res1Width/100.0;
+				this->calcDPPartialIntegral(res1Min, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+				m13BinWidth = res2Width/100.0;
+				this->calcDPPartialIntegral(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth);
+			}
 		}
 	} else if ( s23==1 && e13 ) {
 		// We have a single narrow resonance in m23
@@ -794,22 +809,37 @@ void LauIsobarDynamics::calcDPNormalisation()
 		// threshold to resMax, otherwise treat threshold to resMin
 		// as a separate region
 		if ( res1Min < (minm23+50.0*m23BinWidth_) ) {
-			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
-			this->calcDPPartialIntegral(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth);
-			this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
-			m23BinWidth = res1Width/100.0;
-			this->calcDPPartialIntegral(minm13, maxm13, minm23, res1Max, m13BinWidth, m23BinWidth);
-			m23BinWidth = res2Width/100.0;
-			this->calcDPPartialIntegral(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth);
+			if ( res1Max > res2Min ) {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, both close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
+				this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
+				m23BinWidth = TMath::Min(res1Width,res2Width)/100.0;
+				this->calcDPPartialIntegral(minm13, maxm13, minm23, res2Max, m13BinWidth, m23BinWidth);
+			} else {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
+				this->calcDPPartialIntegral(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
+				m23BinWidth = res1Width/100.0;
+				this->calcDPPartialIntegral(minm13, maxm13, minm23, res1Max, m13BinWidth, m23BinWidth);
+				m23BinWidth = res2Width/100.0;
+				this->calcDPPartialIntegral(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth);
+			}
 		} else {
-			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, dividing Dalitz plot into five regions..."<<std::endl;
-			this->calcDPPartialIntegral(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth);
-			this->calcDPPartialIntegral(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth);
-			this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
-			m23BinWidth = res1Width/100.0;
-			this->calcDPPartialIntegral(minm13, maxm13, res1Min, res1Max, m13BinWidth, m23BinWidth);
-			m23BinWidth = res2Width/100.0;
-			this->calcDPPartialIntegral(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth);
+			if ( res1Max > res2Min ) {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found close together in m23, dividing Dalitz plot into three regions..."<<std::endl;
+				this->calcDPPartialIntegral(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
+				m23BinWidth = TMath::Min(res1Width,res2Width)/100.0;
+				this->calcDPPartialIntegral(minm13, maxm13, res1Min, res2Max, m13BinWidth, m23BinWidth);
+			} else {
+				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisation : Two narrow resonances found in m23, dividing Dalitz plot into five regions..."<<std::endl;
+				this->calcDPPartialIntegral(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth);
+				this->calcDPPartialIntegral(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth);
+				m23BinWidth = res1Width/100.0;
+				this->calcDPPartialIntegral(minm13, maxm13, res1Min, res1Max, m13BinWidth, m23BinWidth);
+				m23BinWidth = res2Width/100.0;
+				this->calcDPPartialIntegral(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth);
+			}
 		}
 	} else if ( s13==1 && s23==1 ) {
 		// We have a single narrow resonance in both m13 and m23

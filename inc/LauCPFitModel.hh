@@ -487,6 +487,12 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! The B+ fit fractions
 		LauParArray posFitFrac_; 
 
+		//! Fit B- fractions (uncorrected for the efficiency)
+		LauParArray negFitFracEffUnCorr_;
+
+		//! Fit B+ fractions (uncorrected for the efficiency)
+		LauParArray posFitFracEffUnCorr_;
+
 		//! The CP violating fit fraction
 		LauParArray CPVFitFrac_; 
 

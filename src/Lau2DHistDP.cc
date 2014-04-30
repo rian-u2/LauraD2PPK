@@ -32,6 +32,7 @@ Lau2DHistDP::Lau2DHistDP(const TH2* hist, const LauDaughters* daughters,
 		Double_t avEff, Double_t avEffError, Bool_t useUpperHalfOnly, Bool_t squareDP) :
 	Lau2DAbsHistDP(daughters,useUpperHalfOnly,squareDP),
 	hist_(hist ? dynamic_cast<TH2*>(hist->Clone()) : 0),
+	errorHi_(0), errorLo_(0),
 	minX_(0.0), maxX_(0.0),
 	minY_(0.0), maxY_(0.0),
 	rangeX_(0.0), rangeY_(0.0),
@@ -70,10 +71,113 @@ Lau2DHistDP::Lau2DHistDP(const TH2* hist, const LauDaughters* daughters,
 	}
 }
 
+Lau2DHistDP::Lau2DHistDP(const TH2* hist, const TH2* errorHi, const TH2* errorLo, const LauDaughters* daughters,
+		Bool_t useInterpolation, Bool_t fluctuateBins,
+		Double_t avEff, Double_t avEffError, Bool_t useUpperHalfOnly, Bool_t squareDP) :
+	Lau2DAbsHistDP(daughters,useUpperHalfOnly,squareDP),
+	hist_(hist ? dynamic_cast<TH2*>(hist->Clone()) : 0),
+	errorHi_(errorHi ? dynamic_cast<TH2*>(errorHi->Clone()) : 0),
+	errorLo_(errorLo ? dynamic_cast<TH2*>(errorLo->Clone()) : 0),
+	minX_(0.0), maxX_(0.0),
+	minY_(0.0), maxY_(0.0),
+	rangeX_(0.0), rangeY_(0.0),
+	binXWidth_(0.0), binYWidth_(0.0),
+	nBinsX_(0), nBinsY_(0),
+	useInterpolation_(useInterpolation)
+{
+	if ( ! hist_ ) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the histogram pointer is null." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( ! errorHi_ ) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the upper error histogram pointer is null." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( ! errorLo_ ) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the lower error histogram pointer is null." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	// Save various attributes of the histogram 
+	// (axis ranges, number of bins, areas)
+	TAxis* xAxis = hist_->GetXaxis();
+	minX_ = static_cast<Double_t>(xAxis->GetXmin());
+	maxX_ = static_cast<Double_t>(xAxis->GetXmax());
+	rangeX_ = maxX_ - minX_;
+
+	TAxis* yAxis = hist_->GetYaxis();
+	minY_ = static_cast<Double_t>(yAxis->GetXmin());
+	maxY_ = static_cast<Double_t>(yAxis->GetXmax());
+	rangeY_ = maxY_ - minY_;
+
+	nBinsX_ = static_cast<Int_t>(hist_->GetNbinsX());
+	nBinsY_ = static_cast<Int_t>(hist_->GetNbinsY());
+
+	binXWidth_ = static_cast<Double_t>(TMath::Abs(rangeX_)/(nBinsX_*1.0));
+	binYWidth_ = static_cast<Double_t>(TMath::Abs(rangeY_)/(nBinsY_*1.0));
+
+	if(static_cast<Int_t>(errorLo_->GetNbinsX()) != nBinsX_ ||
+	   static_cast<Int_t>(errorLo_->GetNbinsY()) != nBinsY_) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the lower error histogram has a different number of bins to the main histogram." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if(static_cast<Int_t>(errorHi_->GetNbinsX()) != nBinsX_ ||
+	   static_cast<Int_t>(errorHi_->GetNbinsY()) != nBinsY_) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the upper error histogram has a different number of bins to the main histogram." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	xAxis = errorLo_->GetXaxis();
+	yAxis = errorLo_->GetYaxis();
+
+	if(static_cast<Double_t>(xAxis->GetXmin()) != minX_ ||
+	   static_cast<Double_t>(xAxis->GetXmax()) != maxX_) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the lower error histogram has a different x range to the main histogram." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if(static_cast<Double_t>(yAxis->GetXmin()) != minY_ ||
+	   static_cast<Double_t>(yAxis->GetXmax()) != maxY_) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the lower error histogram has a different y range to the main histogram." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	xAxis = errorHi_->GetXaxis();
+	yAxis = errorHi_->GetYaxis();
+
+	if(static_cast<Double_t>(xAxis->GetXmin()) != minX_ ||
+	   static_cast<Double_t>(xAxis->GetXmax()) != maxX_) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the upper error histogram has a different x range to the main histogram." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if(static_cast<Double_t>(yAxis->GetXmin()) != minY_ ||
+	   static_cast<Double_t>(yAxis->GetXmax()) != maxY_) {
+		std::cerr << "ERROR in Lau2DHistDP constructor : the upper error histogram has a different y range to the main histogram." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if (fluctuateBins) {
+		this->doBinFluctuation(hist_,errorHi_,errorLo_);
+	}
+	if (avEff > 0.0 && avEffError > 0.0) {
+		this->raiseOrLowerBins(hist_,avEff,avEffError);
+	}
+}
+
 Lau2DHistDP::~Lau2DHistDP()
 {
 	delete hist_;
 	hist_ = 0;
+	if(errorHi_) {
+		delete errorHi_;
+		errorHi_=0;
+	}
+	if(errorLo_) {
+		delete errorLo_;
+		errorLo_=0;
+	}
 }
 
 Double_t Lau2DHistDP::getBinHistValue(Int_t xBinNo, Int_t yBinNo) const

@@ -57,6 +57,14 @@ class LauSigmaRes : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::Sigma;}
 
+		//! Set value of the various parameters
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+	protected:
 		//! Set the parameter values
 		/*!
 			\param [in] b1 factor from BES data
@@ -66,7 +74,54 @@ class LauSigmaRes : public LauAbsResonance {
 		*/
 		void setConstants(Double_t b1, Double_t b2, Double_t A, Double_t m0);
 
-	protected:
+		//! Set the b1 parameter
+		/*!
+			\param [in] b1 new value for b1 parameter
+		*/
+		void setB1Value(const Double_t b1) { b1_ = b1; }
+
+		//! Set the b2 parameter
+		/*!
+			\param [in] b2 new value for b2 parameter
+		*/
+		void setB2Value(const Double_t b2) { b2_ = b2; }
+
+		//! Set the A parameter
+		/*!
+			\param [in] A new value for A parameter
+		*/
+		void setAValue(const Double_t A) { A_ = A; }
+
+		//! Set the m0 parameter
+		/*!
+			\param [in] m0 new value for m0 parameter
+		*/
+		void setM0Value(const Double_t m0) { m0_ = m0; m0Sq_ = m0*m0; denom_ = m0Sq_ - sAdler_; }
+
+		//! Get the b1 parameter value
+		/*!
+			\return value of the b1 parameter
+		*/
+		Double_t getB1Value() const { return b1_; }
+
+		//! Get the b2 parameter value
+		/*!
+			\return value of the b2 parameter
+		*/
+		Double_t getB2Value() const { return b2_; }
+
+		//! Get the A parameter value
+		/*!
+			\return value of the A parameter
+		*/
+		Double_t getAValue() const { return A_; }
+
+		//! Get the m0 parameter value
+		/*!
+			\return value of the m0 parameter
+		*/
+		Double_t getM0Value() const { return m0_; }
+
 		//! Complex resonant ampltiude
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance

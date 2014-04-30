@@ -36,13 +36,8 @@ LauGounarisSakuraiRes::LauGounarisSakuraiRes(TString resName, LauParameter* resM
 	h0_(0.0),
 	dhdm0_(0.0),
 	d_(0.0),
-	resR_(4.0),
-	parR_(4.0),
-	resRSq_(16.0),
-	parRSq_(16.0),
 	FR0_(1.0),
-	FB0_(1.0),
-	barrierType_(LauAbsResonance::BWPrimeBarrier)
+	FB0_(1.0)
 {
 }
 
@@ -111,7 +106,10 @@ void LauGounarisSakuraiRes::initialise()
 
 	// Blatt-Weisskopf barrier factor constant: z = q^2*radius^2
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
-	this->setBarrierRadii(resR_, parR_, barrierType_);
+	const Double_t resR = this->getResBWRadius();
+	const Double_t parR = this->getParBWRadius();
+	const BarrierType barrierType = this->getBarrierType();
+	this->setBarrierRadii(resR, parR, barrierType);
 
 	// Calculate the extra things needed by the G-S shape
 	h0_ = 2.0*LauConstants::invPi * q0_/resMass_ * TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi));
@@ -125,20 +123,19 @@ void LauGounarisSakuraiRes::initialise()
 void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type)
 {
 	// Reset the Blatt-Weisskopf barrier radius for the resonance and its parent
-        resR_ = resRadius;
-	parR_ = parRadius;
-
-        resRSq_ = resRadius*resRadius;
-        parRSq_ = parRadius*parRadius;
-	
-	barrierType_ = type;
+	this->LauAbsResonance::setBarrierRadii( resRadius, parRadius, type );
 	
 	// Recalculate the Blatt-Weisskopf form factor for the case when m = m_0
-	Double_t zR0 = q0_*q0_*resRSq_;
-	Double_t zB0 = p0_*p0_*parRSq_;
+	const Double_t resR = this->getResBWRadius();
+	const Double_t parR = this->getParBWRadius();
+
+	std::cout << "INFO in LauGounarisSakuraiRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
+
+	Double_t zR0 = q0_*q0_*resR*resR;
+	Double_t zB0 = p0_*p0_*parR*parR;
 	if ( ( type == LauAbsResonance::BWPrimeBarrier ) || ( type == LauAbsResonance::ExpBarrier ) ) {
-		FR0_ = (resR_==0.0) ? 1.0 : this->calcFFactor(zR0);
-		FB0_ = (parR_==0.0) ? 1.0 : this->calcFFactor(zB0);
+		FR0_ = (resR==0.0) ? 1.0 : this->calcFFactor(zR0);
+		FB0_ = (parR==0.0) ? 1.0 : this->calcFFactor(zB0);
 	}
 }
 
@@ -146,11 +143,12 @@ Double_t LauGounarisSakuraiRes::calcFFactor(Double_t z)
 {
 	// Calculate the requested form factor for the resonance, given the z value
 	Double_t fFactor(1.0);
-	if ( barrierType_ == LauAbsResonance::BWBarrier ) {
+	const BarrierType barrierType = this->getBarrierType();
+	if ( barrierType == LauAbsResonance::BWBarrier ) {
 		fFactor = TMath::Sqrt(2.0*z/(z + 1.0));
-	} else if ( barrierType_ == LauAbsResonance::BWPrimeBarrier ) {
+	} else if ( barrierType == LauAbsResonance::BWPrimeBarrier ) {
 		fFactor = TMath::Sqrt(1.0/(z + 1.0));
-	} else if ( barrierType_ == LauAbsResonance::ExpBarrier ) {
+	} else if ( barrierType == LauAbsResonance::ExpBarrier ) {
 		fFactor = TMath::Exp( -TMath::Sqrt(z) );
 	}
 	return fFactor;
@@ -191,10 +189,12 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t p = this->getP();
 	//Double_t pstar = this->getPstar();
 
-	Double_t zR = q*q*resRSq_;
-	Double_t zB = p*p*parRSq_;
-	Double_t fFactorR = this->calcFFactor(zR);
-	Double_t fFactorB = this->calcFFactor(zB);
+	const Double_t resR = this->getResBWRadius();
+	const Double_t parR = this->getParBWRadius();
+	Double_t zR = q*q*resR*resR;
+	Double_t zB = p*p*parR*parR;
+	Double_t fFactorR = (resR==0.0) ? 1.0 : this->calcFFactor(zR);
+	Double_t fFactorB = (parR==0.0) ? 1.0 : this->calcFFactor(zB);
 	Double_t fFactorRRatio = fFactorR/FR0_;
 	Double_t fFactorBRatio = fFactorB/FB0_;
 

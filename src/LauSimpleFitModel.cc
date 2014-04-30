@@ -528,9 +528,23 @@ void LauSimpleFitModel::setExtraNtupleVars()
 		}
 	}
 
+	// Add the fit fraction that has not been corrected for the efficiency for each signal component
+	fitFracEffUnCorr_ = sigDPModel_->getFitFractionsEfficiencyUncorrected();
+	if (fitFracEffUnCorr_.size() != nSigComp_) {
+		std::cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr_.size() << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	for (UInt_t i(0); i<nSigComp_; ++i) {
+		if (fitFracEffUnCorr_[i].size() != nSigComp_) {
+			std::cerr << "ERROR in LauSimpleFitModel::setExtraNtupleVars : Initial Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr_[i].size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
+
 	for (UInt_t i = 0; i < nSigComp_; i++) {
 		for (UInt_t j = i; j < nSigComp_; j++) {
 			extraVars.push_back(fitFrac_[i][j]);
+			extraVars.push_back(fitFracEffUnCorr_[i][j]);
 		}
 	}
 
@@ -615,9 +629,22 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 			}
 		}
 
+		LauParArray fitFracEffUnCorr = sigDPModel_->getFitFractionsEfficiencyUncorrected();
+		if (fitFracEffUnCorr.size() != nSigComp_) {
+			std::cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr.size() << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		for (UInt_t i(0); i<nSigComp_; ++i) {
+			if (fitFracEffUnCorr[i].size() != nSigComp_) {
+				std::cerr << "ERROR in LauSimpleFitModel::finaliseFitResults : Fit Fraction array of unexpected dimension: " << fitFracEffUnCorr[i].size() << std::endl;
+				gSystem->Exit(EXIT_FAILURE);
+			}
+		}
+
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			for (UInt_t j(i); j<nSigComp_; ++j) {
 				fitFrac_[i][j].value(fitFrac[i][j].value());
+				fitFracEffUnCorr_[i][j].value(fitFracEffUnCorr[i][j].value());
 			}
 		}
 
@@ -632,6 +659,7 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 		for (UInt_t i(0); i<nSigComp_; ++i) {
 			for (UInt_t j(i); j<nSigComp_; ++j) {
 				extraVars.push_back(fitFrac_[i][j]);
+				extraVars.push_back(fitFracEffUnCorr_[i][j]);
 			}
 		}
 
@@ -852,6 +880,8 @@ Bool_t LauSimpleFitModel::genExpt()
 		for (Int_t iEvt(0); iEvt<nEvtsGen; ++iEvt) {
 
 			this->setGenNtupleDoubleBranchValue( "evtWeight", evtWeight );
+			// Add efficiency information
+			this->setGenNtupleDoubleBranchValue( "efficiency", 1 );
 
 			if (type == "signal") {
 				this->setGenNtupleIntegerBranchValue("genSig",1);
@@ -859,6 +889,7 @@ Bool_t LauSimpleFitModel::genExpt()
 					this->setGenNtupleIntegerBranchValue( bkgndClassNamesGen[iBkgnd], 0 );
 				}
 				genOK = this->generateSignalEvent();
+				this->setGenNtupleDoubleBranchValue( "efficiency", sigDPModel_->getEvtEff() );
 			} else {
 				this->setGenNtupleIntegerBranchValue("genSig",0);
 				if ( storeSCFTruthInfo ) {
@@ -1015,7 +1046,7 @@ Bool_t LauSimpleFitModel::generateSignalEvent()
 						// Retrieve the migration histogram
 						TH2* histo = scfMap_->trueHist( binNo );
 
-						LauEffModel * effModel = sigDPModel_->getEffModel();
+						LauAbsEffModel * effModel = sigDPModel_->getEffModel();
 						do {
 							// Get a random point from the histogram
 							histo->GetRandom2( xCoord, yCoord );
@@ -1120,6 +1151,7 @@ void LauSimpleFitModel::setupGenNtupleBranches()
 	// Setup the required ntuple branches
 	this->addGenNtupleDoubleBranch("evtWeight");
 	this->addGenNtupleIntegerBranch("genSig");
+	this->addGenNtupleDoubleBranch("efficiency");
 	if ( useSCF_ || ( this->enableEmbedding() && signalTree_ != 0 && signalTree_->haveBranch("mcMatch") ) ) {
 		this->addGenNtupleIntegerBranch("genTMSig");
 		this->addGenNtupleIntegerBranch("genSCFSig");

@@ -79,7 +79,7 @@ int main( int argc, char** argv )
 	// Create the signal dynamics object and just give it a non-resonant component
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 	sigModel->setIntFileName("integ.dat");
-	sigModel->addResonance("NonReson", 0, "FlatNR");
+	sigModel->addResonance("NonReson", 0, LauAbsResonance::FlatNR);
 
 	// Create the fit model, passing it the signal dynamics model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
@@ -118,7 +118,7 @@ int main( int argc, char** argv )
 	// mES PDFs
 	Double_t mesMin = 5.260;
 	Double_t mesMax = 5.286;
-	std::vector<LauParameter*> mesPars; mesPars.reserve(2);
+	std::vector<LauAbsRValue*> mesPars; mesPars.reserve(2);
 
 	// Signal PDF is a double Gaussian with the means constrained to be the same
 	LauParameter* sig_mes_mean1  = new LauParameter("sig_mes_mean1",  sig_mes_mean1_value,  5.2, 5.3, kTRUE);
@@ -161,7 +161,7 @@ int main( int argc, char** argv )
 	// DeltaE PDFs
 	Double_t deMin = -0.2;
 	Double_t deMax =  0.2;
-	std::vector<LauParameter*> dePars; dePars.reserve(2);
+	std::vector<LauAbsRValue*> dePars; dePars.reserve(2);
 
 	// Signal PDF is a double Gaussian with the means constrained to be the same
 	LauParameter* sig_de_mean1  = new LauParameter("sig_de_mean1",  sig_de_mean1_value, -0.1, 0.1, kTRUE);

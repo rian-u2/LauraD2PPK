@@ -29,7 +29,7 @@ using std::endl;
 ClassImp(LauDPDepCruijffPdf)
 
 
-LauDPDepCruijffPdf::LauDPDepCruijffPdf(const TString& theVarName, const std::vector<LauParameter*>& params,
+LauDPDepCruijffPdf::LauDPDepCruijffPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
 		Double_t minAbscissa, Double_t maxAbscissa,
 		const LauDaughters* daughters,
 		const std::vector<Double_t>& meanCoeffs,

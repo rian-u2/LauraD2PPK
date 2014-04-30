@@ -24,13 +24,13 @@
 
 #include "TString.h"
 
-#include "LauCacheData.hh"
+#include "LauAbsResonance.hh"
 #include "LauParameter.hh"
 
-class LauAbsResonance;
+class LauCacheData;
 class LauComplex;
 class LauDaughters;
-class LauEffModel;
+class LauAbsEffModel;
 class LauFitDataTree;
 class LauKinematics;
 
@@ -39,7 +39,7 @@ class LauAbsDPDynamics {
 
 	public:
 		//! The type used for containing multiple self cross feed fraction models for different categories (e.g. tagging categories)
-		typedef std::map<Int_t,LauEffModel*> LauTagCatScfFractionModelMap;
+		typedef std::map<Int_t,LauAbsEffModel*> LauTagCatScfFractionModelMap;
 
 		//! Constructor
 		/*!
@@ -47,7 +47,7 @@ class LauAbsDPDynamics {
 		    \param [in] effModel the model to describe the efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the model to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot
 		*/
-		LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel = 0);
+		LauAbsDPDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel = 0);
 
 		//! Constructor
 		/*!
@@ -55,7 +55,7 @@ class LauAbsDPDynamics {
 		    \param [in] effModel the model to describe efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the models to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot for various tagging categories
 		*/
-		LauAbsDPDynamics(LauDaughters* daughters, LauEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel);
+		LauAbsDPDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, const LauTagCatScfFractionModelMap& scfFractionModel);
 
 		//! Destructor
 		virtual ~LauAbsDPDynamics();
@@ -71,15 +71,10 @@ class LauAbsDPDynamics {
 		/*!
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance (the bachelor)
-		    \param [in] resType the type of the resonance. Allowed types are: flatte, relbw, dabba, kappa, sigma, lass-bw, lass-nr, lass, gs, nrmodel, bellesymnr and bellenr
-		    \param [in] fixMass fix or release the mass to be fitted
-		    \param [in] fixWidth fix or release the width to be fitted
-		    \param [in] newMass set a custom mass for the resonance
-		    \param [in] newWidth set a custom width for the resonance
-		    \param [in] newSpin set a custom spin for the resonance
+		    \param [in] resType the model for the resonance dynamics
+		    \return the newly created resonance
 		*/
-		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Bool_t fixMass, Bool_t fixWidth,
-				Double_t newMass, Double_t newWidth, Int_t newSpin) = 0;
+		virtual LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType) = 0;
 
 		//! Initialise the Dalitz plot dynamics
 		/*!
@@ -260,6 +255,12 @@ class LauAbsDPDynamics {
 		*/
 		inline const LauParArray& getFitFractions() const {return fitFrac_;}
 
+		//! Retrieve the fit fractions for the amplitude components
+		/*!
+		    \return the fit fractions
+		*/
+		inline const LauParArray& getFitFractionsEfficiencyUncorrected() const {return fitFracEffUnCorr_;}
+
 		//! Retrieve the number of amplitude components
 		/*!
 		    \return the number of amplitude components
@@ -300,19 +301,19 @@ class LauAbsDPDynamics {
 		/*!
 		    \return the efficiency model
 		*/
-		inline LauEffModel* getEffModel() {return effModel_;}
+		inline LauAbsEffModel* getEffModel() {return effModel_;}
 
 		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for the first (or only) tagging category
 		/*!
 		    \return the self cross feed fraction model
 		*/
-		inline LauEffModel* getScfFractionModel() {return scfFractionModel_[0];}
+		inline LauAbsEffModel* getScfFractionModel() {return scfFractionModel_[0];}
 
 		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for all tagging categories
 		/*!
 		    \return the self cross feed fraction models
 		*/
-		inline std::map <Int_t,LauEffModel*> getScfFractionModels() {return scfFractionModel_;}
+		inline std::map <Int_t,LauAbsEffModel*> getScfFractionModels() {return scfFractionModel_;}
 
 		//! Check whether a self cross feed fraction model is being used
 		/*!
@@ -354,7 +355,7 @@ class LauAbsDPDynamics {
 		LauKinematics* kinematics_;
 
 		//! The efficiency model across the Dalitz plot
-		LauEffModel* effModel_;
+		LauAbsEffModel* effModel_;
 
 		//! The self cross feed fraction models across the Dalitz plot
 		/*!
@@ -374,6 +375,9 @@ class LauAbsDPDynamics {
 
 		//! The fit fractions for the amplitude components
 		LauParArray fitFrac_;
+
+		//! The efficiency-uncorrected fit fractions for the amplitude components
+		LauParArray fitFracEffUnCorr_;
 
 		//! The overall Dalitz plot rate
 		LauParameter DPRate_;

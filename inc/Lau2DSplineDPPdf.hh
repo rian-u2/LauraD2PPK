@@ -39,7 +39,8 @@ class Lau2DSplineDPPdf: public Lau2DAbsHistDPPdf {
 		    \param [in] hist the 2D DP histogram
 		    \param [in] kinematics the current DP kinematics
 		    \param [in] vetoes the vetoes within the DP
-		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors (useful for systematic error evaluation)
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors (useful for systematic error evaluation).
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
 		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP
 		    \param [in] squareDP boolean flag to specify whether the supplied histogram is in square DP coordinates
 		*/
@@ -76,6 +77,12 @@ class Lau2DSplineDPPdf: public Lau2DAbsHistDPPdf {
 		void calcHistNorm();
 
 	private:
+		//! Copy constructor - not implemented
+		Lau2DSplineDPPdf( const Lau2DSplineDPPdf& rhs );
+
+		//! Copy assignment operator - not implemented
+		Lau2DSplineDPPdf& operator=(const Lau2DSplineDPPdf& rhs);
+	
 		//! The maximum height of 2D histogram
 		Double_t maxHeight_;
 		

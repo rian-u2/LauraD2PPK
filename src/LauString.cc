@@ -36,6 +36,18 @@ LauString::LauString(const TString& s) : theString_(s.Data())
 {
 }
 
+LauString::LauString(const LauString& s) : theString_(s.theString_)
+{
+}
+
+LauString& LauString::operator=(const LauString& s)
+{
+	if ( this != &s ) {
+		theString_ = s.theString_;
+	}
+	return *this;
+}
+
 LauString::~LauString() 
 {
 }

@@ -273,7 +273,7 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	this->checkRange();
 }
 
-LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs)
+LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs), LauAbsRValue(rhs)
 {
 	this->name(rhs.name());
 	this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());
@@ -317,6 +317,13 @@ LauParameter& LauParameter::operator=(const LauParameter& rhs)
 		this->updatePull();
 	}
 	return *this;
+}
+
+std::vector<LauParameter*> LauParameter::getPars() 
+{
+	std::vector<LauParameter*> list;
+	list.push_back(this);
+	return list;
 }
 
 void LauParameter::value(Double_t newValue)

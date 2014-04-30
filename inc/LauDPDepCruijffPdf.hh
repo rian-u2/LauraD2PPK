@@ -59,7 +59,7 @@ class LauDPDepCruijffPdf : public LauAbsPdf {
 		    \param [in] alphaRCoeffs the coefficients of the DP dependence of the alpha for the right Gaussian
 		    \param [in] dpAxis the DP axis that defines the parameter dependence
 		*/
-		LauDPDepCruijffPdf(const TString& theVarName, const std::vector<LauParameter*>& params,
+		LauDPDepCruijffPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
 				Double_t minAbscissa, Double_t maxAbscissa,
 				const LauDaughters* daughters,
 				const std::vector<Double_t>& meanCoeffs,
@@ -88,9 +88,6 @@ class LauDPDepCruijffPdf : public LauAbsPdf {
 		virtual void calcLikelihoodInfo(const LauAbscissas& abscissas);
 		
 		using LauAbsPdf::calcLikelihoodInfo;
-
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
 
 		//! Calculate the normalisation
 		virtual void calcNorm();
@@ -131,15 +128,15 @@ class LauDPDepCruijffPdf : public LauAbsPdf {
 		const LauKinematics* kinematics_;
 
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Sigma of left Gaussian
-		LauParameter* sigmaL_;
+		LauAbsRValue* sigmaL_;
 		//! Sigma of right Gaussian
-		LauParameter* sigmaR_;
+		LauAbsRValue* sigmaR_;
 		//! Alpha of left Gaussian
-		LauParameter* alphaL_;
+		LauAbsRValue* alphaL_;
 		//! Alpha of right Gaussian
-		LauParameter* alphaR_;
+		LauAbsRValue* alphaR_;
 
 		//! Gaussian mean
 		Double_t meanVal_;

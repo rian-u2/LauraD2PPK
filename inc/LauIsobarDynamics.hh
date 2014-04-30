@@ -28,7 +28,7 @@
 #include "LauComplex.hh"
 
 class LauDaughters;
-class LauEffModel;
+class LauAbsEffModel;
 class LauFitDataTree;
 class LauKMatrixPropagator;
 class LauDPPartialIntegralInfo;
@@ -42,7 +42,7 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		    \param [in] effModel the model to describe the efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the model to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot
 		*/
-		LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel = 0);
+		LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel = 0);
 
 		//! Constructor
 		/*!
@@ -50,7 +50,7 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		    \param [in] effModel the model to describe the efficiency across the Dalitz plot
 		    \param [in] scfFractionModel the models to describe the fraction of poorly constructed events (the self cross feed fraction) across the Dalitz plot for various tagging categories
 		*/
-		LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel);
+		LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel);
 
 		//! Destructor
 		virtual ~LauIsobarDynamics();
@@ -82,16 +82,10 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		/*!
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
-		    \param [in] resType the type of the resonance. Allowed types are: flatte, relbw, dabba, kappa, sigma, lass-bw, lass-nr, lass, gs, nrmodel, bellesymnr and bellenr
-		    \param [in] fixMass fix or release the mass to be fited
-		    \param [in] fixWidth fix or release the width to be fited
-		    \param [in] newMass set a custom mass for the resonance
-		    \param [in] newWidth set a custom width for the resonance
-		    \param [in] newSpin set a custom spin for the resonance
+		    \param [in] resType the model for the resonance dynamics
+		    \return the newly created resonance
 		*/
-		virtual void addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType,
-				Bool_t fixMass = kTRUE,  Bool_t fixWidth = kTRUE,
-				Double_t newMass = -1.0, Double_t newWidth = -1.0, Int_t newSpin = -1);
+		virtual LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
 
 		//! Define a new K-matrix Propagator
 		/*!
@@ -303,154 +297,6 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		*/
 		virtual void setDataEventNo(UInt_t iEvt);
 
-		//! Set the alpha parameter for new Belle non-resonant components
-		/*!
-		    \param [in] alpha the alpha parameter value
-		*/
-		inline void setBelleNRAlpha(Double_t alpha) {BelleNRAlpha_ = alpha;}
-
-		//! Retreive the alpha parameter for new Belle non-resonant components
-		/*!
-		    \return the alpha parameter
-		*/
-		inline Double_t getBelleNRAlpha() const {return BelleNRAlpha_;}
-
-		//! Set the parameters for new LASS components
-		/*!
-		    \param [in] a the scattering length
-		    \param [in] r the effective range
-		    \param [in] R the resonance magnitude
-		    \param [in] phiR the resonance phase
-		    \param [in] B the background magnitude
-		    \param [in] phiB the background phase
-		    \param [in] cutOff the cutoff value
-		*/
-		inline void setLASSParameters(Double_t a, Double_t r, Double_t R = 1.0, Double_t phiR = 0.0, Double_t B = 1.0, Double_t phiB = 0.0, Double_t cutOff = 1.8)
-		{
-			this->setLASSScatteringLength(a);
-			this->setLASSEffectiveRange(r);
-			this->setLASSResonanceMag(R);
-			this->setLASSResonancePhase(phiR);
-			this->setLASSBackgroundMag(B);
-			this->setLASSBackgroundPhase(phiB);
-			this->setLASSCutOff(cutOff);
-		}
-
-		//! Set the scattering length for new LASS components
-		/*!
-		    \param [in] a the scattering length
-		*/
-		inline void setLASSScatteringLength(Double_t a)   {LASSScatteringLength_ = a;   changeLASSScatteringLength_ = kTRUE;}
-
-		//! Set the effective range for new LASS components
-		/*!
-		    \param [in] r the effective range
-		*/
-		inline void setLASSEffectiveRange(Double_t r)     {LASSEffectiveRange_ = r;     changeLASSEffectiveRange_ = kTRUE;}
-
-		//! Set the resonance magnitude for new LASS components
-		/*!
-		    \param [in] R the resonance magnitude
-		*/
-		inline void setLASSResonanceMag(Double_t R)       {LASSResonanceMag_ = R;       changeLASSResonanceMag_ = kTRUE;}
-
-		//! Set the resonance phase for new LASS components
-		/*!
-		    \param [in] phiR the resonance phase
-		*/
-		inline void setLASSResonancePhase(Double_t phiR)  {LASSResonancePhase_ = phiR;  changeLASSResonancePhase_ = kTRUE;}
-
-		//! Set the background magnitude for new LASS components
-		/*!
-		    \param [in] B the background magnitude
-		*/
-		inline void setLASSBackgroundMag(Double_t B)      {LASSBackgroundMag_ = B;      changeLASSBackgroundMag_ = kTRUE;}
-
-		//! Set the background phase for new LASS components
-		/*!
-		    \param [in] phiB the background phase
-		*/
-		inline void setLASSBackgroundPhase(Double_t phiB) {LASSBackgroundPhase_ = phiB; changeLASSBackgroundPhase_ = kTRUE;}
-
-		//! Set the cutoff value for new LASS components
-		/*!
-		    \param [in] cutOff the cutoff value
-		*/
-		inline void setLASSCutOff(Double_t cutOff) {LASSCutOff_ = cutOff; changeLASSCutOff_ = kTRUE;}
-
-		//! Retrieve the scattering length for new LASS components
-		/*!
-		    \return the scattering length
-		*/
-		inline Double_t getLASSScatteringLength() const {return LASSScatteringLength_;}
-
-		//! Retrieve the effective range for new LASS components
-		/*!
-		    \return the effective range
-		*/
-		inline Double_t getLASSEffectiveRange() const {return LASSEffectiveRange_;}
-
-		//! Retrieve the resonance magnitude for new LASS components
-		/*!
-		    \return the resonance magnitude
-		*/
-		inline Double_t getLASSResonanceMag() const {return LASSResonanceMag_;}
-
-		//! Retrieve the resonance phase for new LASS components
-		/*!
-		    \return the resonance phase
-		*/
-		inline Double_t getLASSResonancePhase() const {return LASSResonancePhase_;}
-
-		//! Retrieve the background magnitude for new LASS components
-		/*!
-		    \return the background magnitude
-		*/
-		inline Double_t getLASSBackgroundMag() const {return LASSBackgroundMag_;}
-
-		//! Retrieve the background phase for new LASS components
-		/*!
-		    \return the background phase
-		*/
-		inline Double_t getLASSBackgroundPhase() const {return LASSBackgroundPhase_;}
-
-		//! Retrieve the cutoff value for new LASS components
-		/*!
-		    \return the cutoff value
-		*/
-		inline Double_t getLASSCutOff()  const {return LASSCutOff_;}
-
-		//! Set the parameters for new Flatte components
-		/*!
-		    \param [in] g1 the coupling constant for channel 1
-		    \param [in] g2 the coupling constant for channel 2
-		*/
-		inline void setFlatteParameters(Double_t g1, Double_t g2) {this->setFlatteg1(g1); this->setFlatteg2(g2);}
-
-		//! Set the g1 parameter for new Flatte components
-		/*!
-		    \param [in] g1 the coupling constant for channel 1
-		*/
-		inline void setFlatteg1(Double_t g1) {FlatteParameterg1_ = g1; changeFlatteParameterg1_ = kTRUE;}
-
-		//! Set the g2 parameter for new Flatte components
-		/*!
-		    \param [in] g2 the coupling constant for channel 2
-		*/
-		inline void setFlatteg2(Double_t g2) {FlatteParameterg2_ = g2; changeFlatteParameterg2_ = kTRUE;}
-
-		//! Retrieve the g1 parameter for new Flatte components
-		/*!
-		    \return the constant parameter g1
-		*/
-		inline Double_t getFlatteg1() const {return FlatteParameterg1_;}
-
-		//! Retrieve the g2 parameter for new Flatte components
-		/*!
-		    \return the constant parameter g2
-		*/
-		inline Double_t getFlatteg2() const {return FlatteParameterg2_;}
-
 		//! Set the parameters for the barrier factors for new resonances
 		/*!
 		    \param [in] resRadius the radius due to the resonance
@@ -460,28 +306,29 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		inline void setBarrierRadii( Double_t resRadius, Double_t parRadius = 4.0,
 				LauAbsResonance::BarrierType type = LauAbsResonance::BWPrimeBarrier )
 		{
-			this->setResBarrierRadius(resRadius);
-			this->setParBarrierRadius(parRadius);
-			this->setBarrierType(type);
+			setBarrierRadius_ = kTRUE;
+			resBarrierRadius_ = resRadius;
+			parBarrierRadius_ = parRadius;
+			barrierType_ = type;
 		}
 
 		//! Set the radius of the barrier factor due to the resonance to use for new amplitude components
 		/*!
 		    \param [in] radius the barrier radius
 		*/
-		inline void setResBarrierRadius(Double_t radius) {resBarrierRadius_ = radius;}
+		inline void setResBarrierRadius(Double_t radius) {setBarrierRadius_ = kTRUE; resBarrierRadius_ = radius;}
 
 		//! Set the radius of the barrier factor due to the parent to use for new amplitude components
 		/*!
 		    \param [in] radius the barrier radius
 		*/
-		inline void setParBarrierRadius(Double_t radius) {parBarrierRadius_ = radius;}
+		inline void setParBarrierRadius(Double_t radius) {setBarrierRadius_ = kTRUE; parBarrierRadius_ = radius;}
 
 		//! Set the type of barrier factor to use for new amplitude components
 		/*!
 		    \param [in] type the type of barrier factor. Allowed types are: BWBarrier, BWPrimeBarrier and ExpBarrier.
 		*/
-		inline void setBarrierType( LauAbsResonance::BarrierType type ) {barrierType_ = type;}
+		inline void setBarrierType( LauAbsResonance::BarrierType type ) {setBarrierRadius_ = kTRUE; barrierType_ = type;}
 
 		//! Retrieve the radius of the barrier factor due to the resonance to use for new amplitude components
 		/*!
@@ -703,62 +550,8 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		//! The maximum value of A squared that has been seen so far while generating
 		Double_t aSqMaxVar_;
 
-		//! The alpha parameter for new Belle non-resonant components
-		Double_t BelleNRAlpha_;
-
-		//! The scattering length for new LASS components
-		Double_t LASSScatteringLength_;
-
-		//! The effective range for new LASS components
-		Double_t LASSEffectiveRange_;
-
-		//! The resonance magnitude for new LASS components
-		Double_t LASSResonanceMag_;
-
-		//! The resonance phase for new LASS components
-		Double_t LASSResonancePhase_;
-
-		//! The background magnitude for new LASS components
-		Double_t LASSBackgroundMag_;
-
-		//! The background phase for new LASS components
-		Double_t LASSBackgroundPhase_;
-
-		//! The cutoff value for new LASS components
-		Double_t LASSCutOff_;
-
-		//! Whether the default value of the LASS scattering length has been changed
-		Bool_t changeLASSScatteringLength_;
-
-		//! Whether the default value of the LASS effective range has been changed
-		Bool_t changeLASSEffectiveRange_;
-
-		//! Whether the default value of the LASS resonance magnitude has been changed
-		Bool_t changeLASSResonanceMag_;
-
-		//! Whether the default value of the LASS resonance phase has been changed
-		Bool_t changeLASSResonancePhase_;
-
-		//! Whether the default value of the LASS background magnitude has been changed
-		Bool_t changeLASSBackgroundMag_;
-
-		//! Whether the default value of the LASS background phase has been changed
-		Bool_t changeLASSBackgroundPhase_;
-
-		//! Whether the default value of the LASS cutoff has been changed
-		Bool_t changeLASSCutOff_;
-
-		//! The constant parameter g1 for new Flatte components
-		Double_t FlatteParameterg1_;
-
-		//! The constant parameter g2 for new Flatte components
-		Double_t FlatteParameterg2_;
-
-		//! Whether the default value of the Flatte parameter g1 has been changed
-		Bool_t changeFlatteParameterg1_;
-
-		//! Whether the default value of the Flatte parameter g2 has been changed
-		Bool_t changeFlatteParameterg2_;
+		//! Should the radii of the resonance barrier factors be adjusted for new amplitude components
+		Bool_t setBarrierRadius_;
 
 		//! The radius of the resonance barrier factor for new amplitude components
 		Double_t resBarrierRadius_;
@@ -776,7 +569,6 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		Bool_t recalcNormalisation_;
 
 		ClassDef(LauIsobarDynamics,0)
-
 };
 
 #endif

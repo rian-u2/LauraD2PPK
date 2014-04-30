@@ -36,6 +36,7 @@ class LauBelleSymNR : public LauAbsResonance {
 		//! Constructor
 		/*!
 			\param [in] resName the name of the resonance
+			\param [in] resType the model of the resonance
 			\param [in] resMass the mass of the resonance
 			\param [in] resWidth the width of the resonance
 			\param [in] resSpin the spin of the resonance
@@ -43,23 +44,16 @@ class LauBelleSymNR : public LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauBelleSymNR(const TString& resName, LauParameter* resMass, LauParameter* resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt,
-				const LauDaughters* daughters);
+		LauBelleSymNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
+				LauParameter* resMass, LauParameter* resWidth,
+				const Int_t resSpin, const Int_t resCharge,
+				const Int_t resPairAmpInt, const LauDaughters* daughters);
 		
 		//! Destructor 
 		virtual ~LauBelleSymNR();
 
-		//! Dummy initialisation 
-		virtual void initialise() {return;}
-
 		//! Initialise 
-		/*! 
-			\param [in] symmetricalDP flags whether the DP is symmetrical or not
-			\param [in] alpha effective range parameter
-			\param [in] shape name of model choice
-		*/
-		void initialise(Bool_t symmetricalDP, Double_t alpha, const TString& shape);
+		virtual void initialise();
 
 		//! Get the complex dynamical amplitude
 		/*! 
@@ -72,8 +66,16 @@ class LauBelleSymNR : public LauAbsResonance {
                 /*!
                         \return the resonance model type
                 */
-		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::BelleNR;}
+		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return model_;}
 
+		//! Set value of the various parameters
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+	protected:
 		//! Set the parameter alpha, the effective range
 		/*!
 			\param [in] alpha the new effective range parameter
@@ -86,7 +88,6 @@ class LauBelleSymNR : public LauAbsResonance {
 		*/
 		virtual Double_t getAlpha() {return alpha_;}
 
-	protected:
 		//! This is not called, amplitude is used directly instead
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
@@ -94,11 +95,8 @@ class LauBelleSymNR : public LauAbsResonance {
 		//! Define the range parameter
 		Double_t alpha_;
 
-		//! Tracks if initialise has been called
-		Bool_t initialised_;
-
-		//! Int to set the correct model type
-		Int_t shapeNo_;
+		//! The model to use
+		LauAbsResonance::LauResonanceModel model_;
 
 		ClassDef(LauBelleSymNR,0) // Belle Non-resonant model
 

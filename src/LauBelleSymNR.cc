@@ -13,63 +13,49 @@
 */
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TMath.h"
 
 #include "LauBelleSymNR.hh"
+#include "LauDaughters.hh"
 #include "LauKinematics.hh"
 
 ClassImp(LauBelleSymNR)
 
 
-LauBelleSymNR::LauBelleSymNR(const TString& resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauBelleSymNR::LauBelleSymNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
+			     LauParameter* resMass, LauParameter* resWidth,
+			     const Int_t resSpin, const Int_t resCharge, const Int_t resPairAmpInt,
+			     const LauDaughters* daughters) :
 	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
 	alpha_(0.0),
-	initialised_(kFALSE),
-	shapeNo_(0)
+	model_(resType)
 {
 }
 
 LauBelleSymNR::~LauBelleSymNR()
 {
-	// Destructor
 }
 
-void LauBelleSymNR::initialise(Bool_t symmetricalDP, Double_t alpha, const TString& shape)
+void LauBelleSymNR::initialise()
 {
-	alpha_ = alpha;  
-	shapeNo_ = 0;
-
-	if (symmetricalDP == kFALSE) {
-		cerr << "ERROR in LauBelleSymNR::initialise : Dalitz plot is not symmetric - this lineshape is not appropriate." << endl;
-		return;
+	const LauDaughters* daughters = this->getDaughters();
+	Int_t resPairAmpInt = this->getPairInt();
+	if ( ! daughters->gotSymmetricalDP() ) {
+		std::cerr << "WARNING in LauBelleSymNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
+	}
+	if ( resPairAmpInt == 3 ) {
+		std::cerr << "WARNING in LauBelleSymNR::initialise : This lineshape is intended to be on the symmetrised axes of the DP." << std::endl;
 	}
 
-	if (shape == "BelleSymNR") {
-		cout << "Initialising the Belle non-resonant model with alpha = " << alpha << endl;
-		shapeNo_ = 1; 
-	} else if (shape == "NRTaylor") {
-		cout << "Initialising the Taylor expansion non-resonant model with alpha = " << alpha << endl; 
-		shapeNo_ = 2;
-	} else {
-		cerr << "ERROR in LauBelleSymNR::initialise : Non-resonant parameterisation not recognised." << endl;
-		return;
+	if ( model_ != LauAbsResonance::BelleSymNR && model_ != LauAbsResonance::TaylorNR ) {
+		std::cerr << "WARNING in LauBelleSymNR::initialise : Unknown model requested, defaulting to exponential." << std::endl;
+		model_ = LauAbsResonance::BelleSymNR;
 	}
-
-	initialised_ = kTRUE;
 }
 
 LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 {
-	if (initialised_ == kFALSE) {
-		cerr<<"ERROR in LauBelleSymNR::amplitude : LauBelleSymNR is not initialised. Returning zero amplitude."<<endl;
-		return LauComplex(0.0, 0.0);
-	}
-
 	// This function returns the complex dynamical amplitude for a Belle Non-Resonant distribution
 
 	// Calculate for symmetric DPs, e.g. 3pi or 3K, by using shapeNo = 1 or 2
@@ -87,9 +73,9 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 
 	Double_t magnitude(1.0);
 
-	if (shapeNo_ == 1) {
+	if ( model_ == LauAbsResonance::BelleSymNR ) {
 		magnitude = TMath::Exp(-alpha_*s) + TMath::Exp(-alpha_*t);
-	} else if (shapeNo_ == 2) {
+	} else if ( model_ == LauAbsResonance::TaylorNR ) {
 		Double_t mParentSq = kinematics->getmParentSq();
 		magnitude = alpha_*(s + t)/mParentSq + 1.0;
 	}
@@ -97,13 +83,23 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 	LauComplex resAmplitude(magnitude, 0.0);
 
 	return resAmplitude;
-
 }
 
 LauComplex LauBelleSymNR::resAmp(Double_t mass, Double_t spinTerm)
 {
-	cerr << "ERROR in LauBelleSymNR : This method should never be called." << endl;
-	cerr << "                       : Returning zero amplitude for mass = " << mass << " and spinTerm = " << spinTerm << "." << endl;
+	std::cerr << "ERROR in LauBelleSymNR : This method should never be called." << std::endl;
+	std::cerr << "                       : Returning zero amplitude for mass = " << mass << " and spinTerm = " << spinTerm << "." << std::endl;
 	return LauComplex(0.0, 0.0);
+}
+
+void LauBelleSymNR::setResonanceParameter(const TString& name, const Double_t value) 
+{
+	// Set various parameters for the lineshape
+	if (name == "alpha") {
+		this->setAlpha(value);
+		std::cout << "INFO in LauBelleSymNR::setResonanceParameter : Setting parameter alpha = " << this->getAlpha() << std::endl;
+	} else {
+		std::cerr << "WARNING in LauBelleSymNR::setResonanceParameter : Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
 }
 

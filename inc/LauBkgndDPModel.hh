@@ -48,7 +48,8 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		/*!
 		    \param [in] histo the 2D histogram describing the DP distribution
 		    \param [in] useInterpolation boolean flag to determine whether linear interpolation between bins should be used or simply the raw bin values
-		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors 
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors. 
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
 		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
@@ -59,7 +60,8 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		//! Set the background histogram and generate a spline
 		/*!
 		    \param [in] histo the 2D histogram describing the DP distribution
-		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors 
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors. 
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
 		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/

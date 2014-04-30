@@ -43,7 +43,7 @@ using std::vector;
 
 ClassImp(LauCruijffPdf)
 
-LauCruijffPdf::LauCruijffPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauCruijffPdf::LauCruijffPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	mean_(0),
 	sigmaL_(0),

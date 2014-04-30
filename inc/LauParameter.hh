@@ -27,9 +27,10 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "LauAbsRValue.hh"
 
 
-class LauParameter : public TObject {
+class LauParameter : public TObject, public LauAbsRValue {
 
 	public:
 		//! Default constructor
@@ -239,6 +240,18 @@ class LauParameter : public TObject {
 		    \return the pull value for the parameter, defined as the bias divided by the error
 		*/
 		inline Double_t pull() const {return pull_;}
+
+		//! Boolean to say it is an L value
+		/*!
+		    \return kTRUE, LauParameters are L values
+		*/
+		inline Bool_t isLValue() const {return kTRUE;}
+
+		//! Get the LauParameter itself
+		/*!
+		    \return a vector of the LauParameter
+		*/
+		std::vector<LauParameter*> getPars();
 
 		// the simple "setter" functions
 

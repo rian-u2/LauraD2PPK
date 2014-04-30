@@ -63,7 +63,7 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 			\param [in] parRadius the radius of the barrier for the parent decay
 			\param [in] type the form-factor model
 		*/
-		void setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type);
+		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
 
 	protected:
 		//! Complex resonant amplitude
@@ -107,20 +107,10 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 		//! Square of the bachelor mass
 		Double_t mBachSq_;
 
-		//! Radius of the barrier for resonance decay
-		Double_t resR_;
-		//! Radius of the barrier for parent decay
-		Double_t parR_;
-		//! Square of the radius of the barrier for resonance decay
-		Double_t resRSq_;
-		//! Square of the radius of the barrier for parent decay
-		Double_t parRSq_;
 		//! Value of the form factor for resonance decay (at pole mass)
 		Double_t FR0_;
 		//! Value of the form factor for parent decay (at pole mass)
 		Double_t FB0_;
-		//! Model to be used for the form factor
-		LauAbsResonance::BarrierType barrierType_;
 
 		ClassDef(LauRelBreitWignerRes,0) // Relativistic Breit-Wigner resonance model
 

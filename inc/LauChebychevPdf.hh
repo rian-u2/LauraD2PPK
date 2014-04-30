@@ -56,7 +56,7 @@ class LauChebychevPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauChebychevPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauChebychevPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauChebychevPdf();
@@ -72,9 +72,6 @@ class LauChebychevPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness();
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -86,7 +83,7 @@ class LauChebychevPdf : public LauAbsPdf {
 
 	private:
 		//! Coefficients of polynomial
-		std::vector<LauParameter*> coeffs_;
+		std::vector<LauAbsRValue*> coeffs_;
 
 		ClassDef(LauChebychevPdf,0) // Chebychev PDF
 };

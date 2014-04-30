@@ -37,7 +37,7 @@ class LauLinearPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauLinearPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauLinearPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauLinearPdf();
@@ -53,9 +53,6 @@ class LauLinearPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness(); // Nothing to check here.
-
 		//! Calculate the normalisation
 		virtual void calcNorm();
 		
@@ -70,7 +67,9 @@ class LauLinearPdf : public LauAbsPdf {
 
 	private:
 		//! Line slope
-		LauParameter* slope_;
+		LauAbsRValue* slope_;
+
+		Bool_t posflag_;
 
 		ClassDef(LauLinearPdf,0) // Define the Linear PDF
 };

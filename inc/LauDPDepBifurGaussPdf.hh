@@ -59,7 +59,7 @@ class LauDPDepBifurGaussPdf : public LauAbsPdf {
 		    \param [in] sigmaRCoeffs the coefficients of the DP dependence of the sigma for the right Gaussian
 		    \param [in] dpAxis the DP axis that defines the parameter dependence
 		*/
-		LauDPDepBifurGaussPdf(const TString& theVarName, const std::vector<LauParameter*>& params,
+		LauDPDepBifurGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
 				Double_t minAbscissa, Double_t maxAbscissa,
 				const LauDaughters* daughters,
 				const std::vector<Double_t>& meanCoeffs,
@@ -86,9 +86,6 @@ class LauDPDepBifurGaussPdf : public LauAbsPdf {
 		virtual void calcLikelihoodInfo(const LauAbscissas& abscissas);
 		
 		using LauAbsPdf::calcLikelihoodInfo;
-
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
 
 		//! Calculate the normalisation
 		virtual void calcNorm();
@@ -129,11 +126,11 @@ class LauDPDepBifurGaussPdf : public LauAbsPdf {
 		const LauKinematics* kinematics_;
 
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Left Gaussian sigma
-		LauParameter* sigmaL_;
+		LauAbsRValue* sigmaL_;
 		//! Right Gaussian sigma
-		LauParameter* sigmaR_;
+		LauAbsRValue* sigmaR_;
 
 		//! Gaussian mean
 		Double_t meanVal_;

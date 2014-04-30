@@ -38,7 +38,7 @@
 
 ClassImp(LauChebychevPdf)
 
-LauChebychevPdf::LauChebychevPdf(const TString& theVarName, const std::vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauChebychevPdf::LauChebychevPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	coeffs_(params.size(),0)
 {
@@ -168,9 +168,3 @@ void LauChebychevPdf::calcPDFHeight(const LauKinematics* /*kinematics*/)
 
 	this->setMaxHeight(maxHeight);
 }
-
-void LauChebychevPdf::checkPositiveness()
-{
-	// TODO - needs implementing
-}
-

@@ -19,7 +19,7 @@
 #ifndef LAU_PARAM_FIXED
 #define LAU_PARAM_FIXED
 
-#include "LauParameter.hh"
+#include "LauAbsRValue.hh"
 
 class LauParamFixed {
 	public:
@@ -28,7 +28,7 @@ class LauParamFixed {
 		  \param [in] par the LauParameter that holds the information about the parameter 
 		  \return whether or not the parameter is fixed
 		*/
-		inline bool operator() (const LauParameter* par) const {
+		inline bool operator() (const LauAbsRValue* par) const {
 			return par->fixed();
 		}
 };

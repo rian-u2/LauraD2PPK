@@ -40,7 +40,8 @@ class Lau2DHistPdf : public LauAbsPdf {
 		    \param [in] minVals the minimum values of the abscissas
 		    \param [in] maxVals the maximum values of the abscissas
 		    \param [in] useInterpolation boolean flag to determine whether linear interpolation between bins should be used or simply the raw bin values
-		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
 		*/
 		Lau2DHistPdf(const std::vector<TString>& theVarNames, const TH2* hist,
 				const LauFitData& minVals, const LauFitData& maxVals,
@@ -96,13 +97,6 @@ class Lau2DHistPdf : public LauAbsPdf {
 		*/
 		virtual Double_t getLikelihood( const TString& theVarName ) const;
 		using LauAbsPdf::getLikelihood;
-
-		//! Check that PDF is positive
-		/*!
-		    Check that PDF is positive.
-		    Dealt with in getBinHistValue, so nothing to do here.
-		*/
-		virtual void checkPositiveness() {}; // Nothing to check here.
 
 		//! Calculate the normalisation
 		virtual void calcNorm();

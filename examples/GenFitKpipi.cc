@@ -146,34 +146,39 @@ int main( int argc, char** argv )
 	negSigModel->setASqMaxValue(3.00);
 	negSigModel->setBarrierRadii(4.0, 4.0);
 
-	negSigModel->addResonance("K*0(892)",    2, "RelBW");
-	negSigModel->addResonance("K*0_0(1430)", 2, "LASS");
-	negSigModel->addResonance("rho0(770)",   1, "RelBW");
-	negSigModel->addResonance("f_0(980)",    1, "Flatte", kTRUE, kTRUE, 0.965);
-	negSigModel->addResonance("chi_c0",      1, "RelBW");
-	negSigModel->addResonance("NonReson",    0, "FlatNR");
+	LauAbsResonance* res(0);
+	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);
+	res = negSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
+	res->changeResonance( 0.965, -1.0, -1 );
+	res = negSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("NonReson",    0, LauAbsResonance::FlatNR);
 
-	negSigModel->addResonance("K*0_2(1430)", 2, "RelBW");
-	negSigModel->addResonance("omega(782)",  1, "RelBW");
-	negSigModel->addResonance("f_2(1270)",   1, "RelBW");
-	negSigModel->addResonance("f'_0(1300)",  1, "RelBW", kTRUE, kTRUE, 1.479, 0.080);
+	res = negSigModel->addResonance("K*0_2(1430)", 2, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("omega(782)",  1, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("f_2(1270)",   1, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("f'_0(1300)",  1, LauAbsResonance::RelBW);
+	res->changeResonance( 1.479, 0.080, -1 );
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, posEffModel);
 	posSigModel->setIntFileName("integ_pos.dat");
 	posSigModel->setASqMaxValue(3.00);
 	posSigModel->setBarrierRadii(4.0, 4.0);
 
-	posSigModel->addResonance("K*0(892)",    2, "RelBW");
-	posSigModel->addResonance("K*0_0(1430)", 2, "LASS");
-	posSigModel->addResonance("rho0(770)",   1, "RelBW");
-	posSigModel->addResonance("f_0(980)",    1, "Flatte", kTRUE, kTRUE, 0.965);
-	posSigModel->addResonance("chi_c0",      1, "RelBW");
-	posSigModel->addResonance("NonReson",    0, "FlatNR");
+	res = posSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);
+	res = posSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
+	res->changeResonance( 0.965, -1.0, -1 );
+	res = posSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("NonReson",    0, LauAbsResonance::FlatNR);
 
-	posSigModel->addResonance("K*0_2(1430)", 2, "RelBW");
-	posSigModel->addResonance("omega(782)",  1, "RelBW");
-	posSigModel->addResonance("f_2(1270)",   1, "RelBW");
-	posSigModel->addResonance("f'_0(1300)",  1, "RelBW", kTRUE, kTRUE, 1.479, 0.080);
+	res = posSigModel->addResonance("K*0_2(1430)", 2, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("omega(782)",  1, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("f_2(1270)",   1, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("f'_0(1300)",  1, LauAbsResonance::RelBW);
+	res->changeResonance( 1.479, 0.080, -1 );
 
 
 	// Create the fit model, passing it the two signal dynamics models
@@ -352,7 +357,7 @@ int main( int argc, char** argv )
 	LauParameter* mes_mean2_neg  = new LauParameter("mes_mean2_neg",  mes_mean2_value,  5.272, 5.286, kTRUE);
         LauParameter* mes_sigma2_neg = mes_sigma1_neg->createClone();
 	LauParameter* mes_frac_neg   = new LauParameter("mes_frac_neg",   mes_frac_value,   0.000, 1.000, kTRUE);
-	std::vector<LauParameter*> mesPars; mesPars.reserve(2);
+	std::vector<LauAbsRValue*> mesPars; mesPars.reserve(2);
         mesPars.push_back(mes_mean1_neg);
         mesPars.push_back(mes_sigma1_neg);
 	LauAbsPdf* sigNegMESPdf1 = new LauGaussPdf("mES", mesPars, mesMin, mesMax);
@@ -433,7 +438,7 @@ int main( int argc, char** argv )
 	LauParameter* de_sig_mean2_neg  = new LauParameter("de_sig_mean2_neg",  de_mean2_value,  -4.0, 4.0, kTRUE);
 	LauParameter* de_sig_sigma2_neg = new LauParameter("de_sig_sigma2_neg", de_sigma2_value,  0.0, 4.0, kTRUE);
 	LauParameter* de_sig_frac_neg   = new LauParameter("de_sig_frac_neg",   de_frac_value,    0.0, 1.0, kTRUE);
-	std::vector<LauParameter*> dePars; dePars.reserve(2);
+	std::vector<LauAbsRValue*> dePars; dePars.reserve(2);
 	dePars.push_back(de_sig_mean1_neg); 
 	dePars.push_back(de_sig_sigma1_neg); 
 	LauAbsPdf* sigNegDE1Pdf = new LauGaussPdf("deltaEsig", dePars, deMin, deMax);

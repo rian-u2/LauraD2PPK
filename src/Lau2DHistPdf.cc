@@ -33,7 +33,7 @@ ClassImp(Lau2DHistPdf)
 Lau2DHistPdf::Lau2DHistPdf(const std::vector<TString>& theVarNames, const TH2* hist,
 		const LauFitData& minVals, const LauFitData& maxVals,
 		Bool_t useInterpolation, Bool_t fluctuateBins) :
-	LauAbsPdf(theVarNames, std::vector<LauParameter*>(), minVals, maxVals),
+	LauAbsPdf(theVarNames, std::vector<LauAbsRValue*>(), minVals, maxVals),
 	hist_(hist ? dynamic_cast<TH2*>(hist->Clone()) : 0),
 	xProj_(0),
 	yProj_(0),
@@ -440,7 +440,7 @@ void Lau2DHistPdf::cacheInfo(const LauFitDataTree& inputData)
 
 void Lau2DHistPdf::doBinFluctuation()
 {
-	TRandom* random(LauRandom::zeroSeedRandom());
+	TRandom* random(LauRandom::randomFun());
 	for (Int_t i(0); i<nBinsX_; i++) {
 		for (Int_t j(0); j<nBinsY_; j++) {
 			Double_t currentContent = hist_->GetBinContent(i+1,j+1);

@@ -9,8 +9,8 @@
 // Paul Harrison
 
 /*! \file LauAbsFitModel.cc
-    \brief File containing implementation of LauAbsFitModel class.
-*/
+  \brief File containing implementation of LauAbsFitModel class.
+ */
 
 #include <iostream>
 #include <limits>
@@ -41,6 +41,7 @@ ClassImp(LauAbsFitModel)
 
 
 LauAbsFitModel::LauAbsFitModel() :
+	storeCon_(0),
 	twoStageFit_(kFALSE),
 	useAsymmFitErrors_(kFALSE),
 	compareFitData_(kFALSE),
@@ -97,6 +98,14 @@ LauAbsFitModel::~LauAbsFitModel()
 	delete sPlotNtuple_; sPlotNtuple_ = 0;
 	delete sMaster_; sMaster_ = 0;
 	delete[] parValues_; parValues_ = 0;
+
+	// Remove the components created to apply constraints to fit parameters
+	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
+		if ( !(*iter)->isLValue() ){
+			delete (*iter);
+			(*iter) = 0;
+		}
+	}
 }
 
 void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFileName, const TString& dataTreeName,
@@ -147,8 +156,8 @@ void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFile
 }
 
 void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTreeName,
-			      const TString& histFileName, const TString& tableFileName,
-			      const TString& addressMaster, const UInt_t portMaster)
+		const TString& histFileName, const TString& tableFileName,
+		const TString& addressMaster, const UInt_t portMaster)
 {
 	if ( sMaster_ != 0 ) {
 		std::cerr << "ERROR in LauAbsFitModel::runSlave : master socket already present" << std::endl;
@@ -172,6 +181,11 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 	// i.e. specify parameter names, initial, min, max and fixed values
 	this->initialise();
 
+	// NB call to addConParameters() is intentionally not included here cf.
+	// run() since this has to be dealt with by the master to avoid
+	// multiple inclusions of each penalty term
+
+	// Create array to efficiently exchange parameter values with master
 	nParams_ = fitVars_.size();
 	parValues_ = new Double_t[nParams_];
 	for ( UInt_t iPar(0); iPar < nParams_; ++iPar ) {
@@ -270,8 +284,16 @@ const TString& LauAbsFitModel::bkgndClassName( UInt_t classID ) const
 void LauAbsFitModel::clearFitParVectors()
 {
 	std::cout << "INFO in LauAbsFitModel::clearFitParVectors : Clearing fit variable vectors" << std::endl;
-	fitVars_.clear();
+
+	// Remove the components created to apply constraints to fit parameters
+	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
+		if ( !(*iter)->isLValue() ){
+			delete (*iter);
+			(*iter) = 0;
+		}
+	}
 	conVars_.clear();
+	fitVars_.clear();
 }
 
 void LauAbsFitModel::clearExtraVarVectors()
@@ -514,15 +536,10 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 			this->storePerEvtLlhds();
 		}
 
-		// Create a toy MC sample for the 1st successful experiment
-		// using the fitted parameters so that the user can compare
-		// the fit to the actual data. The toy MC stats are a
-		// factor of 10 higher than the number of events specified
-		// via setNEvGen. This is to reduce the statistical
-		// fluctuations for the toy MC data.
+		// Create a toy MC sample using the fitted parameters so that
+		// the user can compare the fit to the data.
 		if (compareFitData_ == kTRUE && fitStatus_ == 3) {
 			this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
-			compareFitData_ = kFALSE; // only do this for the first successful experiment
 		}
 
 		// Keep track of how many fits worked or failed
@@ -874,10 +891,10 @@ void LauAbsFitModel::compareFitData(UInt_t toyMCScale, const TString& mcFileName
 
 void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& tableFileName)
 {
-	// Create a toy MC sample so that the user can eventually 
-	// compare the "fitted" result with the data
-	// Generate more toy MC to reduce statistical fluctuations. Use the
-	// rescaling value fitToyMCScale_.
+	// Create a toy MC sample so that the user can compare the fitted
+	// result with the data.
+	// Generate more toy MC to reduce statistical fluctuations:
+	// - use the rescaling value fitToyMCScale_
 
 	// Store the info on the number of experiments, first expt and current expt
 	UInt_t oldNExpt(this->nExpt());
@@ -900,10 +917,16 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 		this->initialiseDPModels();
 	}
 
+	// Construct a unique filename for this experiment
+	TString exptString("_expt");
+	exptString += oldIExpt;
+	TString fileName( mcFileName );
+	fileName.Insert( fileName.Last('.'), exptString );
+
 	// Generate the toy MC
-	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Generating toy MC in " << mcFileName << " to compare fit with data..." << std::endl;
-	std::cout << "                                       : Number of experiments to generate = " << this->nExpt() << ", which is a factor of " <<fitToyMCScale_ << " higher than that originally specified." << std::endl;
-	std::cout <<"                                        : This is to allow the toy MC to be made with reduced statistical fluctuations." << std::endl;
+	std::cout << "INFO in LauAbsFitModel::createFitToyMC : Generating toy MC in " << fileName << " to compare fit with data..." << std::endl;
+	std::cout << "                                       : Number of experiments to generate = " << fitToyMCScale_ << "." << std::endl;
+	std::cout << "                                       : This is to allow the toy MC to be made with reduced statistical fluctuations." << std::endl;
 
 	// Set the genValue of each parameter to its current (fitted) value
 	// but first store the original genValues for restoring later
@@ -917,7 +940,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	// up into multiple files since otherwise can run into memory issues
 	// when building the index
 
-	UInt_t totalExpts = oldNExpt * fitToyMCScale_;
+	UInt_t totalExpts = fitToyMCScale_;
 	if ( totalExpts > 100 ) {
 		UInt_t nFiles = totalExpts/100;
 		if ( totalExpts%100 ) {
@@ -934,15 +957,14 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 			// Create a unique filename and generate the events
 			TString extraname = "_file";
 			extraname += iFile;
-			TString filename(mcFileName);
-			filename.Insert( filename.Index("."), extraname );
-			this->generate(filename, "genResults", "dummy.root", tableFileName);
+			fileName.Insert( fileName.Last('.'), extraname );
+			this->generate(fileName, "genResults", "dummy.root", tableFileName);
 		}
 	} else {
 		// Set number of experiments to new value
-		this->setNExpts(oldNExpt*fitToyMCScale_, 0);
+		this->setNExpts(fitToyMCScale_, 0);
 		// Generate the toy
-		this->generate(mcFileName, "genResults", "dummy.root", tableFileName);
+		this->generate(fileName, "genResults", "dummy.root", tableFileName);
 	}
 
 	// Reset number of experiments to original value
@@ -993,13 +1015,13 @@ Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 {
 	Double_t penalty(0.0);
 
-	for ( LauParameterPList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
+	for ( LauAbsRValuePList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
 		Double_t val = (*iter)->value();
 		Double_t mean = (*iter)->constraintMean();
 		Double_t width = (*iter)->constraintWidth();
 
-		Double_t term = ( val - mean ) / width;
-		penalty += term*term;
+		Double_t term = ( val - mean )*( val - mean );
+		penalty += term/( 2*width*width );
 	}
 
 	return penalty;
@@ -1041,7 +1063,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 	} else if (logLike < worstLogLike_) {
 		worstLogLike_ = logLike;
 	}
-	
+
 	return logLike;
 }
 
@@ -1099,16 +1121,29 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 		if ( pdf->isDPDependent() ) {
 			this->pdfsDependOnDP( kTRUE );
 		}
-		LauParameterPList& pars = pdf->getParameters();
-		for (LauParameterPList::iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
-			if ( !(*pars_iter)->clone() && 	( !(*pars_iter)->fixed() ||
-						(this->twoStageFit() && ( (*pars_iter)->secondStage() || (*pars_iter)->firstStage())) ) ) {
-				fitVars_.push_back(*pars_iter);
-				++nParsAdded;
+		LauAbsRValuePList& pars = pdf->getParameters();
+		for (LauAbsRValuePList::iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
+			LauParameterPList params = (*pars_iter)->getPars();
+			for (LauParameterPList::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter) {
+				if ( !(*params_iter)->clone() && ( !(*params_iter)->fixed() ||
+							(this->twoStageFit() && ( (*params_iter)->secondStage() || (*params_iter)->firstStage())) ) ) {
+					fitVars_.push_back(*params_iter);
+					++nParsAdded;
+				}
 			}
 		}
 	}
 	return nParsAdded;
+}
+
+void LauAbsFitModel::addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width)
+{
+	StoreConstraints newCon;
+	newCon.formula_ = formula;
+	newCon.conPars_ = pars;
+	newCon.mean_ = mean;
+	newCon.width_ = width;
+	storeCon_.push_back(newCon);
 }
 
 void LauAbsFitModel::addConParameters()
@@ -1116,10 +1151,39 @@ void LauAbsFitModel::addConParameters()
 	for ( LauParameterPList::const_iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
 		if ( (*iter)->gaussConstraint() ) {
 			conVars_.push_back( *iter );
-			std::cout << "INFO in LauAbsFitModel::addConParameters: Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+			std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
 		}
 	}
 
+	// Add penalties from the constraints to fit parameters
+	for ( std::vector<StoreConstraints>::iterator iter = storeCon_.begin(); iter != storeCon_.end(); ++iter ) {
+		std::vector<TString> names = (*iter).conPars_;
+		std::vector<LauParameter*> params;
+		for ( std::vector<TString>::iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
+			for ( LauParameterPList::const_iterator iterfit = fitVars_.begin(); iterfit != fitVars_.end(); ++iterfit ) {
+				if ( (*iternames) == (*iterfit)->name() ){
+					params.push_back(*iterfit);
+				}
+			}
+		}
+
+		// If the parameters are not found, skip it
+		if ( params.size() != (*iter).conPars_.size() ) {
+			std::cerr << "WARNING in LauAbsFitModel::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
+			continue;
+		}
+
+		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_, (*iter).formula_, params );
+		formPar->addGaussianConstraint( (*iter).mean_, (*iter).width_ );
+		conVars_.push_back(formPar);
+
+		std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to formula\n";
+		std::cout << "                                         : Formula: " << (*iter).formula_ << std::endl;
+		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
+			std::cout << "                                         : Parameter: " << (*iterparam)->name() << std::endl;
+		}
+	}
+	
 }
 
 void LauAbsFitModel::updateFitParameters(LauPdfList& pdfList)
@@ -1133,17 +1197,20 @@ void LauAbsFitModel::printFitParameters(const LauPdfList& pdfList, std::ostream&
 {
 	LauPrint print;
 	for (LauPdfList::const_iterator pdf_iter = pdfList.begin(); pdf_iter != pdfList.end(); ++pdf_iter) {
-		const LauParameterPList& pars = (*pdf_iter)->getParameters();
-		for (LauParameterPList::const_iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
-			if (!(*pars_iter)->clone()) {
-				fout << (*pars_iter)->name() << "  &  $";
-				print.printFormat(fout, (*pars_iter)->value());
-				if ((*pars_iter)->fixed() == kTRUE) {
-					fout << "$ (fixed) \\\\";
-				} else {
-					fout << " \\pm ";
-					print.printFormat(fout, (*pars_iter)->error());
-					fout << "$ \\\\" << std::endl;
+		const LauAbsRValuePList& pars = (*pdf_iter)->getParameters();
+		for (LauAbsRValuePList::const_iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
+			LauParameterPList params = (*pars_iter)->getPars();
+			for (LauParameterPList::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter) {
+				if (!(*params_iter)->clone()) {
+					fout << (*params_iter)->name() << "  &  $";
+					print.printFormat(fout, (*params_iter)->value());
+					if ((*params_iter)->fixed() == kTRUE) {
+						fout << "$ (fixed) \\\\";
+					} else {
+						fout << " \\pm ";
+						print.printFormat(fout, (*params_iter)->error());
+						fout << "$ \\\\" << std::endl;
+					}
 				}
 			}
 		}

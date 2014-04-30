@@ -34,7 +34,7 @@ ClassImp(LauDPDepMapPdf)
 LauDPDepMapPdf::LauDPDepMapPdf(const std::vector<LauAbsPdf*>& pdfs, 
 		const LauDaughters* daughters,
 		const TH2* dpHisto, Bool_t upperHalf) :
-	LauAbsPdf((!pdfs.empty() && pdfs[0]) ? pdfs[0]->varNames() : std::vector<TString>(), std::vector<LauParameter*>(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMinAbscissas() : LauFitData(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMaxAbscissas() : LauFitData()),
+	LauAbsPdf((!pdfs.empty() && pdfs[0]) ? pdfs[0]->varNames() : std::vector<TString>(), std::vector<LauAbsRValue*>(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMinAbscissas() : LauFitData(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMaxAbscissas() : LauFitData()),
 	daughters_( new LauDaughters(*daughters) ),
 	pdfs_(pdfs),
 	dpDependence_( new Lau2DHistDP(dpHisto, daughters, kFALSE, kFALSE, 0, 0, upperHalf, daughters->squareDP()) ),
@@ -82,7 +82,7 @@ LauDPDepMapPdf::LauDPDepMapPdf(const std::vector<LauAbsPdf*>& pdfs,
 	
 
 	for ( std::vector<LauAbsPdf*>::const_iterator iter = pdfs_.begin(); iter != pdfs_.end(); ++iter){
-		std::vector<LauParameter*>& pdfpars = (*iter)->getParameters();
+		std::vector<LauAbsRValue*>& pdfpars = (*iter)->getParameters();
 		this->addParameters(pdfpars);
 
 	}
@@ -95,7 +95,7 @@ LauDPDepMapPdf::LauDPDepMapPdf(const std::vector<LauAbsPdf*>& pdfs,
 		const LauDaughters* daughters,
 		const TH1* dpAxisHisto,
 		DPAxis dpAxis) :
-	LauAbsPdf((!pdfs.empty() && pdfs[0]) ? pdfs[0]->varNames() : std::vector<TString>(), std::vector<LauParameter*>(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMinAbscissas() : LauFitData(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMaxAbscissas() : LauFitData()),
+	LauAbsPdf((!pdfs.empty() && pdfs[0]) ? pdfs[0]->varNames() : std::vector<TString>(), std::vector<LauAbsRValue*>(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMinAbscissas() : LauFitData(), (!pdfs.empty() && pdfs[0]) ? pdfs[0]->getMaxAbscissas() : LauFitData()),
 	daughters_( new LauDaughters(*daughters) ),
 	pdfs_(pdfs),
 	dpDependence_( 0 ),
@@ -147,7 +147,7 @@ LauDPDepMapPdf::LauDPDepMapPdf(const std::vector<LauAbsPdf*>& pdfs,
 	// This is so that when we are asked for them they can be put into the fit.
 
 	for ( std::vector<LauAbsPdf*>::const_iterator iter = pdfs_.begin(); iter != pdfs_.end(); ++iter){
-		std::vector<LauParameter*>& pdfpars = (*iter)->getParameters();
+		std::vector<LauAbsRValue*>& pdfpars = (*iter)->getParameters();
 		this->addParameters(pdfpars);
 
 	}
@@ -302,13 +302,6 @@ void LauDPDepMapPdf::calcPDFHeight( const LauKinematics* kinematics )
 	// Find the PDF maximum
 	Double_t height = pdf->getMaxHeight();
 	this->setMaxHeight(height);
-}
-
-void LauDPDepMapPdf::checkPositiveness() 
-{
-	for ( std::vector<LauAbsPdf*>::const_iterator iter = pdfs_.begin(); iter != pdfs_.end(); ++iter){
-		(*iter)->checkPositiveness();
-	}
 }
 
 // Override the base class methods for cacheInfo and calcLikelihoodInfo(UInt_t iEvt).

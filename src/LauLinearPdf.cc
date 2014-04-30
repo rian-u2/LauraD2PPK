@@ -9,7 +9,7 @@
 // Paul Harrison
 
 /*! \file LauLinearPdf.cc
-    \brief File containing implementation of LauLinearPdf class.
+  \brief File containing implementation of LauLinearPdf class.
 */
 
 #include <iostream>
@@ -28,9 +28,9 @@ using std::vector;
 ClassImp(LauLinearPdf)
 
 
-LauLinearPdf::LauLinearPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
-	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
-	slope_(0)
+	LauLinearPdf::LauLinearPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+		LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
+		slope_(0),posflag_(kTRUE)
 {
 	// Constructor for the linear PDF.
 	//
@@ -44,10 +44,6 @@ LauLinearPdf::LauLinearPdf(const TString& theVarName, const vector<LauParameter*
 		cerr<<"Warning. LauLinearPdf requires 1 parameter: \"slope\"."<<endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
-
-	// See whether the parameters we've been given characterize a positive definite PDF
-	// If not, change them.
-	this->checkPositiveness();
 
 	// Cache the normalisation factor.
 	this->calcNorm();
@@ -83,6 +79,16 @@ void LauLinearPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	constVal -= slope * (this->getMaxAbscissa() + this->getMinAbscissa()) * 0.5;
 
 	Double_t value = slope*abscissa + constVal;
+
+	// Make sure the PDF doesn't go negative
+	if ( value < 0.0 ) {
+		if ( posflag_ ) {
+			std::cerr << "WARNING in LauLinearPdf::calcLikelihoodInfo : The PDF is negative, setting to zero" << std::endl;
+		}
+		value = 0.0;
+		posflag_= kFALSE;
+	}
+
 	this->setUnNormPDFVal(value);
 }
 
@@ -111,37 +117,6 @@ void LauLinearPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 	this->calcLikelihoodInfo(maxPoint);
 
 	Double_t height = this->getUnNormLikelihood();
+
 	this->setMaxHeight(height);
-}
-
-void LauLinearPdf::checkPositiveness() 
-{
-	// Get the up to date parameter values
-	Double_t slope = slope_->value();
-
-	//Check that the slope is such that the PDF won't take negative values.
-	LauAbscissas minPoint(1);
-	if (slope>0.0) {
-		minPoint[0] = this->getMinAbscissa();
-	} else {
-		minPoint[0] = this->getMaxAbscissa();
-	}
-	this->calcLikelihoodInfo(minPoint);
-
-	Double_t minimum = this->getUnNormLikelihood();
-	if (minimum < 0.0) {
-		Double_t oldslope = slope;
-		slope = 2.0/((this->getMaxAbscissa() - this->getMinAbscissa())*(this->getMaxAbscissa() - this->getMinAbscissa()));
-		if (oldslope < 0.0)
-			slope *= -1.0;
-
-		if (slope < this->getParMin("slope"))
-			this->setParMin("slope", slope-1e-6);
-		if (slope > this->getParMax("slope"))
-			this->setParMax("slope", slope+1e-6);
-		this->setParValue("slope",slope);
-
-		cerr<<"ERROR in LauLinearPdf::checkPositiveness : Given value of slope = "<<oldslope<<
-			" makes the PDF go negative. Resetting to slope = "<<slope<<endl;
-	}
 }

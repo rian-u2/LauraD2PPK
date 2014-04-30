@@ -46,7 +46,7 @@ class LauResonanceMaker {
 		    \param [in] resType the type of the resonance.
 		    \return the resonance
 		*/
-		LauAbsResonance* getResonance(const LauDaughters* daughters, const TString& resName, Int_t resPairAmpInt, const TString& resType);
+		LauAbsResonance* getResonance(const LauDaughters* daughters, const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
 
 		//! Retrieve the integer index for the specified resonance
 		/*!

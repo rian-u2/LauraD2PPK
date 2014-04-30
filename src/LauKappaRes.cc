@@ -60,7 +60,8 @@ void LauKappaRes::initialise()
 	}
 }
 
-void LauKappaRes::setConstants(Double_t b1, Double_t b2, Double_t A, Double_t m0) {
+void LauKappaRes::setConstants(const Double_t b1, const Double_t b2, const Double_t A, const Double_t m0)
+{
 	b1_ = b1;
 	b2_ = b2;
 	A_ = A;
@@ -127,5 +128,29 @@ LauComplex LauKappaRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	return resAmplitude;
 
+}
+
+void LauKappaRes::setResonanceParameter(const TString& name, const Double_t value) 
+{
+	// Set various parameters for the lineshape
+	if (name == "b1") {
+		this->setB1Value(value);
+		std::cout << "INFO in LauKappaRes::setResonanceParameter : Setting parameter b1 = " << this->getB1Value() << std::endl;
+	}
+	else if (name == "b2") {
+		this->setB2Value(value);
+		std::cout << "INFO in LauKappaRes::setResonanceParameter : Setting parameter b2 = " << this->getB2Value() << std::endl;
+	}
+	else if (name == "A") {
+		this->setAValue(value);
+		std::cout << "INFO in LauKappaRes::setResonanceParameter : Setting parameter A = " << this->getAValue() << std::endl;
+	}
+	else if (name == "m0") {
+		this->setM0Value(value);
+		std::cout << "INFO in LauKappaRes::setResonanceParameter : Setting parameter m0 = " << this->getM0Value() << std::endl;
+	}
+	else {
+		std::cerr << "WARNING in LauKappaRes::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
 }
 

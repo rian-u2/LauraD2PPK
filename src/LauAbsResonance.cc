@@ -26,8 +26,8 @@ ClassImp(LauAbsResonance)
 
 
 // Constructor
-LauAbsResonance::LauAbsResonance(const TString& resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		                 Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauAbsResonance::LauAbsResonance(const TString& resName, LauParameter* resMass, LauParameter* resWidth,
+		                 const Int_t resSpin, const Int_t resCharge, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	daughters_(daughters),
 	nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
 	chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
@@ -38,6 +38,9 @@ LauAbsResonance::LauAbsResonance(const TString& resName, LauParameter* resMass, 
 	resSpin_(resSpin),
 	resCharge_(resCharge),
 	resPairAmpInt_(resPairAmpInt),
+	parR_(4.0),
+	resR_(4.0),
+	barrierType_(BWPrimeBarrier),
 	flipHelicity_(kFALSE),
 	ignoreMomenta_(kFALSE),
 	q_(0.0),
@@ -114,6 +117,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 
 	} else {
 		std::cerr << "ERROR in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	if (this->flipHelicity()) {
@@ -121,9 +125,19 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	}
 
 	if (this->ignoreMomenta()) {
-	  q_ = 1.0;
-	  p_ = 1.0;
+		q_ = 1.0;
+		p_ = 1.0;
 	}
+
+	// Calculate the spin factors
+	//
+	// These are calculated as follows
+	//
+	// -2^j * (q*p)^j * cj * Pj(cosHel) 
+	//
+	// where Pj(coshHel) is the jth order Legendre polynomial and 
+	//
+	// cj = j! / (2j-1)!!
 
 	Double_t spinTerm(1.0);
 	if (resSpin_ == 1) {
@@ -136,7 +150,15 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	} else if (resSpin_ == 3) {
 		// Calculate spin 3 resonance Zemach helicity factor
 		Double_t pProd = q_*p_;
-		spinTerm = -8.0*3.0*(pProd*pProd*pProd)*(5.0*cosHel*cosHel*cosHel - 3.0*cosHel)/15.0;
+		spinTerm = -8.0*(pProd*pProd*pProd)*(5.0*cosHel*cosHel*cosHel - 3.0*cosHel)/5.0;
+	} else if (resSpin_ == 4) {
+		// Calculate spin 4 resonance Zemach helicity factor
+		Double_t pProd = q_*p_;
+		spinTerm = 16.0*(pProd*pProd*pProd*pProd)*(35.0*cosHel*cosHel*cosHel*cosHel - 30.0*cosHel*cosHel + 3.0)/35.0;
+	} else if (resSpin_ == 5) {
+		// Calculate spin 5 resonance Zemach helicity factor
+		Double_t pProd = q_*p_;
+		spinTerm = -32.0*(pProd*pProd*pProd*pProd*pProd)*(63.0*cosHel*cosHel*cosHel*cosHel*cosHel - 70.0*cosHel*cosHel*cosHel + 15.0*cosHel)/63.0;
 	}
 
 	LauComplex resAmplitude = this->resAmp(mass, spinTerm);
@@ -144,7 +166,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	return resAmplitude;
 }
 
-void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t newSpin)
+void LauAbsResonance::changeResonance(const Double_t newMass, const Double_t newWidth, const Int_t newSpin)
 {
 	if (newMass > 0.0) {
 		resMass_->value(newMass);
@@ -158,10 +180,9 @@ void LauAbsResonance::changeResonance(Double_t newMass, Double_t newWidth, Int_t
 		resSpin_ = newSpin;
 		std::cout << "INFO in LauAbsResonance::changeResonance : Setting spin to " << resSpin_ << std::endl;
 	}
-	this->initialise();
 }
 
-void LauAbsResonance::setResonanceParameter(Double_t value, const TString& name)
+void LauAbsResonance::setResonanceParameter(const TString& name, const Double_t value) 
 {
 	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
 	std::cerr << "WARNING in LauAbsResonance::setResonanceParameter : Unable to set parameter \"" << name << "\" to value: " << value << "." << std::endl;

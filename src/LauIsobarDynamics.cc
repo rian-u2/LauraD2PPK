@@ -23,9 +23,10 @@
 #include "LauAbsResonance.hh"
 #include "LauBelleNR.hh"
 #include "LauBelleSymNR.hh"
+#include "LauCacheData.hh"
 #include "LauConstants.hh"
 #include "LauDaughters.hh"
-#include "LauEffModel.hh"
+#include "LauAbsEffModel.hh"
 #include "LauFitDataTree.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauIntegrals.hh"
@@ -46,7 +47,7 @@
 ClassImp(LauIsobarDynamics)
 
 // for Kpipi: only one scfFraction 2D histogram is needed
-LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauEffModel* scfFractionModel) :
+LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel) :
 	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
@@ -58,7 +59,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	m23Sq_(0.0),
 	mPrime_(0.0),
 	thPrime_(0.0),
-	eff_(0.0),
+	eff_(1.0),
 	scfFraction_(0.0),
 	jacobian_(0.0),
 	ASq_(0.0),
@@ -67,25 +68,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	nSigGenLoop_(0),
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
-	BelleNRAlpha_(0.0),
-	LASSScatteringLength_(0.0),
-	LASSEffectiveRange_(0.0),
-	LASSResonanceMag_(0.0),
-	LASSResonancePhase_(0.0),
-	LASSBackgroundMag_(0.0),
-	LASSBackgroundPhase_(0.0),
-	LASSCutOff_(0.0),
-	changeLASSScatteringLength_(kFALSE),
-	changeLASSEffectiveRange_(kFALSE),
-	changeLASSResonanceMag_(kFALSE),
-	changeLASSResonancePhase_(kFALSE),
-	changeLASSBackgroundMag_(kFALSE),
-	changeLASSBackgroundPhase_(kFALSE),
-	changeLASSCutOff_(kFALSE),
-	FlatteParameterg1_(0.0),
-	FlatteParameterg2_(0.0),
-	changeFlatteParameterg1_(kFALSE),
-	changeFlatteParameterg2_(kFALSE),
+	setBarrierRadius_(kFALSE),
 	resBarrierRadius_(4.0),
 	parBarrierRadius_(4.0),
 	barrierType_( LauAbsResonance::BWPrimeBarrier ),
@@ -106,7 +89,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 
 // for Kspipi, we need a scfFraction 2D histogram for each tagging category. They are provided by the map.
 // Also, we need to know the place that the tagging category of the current event occupies in the data structure inputFitTree
-LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel) :
+LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel) :
 	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
@@ -127,25 +110,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauEffModel* effMo
 	nSigGenLoop_(0),
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
-	BelleNRAlpha_(0.0),
-	LASSScatteringLength_(0.0),
-	LASSEffectiveRange_(0.0),
-	LASSResonanceMag_(0.0),
-	LASSResonancePhase_(0.0),
-	LASSBackgroundMag_(0.0),
-	LASSBackgroundPhase_(0.0),
-	LASSCutOff_(0.0),
-	changeLASSScatteringLength_(kFALSE),
-	changeLASSEffectiveRange_(kFALSE),
-	changeLASSResonanceMag_(kFALSE),
-	changeLASSResonancePhase_(kFALSE),
-	changeLASSBackgroundMag_(kFALSE),
-	changeLASSBackgroundPhase_(kFALSE),
-	changeLASSCutOff_(kFALSE),
-	FlatteParameterg1_(0.0),
-	FlatteParameterg2_(0.0),
-	changeFlatteParameterg1_(kFALSE),
-	changeFlatteParameterg2_(kFALSE),
+	setBarrierRadius_(kFALSE),
 	resBarrierRadius_(4.0),
 	parBarrierRadius_(4.0),
 	barrierType_( LauAbsResonance::BWPrimeBarrier ),
@@ -202,7 +167,18 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	// the normalisation of the signal likelihood function.
 	this->initialiseVectors();
 
+	// Mark the DP integrals as undetermined
 	integralsDone_ = kFALSE;
+
+	// Initialise all resonance models
+	for ( std::vector<LauAbsResonance*>::iterator iter = sigResonances_.begin(); iter != sigResonances_.end(); ++iter ) {
+		(*iter)->initialise();
+
+		// Check if we have floating resonance parameters
+		if ( ! (*iter)->fixMass() || ! (*iter)->fixWidth() ) {
+			recalcNormalisation_ = kTRUE;
+		}
+	}
 
 	// Print summary of what we have so far to screen
 	this->initSummary();
@@ -331,6 +307,7 @@ void LauIsobarDynamics::initialiseVectors()
 	ff_.clear();         ff_.resize(nAmp_);
 	fNorm_.clear();      fNorm_.resize(nAmp_);
 	fitFrac_.clear();    fitFrac_.resize(nAmp_);
+	fitFracEffUnCorr_.clear();    fitFracEffUnCorr_.resize(nAmp_);
 
 	LauComplex null(0.0, 0.0);
 
@@ -341,11 +318,13 @@ void LauIsobarDynamics::initialiseVectors()
 		fifjEffSum_[i].resize(nAmp_);
 		fifjSum_[i].resize(nAmp_);
 		fitFrac_[i].resize(nAmp_);
+		fitFracEffUnCorr_[i].resize(nAmp_);
 
 		for (UInt_t j = 0; j < nAmp_; j++) {
 			fifjEffSum_[i][j] = null;
 			fifjSum_[i][j] = null;
 			fitFrac_[i][j].valueAndRange(0.0, -100.0, 100.0);
+			fitFracEffUnCorr_[i][j].valueAndRange(0.0, -100.0, 100.0);
 		}
 	}
 
@@ -432,7 +411,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 }
 
-void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt, const TString& resType, Bool_t fixMass,  Bool_t fixWidth,  Double_t newMass, Double_t newWidth, Int_t newSpin)
+LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType)
 {
 	// Function to add a resonance in a Dalitz plot.
 	// No check is made w.r.t flavour and charge conservation rules, and so
@@ -454,25 +433,8 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 
 	if (theResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
-		return;
+		return 0;
 	}
-
-	// Change resonance and lineshape parameters as required.
-	if (newMass > 0.0 || newWidth > 0.0 || newSpin > -1) {
-		theResonance->changeResonance(newMass, newWidth, newSpin);
-	}
-
-	// mass and width of resonances are fixed as default. Here we change the status if it's false
-	if (!fixMass) {
-		recalcNormalisation_ = kTRUE;
-		theResonance->fixMass(fixMass);
-	}
-	if (!fixWidth) {
-		recalcNormalisation_ = kTRUE;
-		theResonance->fixWidth(fixWidth);
-	}
-
-	std::cout << "INFO in LauIsobarDynamics::addResonance : resName: " << resName <<  ", fixMass = " << theResonance->fixMass() <<  ", fixWidth = " << theResonance->fixWidth() << std::endl;
 
 	// implement the helicity flip here
 	if (flipHelicity_ && daughters_->getCharge(resPairAmpInt) == 0) {	  
@@ -481,84 +443,21 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 		}
 	}
 
-	TString resTypeName(resType);
-
-	// Reset the Blatt-Weisskopf barrier factors as appropriate
-	if (!resTypeName.CompareTo("RelBW")) {
-		LauRelBreitWignerRes* theRBW = dynamic_cast<LauRelBreitWignerRes*>(theResonance);
-		theRBW->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
-	} else if (!resTypeName.CompareTo("GS")) {
-		LauGounarisSakuraiRes* theGS = dynamic_cast<LauGounarisSakuraiRes*>(theResonance);
-		theGS->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
+	// Set the Blatt-Weisskopf barrier factors as appropriate
+	if (setBarrierRadius_) {
+		theResonance->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
 	}
-
-	if (changeLASSScatteringLength_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
-		theResonance->setResonanceParameter(LASSScatteringLength_, "a");
-	}
-	if (changeLASSEffectiveRange_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
-		theResonance->setResonanceParameter(LASSEffectiveRange_, "r");
-	}
-	if (changeLASSResonanceMag_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSResonanceMag_, "R");
-	}
-	if (changeLASSResonancePhase_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSResonancePhase_, "phiR");
-	}
-	if (changeLASSBackgroundMag_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSBackgroundMag_, "B");
-	}
-	if (changeLASSBackgroundPhase_ == kTRUE && !resTypeName.CompareTo("LASS") ) {
-		theResonance->setResonanceParameter(LASSBackgroundPhase_, "phiB");
-	}
-	if (changeLASSCutOff_ == kTRUE && resTypeName.BeginsWith("LASS") ) {
-		theResonance->setResonanceParameter(LASSCutOff_, "cutOff");
-	}
-
-	if (changeFlatteParameterg1_ == kTRUE && !resTypeName.CompareTo("Flatte") ) {
-		theResonance->setResonanceParameter(FlatteParameterg1_, "g1");
-	}
-	if (changeFlatteParameterg2_ == kTRUE && !resTypeName.CompareTo("Flatte") ) {
-		theResonance->setResonanceParameter(FlatteParameterg2_, "g2");
-	}
-
-	TString resonanceName = theResonance->getResonanceName();
-
-	if ( resonanceName.BeginsWith("BelleNR", TString::kExact) ) {
-		LauBelleNR* belleNR = dynamic_cast<LauBelleNR*>(theResonance);
-		if (belleNR != 0) {
-			belleNR->setAlpha(BelleNRAlpha_);
-		} else {
-			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Belle non-resonant object is null"<<std::endl;
-		}
-	} else if ( resonanceName.BeginsWith("BelleSymNR", TString::kExact) ) {
-		LauBelleSymNR* belleNR = dynamic_cast<LauBelleSymNR*>(theResonance);
-		if (belleNR != 0) {
-			belleNR->initialise(symmetricalDP_, BelleNRAlpha_, resTypeName);
-		} else {
-			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Symmetric Belle non-resonant object is null"<<std::endl;
-		}
-
-	} else if ( resonanceName.BeginsWith("PolNR", TString::kExact) ) {
-		LauPolNR* polNR = dynamic_cast<LauPolNR*>(theResonance);
-		Double_t omega = 0.5*(daughters_->getMassParent()+(1./3)*(daughters_->getMassDaug1()+daughters_->getMassDaug2()+daughters_->getMassDaug3()));
-		if (polNR != 0) {
-		  polNR->setOmega(omega);
-		} else {
-			std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Polynomial non-resonant object is null"<<std::endl;
-		}
-	}
-	// Initialise the resonance model
-	theResonance->initialise();
 
 	// Set the resonance name and what track is the bachelor
+	TString resonanceName = theResonance->getResonanceName();
 	resTypAmp_.push_back(resonanceName);
 	resIntAmp_.push_back(resonanceMaker.resTypeInt(resonanceName));
 
 	// Always force the non-resonant amplitude pair to have resPairAmp = 0
 	// in case the user chooses the wrong number.
-	if (    (resonanceName.BeginsWith("NonReson",   TString::kExact) == kTRUE) || 
-		(resonanceName.BeginsWith("BelleSymNR", TString::kExact) == kTRUE) ||
-		(resonanceName.BeginsWith("NRModel",    TString::kExact) == kTRUE)) {
+	if ( resType == LauAbsResonance::FlatNR || 
+	     resType == LauAbsResonance::BelleSymNR ||
+	     resType == LauAbsResonance::NRModel ) {
 		std::cout<<"INFO in LauIsobarDynamics::addResonance : Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<std::endl;
 		resPairAmp_.push_back(0);
 	} else {
@@ -573,6 +472,7 @@ void LauIsobarDynamics::addResonance(const TString& resName, Int_t resPairAmpInt
 
 	std::cout<<"INFO in LauIsobarDynamics::addResonance : Successfully added resonance. Total number of resonances so far = "<<nAmp_<<std::endl;
 
+	return theResonance;
 }
 
 void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const TString& paramFileName, Int_t resPairAmpInt, 
@@ -1521,6 +1421,9 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		TString name = "A"; name += i; name += "Sq_FitFrac";
 		fitFrac_[i][i].name(name);
 
+		name += "EffUnCorr";
+		fitFracEffUnCorr_[i][i].name(name);
+
 		Double_t fifjSumReal = fifjSum_[i][i].re();
 		Double_t sumTerm = Amp_[i].abs2()*fifjSumReal*fNorm_[i]*fNorm_[i];
 		fifjTot += sumTerm;
@@ -1530,6 +1433,7 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		fifjEffTot += sumEffTerm;
 
 		fitFrac_[i][i] = sumTerm;
+		fitFracEffUnCorr_[i][i] = sumEffTerm;
 	}
 
 	for (i = 0; i < nAmp_; i++) {
@@ -1537,6 +1441,9 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 			// Calculate the cross-terms
 			TString name = "A"; name += i; name += "A"; name += j; name += "_FitFrac";
 			fitFrac_[i][j].name(name);
+
+			name += "EffUnCorr";
+			fitFracEffUnCorr_[i][j].name(name);
 
 			LauComplex AmpjConj = Amp_[j].conj();
 			LauComplex AmpTerm = Amp_[i]*AmpjConj;
@@ -1548,6 +1455,7 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 			fifjEffTot += crossEffTerm;
 
 			fitFrac_[i][j] = crossTerm;
+			fitFracEffUnCorr_[i][j] = crossEffTerm;
 		}
 	}
 
@@ -1569,9 +1477,12 @@ void LauIsobarDynamics::calcExtraInfo(Bool_t init)
 		for (j = i; j < nAmp_; j++) {
 			// Get the actual fractions by dividing by the total DP rate
 			fitFrac_[i][j] /= fifjTot;
+			fitFracEffUnCorr_[i][j] /= fifjEffTot;
 			if (init) {
 				fitFrac_[i][j].genValue( fitFrac_[i][j].value() );
 				fitFrac_[i][j].initValue( fitFrac_[i][j].value() );
+				fitFracEffUnCorr_[i][j].genValue( fitFracEffUnCorr_[i][j].value() );
+				fitFracEffUnCorr_[i][j].initValue( fitFracEffUnCorr_[i][j].value() );
 			}
 		}
 	}

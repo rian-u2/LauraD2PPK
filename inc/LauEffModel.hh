@@ -24,7 +24,7 @@
 #ifndef LAUEFFMODEL
 #define LAUEFFMODEL
 
-#include "Rtypes.h"
+#include "LauAbsEffModel.hh"
 
 class TH2;
 
@@ -34,7 +34,7 @@ class LauVetoes;
 class Lau2DAbsDP;
 
 
-class LauEffModel {
+class LauEffModel : public LauAbsEffModel {
 
 	public:
 		//! Constructor
@@ -54,12 +54,35 @@ class LauEffModel {
 		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
 		    \param [in] useInterpolation boolean flag decision to switch on/off linear interpolation between bins should be used or simply the raw bin values.
 		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
-		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
 		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void setEffHisto(const TH2* effHisto,
+				Bool_t useInterpolation = kTRUE, Bool_t fluctuateBins = kFALSE,
+				Double_t avEff = -1.0, Double_t absError = -1.0,
+				Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
+
+		//! Set the efficiency variation across the phase space using a predetermined 2D histogram.
+		/*!
+		    The efficiency is defined in terms of x = m_13^2, y = m_23^2 or x = m', y = theta' for the square Dalitz plot
+
+		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
+		    \param [in] errorHi the 2-dimensional histogram that describes the upper uncertainty on the efficiency variation
+		    \param [in] errorLo the 2-dimensional histogram that describes the lower uncertainty on the efficiency variation
+		    \param [in] useInterpolation boolean flag decision to switch on/off linear interpolation between bins should be used or simply the raw bin values.
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
+		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void setEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
 				Bool_t useInterpolation = kTRUE, Bool_t fluctuateBins = kFALSE,
 				Double_t avEff = -1.0, Double_t absError = -1.0,
 				Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
@@ -70,13 +93,103 @@ class LauEffModel {
 
 		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
 		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
-		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
 		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void setEffSpline(const TH2* effHisto,
 				 Bool_t fluctuateBins = kFALSE,
+				 Double_t avEff = -1.0, Double_t absError = -1.0,
+				 Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
+
+		//! Set the efficiency variation across the phase space using a spline based on a predetermined 2D histogram.
+		/*!
+		    The efficiency is defined in terms of x = m_13^2, y = m_23^2 or x = m', y = theta' for the square Dalitz plot
+
+		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
+		    \param [in] errorHi the 2-dimensional histogram that describes the upper uncertainty on the efficiency variation
+		    \param [in] errorLo the 2-dimensional histogram that describes the lower uncertainty on the efficiency variation
+		    \param [in] fluctuateBins boolean flag to determine whether the bin contents should be fluctuated in accordance with their errors.
+		    The seed for the random number generator used to fluctuate the bins should first be set using LauRandom::setSeed.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
+		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void setEffSpline(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
+				 Bool_t fluctuateBins = kFALSE,
+				 Double_t avEff = -1.0, Double_t absError = -1.0,
+				 Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
+
+		//! Add a multiplicative efficiency variation across the phase space using a predetermined 2D histogram.
+		/*!
+		    The efficiency is defined in terms of x = m_13^2, y = m_23^2 or x = m', y = theta' for the square Dalitz plot
+
+		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
+		    \param [in] useInterpolation boolean flag decision to switch on/off linear interpolation between bins should be used or simply the raw bin values.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
+		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void addEffHisto(const TH2* effHisto,
+				Bool_t useInterpolation = kTRUE,
+				Double_t avEff = -1.0, Double_t absError = -1.0,
+				Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
+
+		//! Add a multiplicative efficiency variation across the phase space using a predetermined 2D histogram.
+		/*!
+		    The efficiency is defined in terms of x = m_13^2, y = m_23^2 or x = m', y = theta' for the square Dalitz plot
+
+		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
+		    \param [in] errorHi the 2-dimensional histogram that describes the upper uncertainty on the efficiency variation
+		    \param [in] errorLo the 2-dimensional histogram that describes the lower uncertainty on the efficiency variation
+		    \param [in] useInterpolation boolean flag decision to switch on/off linear interpolation between bins should be used or simply the raw bin values.
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
+		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void addEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
+				Bool_t useInterpolation = kTRUE,
+				Double_t avEff = -1.0, Double_t absError = -1.0,
+				Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
+
+		//! Add a multiplicative efficiency variation across the phase space using a spline based on a predetermined 2D histogram.
+		/*!
+		    The efficiency is defined in terms of x = m_13^2, y = m_23^2 or x = m', y = theta' for the square Dalitz plot
+
+		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
+		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void addEffSpline(const TH2* effHisto,
+				 Double_t avEff = -1.0, Double_t absError = -1.0,
+				 Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
+
+		//! Add a multiplicative efficiency variation across the phase space using a spline based on a predetermined 2D histogram.
+		/*!
+		    The efficiency is defined in terms of x = m_13^2, y = m_23^2 or x = m', y = theta' for the square Dalitz plot
+
+		    \param [in] effHisto the 2-dimensional histogram that describes the efficiency variation
+		    \param [in] errorHi the 2-dimensional histogram that describes the upper uncertainty on the efficiency variation
+		    \param [in] errorLo the 2-dimensional histogram that describes the lower uncertainty on the efficiency variation
+		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
+		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
+		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
+		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
+		*/
+		void addEffSpline(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
 				 Double_t avEff = -1.0, Double_t absError = -1.0,
 				 Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);
 
@@ -99,6 +212,18 @@ class LauEffModel {
 		//! Determine whether the efficiency histogram has had its bins fluctuated within their errors
 		Bool_t fluctuateEffHisto() const {return fluctuateEffHisto_;}
 
+		//! Return the daughters object
+		/*
+		    \return the LauDaughters object associated with the DP
+		*/
+		const LauDaughters* getDaughters() const {return daughters_;}
+
+		//! Determine whether the efficiency histogram is in the square DP
+		/*
+		    \return kTRUE if the square DP is being used, kFALSE otherwise
+		*/
+		Bool_t usingSquareDP() const {return squareDP_;}
+
 	private:
 		//! Copy constructor - not implemented
 		LauEffModel( const LauEffModel& rhs );
@@ -116,8 +241,8 @@ class LauEffModel {
 		//! The vetoes object
 		const LauVetoes* vetoes_;
 
-		//! The efficiency histogram object
-		Lau2DAbsDP* effHisto_;
+		//! The efficiency histogram objects
+		std::vector<Lau2DAbsDP*> effHisto_;
 
 		//! Use of the square Dalitz plot
 		Bool_t squareDP_;

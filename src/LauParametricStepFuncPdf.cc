@@ -45,7 +45,7 @@ using std::vector;
 ClassImp(LauParametricStepFuncPdf)
 
 
-LauParametricStepFuncPdf::LauParametricStepFuncPdf(const TString& theVarName, const vector<LauParameter*>& params, const vector<Double_t>& limits, NormBin normalisationBin) :
+LauParametricStepFuncPdf::LauParametricStepFuncPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, const vector<Double_t>& limits, NormBin normalisationBin) :
 	LauAbsPdf(theVarName, params, limits.front(), limits.back()),
 	normBin_(normalisationBin),
 	limits_(limits)
@@ -91,7 +91,7 @@ void LauParametricStepFuncPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the parameters
-	const vector<LauParameter*>& pars = this->getParameters();
+	const vector<LauAbsRValue*>& pars = this->getParameters();
 
 	// Calculate value
 	Double_t value(0.0);
@@ -166,7 +166,7 @@ void LauParametricStepFuncPdf::calcPDFHeight( const LauKinematics* /*kinematics*
 	}
 
 	// Get the parameters
-	const vector<LauParameter*>& pars = this->getParameters();
+	const vector<LauAbsRValue*>& pars = this->getParameters();
 
 	// Find the PDF height
 	Double_t height(0.0);

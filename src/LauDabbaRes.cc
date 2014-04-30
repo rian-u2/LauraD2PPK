@@ -118,3 +118,23 @@ LauComplex LauDabbaRes::resAmp(Double_t mass, Double_t spinTerm)
 	return resAmplitude;
 }
 
+void LauDabbaRes::setResonanceParameter(const TString& name, const Double_t value) 
+{
+	// Set various parameters for the lineshape
+	if (name == "b") {
+		this->setBValue(value);
+		std::cout << "INFO in LauDabbaRes::setResonanceParameter : Setting parameter b = " << this->getBValue() << std::endl;
+	}
+	else if (name == "alpha") {
+		this->setAlphaValue(value);
+		std::cout << "INFO in LauDabbaRes::setResonanceParameter : Setting parameter alpha = " << this->getAlphaValue() << std::endl;
+	}
+	else if (name == "beta") {
+		this->setBetaValue(value);
+		std::cout << "INFO in LauDabbaRes::setResonanceParameter : Setting parameter beta = " << this->getBetaValue() << std::endl;
+	}
+	else {
+		std::cerr << "WARNING in LauDabbaRes::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+

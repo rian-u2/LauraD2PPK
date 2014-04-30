@@ -18,10 +18,12 @@
 #pragma link C++ class LauAbsBkgndDPModel;
 #pragma link C++ class LauAbsCoeffSet;
 #pragma link C++ class LauAbsDPDynamics;
+#pragma link C++ class LauAbsEffModel;
 #pragma link C++ class LauAbsFitter;
 #pragma link C++ class LauAbsFitModel;
 #pragma link C++ class LauAbsPdf;
 #pragma link C++ class LauAbsResonance;
+#pragma link C++ class LauAbsRValue;
 #pragma link C++ class LauArgusPdf;
 #pragma link C++ class LauAsymmCalc;
 #pragma link C++ class LauBelleCPCoeffSet;
@@ -98,6 +100,7 @@
 #pragma link C++ class LauSumPdf;
 #pragma link C++ class LauTextFileParser;
 #pragma link C++ class LauVetoes;
+#pragma link C++ class LauWeightedSumEffModel;
 #pragma link C++ namespace LauConstants;
 #pragma link C++ namespace LauRandom;
 

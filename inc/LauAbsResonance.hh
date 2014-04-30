@@ -51,6 +51,9 @@ class LauAbsResonance {
 			FlatNR,		/*!< a uniform nonresonant amplitude */
 			NRModel,	/*!< a theoretical model nonresonant amplitude */
 			BelleNR,	/*!< an empirical exponential nonresonant amplitude */
+			PowerLawNR,	/*!< an empirical power law nonresonant amplitude */
+			BelleSymNR,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
+			TaylorNR,	/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR		/*!< an empirical polynomial nonresonant amplitude */
 		};
 
@@ -72,7 +75,7 @@ class LauAbsResonance {
 			\param [in] daughters the daughter particles
 		*/
 		LauAbsResonance(const TString& resName, LauParameter* resMass, LauParameter* resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
+				const Int_t resSpin, const Int_t resCharge, const Int_t resPairAmpInt, 
 				const LauDaughters* daughters);
 
 		//! Destructor	
@@ -154,7 +157,7 @@ class LauAbsResonance {
 		*/
 		Bool_t ignoreMomenta() const {return ignoreMomenta_;}
 
-  //! Set the ignore p_ and q_ flag
+		//! Set the ignore p_ and q_ flag
 		/*!
 			\param [in] boolean the ignore momenta status
 		*/
@@ -162,18 +165,22 @@ class LauAbsResonance {
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
+			Negative values wil be ignored, so if, for example, you
+			want to only change the spin you can provide negative
+			values for the mass and width
+
 			\param [in] newMass new value of the resonance mass 
 			\param [in] newWidth new value of the resonance width
 			\param [in] newSpin new value of the resonance spin 
 		*/
-		void changeResonance(Double_t newMass, Double_t newWidth, Int_t newSpin);
+		void changeResonance(const Double_t newMass, const Double_t newWidth, const Int_t newSpin);
 
-		//! Set the updated parameters from changeResonance 
+		//! Set value of the various parameters
 		/*!
-			\param [in] value the updated parameter value
-			\param [in] name the updated parameter name
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
 		*/
-		virtual void setResonanceParameter(Double_t value, const TString& name);
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
 
 		//! Fix or release the resonance mass
 		/*!
@@ -198,6 +205,19 @@ class LauAbsResonance {
 			\return the status of resonance width (fixed or released)
 		*/
 		Bool_t fixWidth() const { return (resWidth_!=0) ? resWidth_->fixed() : kTRUE; }
+
+		//! Set the form factor model and parameters
+		/*!
+			\param [in] resRadius the radius of the barrier for the resonance decay
+			\param [in] parRadius the radius of the barrier for the parent decay
+			\param [in] type the form-factor model
+		*/
+		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const BarrierType type)
+		{
+			resR_ = resRadius;
+			parR_ = parRadius;
+			barrierType_ = type;
+		}
 
 	protected:
 		//! Get the name of the parent particle
@@ -231,6 +251,13 @@ class LauAbsResonance {
 		Double_t getP() const {return p_;}
 		//! Get the current value of the bachelor momentum in the parent rest frame
 		Double_t getPstar() const {return pstar_;}
+
+		//! Get the radius of the centrifugal barrier for the parent decay
+		Double_t getParBWRadius() const {return parR_;}
+		//! Get the radius of the centrifugal barrier for the resonance decay
+		Double_t getResBWRadius() const {return resR_;}
+		//! Get the form factor model
+		BarrierType getBarrierType() const {return barrierType_;}
 
 		//! Access the daughters object
 		const LauDaughters* getDaughters() const {return daughters_;}
@@ -290,6 +317,12 @@ class LauAbsResonance {
 		Int_t resCharge_; 
 		//! DP axis identifier
 		Int_t resPairAmpInt_;
+		//! Radius of the barrier for parent decay
+		Double_t parR_;
+		//! Radius of the barrier for resonance decay
+		Double_t resR_;
+		//! Model to be used for the form factor
+		BarrierType barrierType_;
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;

@@ -14,9 +14,6 @@
 
 #include <cstdlib>
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TRandom.h"
 #include "TSystem.h"
@@ -60,7 +57,7 @@ void LauBkgndDPModel::setBkgndHisto(const TH2* histo, Bool_t useInterpolation, B
 {
 	Bool_t upperHalf = kFALSE;
 	if (symmetricalDP_ == kTRUE && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	cout<<"Bg histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+	std::cout<<"INFO in LauBkgndDPModel::setBkgndHisto : Background histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -76,7 +73,7 @@ void LauBkgndDPModel::setBkgndSpline(const TH2* histo, Bool_t fluctuateBins, Boo
 {
 	Bool_t upperHalf = kFALSE;
 	if (symmetricalDP_ == kTRUE && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	cout<<"Bg histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<endl;
+	std::cout<<"INFO in LauBkgndDPModel::setBkgndSpline : Background histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -94,7 +91,7 @@ Double_t LauBkgndDPModel::calcHistValue(Double_t xVal, Double_t yVal)
 
 	// Check that we have a valid histogram PDF
 	if (bgHistDPPdf_ == 0) {
-		cerr << "WARNING in LauBkgndDPModel::calcHistValue : We don't have a histogram so assuming the likelihood is flat in the Dalitz plot." << endl;
+		std::cerr << "WARNING in LauBkgndDPModel::calcHistValue : We don't have a histogram so assuming the likelihood is flat in the Dalitz plot." << std::endl;
 		this->setBkgndHisto( 0, kFALSE, kFALSE, kFALSE, kFALSE );
 	}
 
@@ -165,8 +162,8 @@ Bool_t LauBkgndDPModel::generate()
 				}
 			} else {
 				if ( !doneGenWarning_ ) {
-					cerr << "WARNING in LauBkgndDPModel::generate : We don't have a histogram so generating flat in the square DP, which won't be flat in the conventional DP!" << endl;
-					cerr << "WARNING in LauBkgndDPModel::generate : This should never happen!! What have you done?!" << endl;
+					std::cerr << "WARNING in LauBkgndDPModel::generate : We don't have a histogram so generating flat in the square DP, which won't be flat in the conventional DP!" << std::endl;
+					std::cerr << "WARNING in LauBkgndDPModel::generate : This should never happen!! What have you done?!" << std::endl;
 					doneGenWarning_ = kTRUE;
 				}
 				kinematics->updateSqDPKinematics(mPrime, thetaPrime);
@@ -194,7 +191,7 @@ Bool_t LauBkgndDPModel::generate()
 				}
 			} else {
 				if ( !doneGenWarning_ ) {
-					cerr << "WARNING in LauBkgndDPModel::generate : We don't have a histogram so generating flat in the DP." << endl;
+					std::cerr << "WARNING in LauBkgndDPModel::generate : We don't have a histogram so generating flat in the DP." << std::endl;
 					doneGenWarning_ = kTRUE;
 				}
 				kinematics->updateKinematics(m13Sq, m23Sq);
@@ -223,9 +220,8 @@ void LauBkgndDPModel::fillDataTree(const LauFitDataTree& inputFitTree)
 
 	Int_t nBranches = inputFitTree.nBranches();
 	if (nBranches < 2) {
-		cout<<"Error in LauBkgndDPModel::fillDataTree. Expecting at least 2 variables "
-			<<"in input data tree, but there are "<<nBranches<<"! Make sure you have "
-			<<"the right number of variables in your input data file!"<<endl;
+		std::cerr<<"ERROR in LauBkgndDPModel::fillDataTree : Expecting at least 2 variables "<<"in input data tree, but there are "<<nBranches<<"!\n";
+		std::cerr<<"                                       : Make sure you have the right number of variables in your input data file!"<<std::endl;
 		return;
 	}
 
@@ -282,7 +278,7 @@ void LauBkgndDPModel::setDataEventNo(UInt_t iEvt)
 	if (bgData_.size() > iEvt) {
 		curEvtHistVal_ = bgData_[iEvt];
 	} else {
-		cerr<<"ERROR in LauBkgndDPModel::setDataEventNo : Event index too large: "<<iEvt<<" >= "<<bgData_.size()<<"."<<endl;
+		std::cerr<<"ERROR in LauBkgndDPModel::setDataEventNo : Event index too large: "<<iEvt<<" >= "<<bgData_.size()<<"."<<std::endl;
 	}
 }
 

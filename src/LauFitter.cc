@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2005 - 2013.
+// Copyright University of Warwick 2005 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -20,12 +20,6 @@
 
 LauAbsFitter* LauFitter::theInstance_ = 0;
 LauFitter::Type LauFitter::fitterType_ = LauFitter::Minuit;
-
-
-LauFitter::~LauFitter()
-{
-}
-
 
 void LauFitter::setFitterType( Type type )
 {

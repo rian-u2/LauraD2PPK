@@ -26,7 +26,7 @@ ClassImp(LauSumPdf)
 
 
 LauSumPdf::LauSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2, LauParameter* frac) :
-	LauAbsPdf(pdf1 ? pdf1->varNames() : std::vector<TString>(), std::vector<LauParameter*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
+	LauAbsPdf(pdf1 ? pdf1->varNames() : std::vector<TString>(), std::vector<LauAbsRValue*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
 	pdf1_(pdf1),
 	pdf2_(pdf2),
 	frac_(frac)
@@ -72,14 +72,14 @@ LauSumPdf::LauSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2, LauParameter* frac) :
 	// This is so that when we are asked for them they can be put into the fit.
 	// The number of parameters is the number in PDF1 + the number in PDF2 + 1 for the fraction.
 	UInt_t nPar(pdf1->nParameters()+pdf2->nParameters()+1);
-	std::vector<LauParameter*> params;  params.reserve(nPar);
-	std::vector<LauParameter*>& pdf1pars = pdf1->getParameters();
-	std::vector<LauParameter*>& pdf2pars = pdf2->getParameters();
+	std::vector<LauAbsRValue*> params;  params.reserve(nPar);
+	std::vector<LauAbsRValue*>& pdf1pars = pdf1->getParameters();
+	std::vector<LauAbsRValue*>& pdf2pars = pdf2->getParameters();
 	params.push_back(frac);
-	for (std::vector<LauParameter*>::iterator iter = pdf1pars.begin(); iter != pdf1pars.end(); ++iter) {
+	for (std::vector<LauAbsRValue*>::iterator iter = pdf1pars.begin(); iter != pdf1pars.end(); ++iter) {
 		params.push_back(*iter);
 	}
-	for (std::vector<LauParameter*>::iterator iter = pdf2pars.begin(); iter != pdf2pars.end(); ++iter) {
+	for (std::vector<LauAbsRValue*>::iterator iter = pdf2pars.begin(); iter != pdf2pars.end(); ++iter) {
 		params.push_back(*iter);
 	}
 	this->addParameters(params);
@@ -169,12 +169,6 @@ void LauSumPdf::calcPDFHeight( const LauKinematics* kinematics )
 	// Combine these heights together
 	Double_t height = frac * height1 + (1-frac) * height2;
 	this->setMaxHeight(height);
-}
-
-void LauSumPdf::checkPositiveness() 
-{
-	pdf1_->checkPositiveness();
-	pdf2_->checkPositiveness();
 }
 
 // Override the base class methods for cacheInfo and calcLikelihoodInfo(UInt_t iEvt).

@@ -28,7 +28,7 @@ using std::vector;
 ClassImp(LauExponentialPdf)
 
 
-LauExponentialPdf::LauExponentialPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauExponentialPdf::LauExponentialPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	slope_(0)
 {

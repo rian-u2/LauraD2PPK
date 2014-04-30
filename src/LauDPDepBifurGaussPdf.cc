@@ -34,7 +34,7 @@ using std::vector;
 ClassImp(LauDPDepBifurGaussPdf)
 
 
-LauDPDepBifurGaussPdf::LauDPDepBifurGaussPdf(const TString& theVarName, const vector<LauParameter*>& params,
+LauDPDepBifurGaussPdf::LauDPDepBifurGaussPdf(const TString& theVarName, const vector<LauAbsRValue*>& params,
 		Double_t minAbscissa, Double_t maxAbscissa,
 		const LauDaughters* daughters,
 		const vector<Double_t>& meanCoeffs,

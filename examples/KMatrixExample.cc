@@ -125,7 +125,7 @@ int main( int argc, char** argv )
 	//sigModel->addKMatrixProdSVP("KMS3", "KMatrix2", 1);  
 
 	// Add a normal relativistic BW
-	sigModel->addResonance("rho0(770)", 3, "RelBW");
+	sigModel->addResonance("rho0(770)", 3, LauAbsResonance::RelBW);
 
 	sigModel->setASqMaxValue(2.2);
 

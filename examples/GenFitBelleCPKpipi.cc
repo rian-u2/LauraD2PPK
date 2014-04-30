@@ -76,21 +76,24 @@ int main( int argc, char** argv )
 	LauDaughters* posDaughters = new LauDaughters("B+", "K+", "pi+", "pi-", squareDP);
 
 	// Create the isobar models
+	LauAbsResonance* res(0);
 	LauIsobarDynamics* negSigModel = new LauIsobarDynamics(negDaughters, 0);
-	negSigModel->addResonance("K*0(892)",    2, "RelBW"); // resPairAmpInt = 2 => resonance mass is m13.
-	negSigModel->addResonance("K*0_0(1430)", 2, "LASS");
-	negSigModel->addResonance("rho0(770)",   1, "RelBW"); // resPairAmpInt = 1 => resonance mass is m23.
-	negSigModel->addResonance("f_0(980)",    1, "Flatte");
-	negSigModel->addResonance("chi_c0",      1, "RelBW");
-	negSigModel->addResonance("NonReson",    0, "FlatNR");
+	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW); // resPairAmpInt = 2 => resonance mass is m13.
+	res = negSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);
+	res = negSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW); // resPairAmpInt = 1 => resonance mass is m23.
+	res = negSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
+	res = negSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
+	res = negSigModel->addResonance("NonReson",    1, LauAbsResonance::BelleNR);
+	res->setResonanceParameter("alpha", 0.50);
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, 0);
-	posSigModel->addResonance("K*0(892)",    2, "RelBW");
-	posSigModel->addResonance("K*0_0(1430)", 2, "LASS");
-	posSigModel->addResonance("rho0(770)",   1, "RelBW");
-	posSigModel->addResonance("f_0(980)",    1, "Flatte");
-	posSigModel->addResonance("chi_c0",      1, "RelBW");
-	posSigModel->addResonance("NonReson",    0, "FlatNR");
+	res = posSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);
+	res = posSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
+	res = posSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
+	res = posSigModel->addResonance("NonReson",    1, LauAbsResonance::BelleNR);
+	res->setResonanceParameter("alpha", 0.50);
 
 	// Set the file names for the integrals information (can be useful for debugging)
 	negSigModel->setIntFileName("integ_neg.dat");

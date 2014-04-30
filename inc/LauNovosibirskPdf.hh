@@ -40,7 +40,7 @@ class LauNovosibirskPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauNovosibirskPdf(const TString& theVarName, const vector<LauParameter*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauNovosibirskPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauNovosibirskPdf();
@@ -56,9 +56,6 @@ class LauNovosibirskPdf : public LauAbsPdf {
 		
 		using LauAbsPdf::calcLikelihoodInfo;
 
-		//! Check that PDF is positive
-		virtual void checkPositiveness() {}; // Nothing to check here.
-
 		//! Calculate the PDF height
 		/*!
 		    \param [in] kinematics the current DP kinematics
@@ -69,11 +66,11 @@ class LauNovosibirskPdf : public LauAbsPdf {
 
 	private:
 		//! Gaussian mean
-		LauParameter* mean_;
+		LauAbsRValue* mean_;
 		//! Gaussian sigma
-		LauParameter* sigma_;
+		LauAbsRValue* sigma_;
 		//! Gaussian tail
-		LauParameter* tail_;
+		LauAbsRValue* tail_;
 
 		ClassDef(LauNovosibirskPdf,0) // Define the Novosibirsk PDF
 };

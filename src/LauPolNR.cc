@@ -28,7 +28,6 @@ LauPolNR::LauPolNR(const TString& resName, LauParameter* resMass, LauParameter* 
 	omega_(0.0),
 	order_(0)
 {
-	this->ignoreMomenta(kTRUE);
 }
 
 LauPolNR::~LauPolNR()
@@ -42,6 +41,11 @@ void LauPolNR::initialise()
 	if ( daughters->gotSymmetricalDP() && resPairAmpInt != 3 ) {
 		std::cerr << "WARNING in LauPolNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
 	}
+
+	this->ignoreMomenta(kTRUE);
+
+	Double_t omega = 0.5*(daughters->getMassParent()+(1.0/3.0)*(daughters->getMassDaug1()+daughters->getMassDaug2()+daughters->getMassDaug3()));
+	this->setOmega( omega );
 
 	TString name = this->getResonanceName();
 	if (name.EndsWith("0",TString::kExact)){

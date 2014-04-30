@@ -4,6 +4,102 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+29th April 2014 Thomas Latham
+
+* Fix bug in the determination of the integration scheme
+  - Nearby narrow resonances caused problems if their "zones" overlap
+  - These zones are now merged together
+
+23rd April 2014 Thomas Latham
+
+* Attempt to improve clarity of LauIsobarDynamics::addResonance function
+  - the 3rd argument is now an enumeration of the various resonance models
+  - removed the optional arguments regarding the change of mass, width & spin
+  - the same functionality can be obtained by using the returned pointer and calling changeResonance
+  - the resonance name now only affects the lineshape in the LauPolNR case
+  - the BelleSymNR / TaylorNR choice is now made in the 3rd argument
+  - similarly for the BelleNR / (newly introduced) PowerLawNR choice
+* Add new PowerLawNR nonresonant model (part of LauBelleNR)
+* All examples updated to use new interface
+
+23rd April 2014 Thomas Latham
+
+* Address issue of setting values of resonance parameters for all models
+  - decided to do away with need to have LauIsobarDynamics know everything
+  - LauIsobarDynamics::addResonance now returns a pointer to LauAbsResonance
+  - parameters can be changed through LauAbsResonance::setResonanceParameter
+  - LauIsobarDynamics still knows about Blatt-Weisskopf factors - better to only need to set this once
+  - Update GenFit3pi example to demonstrate mechanism
+
+22nd April 2014 Thomas Latham
+
+* Allow Gaussian constraints to be added in simultaneous fitting
+  - constraints will be ignored by the slaves
+  - those added directly to fit parameters will be propogated to the master and handled there
+  - those on combinations of parameters should be added in the master process
+
+22nd April 2014 Mark Whitehead
+
+* Update Laura to cope with resonances of spin 4 and spin 5
+  - Zemach spin terms added to src/LauAbsResonance.cc
+  - BW barrier factors added to src/LauRelBreitWignerRes.cc
+
+19th April 2014 Daniel Craik
+
+* Add LauWeightedSumEffModel which gives an efficiency model from the weighted sum of several LauEffModel objects.
+* Added pABC, LauAbsEffModel, for LauEffModel and LauWeightedSumEffModel.
+* Various classes updated to use pointers to LauAbsEffModel instead of LauEffModel.
+
+15th April 2014 Daniel Craik
+
+* Enable LauEfficiencyModel to contain several Lau2DAbsDP objects with the total efficiency calculated as the product.
+
+10th April 2014 Mark Whitehead
+
+* Fix an issue with the likelihood penalty term for Gaussian constraints
+  - Factor two missing in the denominator
+  - New penalty term is: ( x-mean )^2 / 2*(width^2)
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v2r1
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+1st April 2014 Thomas Latham
+
+* Fix issue in LauFitter that prevents compilation with g++ 4.8
+  - Missing virtual destructor
+  - Take opportunity to audit other special functions
+
+31st March 2014 Mark Whitehead
+(in branch for release in v2r1)
+
+* Added an efficiency branch to the ntuple produced for toy data samples
+  - Both LauSimpleFitModel and LauCPFitModel updated
+
+28th March 2014 Daniel Craik
+
+* Added support for asymmetric errors to Lau2DHistDP, Lau2DSplineDP and LauEffModel.
+
+27th March 2014 Daniel Craik
+
+* Changed histogram classes to use seeded random number generator for
+  fluctuation and raising or lowering of bins and updated doxygen.
+
+20th March 2014 Mark Whitehead
+(in branch for release in v2r1)
+
+* Added the ability to add Gaussian contraints to LauFormulaPars of fit parameters
+  - User supplies the information but the LauFormulaPar is constructed behind the scenes
+
+11th March 2014 Mark Whitehead 
+(in branch for release in v2r1)
+
+* Added the functionality to make LauFormulaPars usable in fits
+  - Added a new class LauAbsRValue which LauParameter and LauFormularPar inherit from
+  - Many files updated to accept LauAbsRValues instead of LauParameters
+* Fairly major clean up of obsolete functions in LauAbsPdf
+  - Only LauLinearPdf used any of them, this has now been updated
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r0
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

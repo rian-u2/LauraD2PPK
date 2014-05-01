@@ -126,7 +126,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		//! Embed full simulation events for the signal, rather than generating toy from the PDFs
 		/*!
-			\param [in] fileName the name of the file containing SP events
+			\param [in] fileName the name of the file containing the events
 			\param [in] treeName the name of the tree 
 			\param [in] reuseEventsWithinEnsemble
 			\param [in] reuseEventsWithinExperiment
@@ -139,7 +139,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Embed full simulation events for the given background class, rather than generating toy from the PDFs
 		/*!
 			\param [in] bkgndClass the name of the background class
-			\param [in] fileName the name of the file containing SP events
+			\param [in] fileName the name of the file containing the events
 			\param [in] treeName the name of the tree 
 			\param [in] reuseEventsWithinEnsemble
 			\param [in] reuseEventsWithinExperiment
@@ -191,8 +191,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Toy MC generation and fitting overloaded functions
 		virtual Bool_t genExpt();
 
-		//! Calculate things that depend on the fit parameters
-		//! after they have been updated by Minuit
+		//! Calculate things that depend on the fit parameters after they have been updated by Minuit
 		virtual void propagateParUpdates();
 
 		//! Read in the input fit data variables, e.g. m13Sq and m23Sq
@@ -209,7 +208,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		//! Print the fit fractions, total DP rate and mean efficiency
 		/*!
-			\param [out] output the output to be printed 
+			\param [out] output the stream to which to print
 		*/	
 		virtual void printFitFractions(std::ostream& output);
 
@@ -224,6 +223,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		// Methods to do with calculating the likelihood functions
 		// and manipulating the fitting parameters.
+
 		//! Get the total likelihood for each event
 		/*!
 			\param [in] iEvt the event number 
@@ -336,14 +336,16 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Check if the mis-reconstructed signal is to be smeared in the DP
 		virtual Bool_t scfDPSmear() const {return (scfMap_ != 0);}
 
-		//! We'll be caching the DP amplitudes and efficiencies of the centres of the true bins.
-		//! To do so, we attach some fake points at the end of inputData, the number of the entry
-		//! minus the total number of events corresponding to the number of the histogram for that
-		//! given true bin in the LauScfMap object. (What this means is that when Laura is provided with
-		//! the LauScfMap object by the user, it's the latter who has to make sure that it contains the
-		//! right number of histograms and in exactly the right order!)
+		//! Append fake data points to the inputData for each bin in the SCF smearing matrix
 		/*!
-			\param [in] inputData the fit data 
+		   We'll be caching the DP amplitudes and efficiencies of the centres of the true bins.
+		   To do so, we attach some fake points at the end of inputData, the number of the entry
+		   minus the total number of events corresponding to the number of the histogram for that
+		   given true bin in the LauScfMap object. (What this means is that when Laura is provided with
+		   the LauScfMap object by the user, it's the latter who has to make sure that it contains the
+		   right number of histograms and in exactly the right order!)
+
+		   \param [in] inputData the fit data 
 		*/	
 		void appendBinCentres( LauFitDataTree* inputData );
 
@@ -378,7 +380,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Number of extra PDF parameters
 		UInt_t nExtraPdfPar_; 
 
-		//! Number of parameters
+		//! Number of normalisation parameters (i.e. yields)
 		UInt_t nNormPar_;
 
 		//! Magnitudes and Phases
@@ -435,7 +437,8 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! The complex coefficients
 		std::vector<LauComplex> coeffs_;
 
-		// Embedding SP events
+		// Embedding full simulation events
+
 		//! The signal event tree 
 		LauEmbeddedData* signalTree_;
 

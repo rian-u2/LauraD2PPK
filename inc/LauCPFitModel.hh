@@ -106,9 +106,10 @@ class LauCPFitModel : public LauAbsFitModel {
 
 			\param [in] dpHisto the DP histogram of the SCF fraction value
 			\param [in] upperHalf whether this histogram is only in the upper half of a symmetric DP
+			\param [in] fluctuateBins whether the bins on the histogram should be varied in accordance with their uncertainties (for evaluation of systematic uncertainties)
 			\param [in] scfMap the (optional) smearing matrix
 		*/
-		void splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf = kFALSE, LauScfMap* scfMap = 0 );
+		void splitSignalComponent( const TH2* dpHisto, const Bool_t upperHalf = kFALSE, const Bool_t fluctuateBins = kFALSE, LauScfMap* scfMap = 0 );
 
 		//! Split the signal component into well reconstructed and mis-reconstructed parts
 		/*!
@@ -118,7 +119,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] scfFrac the SCF fraction value
 			\param [in] fixed whether the SCF fraction is fixed or floated in the fit
 		*/
-		void splitSignalComponent( Double_t scfFrac, Bool_t fixed );
+		void splitSignalComponent( const Double_t scfFrac, const Bool_t fixed );
 
 		//! Determine whether we are splitting the signal into TM and SCF parts
 		Bool_t useSCF() const { return useSCF_; }

@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+4th May 2014 Thomas Latham
+
+* Provide a new argument to Lau*FitModel::splitSignalComponent to allow fluctuation of the bins on the SCF fraction histogram
+
 29th April 2014 Thomas Latham
 
 * Fix bug in the determination of the integration scheme

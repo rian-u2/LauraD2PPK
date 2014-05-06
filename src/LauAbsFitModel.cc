@@ -1090,15 +1090,15 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 	// Update all the floating ones with their new values.
 	for (UInt_t i(0); i<nParams_; ++i) {
 		if (!fitVars_[i]->fixed()) {
-			std::cout << "par["<< i << "] = " << par[i] << std::endl;
-			std::cout << "fitVars_[" << i << "]->value() = " << fitVars_[i]->value() << std::endl;
-			std::cout << "name = " << fitVars_[i]->name() << std::endl;
+			//std::cout << "par["<< i << "] = " << par[i] << std::endl;
+			//std::cout << "fitVars_[" << i << "]->value() = " << fitVars_[i]->value() << std::endl;
+			//std::cout << "name = " << fitVars_[i]->name() << std::endl;
 
 			// TODO - obviously we want a way that does not involve string comparisons here
 			if (fitVars_[i]->name().Contains("_MASS")||fitVars_[i]->name().Contains("_WIDTH")){
-				std::cout << "they are mass or width" << std::endl;
+				//std::cout << "they are mass or width" << std::endl;
 				if ( par[i] != fitVars_[i]->value() ) {
-					std::cout << "they are different" << std::endl;
+					//std::cout << "they are different" << std::endl;
 					recalcNorm = kTRUE;
 				}
 			}

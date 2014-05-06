@@ -133,6 +133,18 @@ class LauAbsResonance {
 		*/
 		Double_t getWidth() const {return (resWidth_!=0) ? resWidth_->value() : -1.0;}
 
+		//! Get the mass parameter of the resonance
+		/*! 
+			\return the resonance mass parameter
+		*/
+		LauParameter* getMassPar() {return resMass_;}
+
+		//! Get the width parameter of the resonance
+		/*! 
+			\return the resonance width parameter
+		*/
+		LauParameter* getWidthPar() {return resWidth_;}
+
 		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
 		/*!
 		    \return parameters of the resonance

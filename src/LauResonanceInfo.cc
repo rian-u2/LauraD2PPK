@@ -22,12 +22,16 @@ ClassImp(LauResonanceInfo)
 
 LauResonanceInfo::LauResonanceInfo(const TString& name, Double_t mass, Double_t width, Int_t spin, Int_t charge, Double_t range) :
 	name_(name),
-	mass_(new LauParameter(name+"_MASS",mass,0.0,range,kTRUE)),
-	width_(new LauParameter(name+"_WIDTH",width,0.0,3*width,kTRUE)),
+	sanitisedName_(""),
+	mass_(0),
+	width_(0),
 	spin_(spin),
 	charge_(charge),
 	range_(range)
 {
+	sanitiseName();
+	mass_ = new LauParameter(sanitisedName_+"_MASS",mass,0.0,range,kTRUE);
+	width_ = new LauParameter(sanitisedName_+"_WIDTH",width,0.0,3*width,kTRUE);
 }
 
 LauResonanceInfo::~LauResonanceInfo()
@@ -38,6 +42,7 @@ LauResonanceInfo::~LauResonanceInfo()
 
 LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other ) :
 	name_( other.name_ ),
+	sanitisedName_( other.sanitisedName_ ),
 	mass_( other.mass_->createClone() ),
 	width_( other.width_->createClone() ),
 	spin_( other.spin_ ),
@@ -48,12 +53,16 @@ LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other ) :
 
 LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other, const TString& newName, const Int_t newCharge ) :
 	name_( newName ),
-	mass_( other.mass_->createClone( newName+"_MASS" ) ),
-	width_( other.width_->createClone( newName+"_WIDTH" ) ),
+	sanitisedName_(""),
+	mass_( 0 ),
+	width_( 0 ),
 	spin_( other.spin_ ),
 	charge_( newCharge ),
 	range_( other.range_ )
 {
+	sanitiseName();
+	mass_ = other.mass_->createClone( sanitisedName_+"_MASS" );
+	width_ = other.mass_->createClone( sanitisedName_+"_WIDTH" );
 }
 
 LauResonanceInfo* LauResonanceInfo::createChargeConjugate() const
@@ -93,4 +102,32 @@ ostream& operator<<( ostream& stream, const LauResonanceInfo& infoRecord )
 	return stream;
 }
 
-
+void LauResonanceInfo::sanitiseName()
+{
+	sanitisedName_ = name_;
+	sanitisedName_ = sanitisedName_.ReplaceAll("+","p");
+	sanitisedName_ = sanitisedName_.ReplaceAll("-","m");
+	sanitisedName_ = sanitisedName_.ReplaceAll("*","st");
+	sanitisedName_ = sanitisedName_.ReplaceAll("(","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll(")","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll("[","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll("]","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll("<","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll(">","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll("{","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll("}","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll(" ","_");
+	sanitisedName_ = sanitisedName_.ReplaceAll("$","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("%","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("&","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("/","");
+	sanitisedName_ = sanitisedName_.ReplaceAll(":","");
+	sanitisedName_ = sanitisedName_.ReplaceAll(";","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("=","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("\\","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("^","");
+	sanitisedName_ = sanitisedName_.ReplaceAll("|","");
+	sanitisedName_ = sanitisedName_.ReplaceAll(",","");
+	sanitisedName_ = sanitisedName_.ReplaceAll(".","");
+	sanitisedName_.Remove(TString::kBoth,'_');
+}

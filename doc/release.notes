@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+13th May 2014 Daniel Craik
+
+* Fix bug where illegal characters were being propagated from resonance names into TBranch names
+
 29th April 2014 Thomas Latham
 
 * Fix bug in the determination of the integration scheme

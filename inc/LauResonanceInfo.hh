@@ -97,8 +97,14 @@ class LauResonanceInfo {
 		//! Copy assignment operator (not implemented)
 		LauResonanceInfo& operator=( const LauResonanceInfo& other );
 
+		//! Create the sanitised name by removing characters that are illegal in TBranch names
+		void sanitiseName();
+
 		//! The name of the resonant particle
 		TString name_;
+
+		//! The name of the resonant particle with illegal characters removed
+		TString sanitisedName_;
 
 		//! The mass of the resonant particle
 		LauParameter* mass_;

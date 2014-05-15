@@ -21,7 +21,7 @@ ClassImp(LauKMatrixProdPole)
 
 LauKMatrixProdPole::LauKMatrixProdPole(const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
 				       LauKMatrixPropagator* propagator, const LauDaughters* daughters) : 
-	LauAbsResonance(poleName, 0, 0, 0, 0, resPairAmpInt, daughters),
+	LauAbsResonance(poleName, resPairAmpInt, daughters),
 	thePropagator_(propagator),
 	poleIndex_(poleIndex - 1) // poleIndex goes from 1 to nPoles
 {

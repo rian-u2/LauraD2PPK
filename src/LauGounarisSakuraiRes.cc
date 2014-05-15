@@ -20,9 +20,8 @@
 ClassImp(LauGounarisSakuraiRes)
 
 
-LauGounarisSakuraiRes::LauGounarisSakuraiRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	q0_(0.0),
 	p0_(0.0),
 	pstar0_(0.0),

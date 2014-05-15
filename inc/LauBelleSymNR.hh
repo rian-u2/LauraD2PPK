@@ -35,18 +35,12 @@ class LauBelleSymNR : public LauAbsResonance {
 	public:
 		//! Constructor
 		/*!
-			\param [in] resName the name of the resonance
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
 			\param [in] resType the model of the resonance
-			\param [in] resMass the mass of the resonance
-			\param [in] resWidth the width of the resonance
-			\param [in] resSpin the spin of the resonance
-			\param [in] resCharge the charge of the resonance
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauBelleSymNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
-				LauParameter* resMass, LauParameter* resWidth,
-				const Int_t resSpin, const Int_t resCharge,
+		LauBelleSymNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,
 				const Int_t resPairAmpInt, const LauDaughters* daughters);
 		
 		//! Destructor 
@@ -75,25 +69,47 @@ class LauBelleSymNR : public LauAbsResonance {
 		*/
 		virtual void setResonanceParameter(const TString& name, const Double_t value);
 
+		//! Allow the various parameters to float in the fit
+		/*!
+			\param [in] name the name of the parameter to be floated
+		*/
+		virtual void floatResonanceParameter(const TString& name);
+
+		//! Access the given resonance parameter
+		/*!
+			\param [in] name the name of the parameter
+			\return the corresponding parameter
+		 */
+		virtual LauParameter* getResonanceParameter(const TString& name);
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
 	protected:
 		//! Set the parameter alpha, the effective range
 		/*!
 			\param [in] alpha the new effective range parameter
 		*/
-		virtual void setAlpha(Double_t alpha) {alpha_ = alpha;}
+		void setAlpha(const Double_t alpha);
 
 		//! Get the effective range parameter
 		/*!
 			\return the effective range parameter
 		*/
-		virtual Double_t getAlpha() {return alpha_;}
+		Double_t getAlpha() const {return (alpha_!=0) ? alpha_->value() : 0.0;}
+
+		//! See if the alpha parameter is fixed or floating
+		Bool_t fixAlpha() const {return (alpha_!=0) ? alpha_->fixed() : kTRUE;}
 
 		//! This is not called, amplitude is used directly instead
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
-		//! Define the range parameter
-		Double_t alpha_;
+		//! The range parameter
+		LauParameter* alpha_;
 
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;

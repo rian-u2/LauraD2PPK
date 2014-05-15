@@ -20,6 +20,7 @@
 #define LAU_RESONANCE_INFO
 
 #include <iosfwd>
+#include <set>
 
 #include "TString.h"
 
@@ -48,6 +49,15 @@ class LauResonanceInfo {
 		    \return the name of the resonant particle
 		*/
 		TString getName() const {return name_;}
+
+		//! Retrieve the sanitised name of the resonant particle
+		/*!
+		    Removes/replaces characters from the name that cause
+		    problems when used in TBranch names
+
+		    \return the sanitised name of the resonant particle
+		*/
+		TString getSanitisedName() const {return sanitisedName_;}
 
 		//! Retrieve the mass of the resonant particle
 		/*!
@@ -83,12 +93,29 @@ class LauResonanceInfo {
 		/*!
 		    The mass and width parameters are cloned
 		*/
-		LauResonanceInfo* createChargeConjugate() const;
+		LauResonanceInfo* createChargeConjugate();
+
+		//! Retrieve an extra parameter of the resonance
+		/*!
+		    \return the extra parameter (or null pointer if not found)
+		*/
+		LauParameter* getExtraParameter( const TString& parName );
+
+		//! Add an extra parameter of the resonance
+		/*!
+		    \param [in] param the extra parameter to be added
+		*/
+		void addExtraParameter(LauParameter* param);
 
 	protected:
+		//! Add a clone of an extra parameter of the resonance
+		/*!
+		    \param [in] param the extra parameter to be added
+		*/
+		void addCloneOfExtraParameter(LauParameter* param);
 
 	private:
-		//! Copy constructor
+		//! Copy constructor (not implemented)
 		LauResonanceInfo( const LauResonanceInfo& other );
 
 		//! Copy constructor (with new name and charge)
@@ -120,6 +147,12 @@ class LauResonanceInfo {
 
 		//! The range of the resonant particle
 		Double_t range_;
+
+		//! The conjugate info object
+		LauResonanceInfo* conjugate_;
+
+		//! Extra parameters
+		std::set<LauParameter*> extraPars_;
 
 		ClassDef(LauResonanceInfo, 0)   // Specify each allowed resonance
 

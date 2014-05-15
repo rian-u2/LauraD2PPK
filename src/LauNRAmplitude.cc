@@ -19,9 +19,8 @@
 
 ClassImp(LauNRAmplitude)
 
-LauNRAmplitude::LauNRAmplitude(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	d_(1.3232e-3),
 	c1_(0.65),
 	c2_(0.55),

@@ -85,6 +85,7 @@ int main( int argc, char** argv )
 	res = negSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
 	res = negSigModel->addResonance("NonReson",    1, LauAbsResonance::BelleNR);
 	res->setResonanceParameter("alpha", 0.50);
+	res->floatResonanceParameter("alpha");
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, 0);
 	res = posSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
@@ -94,6 +95,7 @@ int main( int argc, char** argv )
 	res = posSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
 	res = posSigModel->addResonance("NonReson",    1, LauAbsResonance::BelleNR);
 	res->setResonanceParameter("alpha", 0.50);
+	res->floatResonanceParameter("alpha");
 
 	// Set the file names for the integrals information (can be useful for debugging)
 	negSigModel->setIntFileName("integ_neg.dat");
@@ -152,7 +154,7 @@ int main( int argc, char** argv )
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	Int_t nSigEvents = 2000;
+	Int_t nSigEvents = 5000;
 	Bool_t fixNSigEvents = kFALSE;
 	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2*nSigEvents,2*nSigEvents,fixNSigEvents);
 	fitModel->setNSigEvents(nSig);

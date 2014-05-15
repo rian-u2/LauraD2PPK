@@ -273,48 +273,57 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	this->checkRange();
 }
 
-LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs), LauAbsRValue(rhs)
+LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs), LauAbsRValue(rhs),
+	name_(rhs.name_),
+	value_(rhs.value_),
+	error_(rhs.error_),
+	negError_(rhs.negError_),
+	posError_(rhs.posError_),
+	genValue_(rhs.genValue_),
+	initValue_(rhs.initValue_),
+	minValue_(rhs.minValue_),
+	maxValue_(rhs.maxValue_),
+	fixed_(rhs.fixed_),
+	firstStage_(rhs.firstStage_),
+	secondStage_(rhs.secondStage_),
+	gaussConstraint_(rhs.gaussConstraint_),
+	constraintMean_(rhs.constraintMean_),
+	constraintWidth_(rhs.constraintWidth_),
+	gcc_(rhs.gcc_),
+	bias_(rhs.bias_),
+	pull_(rhs.pull_),
+	clone_(rhs.clone_),
+	parent_(rhs.parent_),
+	clones_(rhs.clones_)
 {
-	this->name(rhs.name());
-	this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());
-	this->genValue(rhs.genValue());
-	this->initValue(rhs.initValue());
-	this->fixed(rhs.fixed());
-	this->firstStage(rhs.firstStage());
-	this->secondStage(rhs.secondStage());
-	if ( rhs.gaussConstraint() ) {
-		this->addGaussianConstraint( rhs.constraintMean(), rhs.constraintWidth() );
-	} else {
-		this->removeGaussianConstraint();
-	}
-	this->errors(rhs.error(), rhs.negError(), rhs.posError());
-	this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
-	this->clone(rhs.parent());
-	clones_ = rhs.clones_;
-	this->updatePull();
 }
 
 LauParameter& LauParameter::operator=(const LauParameter& rhs)
 {
 	if (&rhs != this) {
 		TObject::operator=(rhs);
-		this->name(rhs.name());
-		this->valueAndRange(rhs.value(), rhs.minValue(), rhs.maxValue());
-		this->genValue(rhs.genValue());
-		this->initValue(rhs.initValue());
-		this->fixed(rhs.fixed());
-		this->firstStage(rhs.firstStage());
-		this->secondStage(rhs.secondStage());
-		if ( rhs.gaussConstraint() ) {
-			this->addGaussianConstraint( rhs.constraintMean(), rhs.constraintWidth() );
-		} else {
-			this->removeGaussianConstraint();
-		}
-		this->errors(rhs.error(), rhs.negError(), rhs.posError());
-		this->globalCorrelationCoeff( rhs.globalCorrelationCoeff() );
-		this->clone(rhs.parent());
+		LauAbsRValue::operator=(rhs);
+		name_ = rhs.name_;
+		value_ = rhs.value_;
+		error_ = rhs.error_;
+		negError_ = rhs.negError_;
+		posError_ = rhs.posError_;
+		genValue_ = rhs.genValue_;
+		initValue_ = rhs.initValue_;
+		minValue_ = rhs.minValue_;
+		maxValue_ = rhs.maxValue_;
+		fixed_ = rhs.fixed_;
+		firstStage_ = rhs.firstStage_;
+		secondStage_ = rhs.secondStage_;
+		gaussConstraint_ = rhs.gaussConstraint_;
+		constraintMean_ = rhs.constraintMean_;
+		constraintWidth_ = rhs.constraintWidth_;
+		gcc_ = rhs.gcc_;
+		bias_ = rhs.bias_;
+		pull_ = rhs.pull_;
+		clone_ = rhs.clone_;
+		parent_ = rhs.parent_;
 		clones_ = rhs.clones_;
-		this->updatePull();
 	}
 	return *this;
 }
@@ -328,107 +337,136 @@ std::vector<LauParameter*> LauParameter::getPars()
 
 void LauParameter::value(Double_t newValue)
 {
-	this->checkRange(newValue,this->minValue(),this->maxValue());
-	if (!this->clone()) {
+	if (this->clone()) {
+		parent_->value(newValue);
+	} else {
+		this->checkRange(newValue,this->minValue(),this->maxValue());
 		this->updateClones(kTRUE);
 	}
 }
 
 void LauParameter::error(Double_t newError)
 {
-	error_ = TMath::Abs(newError);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->error(newError);
+	} else {
+		error_ = TMath::Abs(newError);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::negError(Double_t newNegError)
 {
-	negError_ = TMath::Abs(newNegError);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->negError(newNegError);
+	} else {
+		negError_ = TMath::Abs(newNegError);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::posError(Double_t newPosError)
 {
-	posError_ = TMath::Abs(newPosError);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->posError(newPosError);
+	} else {
+		posError_ = TMath::Abs(newPosError);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::errors(Double_t newError, Double_t newNegError, Double_t newPosError)
 {
-	error_ = TMath::Abs(newError);
-	negError_ = TMath::Abs(newNegError);
-	posError_ = TMath::Abs(newPosError);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->errors(newError,newNegError,newPosError);
+	} else {
+		error_ = TMath::Abs(newError);
+		negError_ = TMath::Abs(newNegError);
+		posError_ = TMath::Abs(newPosError);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::valueAndErrors(Double_t newValue, Double_t newError, Double_t newNegError, Double_t newPosError)
 {
-	this->checkRange(newValue,this->minValue(),this->maxValue());
-	error_ = TMath::Abs(newError);
-	negError_ = TMath::Abs(newNegError);
-	posError_ = TMath::Abs(newPosError);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->valueAndErrors(newValue,newError,newNegError,newPosError);
+	} else {
+		this->checkRange(newValue,this->minValue(),this->maxValue());
+		error_ = TMath::Abs(newError);
+		negError_ = TMath::Abs(newNegError);
+		posError_ = TMath::Abs(newPosError);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::globalCorrelationCoeff(Double_t newGCCValue)
 {
-	gcc_ = newGCCValue;
+	if (this->clone()) {
+		parent_->globalCorrelationCoeff(newGCCValue);
+	} else {
+		gcc_ = newGCCValue;
+		this->updateClones(kFALSE);
+	}
 }
 
 void LauParameter::genValue(Double_t newGenValue)
 {
-	genValue_ = newGenValue;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->genValue(newGenValue);
+	} else {
+		genValue_ = newGenValue;
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::initValue(Double_t newInitValue)
 {
-	initValue_ = newInitValue;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->initValue(newInitValue);
+	} else {
+		initValue_ = newInitValue;
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::minValue(Double_t newMinValue)
 {
-	this->checkRange(this->value(),newMinValue,this->maxValue());
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->minValue(newMinValue);
+	} else {
+		this->checkRange(this->value(),newMinValue,this->maxValue());
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::maxValue(Double_t newMaxValue)
 {
-	this->checkRange(this->value(),this->minValue(),newMaxValue);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->maxValue(newMaxValue);
+	} else {
+		this->checkRange(this->value(),this->minValue(),newMaxValue);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::range(Double_t newMinValue, Double_t newMaxValue)
 {
-	this->checkRange(this->value(),newMinValue,newMaxValue);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->range(newMinValue,newMaxValue);
+	} else {
+		this->checkRange(this->value(),newMinValue,newMaxValue);
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::valueAndRange(Double_t newValue, Double_t newMinValue, Double_t newMaxValue)
 {
-	this->checkRange(newValue,newMinValue,newMaxValue);
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->valueAndRange(newValue,newMinValue,newMaxValue);
+	} else {
+		this->checkRange(newValue,newMinValue,newMaxValue);
+		this->updateClones(kFALSE);
 	}
 }
 
@@ -441,50 +479,62 @@ void LauParameter::name(const TString& newName)
 
 void LauParameter::fixed(Bool_t parFixed)
 {
-	fixed_ = parFixed;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->fixed(parFixed);
+	} else {
+		fixed_ = parFixed;
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::firstStage(Bool_t firstStagePar)
 {
-	firstStage_ = firstStagePar;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->firstStage(firstStagePar);
+	} else {
+		firstStage_ = firstStagePar;
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::secondStage(Bool_t secondStagePar)
 {
-	secondStage_ = secondStagePar;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->secondStage(secondStagePar);
+	} else {
+		secondStage_ = secondStagePar;
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth)
 {
-	gaussConstraint_ = kTRUE;
-	constraintMean_ = newGaussMean;
-	constraintWidth_ = newGaussWidth;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->addGaussianConstraint(newGaussMean,newGaussWidth);
+	} else {
+		gaussConstraint_ = kTRUE;
+		constraintMean_ = newGaussMean;
+		constraintWidth_ = newGaussWidth;
+		this->updateClones(kFALSE);
 	}
 }
 
 void LauParameter::removeGaussianConstraint()
 {
-	gaussConstraint_ = kFALSE;
-	if (!this->clone()) {
-		this->updateClones();
+	if (this->clone()) {
+		parent_->removeGaussianConstraint();
+	} else {
+		gaussConstraint_ = kFALSE;
+		this->updateClones(kFALSE);
 	}
 }
 
 LauParameter& LauParameter::operator = (Double_t val)
 {
-	this->checkRange(val,this->minValue(),this->maxValue());
-	if (!this->clone()) {
+	if (this->clone()) {
+		(*parent_) = val;
+	} else {
+		this->checkRange(val,this->minValue(),this->maxValue());
 		this->updateClones(kTRUE);
 	}
 	return *this;
@@ -492,8 +542,10 @@ LauParameter& LauParameter::operator = (Double_t val)
 
 LauParameter& LauParameter::operator += (Double_t val)
 {
-	this->checkRange(this->value()+val,this->minValue(),this->maxValue());
-	if (!this->clone()) {
+	if (this->clone()) {
+		(*parent_) += val;
+	} else {
+		this->checkRange(this->value()+val,this->minValue(),this->maxValue());
 		this->updateClones(kTRUE);
 	}
 	return *this;
@@ -501,8 +553,10 @@ LauParameter& LauParameter::operator += (Double_t val)
 
 LauParameter& LauParameter::operator -= (Double_t val)
 {
-	this->checkRange(this->value()-val,this->minValue(),this->maxValue());
-	if (!this->clone()) {
+	if (this->clone()) {
+		(*parent_) -= val;
+	} else {
+		this->checkRange(this->value()-val,this->minValue(),this->maxValue());
 		this->updateClones(kTRUE);
 	}
 	return *this;
@@ -510,8 +564,10 @@ LauParameter& LauParameter::operator -= (Double_t val)
 
 LauParameter& LauParameter::operator *= (Double_t val)
 {
-	this->checkRange(this->value()*val,this->minValue(),this->maxValue());
-	if (!this->clone()) {
+	if (this->clone()) {
+		(*parent_) *= val;
+	} else {
+		this->checkRange(this->value()*val,this->minValue(),this->maxValue());
 		this->updateClones(kTRUE);
 	}
 	return *this;
@@ -519,8 +575,10 @@ LauParameter& LauParameter::operator *= (Double_t val)
 
 LauParameter& LauParameter::operator /= (Double_t val)
 {
-	this->checkRange(this->value()/val,this->minValue(),this->maxValue());
-	if (!this->clone()) {
+	if (this->clone()) {
+		(*parent_) /= val;
+	} else {
+		this->checkRange(this->value()/val,this->minValue(),this->maxValue());
 		this->updateClones(kTRUE);
 	}
 	return *this;
@@ -528,6 +586,11 @@ LauParameter& LauParameter::operator /= (Double_t val)
 
 void LauParameter::updatePull()
 {
+	if (this->clone()) {
+		parent_->updatePull();
+		return;
+	}
+
 	// calculate the bias
 	bias_ = value_ - genValue_;
 
@@ -542,6 +605,8 @@ void LauParameter::updatePull()
 	} else {
 		pull_ = 0.0;
 	}
+
+	this->updateClones(kFALSE);
 }
 
 void LauParameter::checkRange(Double_t val, Double_t minVal, Double_t maxVal)
@@ -611,28 +676,39 @@ LauParameter* LauParameter::createClone(const TString& newName, Double_t constFa
 
 void LauParameter::updateClones(Bool_t justValue)
 {
+	// if we don't have any clones then there's nothing to do
+	if ( clones_.empty() ) {
+		return;
+	}
+
+	// we have to set the values directly rather than using member functions because otherwise we'd get into an infinite loop
 	if (justValue) {
 		for (map<LauParameter*,Double_t>::iterator iter = clones_.begin(); iter != clones_.end(); ++iter) {
 			LauParameter* clonePar = iter->first;
 			Double_t constFactor = iter->second;
-			clonePar->value(constFactor*this->value());
+			clonePar->value_ = constFactor*this->value();
 		}
 	} else {
 		for (map<LauParameter*,Double_t>::iterator iter = clones_.begin(); iter != clones_.end(); ++iter) {
 			LauParameter* clonePar = iter->first;
 			Double_t constFactor = iter->second;
-			clonePar->valueAndRange(constFactor*this->value(),constFactor*this->minValue(),constFactor*this->maxValue());
-			clonePar->errors(constFactor*this->error(),constFactor*this->negError(),constFactor*this->posError());
-			clonePar->genValue(constFactor*this->genValue());
-			clonePar->initValue(constFactor*this->initValue());
-			clonePar->fixed(this->fixed());
-			clonePar->firstStage(this->firstStage());
-			clonePar->secondStage(this->secondStage());
-			if ( this->gaussConstraint() ) {
-				clonePar->addGaussianConstraint( this->constraintMean(), this->constraintWidth() );
-			} else {
-				clonePar->removeGaussianConstraint();
-			}
+			clonePar->value_ = constFactor*this->value();
+			clonePar->error_ = constFactor*this->error();
+			clonePar->negError_ = constFactor*this->negError();
+			clonePar->posError_ = constFactor*this->posError();
+			clonePar->genValue_ = constFactor*this->genValue();
+			clonePar->initValue_ = constFactor*this->initValue();
+			clonePar->minValue_ = constFactor*this->minValue();
+			clonePar->maxValue_ = constFactor*this->maxValue();
+			clonePar->fixed_ = this->fixed();
+			clonePar->firstStage_ = this->firstStage();
+			clonePar->secondStage_ = this->secondStage();
+			clonePar->gaussConstraint_ = this->gaussConstraint();
+			clonePar->constraintMean_ = this->constraintMean();
+			clonePar->constraintWidth_ = this->constraintWidth();
+			clonePar->gcc_ = this->globalCorrelationCoeff();
+			clonePar->bias_ = this->bias();
+			clonePar->pull_ = this->pull();
 		}
 	}
 }
@@ -648,6 +724,7 @@ void LauParameter::randomiseValue(Double_t minVal, Double_t maxVal)
 	if (this->fixed()) {
 		return;
 	}
+
 	// check supplied values are sensible
 	if (maxVal < minVal) {
 		cerr<<"ERROR in LauParameter::randomiseValue : Supplied maximum value smaller than minimum value."<<endl;
@@ -660,6 +737,8 @@ void LauParameter::randomiseValue(Double_t minVal, Double_t maxVal)
 		minVal = this->minValue();
 	}
 
+	// use the zero-seed random number generator to get values that are
+	// uniformly distributed over the given range
 	Double_t randNo = LauRandom::zeroSeedRandom()->Rndm();
 	Double_t val = randNo*(maxVal - minVal) + minVal;
 	this->initValue(val);

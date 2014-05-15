@@ -15,6 +15,8 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <set>
+#include <vector>
 
 #include "TFile.h"
 #include "TRandom.h"
@@ -171,13 +173,24 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	integralsDone_ = kFALSE;
 
 	// Initialise all resonance models
-	for ( std::vector<LauAbsResonance*>::iterator iter = sigResonances_.begin(); iter != sigResonances_.end(); ++iter ) {
-		(*iter)->initialise();
+	resonancePars_.clear();
+	std::set<LauParameter*> uniqueResPars;
+	for ( std::vector<LauAbsResonance*>::iterator resIter = sigResonances_.begin(); resIter != sigResonances_.end(); ++resIter ) {
+		(*resIter)->initialise();
 
-		// Check if we have floating resonance parameters
-		if ( ! (*iter)->fixMass() || ! (*iter)->fixWidth() ) {
-			recalcNormalisation_ = kTRUE;
+		// Check if this resonance has floating parameters
+		// Append all unique parameters to our list
+		const std::vector<LauParameter*>& resPars = (*resIter)->getFloatingParameters();
+		for ( std::vector<LauParameter*>::const_iterator parIter = resPars.begin(); parIter != resPars.end(); ++parIter ) {
+			if ( uniqueResPars.insert( *parIter ).second ) {
+				resonancePars_.push_back( *parIter );
+			}
 		}
+	}
+	if ( resonancePars_.empty() ) {
+		recalcNormalisation_ = kFALSE;
+	} else {
+		recalcNormalisation_ = kTRUE;
 	}
 
 	// Print summary of what we have so far to screen
@@ -456,7 +469,6 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	// Always force the non-resonant amplitude pair to have resPairAmp = 0
 	// in case the user chooses the wrong number.
 	if ( resType == LauAbsResonance::FlatNR || 
-	     resType == LauAbsResonance::BelleSymNR ||
 	     resType == LauAbsResonance::NRModel ) {
 		std::cout<<"INFO in LauIsobarDynamics::addResonance : Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<std::endl;
 		resPairAmp_.push_back(0);

@@ -27,11 +27,13 @@ LauResonanceInfo::LauResonanceInfo(const TString& name, Double_t mass, Double_t 
 	width_(0),
 	spin_(spin),
 	charge_(charge),
-	range_(range)
+	range_(range),
+	conjugate_(0),
+	extraPars_()
 {
-	sanitiseName();
-	mass_ = new LauParameter(sanitisedName_+"_MASS",mass,0.0,range,kTRUE);
-	width_ = new LauParameter(sanitisedName_+"_WIDTH",width,0.0,3*width,kTRUE);
+	this->sanitiseName();
+	mass_ = new LauParameter(sanitisedName_+"_MASS",mass,0.0,3.0*mass,kTRUE);
+	width_ = new LauParameter(sanitisedName_+"_WIDTH",width,0.0,3.0*width,kTRUE);
 }
 
 LauResonanceInfo::~LauResonanceInfo()
@@ -40,6 +42,7 @@ LauResonanceInfo::~LauResonanceInfo()
 	delete width_; width_ = 0;
 }
 
+/*
 LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other ) :
 	name_( other.name_ ),
 	sanitisedName_( other.sanitisedName_ ),
@@ -47,25 +50,37 @@ LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other ) :
 	width_( other.width_->createClone() ),
 	spin_( other.spin_ ),
 	charge_( other.charge_ ),
-	range_( other.range_ )
+	range_( other.range_ ),
+	conjugate_( other.conjugate_ ),
+	extraPars_( other.extraPars_ )
 {
 }
+*/
 
 LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other, const TString& newName, const Int_t newCharge ) :
-	name_( newName ),
+	name_(newName),
 	sanitisedName_(""),
-	mass_( 0 ),
-	width_( 0 ),
-	spin_( other.spin_ ),
-	charge_( newCharge ),
-	range_( other.range_ )
+	mass_(0),
+	width_(0),
+	spin_(other.spin_),
+	charge_(newCharge),
+	range_(other.range_),
+	conjugate_(0),
+	extraPars_()
 {
-	sanitiseName();
+	this->sanitiseName();
 	mass_ = other.mass_->createClone( sanitisedName_+"_MASS" );
 	width_ = other.mass_->createClone( sanitisedName_+"_WIDTH" );
+	for ( std::set<LauParameter*>::iterator iter = other.extraPars_.begin(); iter != other.extraPars_.end(); ++iter ) {
+		TString parName = (*iter)->name();
+		parName.Remove(0, parName.Last('_'));
+		parName.Prepend( sanitisedName_ );
+		LauParameter* par = (*iter)->createClone( parName );
+		extraPars_.insert( par );
+	}
 }
 
-LauResonanceInfo* LauResonanceInfo::createChargeConjugate() const
+LauResonanceInfo* LauResonanceInfo::createChargeConjugate()
 {
 	Int_t newCharge = -charge_;
 
@@ -81,8 +96,44 @@ LauResonanceInfo* LauResonanceInfo::createChargeConjugate() const
 	}
 
 	LauResonanceInfo* conjugate = new LauResonanceInfo( *this, newName, newCharge );
+	conjugate->conjugate_ = this;
+	this->conjugate_ = conjugate;
 
 	return conjugate;
+}
+
+LauParameter* LauResonanceInfo::getExtraParameter( const TString& parName )
+{
+	LauParameter* par(0);
+	for ( std::set<LauParameter*>::iterator iter = extraPars_.begin(); iter != extraPars_.end(); ++iter ) {
+		if ( (*iter)->name() == parName ) {
+			par = (*iter);
+		}
+	}
+	return par;
+}
+
+void LauResonanceInfo::addExtraParameter( LauParameter* param )
+{
+	bool ok = extraPars_.insert( param ).second;
+	if ( !ok ) {
+		std::cerr << "WARNING in LauResonanceInfo::addExtraParameter : parameter already present, not adding again" << std::endl;
+		return;
+	}
+
+	if ( conjugate_ != 0 ) {
+		conjugate_->addCloneOfExtraParameter(param);
+	}
+}
+
+void LauResonanceInfo::addCloneOfExtraParameter( LauParameter* param )
+{
+	TString parName = param->name();
+	parName.Remove(0, parName.Last('_'));
+	parName.Prepend( sanitisedName_ );
+
+	LauParameter* cloneParam = param->createClone( parName );
+	extraPars_.insert( cloneParam );
 }
 
 ostream& operator<<( ostream& stream, const LauResonanceInfo& infoRecord )

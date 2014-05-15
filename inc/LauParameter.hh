@@ -430,6 +430,12 @@ class LauParameter : public TObject, public LauAbsRValue {
 		*/
 		LauParameter* createClone(const TString& newName, Double_t constFactor = 1.0);
 
+		//! The parent parameter
+		/*!
+		    \return the parent parameter
+		*/
+		inline LauParameter* parent() const {return parent_;}
+
 		//! Call to update the bias and pull values
 		void updatePull();
 
@@ -474,12 +480,6 @@ class LauParameter : public TObject, public LauAbsRValue {
 			clone_ = (parent_==0) ? kFALSE : kTRUE;
 		}
 
-		//! The parent parameter
-		/*!
-		    \return the parent parameter
-		*/
-		inline LauParameter* parent() const {return parent_;}
-
 		//! Method to clear the clone parameters
 		inline void wipeClones() {clones_.clear();}
 
@@ -487,7 +487,7 @@ class LauParameter : public TObject, public LauAbsRValue {
 		/*!
 		    \param [in] justValue boolean flag to determine whether it is necessary to update all the parameter settings or only its value.
 		*/
-		void updateClones(Bool_t justValue = kFALSE);
+		void updateClones(Bool_t justValue);
 
 	private:
 		//! LauFitNtuple is a friend class

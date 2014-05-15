@@ -325,7 +325,13 @@ class LauAbsDPDynamics {
 		/*!
 		    \return any extra parameters
 		*/
-		std::vector<LauParameter> getExtraParameters() {return extraParameters_;}
+		inline std::vector<LauParameter> getExtraParameters() {return extraParameters_;}
+
+		//! Retrieve the floating parameters of the resonance models
+		/*!
+		    \return the list of floating parameters
+		*/
+		virtual std::vector<LauParameter*>& getFloatingParameters() = 0;
 
 	protected:
 		//! Calculate the normalisation factor for the log-likelihood function

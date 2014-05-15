@@ -22,9 +22,8 @@
 ClassImp(LauPolNR)
 
 
-LauPolNR::LauPolNR(const TString& resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		   Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauPolNR::LauPolNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	omega_(0.0),
 	order_(0)
 {

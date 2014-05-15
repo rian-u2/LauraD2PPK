@@ -21,9 +21,8 @@
 ClassImp(LauDabbaRes)
 
 
-LauDabbaRes::LauDabbaRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauDabbaRes::LauDabbaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	mSumSq_(0.0),
 	sAdler_(0.0),
 	b_(24.49),

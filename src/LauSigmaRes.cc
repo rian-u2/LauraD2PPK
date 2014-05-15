@@ -20,9 +20,8 @@
 ClassImp(LauSigmaRes)
 
 
-LauSigmaRes::LauSigmaRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauSigmaRes::LauSigmaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	mPiSq4_(0.0),
 	sAdler_(0.0),
 	b1_(0.0),

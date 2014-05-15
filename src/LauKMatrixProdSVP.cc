@@ -21,7 +21,7 @@ ClassImp(LauKMatrixProdSVP)
 
 LauKMatrixProdSVP::LauKMatrixProdSVP(const TString& poleName, Int_t channelIndex, Int_t resPairAmpInt,
 		                     LauKMatrixPropagator* propagator, const LauDaughters* daughters) : 
-	LauAbsResonance(poleName, 0, 0, 0, 0, resPairAmpInt, daughters),
+	LauAbsResonance(poleName, resPairAmpInt, daughters),
 	thePropagator_(propagator),
 	channelIndex_(channelIndex - 1) // channelIndex goes from 1 to nChannels.
 {

@@ -17,9 +17,8 @@
 ClassImp(LauBreitWignerRes)
 
 
-LauBreitWignerRes::LauBreitWignerRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters)
+LauBreitWignerRes::LauBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters)
 {
 }
 

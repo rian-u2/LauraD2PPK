@@ -348,6 +348,12 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 		*/
 		inline void flipHelicityForCPEigenstates(Bool_t boolean) {flipHelicity_ = boolean;}
 
+		//! Retrieve the floating parameters of the resonance models
+		/*!
+		    \return the list of floating parameters
+		*/
+		virtual std::vector<LauParameter*>& getFloatingParameters() {return resonancePars_;}
+
 	protected:
 		//! Print a summary of the model to be used
 		virtual void initSummary();
@@ -567,6 +573,9 @@ class LauIsobarDynamics : public LauAbsDPDynamics {
 
 		//! Flag to recalculate the normalisation
 		Bool_t recalcNormalisation_;
+
+		//! List of floating resonance parameters
+		std::vector<LauParameter*> resonancePars_;
 
 		ClassDef(LauIsobarDynamics,0)
 };

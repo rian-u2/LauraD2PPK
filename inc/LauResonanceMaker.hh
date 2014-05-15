@@ -61,12 +61,6 @@ class LauResonanceMaker {
 		*/
 		UInt_t getNResDefMax() const {return nResDefMax_;}
 
-		//! Retrieve the List of floating parameters
-		/*!
-		    \return the List of floating parameters
-		*/
-		std::vector<LauParameter*> getFloatingParameters();
-
 		//! Print the information records, one per line, to the requested stream
 		/*!
 		    \param [in,out] stream the stream to which to print the info

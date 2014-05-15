@@ -37,14 +37,13 @@
 #include "LauKinematics.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"
-#include "LauResonanceMaker.hh"
 #include "LauScfMap.hh"
 #include "LauSimpleFitModel.hh"
 
 ClassImp(LauSimpleFitModel)
 
 
-	LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
+LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
 	sigDPModel_(sigModel),
 	kinematics_(sigModel ? sigModel->getKinematics() : 0),
 	usingBkgnd_(kFALSE),
@@ -267,9 +266,22 @@ void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 
 void LauSimpleFitModel::initialise()
 {
-	// First of all check that, we have all the Dalitz-plot models
+	// From the initial parameter values calculate the coefficients
+	// so they can be passed to the signal model
+	this->updateCoeffs();
+
+	// Initialisation
+	if (this->useDP() == kTRUE) {
+		this->initialiseDPModels();
+	}
+
+	if (!this->useDP() && signalPdfs_.empty()) {
+		std::cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
 
 	if (this->useDP()) {
+		// Check that we have all the Dalitz-plot models
 		if ( sigDPModel_ == 0 ) {
 			std::cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to the signal DP model is null.\n";
 			std::cerr << "                                       : Removing the Dalitz Plot from the model." << std::endl;
@@ -353,26 +365,20 @@ void LauSimpleFitModel::initialise()
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	// From the initial parameter values calculate the coefficients
-	// so they can be passed to the signal model
-	this->updateCoeffs();
-
-	// Initialisation
-	if (this->useDP() == kTRUE) {
-		this->initialiseDPModels();
-	}
-
-	if (!this->useDP() && signalPdfs_.empty()) {
-		std::cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
 	this->setExtraNtupleVars();
 }
 
 void LauSimpleFitModel::initialiseDPModels()
 {
-	std::cout << "INFO in LauSimpleFitModel::initialiseDPModels : Initialising signal DP model" << std::endl;
+	// Need to check that the number of components we have and that the dynamics has matches up
+	UInt_t nAmp = sigDPModel_->getnAmp();
+	if (nAmp != nSigComp_) {
+		std::cerr << "ERROR in LauSimpleFitModel::initialiseDPModels : Number of signal DP components with magnitude and phase set not right." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	std::cout << "INFO in LauSimpleFitModel::initialiseDPModels : Initialising DP models" << std::endl;
+
 	sigDPModel_->initialise(coeffs_);
 
 	if (usingBkgnd_ == kTRUE) {
@@ -401,15 +407,7 @@ void LauSimpleFitModel::setSignalDPParameters()
 
 	std::cout << "INFO in LauSimpleFitModel::setSignalDPParameters : Setting the initial fit parameters for the signal DP model." << std::endl;
 
-	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nAmp = sigDPModel_->getnAmp();
-	if (nAmp != nSigComp_) {
-		std::cerr << "ERROR in LauSimpleFitModel::setSignalDPParameters : Number of signal DP components with magnitude and phase set not right." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
-
-	// Place signal model parameters in vector of fit variables
+	// Place isobar coefficient parameters in vector of fit variables
 	LauParameterPList& fitVars = this->fitPars();
 	for (UInt_t i = 0; i < nSigComp_; i++) {
 		LauParameterPList pars = coeffPars_[i]->getParameters();
@@ -421,15 +419,14 @@ void LauSimpleFitModel::setSignalDPParameters()
 		}
 	}
 
-	// get the resonanceMaker from any of the two {pos,neg}SigModel_
-	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
+	// Obtain the resonance parameters and place them in the vector of fit variables and in a separate vector
+	LauParameterPSet& resVars = this->resPars();
+	resVars.clear();
 
-	//Obtain the Resonance Parameters
-	std::vector<LauParameter*> resPars = resonanceMaker.getFloatingParameters();
-	for (LauParameterPList::iterator iter = resPars.begin(); iter != resPars.end(); ++iter) {
-		//cout << "resName = " << (*iter)->name() << ", fixed = "<< (*iter)->fixed() << endl;
-		if ( !(*iter)->clone() ) {
-			//cout << "adding " << (*iter)->name() << endl;
+	LauParameterPList& sigDPPars = sigDPModel_->getFloatingParameters();
+
+	for ( LauParameterPList::iterator iter = sigDPPars.begin(); iter != sigDPPars.end(); ++iter ) {
+		if ( resVars.insert(*iter).second ) {
 			fitVars.push_back(*iter);
 			++nSigDPPar_;
 		}

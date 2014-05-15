@@ -40,7 +40,6 @@
 #include "LauKinematics.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"
-#include "LauResonanceMaker.hh"
 #include "LauScfMap.hh"
 
 ClassImp(LauCPFitModel)
@@ -419,9 +418,22 @@ void LauCPFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 
 void LauCPFitModel::initialise()
 {
-	// First of all check that, if a given component is being used,
-	// we've got the PDFs for all the variables involved
+	// From the initial parameter values calculate the coefficients
+	// so they can be passed to the signal model
+	this->updateCoeffs();
+
+	// Initialisation
+	if (this->useDP() == kTRUE) {
+		this->initialiseDPModels();
+	}
+
+	if (!this->useDP() && negSignalPdfs_.empty()) {
+		std::cerr << "ERROR in LauCPFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
 	if ( this->useDP() ) {
+		// Check that we have all the Dalitz-plot models
 		if ((negSigModel_ == 0) || (posSigModel_ == 0)) {
 			std::cerr << "ERROR in LauCPFitModel::initialise : the pointer to one (neg or pos) of the signal DP models is null.\n";
 			std::cerr << "                                   : Removing the Dalitz Plot from the model." << std::endl;
@@ -518,20 +530,6 @@ void LauCPFitModel::initialise()
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	// From the initial parameter values calculate the coefficients
-	// so they can be passed to the signal model
-	this->updateCoeffs();
-
-	// Initialisation
-	if (this->useDP() == kTRUE) {
-		this->initialiseDPModels();
-	}
-
-	if (!this->useDP() && negSignalPdfs_.empty()) {
-		std::cerr << "ERROR in LauCPFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
 	this->setExtraNtupleVars();
 }
 
@@ -547,6 +545,19 @@ void LauCPFitModel::recalculateNormalisation()
 
 void LauCPFitModel::initialiseDPModels()
 {
+	// Need to check that the number of components we have and that the dynamics has matches up
+	UInt_t nNegAmp = negSigModel_->getnAmp();
+	UInt_t nPosAmp = posSigModel_->getnAmp();
+	if ( nNegAmp != nPosAmp ) {
+		std::cerr << "ERROR in LauCPFitModel::initialiseDPModels : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+	if ( nNegAmp != nSigComp_ ) {
+		std::cerr << "ERROR in LauCPFitModel::initialiseDPModels : Number of signal DP components in the model (" << nNegAmp << ") not equal to number of coefficients supplied (" << nSigComp_ << ")." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+
 	std::cout << "INFO in LauCPFitModel::initialiseDPModels : Initialising signal DP model" << std::endl;
 	negSigModel_->initialise(negCoeffs_);
 	posSigModel_->initialise(posCoeffs_);
@@ -572,20 +583,7 @@ void LauCPFitModel::setSignalDPParameters()
 
 	std::cout << "INFO in LauCPFitModel::setSignalDPParameters : Setting the initial fit parameters for the signal DP model." << std::endl;
 
-	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nNegAmp = negSigModel_->getnAmp();
-	UInt_t nPosAmp = posSigModel_->getnAmp();
-	if ( nNegAmp != nPosAmp ) {
-		std::cerr << "ERROR in LauCPFitModel::setSignalDPParameters : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-	if ( nNegAmp != nSigComp_ ) {
-		std::cerr << "ERROR in LauCPFitModel::setSignalDPParameters : Number of signal DP components in the model (" << nNegAmp << ") not equal to number of coefficients supplied (" << nSigComp_ << ")." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
-
-	// Place signal model parameters in vector of fit variables
+	// Place isobar coefficient parameters in vector of fit variables
 	LauParameterPList& fitVars = this->fitPars();
 	for (UInt_t i = 0; i < nSigComp_; i++) {
 		LauParameterPList pars = coeffPars_[i]->getParameters();
@@ -597,13 +595,22 @@ void LauCPFitModel::setSignalDPParameters()
 		}
 	}
 
-	// get the resonance maker factory
-	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
+	// Obtain the resonance parameters and place them in the vector of fit variables and in a separate vector
+	// Need to make sure that they are unique because some might appear in both DP models
+	LauParameterPSet& resVars = this->resPars();
+	resVars.clear();
 
-	//Obtain the Resonance Parameters
-	std::vector<LauParameter*> resPars = resonanceMaker.getFloatingParameters();
-	for (LauParameterPList::iterator iter = resPars.begin(); iter != resPars.end(); ++iter) {
-		if ( !(*iter)->clone() ) {
+	LauParameterPList& negSigDPPars = negSigModel_->getFloatingParameters();
+	LauParameterPList& posSigDPPars = posSigModel_->getFloatingParameters();
+
+	for ( LauParameterPList::iterator iter = negSigDPPars.begin(); iter != negSigDPPars.end(); ++iter ) {
+		if ( resVars.insert(*iter).second ) {
+			fitVars.push_back(*iter);
+			++nSigDPPar_;
+		}
+	}
+	for ( LauParameterPList::iterator iter = posSigDPPars.begin(); iter != posSigDPPars.end(); ++iter ) {
+		if ( resVars.insert(*iter).second ) {
 			fitVars.push_back(*iter);
 			++nSigDPPar_;
 		}

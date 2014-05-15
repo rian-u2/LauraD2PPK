@@ -33,17 +33,11 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 	public:
 		//! Constructor
 		/*!
-			\param [in] resName the name of the resonance
-			\param [in] resMass the mass of the resonance
-			\param [in] resWidth the width of the resonance
-			\param [in] resSpin the spin of the resonance
-			\param [in] resCharge the charge of the resonance
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauRelBreitWignerRes(TString resName, LauParameter* resMass, LauParameter* resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
-				const LauDaughters* daughters);
+		LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor	
 		virtual ~LauRelBreitWignerRes();
@@ -64,6 +58,12 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 			\param [in] type the form-factor model
 		*/
 		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
 
 	protected:
 		//! Complex resonant amplitude

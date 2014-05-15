@@ -20,9 +20,8 @@
 ClassImp(LauRelBreitWignerRes)
 
 
-LauRelBreitWignerRes::LauRelBreitWignerRes(TString resName, LauParameter* resMass, LauParameter* resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	q0_(0.0),
 	p0_(0.0),
 	pstar0_(0.0),
@@ -264,5 +263,19 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude.rescale((fFactorRRatio*fFactorBRatio*spinTerm)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauRelBreitWignerRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+	if ( ! this->fixWidth() ) {
+		this->addFloatingParameter( this->getWidthPar() );
+	}
+
+	return this->getParameters();
 }
 

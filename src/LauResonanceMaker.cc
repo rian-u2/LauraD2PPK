@@ -359,37 +359,25 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 	// name (resName), which daughter is the bachelor track (resPairAmpInt = 1,2 or 3), 
 	// and the resonance type ("BW" = Breit-Wigner, "Flatte" = Flatte distribution).
 
-	LauParameter* resMass(0);
-	LauParameter* resWidth(0);
-	Int_t    resSpin(0);
-	Int_t    resCharge(0);
-	//Double_t resRange(0.0);
-
-	Bool_t gotResonance(kFALSE);
-
 	// Loop over all possible resonance states we have defined in 
 	// createResonanceVector() until we get a match with the name of the resonance
 
+	LauResonanceInfo* resInfo(0);
 	for (std::vector<LauResonanceInfo*>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
 
 		if (resName == (*iter)->getName()) {
 			// We have recognised the resonance name. 
 			std::cout<<"INFO in LauResonanceMaker::getResonance : Creating resonance: "<<resName<<std::endl;
 
-			resMass = (*iter)->getMass();
-			resWidth = (*iter)->getWidth();
-			resSpin = (*iter)->getSpin();
-			resCharge = (*iter)->getCharge();
-			//resRange = (*iter)->getRange();
+			resInfo = (*iter);
 
 			// stop looping
-			gotResonance = kTRUE;
 			break;
 		}
 	}
 
 	// if we couldn't find the right resonance then we should return a null pointer
-	if (!gotResonance) {
+	if ( resInfo == 0 ) {
 		std::cout<<"WARNING in LauResonanceMaker::getResonance : Creating resonance: "<<resName<<std::endl;
 		return 0;
 	}
@@ -404,128 +392,107 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		// Flatte distribution - coupled channel Breit-Wigner
 		std::cout<<"                                        : Using Flatte lineshape. "<<std::endl;
 		theResonance = 
-			new LauFlatteRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauFlatteRes(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::RelBW ) {
 
 		// Relativistic Breit-Wigner with Blatt-Weisskopf factors.
 		std::cout<<"                                        : Using relativistic Breit-Wigner lineshape. "<<std::endl;
 		theResonance = 
-			new LauRelBreitWignerRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
-
-		// Set the Blatt-Weisskopf barrier radius for the resonance and its parent
-		//Double_t parentRange = 4.0;
-		//theResonance->setBarrierRadii(resRange, parentRange);
+			new LauRelBreitWignerRes(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::Dabba ) {
 
 		// Dabba model - should only be used for the D-pi system
 		std::cout<<"                                        : Using Dabba lineshape. "<<std::endl;
 		theResonance = 
-			new LauDabbaRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauDabbaRes(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::Kappa ) {
 
 		// Kappa model - should only be used for the K-pi system
 		std::cout<<"                                        : Using Kappa lineshape. "<<std::endl;
 		theResonance = 
-			new LauKappaRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauKappaRes(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::Sigma ) {
 
 		// Sigma model - should only be used for the pi-pi system
 		std::cout<<"                                        : Using Sigma lineshape. "<<std::endl;
 		theResonance = 
-			new LauSigmaRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauSigmaRes(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::LASS_BW ) {
 
 		// LASS function to try and model the K-pi S-wave better
 		std::cout<<"                                        : Using LASS lineshape (resonant part only). "<<std::endl;
 		theResonance = 
-			new LauLASSBWRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);		  
+			new LauLASSBWRes(resInfo, resPairAmpInt, daughters);		  
 
 	} else if ( resType == LauAbsResonance::LASS_NR ) {
 
 		// LASS function to try and model the K-pi S-wave better
 		std::cout<<"                                        : Using LASS lineshape (nonresonant part only). "<<std::endl;
 		theResonance = 
-			new LauLASSNRRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);		  
+			new LauLASSNRRes(resInfo, resPairAmpInt, daughters);		  
 
 	} else if ( resType == LauAbsResonance::LASS ) {
 
 		// LASS function to try and model the K-pi S-wave better
 		std::cout<<"                                        : Using LASS lineshape. "<<std::endl;
 		theResonance = 
-			new LauLASSRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);		  
+			new LauLASSRes(resInfo, resPairAmpInt, daughters);		  
 
 	} else if ( resType == LauAbsResonance::GS ) {
 
 		// Gounaris-Sakurai function to try and model the rho(770) better
 		std::cout<<"                                        : Using Gounaris-Sakurai lineshape. "<<std::endl;
 		theResonance = 
-			new LauGounarisSakuraiRes(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);		  
-
-		// Set the Blatt-Weisskopf barrier radius for the resonance and its parent
-		//Double_t parentRange = 4.0;
-		//theResonance->setBarrierRadii(resRange, parentRange);
+			new LauGounarisSakuraiRes(resInfo, resPairAmpInt, daughters);		  
 
 	} else if ( resType == LauAbsResonance::FlatNR ) {
 
 		// uniform NR amplitude - arguments are there to preserve the interface
 		std::cout<<"                                        : Using uniform NR lineshape. "<<std::endl;
+		// we override resPairAmpInt here
 		theResonance =
-			new LauFlatNR(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauFlatNR(resInfo, 0, daughters);
 
 	} else if ( resType == LauAbsResonance::NRModel ) {
 
 		// NR amplitude model - arguments are there to preserve the interface
 		std::cout<<"                                        : Using NR-model lineshape. "<<std::endl;
+		// we override resPairAmpInt here
 		theResonance =
-			new LauNRAmplitude(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauNRAmplitude(resInfo, 0, daughters);
 
 	} else if ( resType == LauAbsResonance::BelleSymNR || resType == LauAbsResonance::TaylorNR ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
 		std::cout<<"                                        : Using Belle symmetric NR lineshape. "<<std::endl;
 		theResonance =
-			new LauBelleSymNR(resName, resType, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauBelleSymNR(resInfo, resType, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::BelleNR || resType == LauAbsResonance::PowerLawNR ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
 		std::cout<<"                                        : Using Belle NR lineshape. "<<std::endl;
 		theResonance =
-			new LauBelleNR(resName, resType, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauBelleNR(resInfo, resType, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::PolNR ) {
 
 		// Polynomial NR amplitude model - arguments are there to preserve the interface
 		std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
 		theResonance =
-			new LauPolNR(resName, resMass, resWidth, resSpin, resCharge,
-					resPairAmpInt, daughters);
+			new LauPolNR(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::BW ) {
 
 		// Simple non-relativistic Breit-Wigner
 		std::cout<<"                                        : Using simple Breit-Wigner lineshape. "<<std::endl;
 		theResonance = 
-			new LauBreitWignerRes(resName, resMass, resWidth, resSpin,  resCharge,
-					resPairAmpInt, daughters);
+			new LauBreitWignerRes(resInfo, resPairAmpInt, daughters);
 
 	} else {
 		std::cerr << "ERROR in LauResonanceMaker::getResonance : Could not match resonace type \"" << resType << "\"." << std::endl;
@@ -557,19 +524,26 @@ Int_t LauResonanceMaker::resTypeInt(const TString& name) const
 	return resTypInt;
 }
 
+/*
 std::vector<LauParameter*> LauResonanceMaker::getFloatingParameters()
 {
 	std::vector<LauParameter*> param;
 
 	for (std::vector<LauResonanceInfo*>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
 		LauParameter* massPar = (*iter)->getMass();
-		if ( (!massPar->fixed()) && (!massPar->clone()) ) {
+		if ( ! massPar->fixed() ) {
+			if ( massPar->clone() ) {
+				massPar = massPar->parent();
+			}
 			std::cout << "INFO in LauResonanceMaker::getFloatingParameters: resNameMass = " << massPar->name() << ", fixed = "<< massPar->fixed() << std::endl;
 			param.push_back(massPar);
 		}
 
 		LauParameter* widthPar = (*iter)->getWidth();
-		if ( (!widthPar->fixed()) && (!widthPar->clone()) ) {
+		if ( ! widthPar->fixed() ) {
+			if ( widthPar->clone() ) {
+				widthPar = widthPar->parent();
+			}
 			std::cout << "INFO in LauResonanceMaker::getFloatingParameters: resNameWidth = " << widthPar->name() << ", fixed = "<< widthPar->fixed() << std::endl;
 			param.push_back(widthPar);
 		}
@@ -577,6 +551,7 @@ std::vector<LauParameter*> LauResonanceMaker::getFloatingParameters()
 
 	return param;
 }
+*/
 
 void LauResonanceMaker::printAll( ostream& stream ) const
 {

@@ -19,22 +19,29 @@
 #include "LauBelleSymNR.hh"
 #include "LauDaughters.hh"
 #include "LauKinematics.hh"
+#include "LauResonanceInfo.hh"
 
 ClassImp(LauBelleSymNR)
 
 
-LauBelleSymNR::LauBelleSymNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
-			     LauParameter* resMass, LauParameter* resWidth,
-			     const Int_t resSpin, const Int_t resCharge, const Int_t resPairAmpInt,
-			     const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
-	alpha_(0.0),
+LauBelleSymNR::LauBelleSymNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,
+			     const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
+	alpha_(0),
 	model_(resType)
 {
+	TString parName = this->getSanitisedName();
+	parName += "_alpha";
+	alpha_ = resInfo->getExtraParameter( parName );
+	if ( alpha_ == 0 ) {
+		alpha_ = new LauParameter( parName, 0.0, 0.0, 10.0, kTRUE );
+		resInfo->addExtraParameter( alpha_ );
+	}
 }
 
 LauBelleSymNR::~LauBelleSymNR()
 {
+	delete alpha_;
 }
 
 void LauBelleSymNR::initialise()
@@ -73,11 +80,13 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 
 	Double_t magnitude(1.0);
 
+	Double_t alpha = this->getAlpha();
+
 	if ( model_ == LauAbsResonance::BelleSymNR ) {
-		magnitude = TMath::Exp(-alpha_*s) + TMath::Exp(-alpha_*t);
+		magnitude = TMath::Exp(-alpha*s) + TMath::Exp(-alpha*t);
 	} else if ( model_ == LauAbsResonance::TaylorNR ) {
 		Double_t mParentSq = kinematics->getmParentSq();
-		magnitude = alpha_*(s + t)/mParentSq + 1.0;
+		magnitude = alpha*(s + t)/mParentSq + 1.0;
 	}
 
 	LauComplex resAmplitude(magnitude, 0.0);
@@ -101,5 +110,36 @@ void LauBelleSymNR::setResonanceParameter(const TString& name, const Double_t va
 	} else {
 		std::cerr << "WARNING in LauBelleSymNR::setResonanceParameter : Parameter name not reconised.  No parameter changes made." << std::endl;
 	}
+}
+
+void LauBelleSymNR::floatResonanceParameter(const TString& name)
+{
+	if (name == "alpha") {
+		if ( alpha_->fixed() ) { 
+			alpha_->fixed( kFALSE );
+			this->addFloatingParameter( alpha_ );
+		} else {
+			std::cerr << "WARNING in LauBelleSymNR::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else {
+		std::cerr << "WARNING in LauBelleSymNR::fixResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+
+LauParameter* LauBelleSymNR::getResonanceParameter(const TString& name)
+{
+	if (name == "alpha") {
+		return alpha_;
+	} else {
+		std::cerr << "WARNING in LauBelleSymNR::getResonanceParameter: Parameter name not reconised." << std::endl;
+		return 0;
+	}
+}
+
+void LauBelleSymNR::setAlpha(const Double_t alpha)
+{
+	alpha_->value( alpha );
+	alpha_->genValue( alpha );
+	alpha_->initValue( alpha );
 }
 

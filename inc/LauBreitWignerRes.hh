@@ -51,6 +51,12 @@ class LauBreitWignerRes : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::BW;}
 
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
 	protected:
 		//! Complex resonant amplitude
 		/*!

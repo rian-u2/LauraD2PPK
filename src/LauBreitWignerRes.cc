@@ -48,3 +48,17 @@ LauComplex LauBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	return resAmplitude;
 }
 
+const std::vector<LauParameter*>& LauBreitWignerRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+	if ( ! this->fixWidth() ) {
+		this->addFloatingParameter( this->getWidthPar() );
+	}
+
+	return this->getParameters();
+}
+

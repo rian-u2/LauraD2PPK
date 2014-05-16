@@ -96,6 +96,9 @@ class LauBelleNR : public LauAbsResonance {
 		Double_t getAlpha() const {return (alpha_!=0) ? alpha_->value() : 0.0;}
 
 		//! See if the alpha parameter is fixed or floating
+		/*!
+			\return kTRUE if the effective range parameter is fixed, kFALSE otherwise
+		*/
 		Bool_t fixAlpha() const {return (alpha_!=0) ? alpha_->fixed() : kTRUE;}
 
 		//! Complex resonant amplitude
@@ -112,7 +115,7 @@ class LauBelleNR : public LauAbsResonance {
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;
 
-		ClassDef(LauBelleNR,0) // Belle Non-resonant model
+		ClassDef(LauBelleNR,0)
 };
 
 #endif

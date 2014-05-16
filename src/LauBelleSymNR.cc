@@ -101,6 +101,17 @@ LauComplex LauBelleSymNR::resAmp(Double_t mass, Double_t spinTerm)
 	return LauComplex(0.0, 0.0);
 }
 
+const std::vector<LauParameter*>& LauBelleSymNR::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixAlpha() ) {
+		this->addFloatingParameter( alpha_ );
+	}
+
+	return this->getParameters();
+}
+
 void LauBelleSymNR::setResonanceParameter(const TString& name, const Double_t value) 
 {
 	// Set various parameters for the lineshape

@@ -96,11 +96,8 @@ void LauLASSRes::calcQ0()
 	q0_ = TMath::Sqrt((resMassSq_ - mDaugSumSq_)*(resMassSq_ - mDaugDiffSq_))/(2.0*resMass_);
 }
 
-LauComplex LauLASSRes::resAmp(Double_t mass, Double_t spinTerm)
+LauComplex LauLASSRes::resAmp(Double_t mass, Double_t /*spinTerm*/)
 {
-	// This function returns the complex dynamical amplitude for a Breit-Wigner resonance,
-	// given the invariant mass and cos(helicity) values.
-
 	LauComplex resAmplitude(0.0, 0.0);
 	LauComplex bkgAmplitude(0.0, 0.0);
 	LauComplex totAmplitude(0.0, 0.0);
@@ -136,7 +133,7 @@ LauComplex LauLASSRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude = LauComplex(massSqTerm, resMass*totWidth);
 
 	// Scale by the denominator factor
-	resAmplitude.rescale(spinTerm*(resMassSq_*resWidth/q0_)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
+	resAmplitude.rescale((resMassSq_*resWidth/q0_)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
 
 	// Calculate the phase shift term
 	const Double_t rVal = this->getEffectiveRange();
@@ -175,10 +172,6 @@ LauComplex LauLASSRes::resAmp(Double_t mass, Double_t spinTerm)
 		totAmplitude = bkgAmplitude + resAmplitude;
 	}
 
-	// There is no spin term for the LASS shape 
-	// Just set it 1.0 in case anyone decides to use it at a later date.
-	spinTerm = 1.0;
-
 	return totAmplitude;
 }
 
@@ -205,7 +198,7 @@ const std::vector<LauParameter*>& LauLASSRes::getFloatingParameters()
 	return this->getParameters();
 }
 
-void LauLASSRes::setResonanceParameter(const TString& name, const Double_t value) 
+void LauLASSRes::setResonanceParameter(const TString& name, const Double_t value)
 {
 	// Set various parameters for the LASS lineshape dynamics
 	if (name == "a") {
@@ -222,14 +215,14 @@ void LauLASSRes::setResonanceParameter(const TString& name, const Double_t value
 void LauLASSRes::floatResonanceParameter(const TString& name)
 {
 	if (name == "a") {
-		if ( a_->fixed() ) { 
+		if ( a_->fixed() ) {
 			a_->fixed( kFALSE );
 			this->addFloatingParameter( a_ );
 		} else {
 			std::cerr << "WARNING in LauLASSRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
 		}
 	} else if (name == "r") {
-		if ( r_->fixed() ) { 
+		if ( r_->fixed() ) {
 			r_->fixed( kFALSE );
 			this->addFloatingParameter( r_ );
 		} else {

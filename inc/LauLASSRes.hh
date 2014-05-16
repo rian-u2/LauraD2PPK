@@ -60,14 +60,14 @@ class LauLASSRes : public LauAbsResonance {
 		//! Set the cut off parameter
 		/*!
 			\param [in] cutOff the cut off parameter
-		*/	
+		*/
 		void setCutOff(const Double_t cutOff) {cutOff_ = cutOff;}
 
 		//! Set value of a resonance parameter
-		/*! 
+		/*!
 			\param [in] name the name of the parameter to be changed
 			\param [in] value the new parameter value
-		*/	
+		*/
 		virtual void setResonanceParameter(const TString& name, const Double_t value);
 
 		//! Allow the various parameters to float in the fit
@@ -90,13 +90,13 @@ class LauLASSRes : public LauAbsResonance {
 		virtual const std::vector<LauParameter*>& getFloatingParameters();
 
 	protected:
-		//! Set the the effective range parameter value
+		//! Set the effective range parameter value
 		/*!
 			\param [in] r the new effective range parameter value
 		*/
 		void setEffectiveRange(const Double_t r);
 
-		//! Set the the scattering length parameter value
+		//! Set the scattering length parameter value
 		/*!
 			\param [in] a the new scattering length parameter value
 		*/
@@ -133,29 +133,29 @@ class LauLASSRes : public LauAbsResonance {
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance
 			\param [in] spinTerm Zemach spin term
-		*/	
+		*/
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
 		//! Decay momentum of either daughter in the resonance rest frame
-		Double_t q0_; 
+		Double_t q0_;
 		//! Sum of the daughter masses
-		Double_t mDaugSum_; 
+		Double_t mDaugSum_;
 		//! Square of mDaugSum
 		Double_t mDaugSumSq_;
 		//! Difference between the daughter masses
-		Double_t mDaugDiff_; 
+		Double_t mDaugDiff_;
 		//! Square of mDaugDiff
-		Double_t mDaugDiffSq_; 
+		Double_t mDaugDiffSq_;
 		//! The resonance mass
 		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
 
 		//! LASS effective range parameter
-		LauParameter* r_; 
+		LauParameter* r_;
 		//! LASS scattering length parameter
-		LauParameter* a_; 
+		LauParameter* a_;
 
 		//! LASS cut off
 		Double_t cutOff_;

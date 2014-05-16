@@ -16,6 +16,7 @@
 
 #include "LauConstants.hh"
 #include "LauLASSBWRes.hh"
+#include "LauResonanceInfo.hh"
 
 ClassImp(LauLASSBWRes)
 
@@ -28,26 +29,36 @@ LauLASSBWRes::LauLASSBWRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	mDaugDiff_(0.0),
 	mDaugDiffSq_(0.0),
 	resMassSq_(0.0),
-	r_(0.0),
-	a_(0.0),
-	B_(0.0),
-	R_(0.0),
-	phiB_(0.0),
-	phiR_(0.0),
-	cutOff_(0.0)
+	r_(0),
+	a_(0)
 {
 	// Default values for LASS parameters
-	r_ = 3.32;
-	a_ = 2.07;
-	R_ = 1.0;
-	B_ = 1.0;
-	phiR_ = 0.0;
-	phiB_ = 0.0;
-	cutOff_ = 1.8;
+	const Double_t rVal = 3.32;
+	const Double_t aVal = 2.07;
+
+	const TString& parNameBase = this->getSanitisedName();
+
+	TString rName(parNameBase);
+	rName += "_r";
+	r_ = resInfo->getExtraParameter( rName );
+	if ( r_ == 0 ) {
+		r_ = new LauParameter( rName, rVal, 0.0, 10.0, kTRUE );
+		resInfo->addExtraParameter( r_ );
+	}
+
+	TString aName(parNameBase);
+	aName += "_a";
+	a_ = resInfo->getExtraParameter( aName );
+	if ( a_ == 0 ) {
+		a_ = new LauParameter( aName, aVal, 0.0, 10.0, kTRUE );
+		resInfo->addExtraParameter( a_ );
+	}
 }
 
 LauLASSBWRes::~LauLASSBWRes()
 {
+	delete r_;
+	delete a_;
 }
 
 void LauLASSBWRes::initialise()
@@ -62,6 +73,18 @@ void LauLASSBWRes::initialise()
 	mDaugDiff_ = massDaug1 - massDaug2;
 	mDaugDiffSq_ = mDaugDiff_*mDaugDiff_;
 
+	Int_t resSpin = this->getSpin();
+	if (resSpin != 0) {
+		std::cerr << "WARNING in LauLASSBWRes::amplitude : Resonance spin is " << resSpin << "." << std::endl;
+		std::cerr << "                                   : LASS amplitude is only for scalers, resetting spin to 0." << std::endl;
+		this->changeResonance( -1.0, -1.0, 0 );
+	}
+
+	this->calcQ0();
+}
+
+void LauLASSBWRes::calcQ0()
+{
 	// Decay momentum of either daughter in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
 
@@ -69,20 +92,10 @@ void LauLASSBWRes::initialise()
 	resMassSq_ = resMass_*resMass_;
 
 	q0_ = TMath::Sqrt((resMassSq_ - mDaugSumSq_)*(resMassSq_ - mDaugDiffSq_))/(2.0*resMass_);
-
-	Int_t resSpin = this->getSpin();
-	if (resSpin != 0) {
-		std::cerr << "WARNING in LauLASSBWRes::amplitude : Resonance spin is " << resSpin << "." << std::endl;
-		std::cerr << "                                   : LASS amplitude is only for scalers, resetting spin to 0." << std::endl;
-		this->changeResonance( -1.0, -1.0, 0 );
-	}
 }
 
-LauComplex LauLASSBWRes::resAmp(Double_t mass, Double_t spinTerm)
+LauComplex LauLASSBWRes::resAmp(Double_t mass, Double_t /*spinTerm*/)
 {
-	// This function returns the complex dynamical amplitude for a Breit-Wigner resonance,
-	// given the invariant mass and cos(helicity) values.
-
 	LauComplex resAmplitude(0.0, 0.0);
 
 	if (mass < 1e-10) {
@@ -92,14 +105,14 @@ LauComplex LauLASSBWRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	// Calculate the width of the resonance (as a function of mass)
 	// q is the momentum of either daughter in the resonance rest-frame
-	Double_t q = this->getQ();
-	Double_t resMass = this->getMass();
-	Double_t resWidth = this->getWidth();
+	const Double_t q = this->getQ();
+	const Double_t resMass = this->getMass();
+	const Double_t resWidth = this->getWidth();
 
 	// If the mass is floating and their value have changed
 	// we need to recalculate everything that assumes this value
 	if ( (!this->fixMass()) && resMass != resMass_ ) {
-		this->initialise();
+		this->calcQ0();
 	}
 
 	Double_t qRatio = q/q0_;
@@ -112,63 +125,104 @@ LauComplex LauLASSBWRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude = LauComplex(massSqTerm, resMass*totWidth);
 
 	// Scale by the denominator factor
-	resAmplitude.rescale(spinTerm*(resMassSq_*resWidth/q0_)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
+	resAmplitude.rescale((resMassSq_*resWidth/q0_)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
 
 	// Calculate the phase shift term
-	Double_t deltaB = TMath::ATan((2.0*a_*q)/(2.0 + a_*r_*q*q));
-	Double_t cos2PhaseShift = TMath::Cos(2.0*(deltaB + phiB_));
-	Double_t sin2PhaseShift = TMath::Sin(2.0*(deltaB + phiB_));
+	const Double_t rVal = this->getEffectiveRange();
+	const Double_t aVal = this->getScatteringLength();
+	const Double_t tandeltaB = (2.0*aVal*q)/(2.0 + aVal*rVal*q*q);
+	const Double_t tanSq = tandeltaB*tandeltaB;
+	const Double_t cos2PhaseShift = (1.0 - tanSq) / (1.0 + tanSq);
+	const Double_t sin2PhaseShift = 2.0*tandeltaB / (1.0 + tanSq);
 	LauComplex phaseShift(cos2PhaseShift, sin2PhaseShift);
 
-	// Add in the R e^{i phiR} term
-	Double_t reR = R_ * TMath::Cos(phiR_);
-	Double_t imR = R_ * TMath::Sin(phiR_);
-	LauComplex R(reR, imR);
-
-	// Multiply by the phase shift and R e^{i phiR}
-	resAmplitude = resAmplitude * phaseShift * R;
-
-	// There is no spin term for the LASS shape 
-	// Just set it 1.0 in case anyone decides to use it at a later date.
-	spinTerm = 1.0;
+	// Multiply by the phase shift
+	resAmplitude = resAmplitude * phaseShift;
 
 	return resAmplitude;
-
 }
 
-void LauLASSBWRes::setResonanceParameter(const TString& name, const Double_t value) 
+const std::vector<LauParameter*>& LauLASSBWRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+
+	if ( ! this->fixWidth() ) {
+		this->addFloatingParameter( this->getWidthPar() );
+	}
+
+	if ( ! this->fixEffectiveRange() ) {
+		this->addFloatingParameter( r_ );
+	}
+
+	if ( ! this->fixScatteringLength() ) {
+		this->addFloatingParameter( a_ );
+	}
+
+	return this->getParameters();
+}
+
+void LauLASSBWRes::setResonanceParameter(const TString& name, const Double_t value)
 {
 	// Set various parameters for the LASS lineshape dynamics
 	if (name == "a") {
 		this->setScatteringLength(value);
 		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Scattering Length = " << this->getScatteringLength() << std::endl;
-	}
-	else if (name == "r") {
+	} else if (name == "r") {
 		this->setEffectiveRange(value);
 		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Effective Range = " << this->getEffectiveRange() << std::endl;
-	}
-	else if (name == "R") {
-		this->setResonanceMag(value);
-		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Resonance Magnitude = " << this->getResonanceMag() << std::endl;
-	}
-	else if (name == "B") {
-		this->setBackgroundMag(value);
-		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Background Magnitude = " << this->getBackgroundMag() << std::endl;
-	}
-	else if (name == "phiR") {
-		this->setResonancePhase(value);
-		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Resonance Phase = " << this->getResonancePhase() << std::endl;
-	}
-	else if (name == "phiB") {
-		this->setBackgroundPhase(value);
-		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Background Phase = " << this->getBackgroundPhase() << std::endl;
-	}
-	else if (name == "cutOff") {
-		this->setCutOff(value);
-		std::cout << "INFO in LauLASSBWRes::setResonanceParameter : Setting LASS Cut Off = " << this->getCutOff() << std::endl;
-	}
-	else {
+	} else {
 		std::cerr << "WARNING in LauLASSBWRes::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
 	}
+}
+
+void LauLASSBWRes::floatResonanceParameter(const TString& name)
+{
+	if (name == "a") {
+		if ( a_->fixed() ) {
+			a_->fixed( kFALSE );
+			this->addFloatingParameter( a_ );
+		} else {
+			std::cerr << "WARNING in LauLASSBWRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else if (name == "r") {
+		if ( r_->fixed() ) {
+			r_->fixed( kFALSE );
+			this->addFloatingParameter( r_ );
+		} else {
+			std::cerr << "WARNING in LauLASSBWRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else {
+		std::cerr << "WARNING in LauLASSBWRes::fixResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+
+LauParameter* LauLASSBWRes::getResonanceParameter(const TString& name)
+{
+	if (name == "a") {
+		return a_;
+	} else if (name == "r") {
+		return r_;
+	} else {
+		std::cerr << "WARNING in LauLASSBWRes::getResonanceParameter: Parameter name not reconised." << std::endl;
+		return 0;
+	}
+}
+
+void LauLASSBWRes::setEffectiveRange(const Double_t r)
+{
+	r_->value( r );
+	r_->genValue( r );
+	r_->initValue( r );
+}
+
+void LauLASSBWRes::setScatteringLength(const Double_t a)
+{
+	a_->value( a );
+	a_->genValue( a );
+	a_->initValue( a );
 }
 

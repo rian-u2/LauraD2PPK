@@ -16,47 +16,71 @@
 
 #include "LauConstants.hh"
 #include "LauFlatteRes.hh"
+#include "LauResonanceInfo.hh"
 
 ClassImp(LauFlatteRes)
 
 
 LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),
-	resMassSq_(0.0),
-	g1_(0.0),
-	g2_(0.0),
+	g1_(0),
+	g2_(0),
 	mSumSq0_(0.0),
 	mSumSq1_(0.0),
 	mSumSq2_(0.0),
 	mSumSq3_(0.0)
 {
 	// constant factors from BES data
-	// resMass_ should be 0.965 +/- 0.008 +/- 0.006 GeV/c^2
-	g1_ = 0.165;     // +/- 0.010 +/- 0.015 GeV/c^2
-	g2_ = g1_*4.21;  // +/- 0.25 +/- 0.21
+	// resMass should be 0.965 +/- 0.008 +/- 0.006 GeV/c^2
+	const Double_t g1Val = 0.165;       // +/- 0.010 +/- 0.015 GeV/c^2
+	const Double_t g2Val = g1Val*4.21;  // +/- 0.25 +/- 0.21
 
 	// or from E791
-	//g1_ = 0.09;
-	//g2_ = 0.02;
+	//g1Val = 0.09;
+	//g2Val = 0.02;
 
 	// or from CERN/WA76
-	//g1_ = 0.28;
-	//g2_ = 0.56;
+	//g1Val = 0.28;
+	//g2Val = 0.56;
+
+	const TString& parNameBase = this->getSanitisedName();
+
+	TString g1Name(parNameBase);
+	g1Name += "_g1";
+	g1_ = resInfo->getExtraParameter( g1Name );
+	if ( g1_ == 0 ) {
+		g1_ = new LauParameter( g1Name, g1Val, 0.0, 10.0, kTRUE );
+		resInfo->addExtraParameter( g1_ );
+	}
+
+	TString g2Name(parNameBase);
+	g2Name += "_g2";
+	g2_ = resInfo->getExtraParameter( g2Name );
+	if ( g2_ == 0 ) {
+		g2_ = new LauParameter( g2Name, g2Val, 0.0, 10.0, kTRUE );
+		resInfo->addExtraParameter( g2_ );
+	}
 }
 
 LauFlatteRes::~LauFlatteRes()
 {
+	delete g1_;
+	delete g2_;
 }
 
 void LauFlatteRes::initialise()
 {
-	resMass_ = this->getMass();
-	resMassSq_ = resMass_*resMass_;
-
 	const TString& resName = this->getResonanceName();
-	if (resName != "f_0(980)") {
+	if ( resName != "f_0(980)" ) {
 		std::cerr << "WARNING in LauFlatteRes::initialise : Unexpected resonance name \"" << resName << "\" for Flatte shape." << std::endl;
-		std::cerr << "                                    : Setting parameters to \"f0_980\" values." << std::endl;
+		std::cerr << "                                    : Setting parameters to \"f_0(980)\" values." << std::endl;
+	}
+
+	Int_t resSpin = this->getSpin();
+	if (resSpin != 0) {
+		std::cerr << "WARNING in LauFlatteRes::amplitude : Resonance spin is " << resSpin << "." << std::endl;
+		std::cerr << "                                   : Flatte amplitude is only defined for scalers, resetting spin to 0." << std::endl;
+		this->changeResonance( -1.0, -1.0, 0 );
 	}
 
 	mSumSq0_ = (LauConstants::mPi0 + LauConstants::mPi0) * (LauConstants::mPi0 + LauConstants::mPi0);
@@ -65,43 +89,19 @@ void LauFlatteRes::initialise()
 	mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
 }
 
-void LauFlatteRes::setGFactors(Double_t g1, Double_t g2)
-{
-	this->setg1Parameter(g1);
-	this->setg2Parameter(g2);
-}
-
-void LauFlatteRes::setResonanceParameter(const TString& name, const Double_t value) 
-{
-	if (name == "g1") {
-		this->setg1Parameter(value);
-		TString g1name = "gPiPi";
-		std::cout << "INFO in LauFlatteRes::setResonanceParameter : Setting " << g1name <<" Parameter to " << this->getg1Parameter() << std::endl;
-	} else if (name == "g2") {
-		this->setg2Parameter(value);
-		TString g2name = "gKK";
-		std::cout << "INFO in LauFlatteRes::setResonanceParameter : Setting " << g2name << " Parameter to " << this->getg2Parameter() << std::endl;  
-	} else {
-		std::cerr << "WARNING in LauFlatteRes::setResonanceParameter : Parameter name \"" << name << "\" not recognised." << std::endl;
-	}
-}  
-
 LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 {
 	// This function returns the complex dynamical amplitude for a Flatte distribution
 	// given the invariant mass and cos(helicity) values.
 
-	Double_t resMass = this->getMass();
-	Double_t s = mass*mass; // Invariant mass squared combination for the system
+	const Double_t resMass = this->getMass();
+	const Double_t resMassSq = resMass*resMass;
+	const Double_t s = mass*mass; // Invariant mass squared combination for the system
 
-	// If the mass is floating and their value have changed
-	// we need to recalculate everything that assumes this value
-	if ( (!this->fixMass()) && resMass != resMass_ ) {
-		this->initialise();
-	}
+	const Double_t g1Val = this->getg1Parameter();
+	const Double_t g2Val = this->getg2Parameter();
 
-	Double_t dMSq = resMassSq_ - s;
-
+	Double_t dMSq = resMassSq - s;
 	Double_t rho1(0.0), rho2(0.0);
 	if (s > mSumSq0_) {
 		rho1 = TMath::Sqrt(1.0 - mSumSq0_/s)/3.0;
@@ -114,28 +114,28 @@ LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 				} else {
 					// Continue analytically below higher channel thresholds
 					// This contributes to the real part of the amplitude denominator
-					dMSq += g2_*resMass*0.5*TMath::Sqrt(mSumSq3_/s - 1.0);
+					dMSq += g2Val*resMass*0.5*TMath::Sqrt(mSumSq3_/s - 1.0);
 				}
 			} else {
 				// Continue analytically below higher channel thresholds
 				// This contributes to the real part of the amplitude denominator
 				rho2 = 0.0;
-				dMSq += g2_*resMass*(0.5*TMath::Sqrt(mSumSq2_/s - 1.0) + 0.5*TMath::Sqrt(mSumSq3_/s - 1.0));
+				dMSq += g2Val*resMass*(0.5*TMath::Sqrt(mSumSq2_/s - 1.0) + 0.5*TMath::Sqrt(mSumSq3_/s - 1.0));
 			}
 		} else {
 			// Continue analytically below higher channel thresholds
 			// This contributes to the real part of the amplitude denominator
-			dMSq += g1_*resMass*2.0*TMath::Sqrt(mSumSq1_/s - 1.0)/3.0;
+			dMSq += g1Val*resMass*2.0*TMath::Sqrt(mSumSq1_/s - 1.0)/3.0;
 		}
 	}
 
-	Double_t width1 = g1_*rho1*resMass;
-	Double_t width2 = g2_*rho2*resMass;
-	Double_t widthTerm = width1 + width2;
+	const Double_t width1 = g1Val*rho1*resMass;
+	const Double_t width2 = g2Val*rho2*resMass;
+	const Double_t widthTerm = width1 + width2;
 
 	LauComplex resAmplitude(dMSq, widthTerm);
 
-	Double_t denomFactor = dMSq*dMSq + widthTerm*widthTerm;
+	const Double_t denomFactor = dMSq*dMSq + widthTerm*widthTerm;
 
 	Double_t invDenomFactor = 0.0;
 	if (denomFactor > 1e-10) {invDenomFactor = 1.0/denomFactor;}
@@ -143,5 +143,87 @@ LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude.rescale(spinTerm*invDenomFactor);
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauFlatteRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+
+	// NB the width is given in terms of g1 and g2 so the normal width
+	// parameter should be ignored, hence it is not added to the list
+
+	if ( ! this->fixg1Parameter() ) {
+		this->addFloatingParameter( g1_ );
+	}
+
+	if ( ! this->fixg2Parameter() ) {
+		this->addFloatingParameter( g2_ );
+	}
+
+	return this->getParameters();
+}
+
+void LauFlatteRes::setResonanceParameter(const TString& name, const Double_t value) 
+{
+	if (name == "g1") {
+		this->setg1Parameter(value);
+		std::cout << "INFO in LauFlatteRes::setResonanceParameter : Setting g1 parameter to " << this->getg1Parameter() << std::endl;
+	} else if (name == "g2") {
+		this->setg2Parameter(value);
+		std::cout << "INFO in LauFlatteRes::setResonanceParameter : Setting g2 parameter to " << this->getg2Parameter() << std::endl;  
+	} else {
+		std::cerr << "WARNING in LauFlatteRes::setResonanceParameter : Parameter name \"" << name << "\" not recognised." << std::endl;
+	}
+}  
+
+void LauFlatteRes::floatResonanceParameter(const TString& name)
+{
+	if (name == "g1") {
+		if ( g1_->fixed() ) {
+			g1_->fixed( kFALSE );
+			this->addFloatingParameter( g1_ );
+		} else {
+			std::cerr << "WARNING in LauFlatteRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else if (name == "g2") {
+		if ( g2_->fixed() ) {
+			g2_->fixed( kFALSE );
+			this->addFloatingParameter( g2_ );
+		} else {
+			std::cerr << "WARNING in LauFlatteRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else {
+		std::cerr << "WARNING in LauFlatteRes::fixResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+
+LauParameter* LauFlatteRes::getResonanceParameter(const TString& name)
+{
+	if (name == "g1") {
+		return g1_;
+	} else if (name == "g2") {
+		return g2_;
+	} else {
+		std::cerr << "WARNING in LauFlatteRes::getResonanceParameter: Parameter name not reconised." << std::endl;
+		return 0;
+	}
+}
+
+void LauFlatteRes::setg1Parameter(const Double_t g1)
+{
+	g1_->value( g1 );
+	g1_->genValue( g1 );
+	g1_->initValue( g1 );
+}
+
+void LauFlatteRes::setg2Parameter(const Double_t g2)
+{
+	g2_->value( g2 );
+	g2_->genValue( g2 );
+	g2_->initValue( g2 );
 }
 

@@ -78,7 +78,7 @@ void LauLASSRes::initialise()
 	Int_t resSpin = this->getSpin();
 	if (resSpin != 0) {
 		std::cerr << "WARNING in LauLASSRes::amplitude : Resonance spin is " << resSpin << "." << std::endl;
-		std::cerr << "                                   : LASS amplitude is only for scalers, resetting spin to 0." << std::endl;
+		std::cerr << "                                 : LASS amplitude is only for scalers, resetting spin to 0." << std::endl;
 		this->changeResonance( -1.0, -1.0, 0 );
 	}
 

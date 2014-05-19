@@ -58,50 +58,79 @@ class LauDabbaRes : public LauAbsResonance {
 		*/
 		virtual void setResonanceParameter(const TString& name, const Double_t value);
 
-	protected:
-		//! Set the parameter values
+		//! Allow the various parameters to float in the fit
 		/*!
-			\param [in] b constant factor
-			\param [in] alpha constant factor
-			\param [in] beta constant factor
-		*/	
-		void setConstants(Double_t b, Double_t alpha, Double_t beta);
+			\param [in] name the name of the parameter to be floated
+		*/
+		virtual void floatResonanceParameter(const TString& name);
 
+		//! Access the given resonance parameter
+		/*!
+			\param [in] name the name of the parameter
+			\return the corresponding parameter
+		 */
+		virtual LauParameter* getResonanceParameter(const TString& name);
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
+	protected:
 		//! Set the b parameter
 		/*!
 			\param [in] b new value for b parameter
 		*/
-		void setBValue(const Double_t b) { b_ = b; }
+		void setBValue(const Double_t b);
 
 		//! Set the alpha parameter
 		/*!
 			\param [in] alpha new value for alpha parameter
 		*/
-		void setAlphaValue(const Double_t alpha) { alpha_ = alpha; }
+		void setAlphaValue(const Double_t alpha);
 
 		//! Set the beta parameter
 		/*!
 			\param [in] beta new value for beta parameter
 		*/
-		void setBetaValue(const Double_t beta) { beta_ = beta; }
+		void setBetaValue(const Double_t beta);
 
 		//! Get the b parameter value
 		/*!
 			\return value of the b parameter
 		*/
-		Double_t getBValue() const { return b_; }
+		Double_t getBValue() const { return (b_!=0) ? b_->value() : 0.0; }
 
 		//! Get the alpha parameter value
 		/*!
 			\return value of the alpha parameter
 		*/
-		Double_t getAlphaValue() const { return alpha_; }
+		Double_t getAlphaValue() const { return (alpha_!=0) ? alpha_->value() : 0.0; }
 
 		//! Get the beta parameter value
 		/*!
 			\return value of the beta parameter
 		*/
-		Double_t getBetaValue() const { return beta_; }
+		Double_t getBetaValue() const { return (beta_!=0) ? beta_->value() : 0.0; }
+
+		//! Fix the b parameter value
+		/*!
+			\return kTRUE if the b parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixBValue() const { return (b_!=0) ? b_->fixed() : 0.0; }
+
+		//! Fix the alpha parameter value
+		/*!
+			\return kTRUE if the alpha parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixAlphaValue() const { return (alpha_!=0) ? alpha_->fixed() : 0.0; }
+
+		//! Fix the beta parameter value
+		/*!
+			\return kTRUE if the beta parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixBetaValue() const { return (beta_!=0) ? beta_->fixed() : 0.0; }
 
 		//! Complex resonant amplitude
 		/*!
@@ -118,12 +147,13 @@ class LauDabbaRes : public LauAbsResonance {
 		Double_t mSumSq_; 
 		//! Defined as mD*mD - 0.5*mPi*mPi
 		Double_t sAdler_;
+
 		//! Constant factor
-		Double_t b_; 
+		LauParameter* b_; 
 		//! Constant factor
-		Double_t alpha_; 
+		LauParameter* alpha_; 
 		//! Constant factor
-		Double_t beta_;
+		LauParameter* beta_;
 
 		ClassDef(LauDabbaRes,0) // Dabba resonance model
 

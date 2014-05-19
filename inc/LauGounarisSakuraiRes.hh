@@ -59,6 +59,12 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		*/	
 		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
 
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
 	protected:
 		//! Complex resonant amplitude
 		/*!
@@ -85,6 +91,8 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
+		//! The resonance width
+		Double_t resWidth_;
 		//! Sum of the two daughter masses 
 		Double_t mDaugSum_; 
 		//! Square of the sum of the two daughter masses

@@ -25,7 +25,9 @@ LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const In
 	q0_(0.0),
 	p0_(0.0),
 	pstar0_(0.0),
+	resMass_(0.0),
 	resMassSq_(0.0),
+	resWidth_(0.0),
 	mDaugSum_(0.0),
 	mDaugSumSq_(0.0),
 	mDaugDiff_(0.0),
@@ -49,8 +51,10 @@ void LauGounarisSakuraiRes::initialise()
 	// Set-up various constants. This must be called again if the mass/width/spin
 	// of a resonance changes...  
 
-	Int_t resSpin = this->getSpin();
 	resMass_ = this->getMass();
+	resWidth_ = this->getWidth();
+
+	Int_t resSpin = this->getSpin();
 	Double_t massDaug1 = this->getMassDaug1();
 	Double_t massDaug2 = this->getMassDaug2();
 	Double_t massBachelor = this->getMassBachelor();
@@ -178,8 +182,8 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t resMass = this->getMass();
 	Double_t resWidth = this->getWidth();
 
-	// If the mass is floating and their value have changed
-	// we need to recalculate everything that assumes this value
+	// If the mass is floating and its value has changed we need to
+	// recalculate everything that assumes that value
 	if ( (!this->fixMass()) && resMass != resMass_ ) {
 		this->initialise();
 	}
@@ -217,5 +221,19 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude.rescale(numerFactor/denomFactor);
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauGounarisSakuraiRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+	if ( ! this->fixWidth() ) {
+		this->addFloatingParameter( this->getWidthPar() );
+	}
+
+	return this->getParameters();
 }
 

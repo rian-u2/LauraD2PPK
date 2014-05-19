@@ -224,9 +224,9 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t p = this->getP();
 	//Double_t pstar = this->getPstar();
 
-	// If either of the mass and width are floating and their values have changed
-	// we need to recalculate everything that assumes those values
-	if ( ( (!this->fixMass()) && resMass != resMass_ ) || ( (!this->fixWidth()) && resWidth != resWidth_ ) ) {
+	// If the mass is floating and its value has changed we need to
+	// recalculate everything that assumes that value
+	if ( (!this->fixMass()) && resMass != resMass_ ) {
 		this->initialise();
 	}
 

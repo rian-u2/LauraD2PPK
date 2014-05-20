@@ -30,7 +30,9 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	mSumSq0_(0.0),
 	mSumSq1_(0.0),
 	mSumSq2_(0.0),
-	mSumSq3_(0.0)
+	mSumSq3_(0.0),
+	useAdlerTerm_(kFALSE),
+	sA_(0.0)
 {
 	Double_t g1Val(0.);
 	Double_t g2Val(0.);
@@ -60,22 +62,29 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 		mSumSq2_ = (LauConstants::mK0 + LauConstants::mEtaPrime) * (LauConstants::mK0 + LauConstants::mEtaPrime);
 		mSumSq3_ = (LauConstants::mK0 + LauConstants::mEtaPrime) * (LauConstants::mK0 + LauConstants::mEtaPrime);
 		//Phys. Lett. B 572, 1 (2003)
+		// resMass should be 1.513 GeV/c^2
 		g1Val = 0.304;
 		g2Val = 0.380;
+		useAdlerTerm_ = kTRUE;
+		sA_ = 0.234;
 	} else if ( resName == "K*+_0(1430)" || resName == "K*-_0(1430)" ) {
 		mSumSq0_ = (LauConstants::mK + LauConstants::mPi0) * (LauConstants::mK + LauConstants::mPi0);
 		mSumSq1_ = (LauConstants::mK0 + LauConstants::mPi) * (LauConstants::mK0 + LauConstants::mPi);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mEtaPrime) * (LauConstants::mK + LauConstants::mEtaPrime);
 		mSumSq3_ = (LauConstants::mK + LauConstants::mEtaPrime) * (LauConstants::mK + LauConstants::mEtaPrime);
 		//Phys. Lett. B 572, 1 (2003)
+		// resMass should be 1.513 GeV/c^2
 		g1Val = 0.304;
 		g2Val = 0.380;
+		useAdlerTerm_ = kTRUE;
+		sA_ = 0.234;
 	} else if ( resName == "a0_0(980)" ) {
 		mSumSq0_ = (LauConstants::mEta + LauConstants::mPi0) * (LauConstants::mEta + LauConstants::mPi0);
 		mSumSq1_ = (LauConstants::mEta + LauConstants::mPi0) * (LauConstants::mEta + LauConstants::mPi0);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
 		mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
 		//Phys. Rev. D 57, 3860 (1998)
+		// resMass should be 0.982 +/- 0.003 GeV/c^2
 		g1Val = 0.353;
 		g2Val = g1Val*1.03;
 	} else if ( resName == "a+_0(980)" || resName == "a-_0(980)" ) {
@@ -170,8 +179,10 @@ LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 		}
 	}
 
-	const Double_t width1 = g1Val*rho1*resMass;
-	const Double_t width2 = g2Val*rho2*resMass;
+	Double_t massFactor = resMass;
+	if(useAdlerTerm_) massFactor = ( s - sA_ ) / ( resMassSq - sA_ );
+	const Double_t width1 = g1Val*rho1*massFactor;
+	const Double_t width2 = g2Val*rho2*massFactor;
 	const Double_t widthTerm = width1 + width2;
 
 	LauComplex resAmplitude(dMSq, widthTerm);

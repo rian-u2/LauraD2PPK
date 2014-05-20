@@ -127,14 +127,20 @@ class LauFlatteRes : public LauAbsResonance {
 		//! Channel 1 coupling parameter
 		LauParameter* g2_;
 
-		//! Defined as (mPi0+mPi0)*(mPi0+mPi0)
+		//! Channel 1, subchannel 1 invariant mass
 		Double_t mSumSq0_; 
-		//! Defined as (mPi+mPi)*(mPi+mPi)
+		//! Channel 1, subchannel 2 invariant mass
 		Double_t mSumSq1_; 
-		//! Defined as (mK+mK)*(mK+mK)
+		//! Channel 2, subchannel 1 invariant mass
 		Double_t mSumSq2_; 
-		//! Defined as (mK0+mK0)*(mK0+mK0)
+		//! Channel 2, subchannel 2 invariant mass
 		Double_t mSumSq3_;
+
+		//! Flag to turn on Adler term in the width
+		Bool_t useAdlerTerm_;
+
+		//! The Adler zero
+		Double_t sA_;
 
 		ClassDef(LauFlatteRes,0)
 };

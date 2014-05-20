@@ -18,6 +18,8 @@
 #include "LauFlatteRes.hh"
 #include "LauResonanceInfo.hh"
 
+#include "TSystem.h"
+
 ClassImp(LauFlatteRes)
 
 
@@ -30,18 +32,61 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	mSumSq2_(0.0),
 	mSumSq3_(0.0)
 {
-	// constant factors from BES data
-	// resMass should be 0.965 +/- 0.008 +/- 0.006 GeV/c^2
-	const Double_t g1Val = 0.165;       // +/- 0.010 +/- 0.015 GeV/c^2
-	const Double_t g2Val = g1Val*4.21;  // +/- 0.25 +/- 0.21
+	Double_t g1Val(0.);
+	Double_t g2Val(0.);
 
-	// or from E791
-	//g1Val = 0.09;
-	//g2Val = 0.02;
+	const TString& resName = this->getResonanceName();
 
-	// or from CERN/WA76
-	//g1Val = 0.28;
-	//g2Val = 0.56;
+	if ( resName == "f_0(980)" ) {
+		mSumSq0_ = (LauConstants::mPi0 + LauConstants::mPi0) * (LauConstants::mPi0 + LauConstants::mPi0);
+		mSumSq1_ = (LauConstants::mPi + LauConstants::mPi) * (LauConstants::mPi + LauConstants::mPi);
+		mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
+		mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
+		// constant factors from BES data
+		// resMass should be 0.965 +/- 0.008 +/- 0.006 GeV/c^2
+		g1Val = 0.165;       // +/- 0.010 +/- 0.015 GeV/c^2
+		g2Val = g1Val*4.21;  // +/- 0.25 +/- 0.21
+
+		// or from E791
+		//g1Val = 0.09;
+		//g2Val = 0.02;
+
+		// or from CERN/WA76
+		//g1Val = 0.28;
+		//g2Val = 0.56;
+	} else if ( resName == "K*0_0(1430)" ) {
+		mSumSq0_ = (LauConstants::mK0 + LauConstants::mPi0) * (LauConstants::mK0 + LauConstants::mPi0);
+		mSumSq1_ = (LauConstants::mK + LauConstants::mPi) * (LauConstants::mK + LauConstants::mPi);
+		mSumSq2_ = (LauConstants::mK0 + LauConstants::mEtaPrime) * (LauConstants::mK0 + LauConstants::mEtaPrime);
+		mSumSq3_ = (LauConstants::mK0 + LauConstants::mEtaPrime) * (LauConstants::mK0 + LauConstants::mEtaPrime);
+		//Phys. Lett. B 572, 1 (2003)
+		g1Val = 0.304;
+		g2Val = 0.380;
+	} else if ( resName == "K*+_0(1430)" || resName == "K*-_0(1430)" ) {
+		mSumSq0_ = (LauConstants::mK + LauConstants::mPi0) * (LauConstants::mK + LauConstants::mPi0);
+		mSumSq1_ = (LauConstants::mK0 + LauConstants::mPi) * (LauConstants::mK0 + LauConstants::mPi);
+		mSumSq2_ = (LauConstants::mK + LauConstants::mEtaPrime) * (LauConstants::mK + LauConstants::mEtaPrime);
+		mSumSq3_ = (LauConstants::mK + LauConstants::mEtaPrime) * (LauConstants::mK + LauConstants::mEtaPrime);
+		//Phys. Lett. B 572, 1 (2003)
+		g1Val = 0.304;
+		g2Val = 0.380;
+	} else if ( resName == "a0_0(980)" ) {
+		mSumSq0_ = (LauConstants::mEta + LauConstants::mPi0) * (LauConstants::mEta + LauConstants::mPi0);
+		mSumSq1_ = (LauConstants::mEta + LauConstants::mPi0) * (LauConstants::mEta + LauConstants::mPi0);
+		mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
+		mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
+		//Phys. Rev. D 57, 3860 (1998)
+		g1Val = 0.353;
+		g2Val = g1Val*1.03;
+	} else if ( resName == "a+_0(980)" || resName == "a-_0(980)" ) {
+		mSumSq0_ = (LauConstants::mEta + LauConstants::mPi) * (LauConstants::mEta + LauConstants::mPi);
+		mSumSq1_ = (LauConstants::mEta + LauConstants::mPi) * (LauConstants::mEta + LauConstants::mPi);
+		mSumSq2_ = (LauConstants::mK + LauConstants::mK0) * (LauConstants::mK + LauConstants::mK0);
+		mSumSq3_ = (LauConstants::mK + LauConstants::mK0) * (LauConstants::mK + LauConstants::mK0);
+		//Phys. Rev. D 57, 3860 (1998)
+		g1Val = 0.353;
+		g2Val = g1Val*1.03;
+	}
 
 	const TString& parNameBase = this->getSanitisedName();
 
@@ -71,9 +116,10 @@ LauFlatteRes::~LauFlatteRes()
 void LauFlatteRes::initialise()
 {
 	const TString& resName = this->getResonanceName();
-	if ( resName != "f_0(980)" ) {
-		std::cerr << "WARNING in LauFlatteRes::initialise : Unexpected resonance name \"" << resName << "\" for Flatte shape." << std::endl;
-		std::cerr << "                                    : Setting parameters to \"f_0(980)\" values." << std::endl;
+	if ( resName != "f_0(980)" && resName != "K*0_0(1430)" && resName != "K*+_0(1430)" && resName != "K*-_0(1430)" && 
+	     resName != "a0_0(980)" && resName != "a+_0(980)" && resName != "a-_0(980)" ) {
+		std::cerr << "ERROR in LauFlatteRes::initialise : Unexpected resonance name \"" << resName << "\" for Flatte shape." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	Int_t resSpin = this->getSpin();
@@ -82,11 +128,6 @@ void LauFlatteRes::initialise()
 		std::cerr << "                                   : Flatte amplitude is only defined for scalers, resetting spin to 0." << std::endl;
 		this->changeResonance( -1.0, -1.0, 0 );
 	}
-
-	mSumSq0_ = (LauConstants::mPi0 + LauConstants::mPi0) * (LauConstants::mPi0 + LauConstants::mPi0);
-	mSumSq1_ = (LauConstants::mPi + LauConstants::mPi) * (LauConstants::mPi + LauConstants::mPi);
-	mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
-	mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
 }
 
 LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)

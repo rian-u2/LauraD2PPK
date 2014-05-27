@@ -29,11 +29,17 @@ class LauParameter;
 class LauAbsRValue {
 
 	public:
-		//!Constructor
+		//! Constructor
 		LauAbsRValue() {}
 
 		//! Destructor
 		virtual ~LauAbsRValue() {}
+
+		//! Copy constructor
+		LauAbsRValue(const LauAbsRValue& /*rhs*/) {}
+
+		//! Copy assignment operator
+		LauAbsRValue& operator=(const LauAbsRValue& /*rhs*/) {return *this;}
 
 		//! Return the name of the parameter
 		/*!

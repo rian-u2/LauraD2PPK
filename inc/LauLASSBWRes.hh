@@ -125,6 +125,12 @@ class LauLASSBWRes : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauLASSBWRes(const LauLASSBWRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauLASSBWRes& operator=(const LauLASSBWRes& rhs);
+
 		//! Decay momentum of either daughter in the resonance rest frame
 		Double_t q0_;
 		//! Sum of the daughter masses

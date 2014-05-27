@@ -468,6 +468,12 @@ class LauAbsPdf {
 		virtual const std::vector<Double_t>& normWeights() const {return normWeights_;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauAbsPdf(const LauAbsPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauAbsPdf& operator=(const LauAbsPdf& rhs);
+
 		//! The names of the PDF variables
 		std::map<UInt_t,TString> varNames_;
 

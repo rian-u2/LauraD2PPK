@@ -161,6 +161,12 @@ class LauSigmaRes : public LauAbsResonance {
 		void checkDaughterTypes() const;
 
 	private:
+		//! Copy constructor (not implemented)
+		LauSigmaRes(const LauSigmaRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauSigmaRes& operator=(const LauSigmaRes& rhs);
+
 		//! Defined as 4*mPi*mPi
 		Double_t mPiSq4_;
 		//! Defined as 0.5*mPi*mPi

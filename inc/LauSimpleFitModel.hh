@@ -33,7 +33,7 @@
 class TH2;
 class LauAbsBkgndDPModel;
 class LauAbsCoeffSet;
-class LauAbsDPDynamics;
+class LauIsobarDynamics;
 class LauAbsPdf;
 class LauEffModel;
 class LauEmbeddedData;
@@ -48,7 +48,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		/*! 
 			\param [in] sigDPModel the signal DP model
 		*/	
-		explicit LauSimpleFitModel(LauAbsDPDynamics* sigDPModel);
+		explicit LauSimpleFitModel(LauIsobarDynamics* sigDPModel);
 
 		//! Destructor
 		virtual ~LauSimpleFitModel();
@@ -351,8 +351,14 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		void appendBinCentres( LauFitDataTree* inputData );
 
 	private:
+		//! Copy constructor (not implemented)
+		LauSimpleFitModel(const LauSimpleFitModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauSimpleFitModel& operator=(const LauSimpleFitModel& rhs);
+
 		//! The signal Dalitz plot model
-		LauAbsDPDynamics* sigDPModel_;
+		LauIsobarDynamics* sigDPModel_;
 
 		//! The background Dalitz Plot model
 		LauBkgndDPModelList bkgndDPModels_;

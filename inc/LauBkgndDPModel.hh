@@ -119,6 +119,12 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		virtual void setDataEventNo(UInt_t iEvt);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauBkgndDPModel(const LauBkgndDPModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauBkgndDPModel& operator=(const LauBkgndDPModel& rhs);
+
 		//! Flags whether the DP is symmetrical or not
 		Bool_t symmetricalDP_;
 

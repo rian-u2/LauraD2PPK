@@ -108,6 +108,12 @@ class LauBelleSymNR : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauBelleSymNR(const LauBelleSymNR& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauBelleSymNR& operator=(const LauBelleSymNR& rhs);
+
 		//! The range parameter
 		LauParameter* alpha_;
 

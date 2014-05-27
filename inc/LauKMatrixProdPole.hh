@@ -66,6 +66,12 @@ class LauKMatrixProdPole : public LauAbsResonance {
   		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
  	private:
+		//! Copy constructor (not implemented)
+		LauKMatrixProdPole(const LauKMatrixProdPole& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKMatrixProdPole& operator=(const LauKMatrixProdPole& rhs);
+
 		//! The K-matrix propagator
    		LauKMatrixPropagator* thePropagator_;
 		//! The number of the pole

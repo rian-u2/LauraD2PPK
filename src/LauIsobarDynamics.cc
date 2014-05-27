@@ -50,7 +50,14 @@ ClassImp(LauIsobarDynamics)
 
 // for Kpipi: only one scfFraction 2D histogram is needed
 LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel) :
-	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
+	daughters_(daughters),
+	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
+	effModel_(effModel),
+	nAmp_(0),
+	DPNorm_(0.0),
+	DPRate_("DPRate", 0.0, 0.0, 1000.0),
+	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
+	currentEvent_(0),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
 	normalizationSchemeDone_(kFALSE),
@@ -77,22 +84,35 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	flipHelicity_(kTRUE),
 	recalcNormalisation_(kFALSE)
 {
-	// Constructor for the isobar signal model
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
 		typDaug_.push_back(daughters->getTypeDaug1());
 		typDaug_.push_back(daughters->getTypeDaug2());
 		typDaug_.push_back(daughters->getTypeDaug3());
 	}
+
+	if (scfFractionModel != 0) {
+		scfFractionModel_[0] = scfFractionModel;
+	}
+
 	sigResonances_.clear();
 	kMatrixPropagators_.clear();
 	kMatrixPropSet_.clear();
+	extraParameters_.clear();
 }
 
 // for Kspipi, we need a scfFraction 2D histogram for each tagging category. They are provided by the map.
 // Also, we need to know the place that the tagging category of the current event occupies in the data structure inputFitTree
 LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauTagCatScfFractionModelMap scfFractionModel) :
-	LauAbsDPDynamics(daughters, effModel, scfFractionModel),
+	daughters_(daughters),
+	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
+	effModel_(effModel),
+	scfFractionModel_(scfFractionModel),
+	nAmp_(0),
+	DPNorm_(0.0),
+	DPRate_("DPRate", 0.0, 0.0, 1000.0),
+	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
+	currentEvent_(0),
 	symmetricalDP_(kFALSE),
 	integralsDone_(kFALSE),
 	normalizationSchemeDone_(kFALSE),
@@ -126,13 +146,22 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 		typDaug_.push_back(daughters->getTypeDaug2());
 		typDaug_.push_back(daughters->getTypeDaug3());
 	}
+
 	sigResonances_.clear();
 	kMatrixPropagators_.clear();
 	kMatrixPropSet_.clear();
+	extraParameters_.clear();
 }
 
 LauIsobarDynamics::~LauIsobarDynamics()
 {
+	extraParameters_.clear();
+
+	for ( std::vector<LauCacheData*>::iterator iter = data_.begin(); iter != data_.end(); ++iter ) {
+		delete (*iter);
+	}
+	data_.clear();
+
 	for (std::vector<LauDPPartialIntegralInfo*>::iterator it = dpPartialIntegralInfo_.begin(); it != dpPartialIntegralInfo_.end(); ++it)
 	{
 		delete (*it);
@@ -153,11 +182,6 @@ void LauIsobarDynamics::recalculateNormalisation()
 		// We need to calculate the normalisation constants for the
 		// Dalitz plot generation/fitting.
 		this->calcDPNormalisation();
-
-		for (UInt_t i = 0; i < nAmp_; i++) {
-			fNorm_[i] = 0.0;
-			if (fSqSum_[i] > 0.0) {fNorm_[i] = TMath::Sqrt(1.0/(fSqSum_[i]));}
-		}
 	}
 
 	integralsDone_ = kTRUE;
@@ -174,6 +198,7 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 	// Initialise all resonance models
 	resonancePars_.clear();
+
 	std::set<LauParameter*> uniqueResPars;
 	for ( std::vector<LauAbsResonance*>::iterator resIter = sigResonances_.begin(); resIter != sigResonances_.end(); ++resIter ) {
 		(*resIter)->initialise();
@@ -181,6 +206,7 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 		// Check if this resonance has floating parameters
 		// Append all unique parameters to our list
 		const std::vector<LauParameter*>& resPars = (*resIter)->getFloatingParameters();
+
 		for ( std::vector<LauParameter*>::const_iterator parIter = resPars.begin(); parIter != resPars.end(); ++parIter ) {
 			if ( uniqueResPars.insert( *parIter ).second ) {
 				resonancePars_.push_back( *parIter );
@@ -229,8 +255,6 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 	std::cout<<"INFO in LauIsobarDynamics::initialise : Summary of the integrals:"<<std::endl;
 	for (UInt_t i = 0; i < nAmp_; i++) {
-		fNorm_[i] = 0.0;
-		if (fSqSum_[i] > 0.0) {fNorm_[i] = TMath::Sqrt(1.0/(fSqSum_[i]));}
 		std::cout<<" fNorm["<<i<<"] = "<<fNorm_[i]<<std::endl;
 		std::cout<<" fSqSum["<<i<<"] = "<<fSqSum_[i]<<std::endl;
 	}
@@ -683,6 +707,11 @@ void LauIsobarDynamics::calcDPNormalisation()
 	for (std::vector<LauDPPartialIntegralInfo*>::iterator it = dpPartialIntegralInfo_.begin(); it != dpPartialIntegralInfo_.end(); ++it)
 	{
 		this->calcDPPartialIntegral((*it)->getMinm13(), (*it)->getMaxm13(), (*it)->getMinm23(), (*it)->getMaxm23(), (*it)->getM13BinWidth(), (*it)->getM23BinWidth());
+	}
+
+	for (UInt_t i = 0; i < nAmp_; ++i) {
+		fNorm_[i] = 0.0;
+		if (fSqSum_[i] > 0.0) {fNorm_[i] = TMath::Sqrt(1.0/(fSqSum_[i]));}
 	}
 }
 
@@ -1684,7 +1713,7 @@ Bool_t LauIsobarDynamics::generate()
 	return sigGenOK;
 }
 
-LauAbsDPDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMessages, Bool_t printInfoMessages)
+LauIsobarDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMessages, Bool_t printInfoMessages)
 {
 	// Check whether we have generated the toy MC OK.
 	ToyMCStatus ok(GenOK);
@@ -1718,7 +1747,13 @@ LauAbsDPDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMes
 
 void LauIsobarDynamics::setDataEventNo(UInt_t iEvt)
 {
-	this->LauAbsDPDynamics::setDataEventNo(iEvt);
+	// Retrieve the data for event iEvt
+	if (data_.size() > iEvt) {
+		currentEvent_ = data_[iEvt];
+	} else {
+		std::cerr<<"ERROR in LauIsobarDynamics::setDataEventNo : Event index too large: "<<iEvt<<" >= "<<data_.size()<<"."<<std::endl;
+	}
+
 	m13Sq_ = currentEvent_->retrievem13Sq();
 	m23Sq_ = currentEvent_->retrievem23Sq();
 	mPrime_ = currentEvent_->retrievemPrime();
@@ -1795,10 +1830,9 @@ void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 	UInt_t nBranches = inputFitTree.nBranches();
 
 	if (nBranches < 2) {
-		std::cout<<"ERROR in LauIsobarDynamics::fillDataTree : Expecting at least 2 variables "
-			<<"in input data tree, but there are "<<nBranches<<"! Make sure you have "
-			<<"the right number of variables in your input data file!"<<std::endl;
-		gSystem->Exit(-1);
+		std::cerr<<"ERROR in LauIsobarDynamics::fillDataTree : Expecting at least 2 variables " <<"in input data tree, but there are "<<nBranches<<"!\n";
+		std::cerr<<"                                         : Make sure you have the right number of variables in your input data file!"<<std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	// Data structure that will cache the variables required to 
@@ -1894,5 +1928,79 @@ Double_t LauIsobarDynamics::getEventWeight()
 	// return the event weight = the value of the squared amplitude divided
 	// by the user-defined ceiling
 	return ASq_ / aSqMaxSet_;
+}
+
+void LauIsobarDynamics::updateCoeffs(const std::vector<LauComplex>& coeffs)
+{
+	// Check that the number of coeffs is correct
+	if (coeffs.size() != this->getnAmp()) {
+		std::cerr << "ERROR in LauIsobarDynamics::updateCoeffs : Expected " << this->getnAmp() << " but got " << coeffs.size() << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	// Now check if the coeffs have changed
+	Bool_t changed = (Amp_ != coeffs);
+	if (changed) {
+		// Copy the coeffs
+		Amp_ = coeffs;
+	}
+
+	// TODO should perhaps keep track of whether the resonance parameters have changed here and if none of those and none of the coeffs have changed then we don't need to update the norm
+
+	// Update the total normalisation for the signal likelihood
+	this->calcSigDPNorm();
+}
+
+Bool_t LauIsobarDynamics::hasResonance(const TString& resName) const
+{
+	const LauAbsResonance* theRes = this->findResonance(resName);
+	if (theRes != 0) {
+		return kTRUE;
+	} else {
+		return kFALSE;
+	}
+}
+
+TString LauIsobarDynamics::getConjResName(const TString& resName) const
+{
+       // Get the name of the charge conjugate resonance
+       TString conjName(resName);
+
+       Ssiz_t index1 = resName.Index("+");
+       Ssiz_t index2 = resName.Index("-");
+       if (index1 != -1) {
+                conjName.Replace(index1, 1, "-");
+       } else if (index2 != -1) {
+                conjName.Replace(index2, 1, "+");
+       }
+
+       return conjName;
+
+}
+
+Double_t LauIsobarDynamics::retrieveEfficiency()
+{
+	Double_t eff(1.0);
+	if (effModel_ != 0) {
+		eff = effModel_->calcEfficiency(kinematics_);
+	}
+	return eff;
+}
+
+Double_t LauIsobarDynamics::retrieveScfFraction(Int_t tagCat)
+{
+	Double_t scfFraction(0.0);
+
+	// scf model and eff model are exactly the same, functionally
+	// so we use an instance of LauAbsEffModel, and the method
+	// calcEfficiency actually calculates the scf fraction
+	if (tagCat == -1) {
+		if (!scfFractionModel_.empty()) {
+			scfFraction = scfFractionModel_[0]->calcEfficiency(kinematics_);
+		}
+	} else {
+		scfFraction = scfFractionModel_[tagCat]->calcEfficiency(kinematics_);
+	}
+	return scfFraction;
 }
 

@@ -81,6 +81,12 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		Double_t calcFFactor(Double_t z);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauGounarisSakuraiRes(const LauGounarisSakuraiRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauGounarisSakuraiRes& operator=(const LauGounarisSakuraiRes& rhs);
+
 		//! Momentum of the daughters in the resonance rest frame (at pole mass)
 		Double_t q0_; 
 		//! Momentum of the bachelor in the resonance rest frame (at pole mass)

@@ -61,9 +61,6 @@ class LauChebychevPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauChebychevPdf();
 
-		//! Copy constructor
-		LauChebychevPdf(const LauChebychevPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -82,6 +79,12 @@ class LauChebychevPdf : public LauAbsPdf {
 		virtual void calcPDFHeight( const LauKinematics* kinematics );
 
 	private:
+		//! Copy constructor (not implemented)
+		LauChebychevPdf(const LauChebychevPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauChebychevPdf& operator=(const LauChebychevPdf& other);
+
 		//! Coefficients of polynomial
 		std::vector<LauAbsRValue*> coeffs_;
 

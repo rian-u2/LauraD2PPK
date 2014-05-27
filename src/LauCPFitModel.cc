@@ -27,7 +27,7 @@
 
 #include "LauAbsBkgndDPModel.hh"
 #include "LauAbsCoeffSet.hh"
-#include "LauAbsDPDynamics.hh"
+#include "LauIsobarDynamics.hh"
 #include "LauAbsPdf.hh"
 #include "LauAsymmCalc.hh"
 #include "LauComplex.hh"
@@ -45,7 +45,7 @@
 ClassImp(LauCPFitModel)
 
 
-LauCPFitModel::LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),
+LauCPFitModel::LauCPFitModel(LauIsobarDynamics* negModel, LauIsobarDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),
 	negSigModel_(negModel), posSigModel_(posModel),
 	negKinematics_(negModel ? negModel->getKinematics() : 0),
 	posKinematics_(posModel ? posModel->getKinematics() : 0),
@@ -1549,7 +1549,7 @@ Bool_t LauCPFitModel::generateSignalEvent()
 	Bool_t genOK(kTRUE);
 	Bool_t genSCF(kFALSE);
 
-	LauAbsDPDynamics* model(0);
+	LauIsobarDynamics* model(0);
 	LauKinematics* kinematics(0);
 	LauEmbeddedData* embeddedData(0);
 	LauPdfList* sigPdfs(0);
@@ -2251,7 +2251,7 @@ Double_t LauCPFitModel::getEvtSCFDPLikelihood(UInt_t iEvt)
 		// We've cached the DP amplitudes and the efficiency for the
 		// true bin centres, just after the data points
 		if ( tagged_ ) {
-			LauAbsDPDynamics* sigModel(0);
+			LauIsobarDynamics* sigModel(0);
 			if (curEvtCharge_<0) {
 				sigModel = negSigModel_;
 			} else {
@@ -2648,7 +2648,7 @@ void LauCPFitModel::storePerEvtLlhds()
 
 	UInt_t evtsPerExpt(this->eventsPerExpt());
 
-	LauAbsDPDynamics* sigModel(0);
+	LauIsobarDynamics* sigModel(0);
 	LauPdfList* sigPdfs(0);
 	LauPdfList* scfPdfs(0);
 	LauBkgndPdfsList* bkgndPdfs(0);

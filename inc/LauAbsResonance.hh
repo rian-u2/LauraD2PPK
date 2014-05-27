@@ -322,6 +322,12 @@ class LauAbsResonance {
 
 
 	private:
+		//! Copy constructor (not implemented)
+		LauAbsResonance(const LauAbsResonance& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauAbsResonance& operator=(const LauAbsResonance& rhs);
+
 		//! Information on the resonance
 		LauResonanceInfo* resInfo_;
 

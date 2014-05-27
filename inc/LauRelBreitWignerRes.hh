@@ -82,6 +82,12 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 
 
 	private:
+		//! Copy constructor (not implemented)
+		LauRelBreitWignerRes(const LauRelBreitWignerRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauRelBreitWignerRes& operator=(const LauRelBreitWignerRes& rhs);
+
 		//! Momentum of the daughters in the resonance rest frame (at pole mass)
 		Double_t q0_;
 		//! Momentum of the bachelor in the resonance rest frame (at pole mass)

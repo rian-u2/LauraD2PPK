@@ -72,9 +72,6 @@ class LauDPDepCruijffPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauDPDepCruijffPdf();
 
-		//! Copy constructor
-		LauDPDepCruijffPdf(const LauDPDepCruijffPdf& other);
-
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
 		    \return true if the PDF is DP-dependent (the default)
@@ -124,6 +121,12 @@ class LauDPDepCruijffPdf : public LauAbsPdf {
 		virtual Double_t integTrapezoid();
 
 	private:
+		//! Copy constructor (not implemented)
+		LauDPDepCruijffPdf(const LauDPDepCruijffPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauDPDepCruijffPdf& operator=(const LauDPDepCruijffPdf& other);
+
 		//! The current DP kinematics
 		const LauKinematics* kinematics_;
 

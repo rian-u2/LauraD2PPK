@@ -122,6 +122,12 @@ class LauFlatteRes : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauFlatteRes(const LauFlatteRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauFlatteRes& operator=(const LauFlatteRes& rhs);
+
 		//! Channel 1 coupling parameter
 		LauParameter* g1_; 
 		//! Channel 1 coupling parameter

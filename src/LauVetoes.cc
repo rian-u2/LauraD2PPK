@@ -29,12 +29,12 @@ LauVetoes::~LauVetoes()
 {
 }
 
-LauVetoes::LauVetoes(const LauVetoes& other)
+LauVetoes::LauVetoes(const LauVetoes& other) :
+	nVetoes_(other.nVetoes_),
+	vetoPair_(other.vetoPair_),
+	vetoMinMass_(other.vetoMinMass_),
+	vetoMaxMass_(other.vetoMaxMass_)
 {
-	nVetoes_ = other.nVetoes_;
-	vetoPair_ = other.vetoPair_;
-	vetoMinMass_ = other.vetoMinMass_;
-	vetoMaxMass_ = other.vetoMaxMass_;
 }
 
 LauVetoes& LauVetoes::operator=(const LauVetoes& other)

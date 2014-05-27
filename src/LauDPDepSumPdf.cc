@@ -192,22 +192,6 @@ LauDPDepSumPdf::~LauDPDepSumPdf()
 	delete dpDependence_; dpDependence_ = 0;
 }
 
-/*LauDPDepSumPdf::LauDPDepSumPdf(const LauDPDepSumPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
-	daughters_( other.daughters_ ),
-	pdf1_( other.pdf1_ ),
-	pdf2_( other.pdf2_ ),
-	frac_( other.frac_ ),
-	fracVal_( other.fracVal_ ),
-	dpDependence_( (other.dpDependence_) ? new LauEffModel( *other.dpDependence_ ) : 0 ),
-	fracCoeffs_( other.fracCoeffs_ ),
-	dpAxis_( other.dpAxis_ ),
-	fractions_( other.fractions_ )
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}*/
-
 void LauDPDepSumPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissa is within the allowed range

@@ -74,23 +74,6 @@ LauDPDepGaussPdf::~LauDPDepGaussPdf()
 	// Destructor
 }
 
-LauDPDepGaussPdf::LauDPDepGaussPdf(const LauDPDepGaussPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
-	kinematics_( other.kinematics_ ),
-	mean_(0),
-	sigma_(0),
-	meanVal_(0.0),
-	sigmaVal_(0.0),
-	meanCoeffs_( other.meanCoeffs_ ),
-	sigmaCoeffs_( other.sigmaCoeffs_ ),
-	dpAxis_( other.dpAxis_ )
-{
-	// Copy constructor
-	mean_ = this->findParameter("mean");
-	sigma_ = this->findParameter("sigma");
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauDPDepGaussPdf::calcNorm() 
 {
 	this->setNorm(1.0);

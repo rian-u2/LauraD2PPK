@@ -190,6 +190,12 @@ class LauNRAmplitude : public LauAbsResonance {
 		Bool_t fixp2Parameter() const {return (p2_!=0) ? p2_->fixed() : kTRUE;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauNRAmplitude(const LauNRAmplitude& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauNRAmplitude& operator=(const LauNRAmplitude& rhs);
+
 		//! Parameter from arXiv:0709.0075v1 [hep-ph]
 		LauParameter* d_; 
 		//! Parameter from arXiv:0709.0075v1 [hep-ph]

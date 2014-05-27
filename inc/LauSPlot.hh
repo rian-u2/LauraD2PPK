@@ -266,6 +266,12 @@ class LauSPlot : public TObject {
 		void addFriendTree();
 
 	private:
+		//! Copy constructor (not implemented)
+		LauSPlot(const LauSPlot& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauSPlot& operator=(const LauSPlot& rhs);
+
 		//! The name of the data file
 		TString fileName_;
 		//! The name of the input tree (containing the per-event llhds)

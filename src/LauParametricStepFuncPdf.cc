@@ -71,15 +71,6 @@ LauParametricStepFuncPdf::~LauParametricStepFuncPdf()
 	// Destructor
 }
 
-LauParametricStepFuncPdf::LauParametricStepFuncPdf(const LauParametricStepFuncPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	// Copy constructor
-	normBin_ = other.normBin_;
-	limits_ = other.limits_;
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauParametricStepFuncPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissa is within the allowed range

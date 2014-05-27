@@ -56,16 +56,6 @@ LauNovosibirskPdf::~LauNovosibirskPdf()
 	// Destructor
 }
 
-LauNovosibirskPdf::LauNovosibirskPdf(const LauNovosibirskPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
-	mean_( other.mean_ ),
-	sigma_( other.sigma_ ),
-	tail_( other.tail_ )
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauNovosibirskPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissa is within the allowed range

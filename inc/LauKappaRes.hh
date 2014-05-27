@@ -162,6 +162,12 @@ class LauKappaRes : public LauAbsResonance {
 		void checkDaughterTypes() const;
 
 	private:
+		//! Copy constructor (not implemented)
+		LauKappaRes(const LauKappaRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKappaRes& operator=(const LauKappaRes& rhs);
+
 		//! Square of (mK + mPi)
 		const Double_t mSumSq_; 
 		//! Defined as mK*mK - 0.5*mPi*mPi

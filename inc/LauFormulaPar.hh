@@ -46,6 +46,12 @@ class LauFormulaPar : public LauAbsRValue {
 		// Destructor
 		virtual ~LauFormulaPar();
 
+		//! Copy constructor
+		LauFormulaPar(const LauFormulaPar& rhs);
+
+		//! Copy assignment operator
+		LauFormulaPar& operator=(const LauFormulaPar& rhs);
+
 		//! Return the value of the LauFormalaPar
 		/*!
 		  \return the value of the formula
@@ -103,7 +109,6 @@ class LauFormulaPar : public LauAbsRValue {
 
 		//! Remove the Gaussian constraint
 		void removeGaussianConstraint();
-
 
 	protected:
 

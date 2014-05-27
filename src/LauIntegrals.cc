@@ -34,6 +34,19 @@ LauIntegrals::~LauIntegrals()
 {
 }
 
+LauIntegrals::LauIntegrals(const LauIntegrals& rhs) :
+	weightsPrecision_( rhs.weightsPrecision_ )
+{
+}
+
+LauIntegrals& LauIntegrals::operator=(const LauIntegrals& rhs)
+{
+	if ( &rhs != this ) {
+		weightsPrecision_ = rhs.weightsPrecision_;
+	}
+	return *this;
+}
+
 void LauIntegrals::calcGaussLegendreWeights(const Int_t numPoints, std::vector<Double_t>& abscissas, std::vector<Double_t>& weights) 
 {
 	// Calculate the Gauss-Legendre weights that will be used for the 

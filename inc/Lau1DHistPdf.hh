@@ -47,9 +47,6 @@ class Lau1DHistPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~Lau1DHistPdf();
 
-		//! Copy constructor
-		Lau1DHistPdf(const Lau1DHistPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -96,6 +93,12 @@ class Lau1DHistPdf : public LauAbsPdf {
 		Double_t interpolateNorm(Double_t x) const;
 
 	private:
+		//! Copy constructor (not implemented)
+		Lau1DHistPdf(const Lau1DHistPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		Lau1DHistPdf& operator=(const Lau1DHistPdf& rhs);
+
 		//! The underlying histogram
 		TH1* hist_;
 

@@ -47,9 +47,6 @@ class LauExponentialPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauExponentialPdf();
 
-		//! Copy constructor
-		LauExponentialPdf(const LauExponentialPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -70,6 +67,12 @@ class LauExponentialPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauExponentialPdf(const LauExponentialPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauExponentialPdf& operator=(const LauExponentialPdf& rhs);
+
 		//! Exponential slope ie exp(slope*x)
 		LauAbsRValue* slope_;
 

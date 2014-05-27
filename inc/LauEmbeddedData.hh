@@ -27,7 +27,7 @@
 #include "LauFitDataTree.hh"
 
 class LauKinematics;
-class LauAbsDPDynamics;
+class LauIsobarDynamics;
 
 
 class LauEmbeddedData {
@@ -84,7 +84,7 @@ class LauEmbeddedData {
 		/*!
 		   \param [in] dynamics the amplitude model
 		*/
-  	        Bool_t getReweightedEvent(LauAbsDPDynamics* dynamics);
+  	        Bool_t getReweightedEvent(LauIsobarDynamics* dynamics);
 
 		//! Get the value of a specified branch
 		/*!
@@ -111,6 +111,12 @@ class LauEmbeddedData {
 		Bool_t reuseEvents() const {return reuseEvents_;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauEmbeddedData(const LauEmbeddedData& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauEmbeddedData& operator=(const LauEmbeddedData& rhs);
+
 		//! The structure containing the data
 		LauFitDataTree* theDataTree_;
 		//! The data for the currently retrieved event

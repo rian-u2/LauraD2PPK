@@ -228,6 +228,9 @@ class LauEffModel : public LauAbsEffModel {
 		//! Copy constructor - not implemented
 		LauEffModel( const LauEffModel& rhs );
 
+		//! Copy assignment operator - not implemented
+		LauEffModel& operator=( const LauEffModel& rhs );
+
 		//! Get the efficiency from a two-dimensional histogram by interpolating in x and y
 		/*!
 		    \param [in] xVal the value to be interpolated in x 

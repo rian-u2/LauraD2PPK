@@ -42,9 +42,6 @@ class LauLinearPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauLinearPdf();
 
-		//! Copy constructor
-		LauLinearPdf(const LauLinearPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -66,6 +63,12 @@ class LauLinearPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauLinearPdf(const LauLinearPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauLinearPdf& operator=(const LauLinearPdf& rhs);
+
 		//! Line slope
 		LauAbsRValue* slope_;
 

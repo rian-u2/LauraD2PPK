@@ -28,40 +28,92 @@
 ClassImp(LauFormulaPar)
 
 
-	LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, const std::vector<LauParameter*>& params) :
-		name_(forName),
-		formula_(forName,formula),
-		paramVec_(params),
-		dummy_(0),
-		paramArray_(0),
-		gaussConstraint_(kFALSE),
-		constraintMean_(0.0),
-		constraintWidth_(0.0)
+LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, const std::vector<LauParameter*>& params) :
+	name_(forName),
+	formula_(forName,formula),
+	paramVec_(params),
+	dummy_(0),
+	paramArray_(0),
+	gaussConstraint_(kFALSE),
+	constraintMean_(0.0),
+	constraintWidth_(0.0)
 {
-	// Dummy array for TFormula
-	dummy_ = new Double_t[1];
-
-	// Array of input parameters
-	Int_t nPars = paramVec_.size();
-
 	// Check length of vector matches number of parameter in the formula
+	Int_t nPars = paramVec_.size();
 	if (formula_.GetNpar() != nPars){
 		std::cerr<<"ERROR in LauFormulaPar::evaluate : Number of parameters in the formula is : "<<formula_.GetNpar()<< " and the number of LauParameters is : "<<nPars<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	paramArray_ = new Double_t[nPars];
-
 	if (formula_.GetNdim() != 1){
 		std::cerr<<"ERROR in LauFormulaPar::evaluate : Given formula of dimension: "<<formula_.GetNdim()<<" and not 1"<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
+
+	// Dummy array for TFormula
+	dummy_ = new Double_t[1];
+
+	// Array of input parameters
+	paramArray_ = new Double_t[nPars];
 }
 
 LauFormulaPar::~LauFormulaPar()
 {
 	delete[] dummy_;
 	delete[] paramArray_;
+}
+
+LauFormulaPar::LauFormulaPar(const LauFormulaPar& rhs) : LauAbsRValue(rhs),
+	name_(rhs.name_),
+	formula_(rhs.formula_),
+	paramVec_(rhs.paramVec_),
+	dummy_(0),
+	paramArray_(0),
+	gaussConstraint_(rhs.gaussConstraint_),
+	constraintMean_(rhs.constraintMean_),
+	constraintWidth_(rhs.constraintWidth_)
+{
+	// Check length of vector matches number of parameter in the formula
+	Int_t nPars = paramVec_.size();
+	if (formula_.GetNpar() != nPars){
+		std::cerr<<"ERROR in LauFormulaPar::evaluate : Number of parameters in the formula is : "<<formula_.GetNpar()<< " and the number of LauParameters is : "<<nPars<<std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	if (formula_.GetNdim() != 1){
+		std::cerr<<"ERROR in LauFormulaPar::evaluate : Given formula of dimension: "<<formula_.GetNdim()<<" and not 1"<<std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	// Dummy array for TFormula
+	dummy_ = new Double_t[1];
+
+	// Array of input parameters
+	paramArray_ = new Double_t[nPars];
+}
+
+LauFormulaPar& LauFormulaPar::operator=(const LauFormulaPar& rhs)
+{
+	if ( &rhs != this ) {
+		name_ = rhs.name_;
+		formula_ = rhs.formula_;
+
+		Int_t nOldPars = paramVec_.size();
+		Int_t nNewPars = rhs.paramVec_.size();
+
+		paramVec_ = rhs.paramVec_;
+		if ( nOldPars != nNewPars ) {
+			delete [] paramArray_;
+			paramArray_ = new Double_t[nNewPars];
+		}
+
+		// NB no need to recreate dummy_
+
+		gaussConstraint_ = rhs.gaussConstraint_;
+		constraintMean_ = rhs.constraintMean_;
+		constraintWidth_ = rhs.constraintWidth_;
+	}
+	return *this;
 }
 
 Double_t LauFormulaPar::value() const

@@ -36,7 +36,7 @@
 class TH2;
 class LauAbsBkgndDPModel;
 class LauAbsCoeffSet;
-class LauAbsDPDynamics;
+class LauIsobarDynamics;
 class LauAbsPdf;
 class LauEffModel;
 class LauEmbeddedData;
@@ -54,7 +54,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] tagged is the analysis tagged or untagged?
 			\param [in] tagVarName store the event charge 
 		*/	
-		LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged = kTRUE, const TString& tagVarName = "charge");
+		LauCPFitModel(LauIsobarDynamics* negModel, LauIsobarDynamics* posModel, Bool_t tagged = kTRUE, const TString& tagVarName = "charge");
 
 		//! Destructor
 		virtual ~LauCPFitModel();
@@ -427,11 +427,17 @@ class LauCPFitModel : public LauAbsFitModel {
 		void appendBinCentres( LauFitDataTree* inputData );
 
 	private:
+		//! Copy constructor (not implemented)
+		LauCPFitModel(const LauCPFitModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauCPFitModel& operator=(const LauCPFitModel& rhs);
+
 		//! The B- signal Dalitz plot model
-		LauAbsDPDynamics *negSigModel_; 
+		LauIsobarDynamics *negSigModel_; 
 
 		//! The B+ signal Dalitz plot model
-		LauAbsDPDynamics *posSigModel_;
+		LauIsobarDynamics *posSigModel_;
 
 		//! The B- background Dalitz plot models
 		LauBkgndDPModelList negBkgndDPModels_; 

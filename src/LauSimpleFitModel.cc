@@ -25,7 +25,7 @@
 
 #include "LauAbsBkgndDPModel.hh"
 #include "LauAbsCoeffSet.hh"
-#include "LauAbsDPDynamics.hh"
+#include "LauIsobarDynamics.hh"
 #include "LauAbsPdf.hh"
 #include "LauComplex.hh"
 #include "LauConstants.hh"
@@ -43,7 +43,7 @@
 ClassImp(LauSimpleFitModel)
 
 
-LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
+LauSimpleFitModel::LauSimpleFitModel(LauIsobarDynamics* sigModel) : LauAbsFitModel(),
 	sigDPModel_(sigModel),
 	kinematics_(sigModel ? sigModel->getKinematics() : 0),
 	usingBkgnd_(kFALSE),
@@ -2096,7 +2096,7 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 					dpModelWeight *= kinematics_->calcSqDPJacobian();
 				}
 
-				if (LauAbsDPDynamics::GenOK != sigDPModel_->checkToyMC(kTRUE,kFALSE)) {
+				if (LauIsobarDynamics::GenOK != sigDPModel_->checkToyMC(kTRUE,kFALSE)) {
 					std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
 					delete weightsTuple;
 					return;

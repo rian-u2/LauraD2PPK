@@ -19,7 +19,7 @@ using std::endl;
 
 #include "TRandom.h"
 
-#include "LauAbsDPDynamics.hh"
+#include "LauIsobarDynamics.hh"
 #include "LauEmbeddedData.hh"
 #include "LauKinematics.hh"
 #include "LauRandom.hh"
@@ -56,7 +56,7 @@ Bool_t LauEmbeddedData::findBranches()
 	return kTRUE;
 }
 
-Bool_t LauEmbeddedData::getReweightedEvent(LauAbsDPDynamics* dynamics)
+Bool_t LauEmbeddedData::getReweightedEvent(LauIsobarDynamics* dynamics)
 {
 	if (!theDataTree_) {
 		cerr<<"ERROR in LauEmbeddedData::getReweightedEvent : Invalid pointer to the data tree object."<<endl;
@@ -115,7 +115,7 @@ Bool_t LauEmbeddedData::getReweightedEvent(LauAbsDPDynamics* dynamics)
 				Double_t m23Sq = this->getValue("m23Sq");
 				kinematics->updateKinematics(m13Sq, m23Sq);
 
-				if (LauAbsDPDynamics::GenOK != dynamics->checkToyMC(kFALSE,kFALSE)) {
+				if (LauIsobarDynamics::GenOK != dynamics->checkToyMC(kFALSE,kFALSE)) {
 					return kFALSE;
 				}
 

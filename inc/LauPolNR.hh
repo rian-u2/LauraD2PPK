@@ -74,6 +74,12 @@ class LauPolNR : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauPolNR(const LauPolNR& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauPolNR& operator=(const LauPolNR& rhs);
+
 		//! The offset parameter
 		Double_t omega_;
 

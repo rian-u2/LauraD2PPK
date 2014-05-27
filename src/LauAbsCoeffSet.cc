@@ -38,6 +38,23 @@ LauAbsCoeffSet::LauAbsCoeffSet(const TString& theName, const TString& theBaseNam
 {
 }
 
+LauAbsCoeffSet::LauAbsCoeffSet(const LauAbsCoeffSet& rhs) :
+	name_(rhs.name_),
+	basename_(rhs.basename_),
+	index_(rhs.index_)
+{
+}
+
+LauAbsCoeffSet& LauAbsCoeffSet::operator=(const LauAbsCoeffSet& rhs)
+{
+	if ( &rhs != this ) {
+		name_ = rhs.name_;
+		basename_ = rhs.basename_;
+		index_ = rhs.index_;
+	}
+	return *this;
+}
+
 void LauAbsCoeffSet::index(UInt_t newIndex)
 {
 	index_ = newIndex;

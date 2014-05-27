@@ -143,6 +143,12 @@ class LauDabbaRes : public LauAbsResonance {
 		void checkDaughterTypes() const;
 
 	private:
+		//! Copy constructor (not implemented)
+		LauDabbaRes(const LauDabbaRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauDabbaRes& operator=(const LauDabbaRes& rhs);
+
 		//! Defined as mD + mPi all squared
 		Double_t mSumSq_; 
 		//! Defined as mD*mD - 0.5*mPi*mPi

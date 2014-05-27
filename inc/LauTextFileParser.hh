@@ -78,6 +78,12 @@ class LauTextFileParser {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauTextFileParser(const LauTextFileParser& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauTextFileParser& operator=(const LauTextFileParser& rhs);
+
 		//! The type used to contain the parsed text
 		typedef std::map<int, std::vector<std::string> > LineMap;
 

@@ -46,9 +46,6 @@ class LauBifurcatedGaussPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauBifurcatedGaussPdf();
 
-		//! Copy constructor
-		LauBifurcatedGaussPdf(const LauBifurcatedGaussPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -69,6 +66,12 @@ class LauBifurcatedGaussPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauBifurcatedGaussPdf(const LauBifurcatedGaussPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauBifurcatedGaussPdf& operator=(const LauBifurcatedGaussPdf& other);
+
 		//! Gaussian mean
 		LauAbsRValue* mean_;
 

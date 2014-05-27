@@ -66,9 +66,6 @@ class LauDPDepGaussPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauDPDepGaussPdf();
 
-		//! Copy constructor
-		LauDPDepGaussPdf(const LauDPDepGaussPdf& other);
-
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
 		    \return true if the PDF is DP-dependent (the default)
@@ -100,6 +97,12 @@ class LauDPDepGaussPdf : public LauAbsPdf {
 		void scalePars( Double_t dpPos );
 
 	private:
+		//! Copy constructor (not implemented)
+		LauDPDepGaussPdf(const LauDPDepGaussPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauDPDepGaussPdf& operator=(const LauDPDepGaussPdf& other);
+
 		//! The current DP kinematics
 		const LauKinematics* kinematics_;
 

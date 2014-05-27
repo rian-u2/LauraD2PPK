@@ -66,6 +66,12 @@ class LauBreitWignerRes : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauBreitWignerRes(const LauBreitWignerRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauBreitWignerRes& operator=(const LauBreitWignerRes& rhs);
+
 		ClassDef(LauBreitWignerRes,0) // Breit-Wigner resonance model
 
 };

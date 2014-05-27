@@ -62,9 +62,6 @@ class LauCrystalBallPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauCrystalBallPdf();
 
-		//! Copy constructor
-		LauCrystalBallPdf(const LauCrystalBallPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -92,6 +89,12 @@ class LauCrystalBallPdf : public LauAbsPdf {
 		Double_t approxErf(Double_t arg) const;
 
 	private:
+		//! Copy constructor (not implemented)
+		LauCrystalBallPdf(const LauCrystalBallPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauCrystalBallPdf& operator=(const LauCrystalBallPdf& other);
+
 		//! Gaussian mean
 		LauAbsRValue* mean_;
 		//! Gaussian sigma

@@ -120,6 +120,12 @@ class LauAbsBkgndDPModel {
 		virtual void setDataEventNo(UInt_t iEvt) = 0;
 
 	private:
+		//! Copy constructor (not implemented)
+		LauAbsBkgndDPModel(const LauAbsBkgndDPModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauAbsBkgndDPModel& operator=(const LauAbsBkgndDPModel& rhs);
+
 		//! The daughter particles
 		LauDaughters* daughters_;
 

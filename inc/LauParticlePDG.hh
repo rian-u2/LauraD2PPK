@@ -134,6 +134,12 @@ class LauParticlePDG {
 		*/
 		explicit LauParticlePDG(const TParticlePDG* particle);
 
+		//! Copy constructor (not implemented)
+		LauParticlePDG(const LauParticlePDG& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauParticlePDG& operator=(const LauParticlePDG& rhs);
+
 		//! Set the antiparticle
 		/*!
 		   \param [in] antiPart the antiparticle

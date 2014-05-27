@@ -134,6 +134,12 @@ class LauLASSNRRes : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauLASSNRRes(const LauLASSNRRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauLASSNRRes& operator=(const LauLASSNRRes& rhs);
+
 		//! LASS effective range parameter
 		LauParameter* r_;
 		//! LASS scattering length parameter

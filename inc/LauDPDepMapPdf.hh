@@ -76,9 +76,6 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauDPDepMapPdf();
 
-		//! Copy constructor
-		//LauDPDepMapPdf(const LauDPDepMapPdf& other);
-
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
 		    \return true if the PDF is DP-dependent (the default)
@@ -123,6 +120,9 @@ class LauDPDepMapPdf : public LauAbsPdf {
 	private:
 		//! Copy constructor - not implemented
 		LauDPDepMapPdf(const LauDPDepMapPdf& other);
+
+		//! Copy assignment operator - not implemented
+		LauDPDepMapPdf& operator=(const LauDPDepMapPdf& other);
 
 		//! Daughter particles
 		LauDaughters* daughters_;

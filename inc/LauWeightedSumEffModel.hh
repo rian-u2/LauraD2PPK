@@ -87,6 +87,9 @@ class LauWeightedSumEffModel : public LauAbsEffModel {
 		//! Copy constructor - not implemented
 		LauWeightedSumEffModel( const LauWeightedSumEffModel& rhs );
 
+		//! Copy assignment operator - not implemented
+		LauWeightedSumEffModel& operator=( const LauWeightedSumEffModel& rhs );
+
 		//! The daughters object
 		const LauDaughters* daughters_;
 

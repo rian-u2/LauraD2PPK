@@ -154,6 +154,12 @@ class LauSimFitMaster : public LauFitObject {
 
 
 	private:
+		//! Copy constructor (not implemented)
+		LauSimFitMaster(const LauSimFitMaster& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauSimFitMaster& operator=(const LauSimFitMaster& rhs);
+
 		// Setup a struct to store information on constrained fit parameters
 		/*!
 		  \struct StoreConstraints

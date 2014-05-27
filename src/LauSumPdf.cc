@@ -100,15 +100,6 @@ LauSumPdf::~LauSumPdf()
 	// Destructor
 }
 
-LauSumPdf::LauSumPdf(const LauSumPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	// Copy constructor
-	pdf1_ = other.pdf1_;
-	pdf2_ = other.pdf2_;
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauSumPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissa is within the allowed range

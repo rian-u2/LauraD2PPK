@@ -700,6 +700,12 @@ class LauAbsFitModel : public LauFitObject {
 		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauAbsFitModel(const LauAbsFitModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauAbsFitModel& operator=(const LauAbsFitModel& rhs);
+
 		// Setup a struct to store information on constrained fit parameters
 		/*!
 		  \struct StoreConstraints

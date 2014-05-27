@@ -62,6 +62,11 @@ class LauFlatNR : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauFlatNR(const LauFlatNR& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauFlatNR& operator=(const LauFlatNR& rhs);
 
 		ClassDef(LauFlatNR,0) // Uniform non-resonant model
 };

@@ -96,9 +96,9 @@ class LauScfMap {
 		TH2* trueHist(Int_t trueBin);
 
 	private:
-		// Making these two methods private and not implementing them prevents objects of this class from being copied
 		//! Copy constructor (not implemented)
 		LauScfMap( const LauScfMap& rhs );
+
 		//! Copy assignment operator (not implemented)
 		LauScfMap& operator=( const LauScfMap& rhs );
 

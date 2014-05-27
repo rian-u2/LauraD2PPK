@@ -54,13 +54,6 @@ LauExponentialPdf::~LauExponentialPdf()
 	// Destructor
 }
 
-LauExponentialPdf::LauExponentialPdf(const LauExponentialPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauExponentialPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissa is within the allowed range

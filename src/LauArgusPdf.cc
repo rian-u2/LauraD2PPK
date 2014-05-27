@@ -52,13 +52,6 @@ LauArgusPdf::~LauArgusPdf()
 	// Destructor
 }
 
-LauArgusPdf::LauArgusPdf(const LauArgusPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauArgusPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissa is within the allowed range

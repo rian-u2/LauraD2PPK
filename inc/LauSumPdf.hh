@@ -43,9 +43,6 @@ class LauSumPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauSumPdf();
 
-		//! Copy constructor
-		LauSumPdf(const LauSumPdf& other);
-
 		//! Returns the number of input variables
 		/*! 
 		    \return the number of input variables
@@ -88,6 +85,12 @@ class LauSumPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauSumPdf(const LauSumPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauSumPdf& operator=(const LauSumPdf& rhs);
+
 		//! First PDF
 		LauAbsPdf* pdf1_;
 

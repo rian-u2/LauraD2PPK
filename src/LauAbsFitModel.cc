@@ -714,7 +714,19 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 				*(fitVars_[iPar]) = *parameter;
 			}
 
+			// Write the results into the ntuple
 			this->finaliseFitResults( tableFileNameBase );
+
+			// Store the per-event likelihood values
+			if ( this->writeSPlotData() ) {
+			  this->storePerEvtLlhds();
+			}
+
+			// Create a toy MC sample using the fitted parameters so that
+			// the user can compare the fit to the data.
+			if (compareFitData_ == kTRUE && fitStatus_ == 3) {
+			  this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
+			}
 
 			// Send the finalised parameters
 			TObjArray array;

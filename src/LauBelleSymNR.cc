@@ -35,6 +35,7 @@ LauBelleSymNR::LauBelleSymNR(LauResonanceInfo* resInfo, const LauAbsResonance::L
 	alpha_ = resInfo->getExtraParameter( parName );
 	if ( alpha_ == 0 ) {
 		alpha_ = new LauParameter( parName, 0.0, 0.0, 10.0, kTRUE );
+		alpha_->secondStage(kTRUE);
 		resInfo->addExtraParameter( alpha_ );
 	}
 }

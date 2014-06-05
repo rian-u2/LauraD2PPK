@@ -43,6 +43,7 @@ LauKappaRes::LauKappaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	b1_ = resInfo->getExtraParameter( b1Name );
 	if ( b1_ == 0 ) {
 		b1_ = new LauParameter( b1Name, b1Val, 0.0, 100.0, kTRUE );
+		b1_->secondStage(kTRUE);
 		resInfo->addExtraParameter( b1_ );
 	}
 
@@ -51,6 +52,7 @@ LauKappaRes::LauKappaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	b2_ = resInfo->getExtraParameter( b2Name );
 	if ( b2_ == 0 ) {
 		b2_ = new LauParameter( b2Name, b2Val, 0.0, 100.0, kTRUE );
+		b2_->secondStage(kTRUE);
 		resInfo->addExtraParameter( b2_ );
 	}
 
@@ -59,6 +61,7 @@ LauKappaRes::LauKappaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	a_ = resInfo->getExtraParameter( aName );
 	if ( a_ == 0 ) {
 		a_ = new LauParameter( aName, aVal, 0.0, 10.0, kTRUE );
+		a_->secondStage(kTRUE);
 		resInfo->addExtraParameter( a_ );
 	}
 
@@ -67,6 +70,7 @@ LauKappaRes::LauKappaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	m0_ = resInfo->getExtraParameter( m0Name );
 	if ( m0_ == 0 ) {
 		m0_ = new LauParameter( m0Name, m0Val, 0.0, 10.0, kTRUE );
+		m0_->secondStage(kTRUE);
 		resInfo->addExtraParameter( m0_ );
 	}
 }

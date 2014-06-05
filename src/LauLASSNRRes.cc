@@ -39,6 +39,7 @@ LauLASSNRRes::LauLASSNRRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	r_ = resInfo->getExtraParameter( rName );
 	if ( r_ == 0 ) {
 		r_ = new LauParameter( rName, rVal, 0.0, 10.0, kTRUE );
+		r_->secondStage(kTRUE);
 		resInfo->addExtraParameter( r_ );
 	}
 
@@ -47,6 +48,7 @@ LauLASSNRRes::LauLASSNRRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	a_ = resInfo->getExtraParameter( aName );
 	if ( a_ == 0 ) {
 		a_ = new LauParameter( aName, aVal, 0.0, 10.0, kTRUE );
+		a_->secondStage(kTRUE);
 		resInfo->addExtraParameter( a_ );
 	}
 }

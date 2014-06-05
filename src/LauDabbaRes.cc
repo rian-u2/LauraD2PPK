@@ -42,6 +42,7 @@ LauDabbaRes::LauDabbaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	b_ = resInfo->getExtraParameter( bName );
 	if ( b_ == 0 ) {
 		b_ = new LauParameter( bName, bVal, 0.0, 100.0, kTRUE );
+		b_->secondStage(kTRUE);
 		resInfo->addExtraParameter( b_ );
 	}
 
@@ -50,6 +51,7 @@ LauDabbaRes::LauDabbaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	alpha_ = resInfo->getExtraParameter( alphaName );
 	if ( alpha_ == 0 ) {
 		alpha_ = new LauParameter( alphaName, alphaVal, 0.0, 10.0, kTRUE );
+		alpha_->secondStage(kTRUE);
 		resInfo->addExtraParameter( alpha_ );
 	}
 
@@ -58,6 +60,7 @@ LauDabbaRes::LauDabbaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, c
 	beta_ = resInfo->getExtraParameter( betaName );
 	if ( beta_ == 0 ) {
 		beta_ = new LauParameter( betaName, betaVal, 0.0, 10.0, kTRUE );
+		beta_->secondStage(kTRUE);
 		resInfo->addExtraParameter( beta_ );
 	}
 }

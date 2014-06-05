@@ -104,6 +104,7 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	g1_ = resInfo->getExtraParameter( g1Name );
 	if ( g1_ == 0 ) {
 		g1_ = new LauParameter( g1Name, g1Val, 0.0, 10.0, kTRUE );
+		g1_->secondStage(kTRUE);
 		resInfo->addExtraParameter( g1_ );
 	}
 
@@ -112,6 +113,7 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	g2_ = resInfo->getExtraParameter( g2Name );
 	if ( g2_ == 0 ) {
 		g2_ = new LauParameter( g2Name, g2Val, 0.0, 10.0, kTRUE );
+		g2_->secondStage(kTRUE);
 		resInfo->addExtraParameter( g2_ );
 	}
 }

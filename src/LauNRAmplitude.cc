@@ -42,6 +42,7 @@ LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmp
 	d_ = resInfo->getExtraParameter( dName );
 	if ( d_ == 0 ) {
 		d_ = new LauParameter( dName, dVal, 0.0, 1.0, kTRUE );
+		d_->secondStage(kTRUE);
 		resInfo->addExtraParameter( d_ );
 	}
 
@@ -50,6 +51,7 @@ LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmp
 	c1_ = resInfo->getExtraParameter( c1Name );
 	if ( c1_ == 0 ) {
 		c1_ = new LauParameter( c1Name, c1Val, 0.0, 2.0, kTRUE );
+		c1_->secondStage(kTRUE);
 		resInfo->addExtraParameter( c1_ );
 	}
 
@@ -58,6 +60,7 @@ LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmp
 	c2_ = resInfo->getExtraParameter( c2Name );
 	if ( c2_ == 0 ) {
 		c2_ = new LauParameter( c2Name, c2Val, 0.0, 2.0, kTRUE );
+		c2_->secondStage(kTRUE);
 		resInfo->addExtraParameter( c2_ );
 	}
 
@@ -66,6 +69,7 @@ LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmp
 	p1_ = resInfo->getExtraParameter( p1Name );
 	if ( p1_ == 0 ) {
 		p1_ = new LauParameter( p1Name, p1Val, 0.0, 50.0, kTRUE );
+		p1_->secondStage(kTRUE);
 		resInfo->addExtraParameter( p1_ );
 	}
 
@@ -74,6 +78,7 @@ LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmp
 	p2_ = resInfo->getExtraParameter( p2Name );
 	if ( p2_ == 0 ) {
 		p2_ = new LauParameter( p2Name, p2Val, 0.0, 50.0, kTRUE );
+		p2_->secondStage(kTRUE);
 		resInfo->addExtraParameter( p2_ );
 	}
 }

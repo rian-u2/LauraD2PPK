@@ -156,6 +156,9 @@ int main( int argc, char** argv )
 	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
 	fitModel->doEMLFit(emlFit);
 
+	// Switch on the two-stage fit (for the resonance parameters)
+	fitModel->twoStageFit(kTRUE);
+
 	TString dataFile("data.root");
 
 	TString treeName("genResults");

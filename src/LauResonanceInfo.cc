@@ -33,7 +33,9 @@ LauResonanceInfo::LauResonanceInfo(const TString& name, Double_t mass, Double_t 
 {
 	this->sanitiseName();
 	mass_ = new LauParameter(sanitisedName_+"_MASS",mass,0.0,3.0*mass,kTRUE);
+	mass_->secondStage(kTRUE);
 	width_ = new LauParameter(sanitisedName_+"_WIDTH",width,0.0,3.0*width,kTRUE);
+	width_->secondStage(kTRUE);
 }
 
 LauResonanceInfo::~LauResonanceInfo()

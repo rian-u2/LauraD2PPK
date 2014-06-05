@@ -35,6 +35,12 @@ class LauAsymmCalc {
 		//! Destructor
 		virtual ~LauAsymmCalc();
 
+		//! Copy constructor
+		LauAsymmCalc(const LauAsymmCalc& rhs);
+
+		//! Copy assignment operator
+		LauAsymmCalc& operator=(const LauAsymmCalc& rhs);
+
 		//! Retrieve the asymmetry
 		/*!
 		    \return the asymmetry

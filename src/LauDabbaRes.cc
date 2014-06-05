@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2010 - 2013.
+// Copyright University of Warwick 2010 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,33 +10,59 @@
 
 /*! \file LauDabbaRes.cc
     \brief File containing implementation of LauDabbaRes class.
+    Formulae and data values from arXiv:0901.2217 - author D.V.Bugg
 */
-
-//****************************************************************************
-// Class for defining the Dabba resonance model
-//****************************************************************************
-
-// --CLASS DESCRIPTION [MODEL] --
-// Class for defining the Dabba resonance model
-// Formulae and data values from arXiv:0901.2217 - author D.V.Bugg
 
 #include <iostream>
 
 #include "LauConstants.hh"
 #include "LauDabbaRes.hh"
+#include "LauResonanceInfo.hh"
 
 ClassImp(LauDabbaRes)
 
 
-LauDabbaRes::LauDabbaRes(TString resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauDabbaRes::LauDabbaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	mSumSq_(0.0),
 	sAdler_(0.0),
-	b_(24.49),
-	alpha_(0.1),
-	beta_(0.1)
+	b_(0),
+	alpha_(0),
+	beta_(0)
 {
+	// Default constant factors
+	const Double_t bVal     = 24.49;
+	const Double_t alphaVal = 0.1;
+	const Double_t betaVal  = 0.1;
+
+	const TString& parNameBase = this->getSanitisedName();
+
+	TString bName(parNameBase);
+	bName += "_b";
+	b_ = resInfo->getExtraParameter( bName );
+	if ( b_ == 0 ) {
+		b_ = new LauParameter( bName, bVal, 0.0, 100.0, kTRUE );
+		b_->secondStage(kTRUE);
+		resInfo->addExtraParameter( b_ );
+	}
+
+	TString alphaName(parNameBase);
+	alphaName += "_alpha";
+	alpha_ = resInfo->getExtraParameter( alphaName );
+	if ( alpha_ == 0 ) {
+		alpha_ = new LauParameter( alphaName, alphaVal, 0.0, 10.0, kTRUE );
+		alpha_->secondStage(kTRUE);
+		resInfo->addExtraParameter( alpha_ );
+	}
+
+	TString betaName(parNameBase);
+	betaName += "_beta";
+	beta_ = resInfo->getExtraParameter( betaName );
+	if ( beta_ == 0 ) {
+		beta_ = new LauParameter( betaName, betaVal, 0.0, 10.0, kTRUE );
+		beta_->secondStage(kTRUE);
+		resInfo->addExtraParameter( beta_ );
+	}
 }
 
 LauDabbaRes::~LauDabbaRes()
@@ -63,12 +89,6 @@ void LauDabbaRes::initialise()
 	if (resSpin != 0) {
 		std::cerr << "WARNING in LauDabbaRes::initialise : Spin = " << resSpin << " is not zero!  It will be ignored anyway!" << std::endl;
 	}
-}
-
-void LauDabbaRes::setConstants(Double_t b, Double_t alpha, Double_t beta) {
-	b_ = b;
-	alpha_ = alpha;
-	beta_ = beta;
 }
 
 void LauDabbaRes::checkDaughterTypes() const
@@ -109,9 +129,13 @@ LauComplex LauDabbaRes::resAmp(Double_t mass, Double_t spinTerm)
 		rho = TMath::Sqrt(1.0 - mSumSq_/s);
 	}
 
-	Double_t realPart = 1.0 - beta_ * sDiff;
+	const Double_t bVal = this->getBValue();
+	const Double_t alphaVal = this->getAlphaValue();
+	const Double_t betaVal = this->getBetaValue();
 
-	Double_t imagPart = b_ * TMath::Exp( - alpha_ * sDiff ) * ( s - sAdler_ ) * rho;
+	Double_t realPart = 1.0 - betaVal * sDiff;
+
+	Double_t imagPart = bVal * TMath::Exp( - alphaVal * sDiff ) * ( s - sAdler_ ) * rho;
 
 	LauComplex resAmplitude( realPart, imagPart );
 
@@ -123,6 +147,25 @@ LauComplex LauDabbaRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude.rescale(spinTerm*invDenomFactor);
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauDabbaRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixBValue() ) {
+		this->addFloatingParameter( b_ );
+	}
+
+	if ( ! this->fixAlphaValue() ) {
+		this->addFloatingParameter( alpha_ );
+	}
+
+	if ( ! this->fixBetaValue() ) {
+		this->addFloatingParameter( beta_ );
+	}
+
+	return this->getParameters();
 }
 
 void LauDabbaRes::setResonanceParameter(const TString& name, const Double_t value) 
@@ -143,5 +186,68 @@ void LauDabbaRes::setResonanceParameter(const TString& name, const Double_t valu
 	else {
 		std::cerr << "WARNING in LauDabbaRes::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
 	}
+}
+
+void LauDabbaRes::floatResonanceParameter(const TString& name)
+{
+	if (name == "b") {
+		if ( b_->fixed() ) {
+			b_->fixed( kFALSE );
+			this->addFloatingParameter( b_ );
+		} else {
+			std::cerr << "WARNING in LauDabbaRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else if (name == "alpha") {
+		if ( alpha_->fixed() ) {
+			alpha_->fixed( kFALSE );
+			this->addFloatingParameter( alpha_ );
+		} else {
+			std::cerr << "WARNING in LauDabbaRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else if (name == "beta") {
+		if ( beta_->fixed() ) {
+			beta_->fixed( kFALSE );
+			this->addFloatingParameter( beta_ );
+		} else {
+			std::cerr << "WARNING in LauDabbaRes::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else {
+		std::cerr << "WARNING in LauDabbaRes::fixResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+
+LauParameter* LauDabbaRes::getResonanceParameter(const TString& name)
+{
+	if (name == "b") {
+		return b_;
+	} else if (name == "alpha") {
+		return alpha_;
+	} else if (name == "beta") {
+		return beta_;
+	} else {
+		std::cerr << "WARNING in LauDabbaRes::getResonanceParameter: Parameter name not reconised." << std::endl;
+		return 0;
+	}
+}
+
+void LauDabbaRes::setBValue(const Double_t b)
+{
+	b_->value( b );
+	b_->genValue( b );
+	b_->initValue( b );
+}
+
+void LauDabbaRes::setAlphaValue(const Double_t alpha)
+{
+	alpha_->value( alpha );
+	alpha_->genValue( alpha );
+	alpha_->initValue( alpha );
+}
+
+void LauDabbaRes::setBetaValue(const Double_t beta)
+{
+	beta_->value( beta );
+	beta_->genValue( beta );
+	beta_->initValue( beta );
 }
 

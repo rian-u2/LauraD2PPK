@@ -45,7 +45,7 @@ LauCacheData::LauCacheData(const LauCacheData& rhs)
 	this->storeImagAmp(rhs.retrieveImagAmp());
 }
 
-LauCacheData& LauCacheData::operator = (const LauCacheData& rhs)
+LauCacheData& LauCacheData::operator=(const LauCacheData& rhs)
 {
 	if (&rhs != this) {
 		this->storem13Sq(rhs.retrievem13Sq());

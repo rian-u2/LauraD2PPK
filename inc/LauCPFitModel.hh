@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -36,7 +36,7 @@
 class TH2;
 class LauAbsBkgndDPModel;
 class LauAbsCoeffSet;
-class LauAbsDPDynamics;
+class LauIsobarDynamics;
 class LauAbsPdf;
 class LauEffModel;
 class LauEmbeddedData;
@@ -54,7 +54,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] tagged is the analysis tagged or untagged?
 			\param [in] tagVarName the variable name in the data tree that specifies the event tag
 		*/	
-		LauCPFitModel(LauAbsDPDynamics* negModel, LauAbsDPDynamics* posModel, Bool_t tagged = kTRUE, const TString& tagVarName = "charge");
+		LauCPFitModel(LauIsobarDynamics* negModel, LauIsobarDynamics* posModel, Bool_t tagged = kTRUE, const TString& tagVarName = "charge");
 
 		//! Destructor
 		virtual ~LauCPFitModel();
@@ -237,6 +237,9 @@ class LauCPFitModel : public LauAbsFitModel {
 
 		//! Initialise the signal DP models
 		virtual void initialiseDPModels();
+
+		//! Recalculate Normalization the signal DP models
+		virtual void recalculateNormalisation();
 
 		//! Update the coefficients
 		virtual void updateCoeffs();
@@ -426,11 +429,17 @@ class LauCPFitModel : public LauAbsFitModel {
 		void appendBinCentres( LauFitDataTree* inputData );
 
 	private:
+		//! Copy constructor (not implemented)
+		LauCPFitModel(const LauCPFitModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauCPFitModel& operator=(const LauCPFitModel& rhs);
+
 		//! The B- signal Dalitz plot model
-		LauAbsDPDynamics *negSigModel_; 
+		LauIsobarDynamics *negSigModel_; 
 
 		//! The B+ signal Dalitz plot model
-		LauAbsDPDynamics *posSigModel_;
+		LauIsobarDynamics *posSigModel_;
 
 		//! The B- background Dalitz plot models
 		LauBkgndDPModelList negBkgndDPModels_; 

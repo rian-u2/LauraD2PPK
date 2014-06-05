@@ -237,6 +237,19 @@ class LauAbsCoeffSet {
 		//! Maximum allowed value of CP-violating real/imaginary part parameters
 		static Double_t maxDelta_;
 
+	protected:
+		//! Copy constructor
+		/*!
+		    \param [in] rhs the coefficient to clone
+		*/
+		LauAbsCoeffSet(const LauAbsCoeffSet& rhs);
+
+		//! Copy assignment operator
+		/*!
+		    \param [in] rhs the coefficient to clone
+		*/
+		LauAbsCoeffSet& operator=(const LauAbsCoeffSet& rhs);
+
 	private:
 		//! The name of the coefficient set
 		TString name_;

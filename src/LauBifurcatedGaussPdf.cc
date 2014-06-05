@@ -58,13 +58,6 @@ LauBifurcatedGaussPdf::~LauBifurcatedGaussPdf()
 	// Destructor
 }
 
-LauBifurcatedGaussPdf::LauBifurcatedGaussPdf(const LauBifurcatedGaussPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauBifurcatedGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 

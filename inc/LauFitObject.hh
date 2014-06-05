@@ -69,6 +69,12 @@ class LauFitObject : public TObject {
 		LauFitObject() : TObject() {}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauFitObject(const LauFitObject& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauFitObject& operator=(const LauFitObject& rhs);
+
 		ClassDef(LauFitObject,0)
 };
 

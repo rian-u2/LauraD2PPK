@@ -88,21 +88,6 @@ LauDPDepBifurGaussPdf::~LauDPDepBifurGaussPdf()
 	// Destructor
 }
 
-LauDPDepBifurGaussPdf::LauDPDepBifurGaussPdf(const LauDPDepBifurGaussPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
-	kinematics_(other.kinematics_),
-	mean_(other.mean_),
-	sigmaL_(other.sigmaL_),
-	sigmaR_(other.sigmaR_),
-	meanCoeffs_(other.meanCoeffs_),
-	sigmaLCoeffs_(other.sigmaLCoeffs_),
-	sigmaRCoeffs_(other.sigmaRCoeffs_),
-	scaleMethod_(other.poly)
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauDPDepBifurGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 {
 	// Check that the given abscissas are within the allowed range

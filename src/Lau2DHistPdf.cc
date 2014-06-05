@@ -158,35 +158,6 @@ Lau2DHistPdf::~Lau2DHistPdf()
 	delete yVarPdf_; yVarPdf_ = 0;
 }
 
-Lau2DHistPdf::Lau2DHistPdf(const Lau2DHistPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	hist_ = dynamic_cast<TH2*>(other.hist_->Clone());
-	xName_ = other.xName_;
-	yName_ = other.yName_;
-	nBinsX_ = other.nBinsX_;
-	nBinsY_ = other.nBinsY_;
-	minX_ = other.minX_;
-	maxX_ = other.maxX_;
-	minY_ = other.minY_;
-	maxY_ = other.maxY_;
-	rangeX_ = other.rangeX_;
-	rangeY_ = other.rangeY_;
-	binXWidth_ = other.binXWidth_;
-	binYWidth_ = other.binYWidth_;
-	invBinXWidth_ = other.invBinXWidth_;
-	invBinYWidth_ = other.invBinYWidth_;
-	useInterpolation_ = other.useInterpolation_;
-	fluctuateBins_ = other.fluctuateBins_;
-
-	xProj_ = hist_->ProjectionX();
-	yProj_ = hist_->ProjectionY();
-	xVarPdf_ = new Lau1DHistPdf(xName_, xProj_, minX_, maxX_, useInterpolation_, fluctuateBins_);
-	yVarPdf_ = new Lau1DHistPdf(yName_, yProj_, minY_, maxY_, useInterpolation_, fluctuateBins_);
-
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void Lau2DHistPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 {
 	if (this->heightUpToDate()) {

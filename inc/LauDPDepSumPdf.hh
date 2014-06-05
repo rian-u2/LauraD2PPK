@@ -76,9 +76,6 @@ class LauDPDepSumPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauDPDepSumPdf();
 
-		//! Copy constructor
-		//LauDPDepSumPdf(const LauDPDepSumPdf& other);
-
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
 		    \return true if the PDF is DP-dependent (the default)
@@ -122,6 +119,9 @@ class LauDPDepSumPdf : public LauAbsPdf {
 	private:
 		//! Copy constructor - not implemented
 		LauDPDepSumPdf(const LauDPDepSumPdf& other);
+
+		//! Copy assignment operator - not implemented
+		LauDPDepSumPdf& operator=(const LauDPDepSumPdf& other);
 
 		//! Daughter particles
 		LauDaughters* daughters_;

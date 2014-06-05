@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -25,7 +25,7 @@
 
 #include "LauAbsBkgndDPModel.hh"
 #include "LauAbsCoeffSet.hh"
-#include "LauAbsDPDynamics.hh"
+#include "LauIsobarDynamics.hh"
 #include "LauAbsPdf.hh"
 #include "LauComplex.hh"
 #include "LauConstants.hh"
@@ -43,7 +43,7 @@
 ClassImp(LauSimpleFitModel)
 
 
-	LauSimpleFitModel::LauSimpleFitModel(LauAbsDPDynamics* sigModel) : LauAbsFitModel(),
+LauSimpleFitModel::LauSimpleFitModel(LauIsobarDynamics* sigModel) : LauAbsFitModel(),
 	sigDPModel_(sigModel),
 	kinematics_(sigModel ? sigModel->getKinematics() : 0),
 	usingBkgnd_(kFALSE),
@@ -266,9 +266,22 @@ void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 
 void LauSimpleFitModel::initialise()
 {
-	// First of all check that, we have all the Dalitz-plot models
+	// From the initial parameter values calculate the coefficients
+	// so they can be passed to the signal model
+	this->updateCoeffs();
+
+	// Initialisation
+	if (this->useDP() == kTRUE) {
+		this->initialiseDPModels();
+	}
+
+	if (!this->useDP() && signalPdfs_.empty()) {
+		std::cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
 
 	if (this->useDP()) {
+		// Check that we have all the Dalitz-plot models
 		if ( sigDPModel_ == 0 ) {
 			std::cerr << "ERROR in LauSimpleFitModel::initialise : The pointer to the signal DP model is null.\n";
 			std::cerr << "                                       : Removing the Dalitz Plot from the model." << std::endl;
@@ -352,26 +365,20 @@ void LauSimpleFitModel::initialise()
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	// From the initial parameter values calculate the coefficients
-	// so they can be passed to the signal model
-	this->updateCoeffs();
-
-	// Initialisation
-	if (this->useDP() == kTRUE) {
-		this->initialiseDPModels();
-	}
-
-	if (!this->useDP() && signalPdfs_.empty()) {
-		std::cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
 	this->setExtraNtupleVars();
 }
 
 void LauSimpleFitModel::initialiseDPModels()
 {
-	std::cout << "INFO in LauSimpleFitModel::initialiseDPModels : Initialising signal DP model" << std::endl;
+	// Need to check that the number of components we have and that the dynamics has matches up
+	UInt_t nAmp = sigDPModel_->getnAmp();
+	if (nAmp != nSigComp_) {
+		std::cerr << "ERROR in LauSimpleFitModel::initialiseDPModels : Number of signal DP components with magnitude and phase set not right." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	std::cout << "INFO in LauSimpleFitModel::initialiseDPModels : Initialising DP models" << std::endl;
+
 	sigDPModel_->initialise(coeffs_);
 
 	if (usingBkgnd_ == kTRUE) {
@@ -379,6 +386,13 @@ void LauSimpleFitModel::initialiseDPModels()
 			(*iter)->initialise();
 		}
 	}
+}
+
+void LauSimpleFitModel::recalculateNormalisation()
+{
+	//std::cout << "INFO in LauSimpleFitModel::recalculateNormalizationInDPModels : Recalc Norm in DP model" << std::endl;
+	sigDPModel_->recalculateNormalisation();
+	sigDPModel_->modifyDataTree();
 }
 
 void LauSimpleFitModel::setSignalDPParameters()
@@ -392,15 +406,7 @@ void LauSimpleFitModel::setSignalDPParameters()
 
 	std::cout << "INFO in LauSimpleFitModel::setSignalDPParameters : Setting the initial fit parameters for the signal DP model." << std::endl;
 
-	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nAmp = sigDPModel_->getnAmp();
-	if (nAmp != nSigComp_) {
-		std::cerr << "ERROR in LauSimpleFitModel::setSignalDPParameters : Number of signal DP components with magnitude and phase set not right." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
-
-	// Place signal model parameters in vector of fit variables
+	// Place isobar coefficient parameters in vector of fit variables
 	LauParameterPList& fitVars = this->fitPars();
 	for (UInt_t i = 0; i < nSigComp_; i++) {
 		LauParameterPList pars = coeffPars_[i]->getParameters();
@@ -409,6 +415,19 @@ void LauSimpleFitModel::setSignalDPParameters()
 				fitVars.push_back(*iter);
 				++nSigDPPar_;
 			}
+		}
+	}
+
+	// Obtain the resonance parameters and place them in the vector of fit variables and in a separate vector
+	LauParameterPSet& resVars = this->resPars();
+	resVars.clear();
+
+	LauParameterPList& sigDPPars = sigDPModel_->getFloatingParameters();
+
+	for ( LauParameterPList::iterator iter = sigDPPars.begin(); iter != sigDPPars.end(); ++iter ) {
+		if ( resVars.insert(*iter).second ) {
+			fitVars.push_back(*iter);
+			++nSigDPPar_;
 		}
 	}
 }
@@ -2076,7 +2095,7 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 					dpModelWeight *= kinematics_->calcSqDPJacobian();
 				}
 
-				if (LauAbsDPDynamics::GenOK != sigDPModel_->checkToyMC(kTRUE,kFALSE)) {
+				if (LauIsobarDynamics::GenOK != sigDPModel_->checkToyMC(kTRUE,kFALSE)) {
 					std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
 					delete weightsTuple;
 					return;

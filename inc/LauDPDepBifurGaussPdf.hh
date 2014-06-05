@@ -70,9 +70,6 @@ class LauDPDepBifurGaussPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauDPDepBifurGaussPdf();
 
-		//! Copy constructor
-		LauDPDepBifurGaussPdf(const LauDPDepBifurGaussPdf& other);
-
 		//! Specifies whether or not the PDF is DP dependent.
 		/*!
 		    \return true if the PDF is DP-dependent (the default)
@@ -122,6 +119,12 @@ class LauDPDepBifurGaussPdf : public LauAbsPdf {
 		void scalePars_polyNegPower(Double_t perEventDist);
 		
 	private:
+		//! Copy constructor (not implemented)
+		LauDPDepBifurGaussPdf(const LauDPDepBifurGaussPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauDPDepBifurGaussPdf& operator=(const LauDPDepBifurGaussPdf& other);
+
 		//! The current DP kinematics
 		const LauKinematics* kinematics_;
 

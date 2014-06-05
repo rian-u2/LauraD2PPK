@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -27,9 +27,11 @@
 #include "TString.h"
 
 #include "LauComplex.hh"
+#include "LauParameter.hh"
 
 class LauDaughters;
 class LauKinematics;
+class LauResonanceInfo;
 
 class LauAbsResonance {
 
@@ -63,19 +65,21 @@ class LauAbsResonance {
 			ExpBarrier	/*!< expoential barrier factor (mostly used for virtual contributions) */
 		};
 
-		//! Constructor
+		//! Constructor (for use by standard resonances)
 		/*!
-			\param [in] resName the name of the resonance
-			\param [in] resMass the mass of the resonance
-			\param [in] resWidth the width of the resonance
-			\param [in] resSpin the spin of the resonance
-			\param [in] resCharge the charge of the resonance
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauAbsResonance(const TString& resName, Double_t resMass, Double_t resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
-				const LauDaughters* daughters);
+		LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
+
+		//! Constructor (for use by K-matrix components)
+		/*!
+			\param [in] resName the name of the component
+			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
+			\param [in] daughters the daughter particles
+		*/
+		LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor	
 		virtual ~LauAbsResonance();
@@ -102,6 +106,12 @@ class LauAbsResonance {
 		*/
 		const TString& getResonanceName() const {return resName_;}
 
+		//! Get the name of the resonance
+		/*! 
+			\return the resonance name
+		*/
+		const TString& getSanitisedName() const {return sanitisedName_;}
+
 		//! Get the integer to identify which DP axis the resonance belongs to
 		/*! 
 			\return the DP axis identification number, the ID of the bachelor
@@ -124,13 +134,33 @@ class LauAbsResonance {
 		/*! 
 			\return the resonance mass
 		*/
-		Double_t getMass() const {return resMass_;}
+		Double_t getMass() const {return (resMass_!=0) ? resMass_->value() : -1.0;}
 
 		//! Get the width of the resonance
 		/*! 
 			\return the resonance width
 		*/
-		Double_t getWidth() const {return resWidth_;}
+		Double_t getWidth() const {return (resWidth_!=0) ? resWidth_->value() : -1.0;}
+
+		//! Get the mass parameter of the resonance
+		/*! 
+			\return the resonance mass parameter
+		*/
+		LauParameter* getMassPar() {return resMass_;}
+
+		//! Get the width parameter of the resonance
+		/*! 
+			\return the resonance width parameter
+		*/
+		LauParameter* getWidthPar() {return resWidth_;}
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		//TODO - should this be pure virtual or should it return the default empty list?
+		//virtual const std::vector<LauParameter*>& getFloatingParameters() = 0;
+		virtual const std::vector<LauParameter*>& getFloatingParameters() { return this->getParameters(); };
 
 		//! Get the helicity flip flag
 		/*! 
@@ -142,7 +172,7 @@ class LauAbsResonance {
 		/*!
 			\param [in] boolean the helicity flip status
 		*/
-		void flipHelicity(Bool_t boolean) {flipHelicity_ = boolean;}
+		void flipHelicity(const Bool_t boolean) {flipHelicity_ = boolean;}
 	
 		//! Get the ignore momenta flag
 		/*! 
@@ -154,7 +184,7 @@ class LauAbsResonance {
 		/*!
 			\param [in] boolean the ignore momenta status
 		*/
-		void ignoreMomenta(Bool_t boolean) {ignoreMomenta_ = boolean;}
+		void ignoreMomenta(const Bool_t boolean) {ignoreMomenta_ = boolean;}
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
@@ -174,6 +204,43 @@ class LauAbsResonance {
 			\param [in] value the new parameter value
 		*/
 		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+		//! Allow the various parameters to float in the fit
+		/*!
+			\param [in] name the name of the parameter to be floated
+		*/
+		virtual void floatResonanceParameter(const TString& name);
+
+		//! Access the given resonance parameter
+		/*!
+			\param [in] name the name of the parameter
+			\return the corresponding parameter
+		 */
+		virtual LauParameter* getResonanceParameter(const TString& name);
+
+		//! Fix or release the resonance mass
+		/*!
+			\param [in] parFixed new status of mass
+		*/
+		void fixMass(const Bool_t parFixed) { if (resMass_!=0) { resMass_->fixed(parFixed); } }
+
+		//! Fix or release the resonance width
+		/*!
+			\param [in] parFixed new status of width
+		*/
+		void fixWidth(const Bool_t parFixed) { if (resWidth_!=0) { resWidth_->fixed(parFixed); } }
+
+		//! Get the status of resonance mass (fixed or released)
+		/*!
+			\return the status of resonance mass (fixed or released)
+		*/
+		Bool_t fixMass() const { return (resMass_!=0) ? resMass_->fixed() : kTRUE; }
+
+		//! Get the status of resonance width (fixed or released)
+		/*!
+			\return the status of resonance width (fixed or released)
+		*/
+		Bool_t fixWidth() const { return (resWidth_!=0) ? resWidth_->fixed() : kTRUE; }
 
 		//! Set the form factor model and parameters
 		/*!
@@ -228,6 +295,9 @@ class LauAbsResonance {
 		//! Get the form factor model
 		BarrierType getBarrierType() const {return barrierType_;}
 
+		//! Access the resonance info object
+		LauResonanceInfo* getResInfo() const {return resInfo_;}
+
 		//! Access the daughters object
 		const LauDaughters* getDaughters() const {return daughters_;}
 
@@ -238,7 +308,29 @@ class LauAbsResonance {
 		*/
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm) = 0;
 
+		//! Clear list of floating parameters
+		void clearFloatingParameters() { resParameters_.clear(); }
+
+		//! Add parameter to the list of floating parameters
+		/*!
+			\param [in] param the parameter to be added to the list
+		*/
+		void addFloatingParameter( LauParameter* param );
+
+		//! Access the list of floating parameters
+		std::vector<LauParameter*>& getParameters() { return resParameters_; }
+
+
 	private:
+		//! Copy constructor (not implemented)
+		LauAbsResonance(const LauAbsResonance& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauAbsResonance& operator=(const LauAbsResonance& rhs);
+
+		//! Information on the resonance
+		LauResonanceInfo* resInfo_;
+
 		//! Information on the particles
 		const LauDaughters* daughters_;
 
@@ -271,10 +363,18 @@ class LauAbsResonance {
 
 		//! Resonance name
 		TString resName_;
+
+		//! Resonance name with illegal characters removed
+		TString sanitisedName_;
+
 		//! Resonance mass 
-		Double_t resMass_; 
+		LauParameter* resMass_; 
 		//! Resonance width
-		Double_t resWidth_;
+		LauParameter* resWidth_;
+
+		//! All parameters of the resonance
+		std::vector<LauParameter*> resParameters_;
+
 		//! Resonance spin
 		Int_t resSpin_; 
 		//! Resonance charge

@@ -69,9 +69,6 @@ class LauParametricStepFuncPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauParametricStepFuncPdf();
 
-		//! Copy constructor
-		LauParametricStepFuncPdf(const LauParametricStepFuncPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -103,6 +100,12 @@ class LauParametricStepFuncPdf : public LauAbsPdf {
 		NormBin normBin() const {return normBin_;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauParametricStepFuncPdf(const LauParametricStepFuncPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauParametricStepFuncPdf& operator=(const LauParametricStepFuncPdf& rhs);
+
 		//! normalisation bin
 		NormBin normBin_;
 		//! limits of the bins

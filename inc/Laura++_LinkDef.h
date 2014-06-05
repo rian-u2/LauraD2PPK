@@ -17,7 +17,6 @@
 #pragma link C++ class Lau2DSplineDPPdf;
 #pragma link C++ class LauAbsBkgndDPModel;
 #pragma link C++ class LauAbsCoeffSet;
-#pragma link C++ class LauAbsDPDynamics;
 #pragma link C++ class LauAbsEffModel;
 #pragma link C++ class LauAbsFitter;
 #pragma link C++ class LauAbsFitModel;
@@ -62,6 +61,7 @@
 #pragma link C++ class LauGenNtuple;
 #pragma link C++ class LauGounarisSakuraiRes;
 #pragma link C++ class LauIntegrals;
+#pragma link C++ class LauDPPartialIntegralInfo;
 #pragma link C++ class LauIsobarDynamics;
 #pragma link C++ class LauKappaRes;
 #pragma link C++ class LauKinematics;

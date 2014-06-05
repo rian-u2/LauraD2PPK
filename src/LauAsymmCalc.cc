@@ -27,6 +27,23 @@ LauAsymmCalc::LauAsymmCalc(Double_t negValue, Double_t posValue) :
 	asymm_ = calcAsymmetry();
 }
 
+LauAsymmCalc::LauAsymmCalc(const LauAsymmCalc& rhs) :
+	negValue_(rhs.negValue_),
+	posValue_(rhs.posValue_),
+	asymm_(rhs.asymm_)
+{
+}
+
+LauAsymmCalc& LauAsymmCalc::operator=(const LauAsymmCalc& rhs)
+{
+	if ( &rhs != this ) {
+		negValue_ = rhs.negValue_;
+		posValue_ = rhs.posValue_;
+		asymm_ = rhs.asymm_;
+	}
+	return *this;
+}
+
 LauAsymmCalc::~LauAsymmCalc()
 {
 }

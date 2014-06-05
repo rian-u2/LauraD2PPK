@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2008 - 2013.
+// Copyright University of Warwick 2008 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -21,7 +21,7 @@ ClassImp(LauKMatrixProdPole)
 
 LauKMatrixProdPole::LauKMatrixProdPole(const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
 				       LauKMatrixPropagator* propagator, const LauDaughters* daughters) : 
-	LauAbsResonance(poleName, 0.0, 0.0, 0, 0, resPairAmpInt, daughters),
+	LauAbsResonance(poleName, resPairAmpInt, daughters),
 	thePropagator_(propagator),
 	poleIndex_(poleIndex - 1) // poleIndex goes from 1 to nPoles
 {

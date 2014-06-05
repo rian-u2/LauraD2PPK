@@ -43,6 +43,12 @@ class LauPrint {
 		void printFormat(std::ostream& stream, Double_t value) const;
 
 	private:
+		//! Copy constructor (not implemented)
+		LauPrint(const LauPrint& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauPrint& operator=(const LauPrint& rhs);
+
 		ClassDef(LauPrint,0)
 
 };

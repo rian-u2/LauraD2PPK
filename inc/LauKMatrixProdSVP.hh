@@ -66,6 +66,12 @@ class LauKMatrixProdSVP : public LauAbsResonance {
   		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
  	private:
+		//! Copy constructor (not implemented)
+		LauKMatrixProdSVP(const LauKMatrixProdSVP& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKMatrixProdSVP& operator=(const LauKMatrixProdSVP& rhs);
+
 		//! The K-matrix propagator
    		LauKMatrixPropagator* thePropagator_;
 		//! The number of the channel

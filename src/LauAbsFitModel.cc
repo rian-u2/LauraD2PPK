@@ -368,7 +368,7 @@ void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTr
 				genNtuple_->deleteAndRecreateTree();
 
 				// then break out of the experiment loop
-				std::cerr << "ERROR in LauAbsFitModel::generate : Problem in toy MC generation.  Starting again with updated parameters..." << std::endl;
+				std::cerr << "WARNING in LauAbsFitModel::generate : Problem in toy MC generation.  Starting again with updated parameters..." << std::endl;
 				break;
 			}
 
@@ -504,7 +504,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 		this->eventsPerExpt(inputFitData_->nEvents());
 
 		if (this->eventsPerExpt() < 1) {
-			std::cerr << "ERROR in LauAbsFitModel::fit : Zero events in experiment " << iExpt_ << ", skipping..." << std::endl;
+			std::cerr << "WARNING in LauAbsFitModel::fit : Zero events in experiment " << iExpt_ << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
 		}
@@ -630,7 +630,7 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 				this->eventsPerExpt( nEvent );
 
 				if ( nEvent < 1 ) {
-					std::cerr << "ERROR in LauAbsFitModel::fitSlave : Zero events in experiment " << firstExpt_ << ", the master should skip this experiment..." << std::endl;
+					std::cerr << "WARNING in LauAbsFitModel::fitSlave : Zero events in experiment " << firstExpt_ << ", the master should skip this experiment..." << std::endl;
 				}
 
 				messageToMaster.Reset( kMESS_ANY );
@@ -846,7 +846,7 @@ void LauAbsFitModel::fitExpt()
 	if (this->twoStageFit()) {
 
 		if ( fitStatus_ != 3 ) {
-			std::cerr << "ERROR in LauAbsFitModel:fitExpt : Not running second stage fit since first stage failed." << std::endl;
+			std::cerr << "WARNING in LauAbsFitModel:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
 			LauFitter::fitter()->fixFirstStageParameters();
@@ -1097,11 +1097,25 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 	// Despite npar being the number of free parameters
 	// the par array actually contains all the parameters,
 	// free and floating...
-	// Update all the floating ones with their new values.
+
+	// Update all the floating ones with their new values
+	// Also check if we have any parameters on which the DP integrals depend
+	Bool_t recalcNorm(kFALSE);
+	const LauParameterPSet::const_iterator resVarsEnd = resVars_.end();
 	for (UInt_t i(0); i<nParams_; ++i) {
 		if (!fitVars_[i]->fixed()) {
+			if ( resVars_.find( fitVars_[i] ) != resVarsEnd ) {
+				if ( fitVars_[i]->value() != par[i] ) {
+					recalcNorm = kTRUE;
+				}
+			}
 			fitVars_[i]->value(par[i]);
 		}
+	}
+
+	// If so, then recalculate the normalisation
+	if (recalcNorm) {
+		this->recalculateNormalisation();
 	}
 
 	this->propagateParUpdates();

@@ -140,6 +140,12 @@ class LauGenNtuple {
 		void definedBranches(Bool_t defined) {definedBranches_ = defined;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauGenNtuple(const LauGenNtuple& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauGenNtuple& operator=(const LauGenNtuple& rhs);
+
 		//! Name of root file
 		TString rootFileName_;
 		//! Name of root tree

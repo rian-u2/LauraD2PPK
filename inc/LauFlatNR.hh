@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -32,17 +32,11 @@ class LauFlatNR : public LauAbsResonance {
 	public:
 		//! Constructor
 		/*!
-			\param [in] resName the name of the resonance
-			\param [in] resMass the mass of the resonance
-			\param [in] resWidth the width of the resonance
-			\param [in] resSpin the spin of the resonance
-			\param [in] resCharge the charge of the resonance
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauFlatNR(TString resName, Double_t resMass, Double_t resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt,
-				const LauDaughters* daughters);
+		LauFlatNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor	
 		virtual ~LauFlatNR();
@@ -68,6 +62,11 @@ class LauFlatNR : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Copy constructor (not implemented)
+		LauFlatNR(const LauFlatNR& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauFlatNR& operator=(const LauFlatNR& rhs);
 
 		ClassDef(LauFlatNR,0) // Uniform non-resonant model
 };

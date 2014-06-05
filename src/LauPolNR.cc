@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -22,9 +22,8 @@
 ClassImp(LauPolNR)
 
 
-LauPolNR::LauPolNR(const TString& resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		   Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauPolNR::LauPolNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	omega_(0.0),
 	order_(0)
 {

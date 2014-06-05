@@ -45,9 +45,6 @@ class LauNovosibirskPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauNovosibirskPdf();
 
-		//! Copy constructor
-		LauNovosibirskPdf(const LauNovosibirskPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -65,6 +62,12 @@ class LauNovosibirskPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauNovosibirskPdf(const LauNovosibirskPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauNovosibirskPdf& operator=(const LauNovosibirskPdf& rhs);
+
 		//! Gaussian mean
 		LauAbsRValue* mean_;
 		//! Gaussian sigma

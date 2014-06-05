@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2006 - 2013.
+// Copyright University of Warwick 2006 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -20,13 +20,14 @@
 ClassImp(LauGounarisSakuraiRes)
 
 
-LauGounarisSakuraiRes::LauGounarisSakuraiRes(TString resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	q0_(0.0),
 	p0_(0.0),
 	pstar0_(0.0),
+	resMass_(0.0),
 	resMassSq_(0.0),
+	resWidth_(0.0),
 	mDaugSum_(0.0),
 	mDaugSumSq_(0.0),
 	mDaugDiff_(0.0),
@@ -50,8 +51,10 @@ void LauGounarisSakuraiRes::initialise()
 	// Set-up various constants. This must be called again if the mass/width/spin
 	// of a resonance changes...  
 
+	resMass_ = this->getMass();
+	resWidth_ = this->getWidth();
+
 	Int_t resSpin = this->getSpin();
-	Double_t resMass = this->getMass();
 	Double_t massDaug1 = this->getMassDaug1();
 	Double_t massDaug2 = this->getMassDaug2();
 	Double_t massBachelor = this->getMassBachelor();
@@ -65,7 +68,7 @@ void LauGounarisSakuraiRes::initialise()
 	}
 
 	// Create the mass squares, sums, differences etc.
-	resMassSq_ = resMass*resMass;
+	resMassSq_ = resMass_*resMass_;
 	mDaugSum_  = massDaug1 + massDaug2;
 	mDaugSumSq_ = mDaugSum_*mDaugSum_;
 	mDaugDiff_ = massDaug1 - massDaug2;
@@ -79,14 +82,14 @@ void LauGounarisSakuraiRes::initialise()
 	Double_t term2 = resMassSq_ - mDaugDiffSq_;
 	Double_t term12 = term1*term2;
 	if (term12 > 0.0) {
-		q0_ = TMath::Sqrt(term12)/(2.0*resMass);
+		q0_ = TMath::Sqrt(term12)/(2.0*resMass_);
 	} else {
 		q0_ = 0.0;
 	}
 
 	// Momentum of the bachelor particle in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t eBach = (mParentSq_ - resMassSq_ - mBachSq_)/(2.0*resMass);
+	Double_t eBach = (mParentSq_ - resMassSq_ - mBachSq_)/(2.0*resMass_);
 	Double_t termBach = eBach*eBach - mBachSq_;
 	if ( eBach<0.0 || termBach<0.0 ) {
 		p0_ = 0.0;
@@ -112,12 +115,12 @@ void LauGounarisSakuraiRes::initialise()
 	this->setBarrierRadii(resR, parR, barrierType);
 
 	// Calculate the extra things needed by the G-S shape
-	h0_ = 2.0*LauConstants::invPi * q0_/resMass * TMath::Log((resMass + 2.0*q0_)/(2.0*LauConstants::mPi));
+	h0_ = 2.0*LauConstants::invPi * q0_/resMass_ * TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi));
 	dhdm0_ = h0_ * (1.0/(8.0*q0_*q0_) - 1.0/(2.0*resMassSq_)) + 1.0/(LauConstants::twoPi*resMassSq_);
 	d_ = 3.0*LauConstants::invPi * LauConstants::mPi*LauConstants::mPi/(q0_*q0_)
-		* TMath::Log((resMass + 2.0*q0_)/(2.0*LauConstants::mPi))
-		+ resMass/(LauConstants::twoPi*q0_)
-		- LauConstants::mPi*LauConstants::mPi*resMass/(LauConstants::pi*q0_*q0_*q0_);
+		* TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi))
+		+ resMass_/(LauConstants::twoPi*q0_)
+		- LauConstants::mPi*LauConstants::mPi*resMass_/(LauConstants::pi*q0_*q0_*q0_);
 }
 
 void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type)
@@ -129,7 +132,7 @@ void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadi
 	const Double_t resR = this->getResBWRadius();
 	const Double_t parR = this->getParBWRadius();
 
-	std::cout << "INFO in LauGounarisSakuraiRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
+	//std::cout << "INFO in LauGounarisSakuraiRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
 
 	Double_t zR0 = q0_*q0_*resR*resR;
 	Double_t zB0 = p0_*p0_*parR*parR;
@@ -178,6 +181,13 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	Double_t resMass = this->getMass();
 	Double_t resWidth = this->getWidth();
+
+	// If the mass is floating and its value has changed we need to
+	// recalculate everything that assumes that value
+	if ( (!this->fixMass()) && resMass != resMass_ ) {
+		this->initialise();
+	}
+
 	Double_t q = this->getQ();
 	Double_t p = this->getP();
 	//Double_t pstar = this->getPstar();
@@ -211,5 +221,19 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude.rescale(numerFactor/denomFactor);
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauGounarisSakuraiRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+	if ( ! this->fixWidth() ) {
+		this->addFloatingParameter( this->getWidthPar() );
+	}
+
+	return this->getParameters();
 }
 

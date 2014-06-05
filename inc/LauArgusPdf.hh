@@ -46,9 +46,6 @@ class LauArgusPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauArgusPdf();
 
-		//i! Copy constructor
-		LauArgusPdf(const LauArgusPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -69,6 +66,12 @@ class LauArgusPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauArgusPdf(const LauArgusPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		LauArgusPdf& operator=(const LauArgusPdf& other);
+
 		//! Shape of curve
 		LauAbsRValue* xi_;
 

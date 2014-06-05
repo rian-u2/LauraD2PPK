@@ -468,6 +468,12 @@ class LauKinematics {
 		void calcParentFrameMomenta();
 
 	private:
+		//! Copy constructor (not implemented)
+		LauKinematics(const LauKinematics& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKinematics& operator=(const LauKinematics& rhs);
+
 		//! Mass of particle 1
 		const Double_t m1_;
 		//! Mass of particle 2

@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,13 +12,6 @@
   \brief File containing implementation of LauAbsResonance class.
  */
 
-//****************************************************************************
-// Abstract class for defining resonance models (Breit-Wigner, Flatte etc.)
-//****************************************************************************
-
-// --CLASS DESCRIPTION [MODEL] --
-// Abstract class for defining resonance models (Breit-Wigner, Flatte etc.)
-
 #include <iostream>
 
 #include "TSystem.h"
@@ -27,22 +20,25 @@
 #include "LauConstants.hh"
 #include "LauDaughters.hh"
 #include "LauKinematics.hh"
+#include "LauParameter.hh"
+#include "LauResonanceInfo.hh"
 
 ClassImp(LauAbsResonance)
 
 
 // Constructor
-LauAbsResonance::LauAbsResonance(const TString& resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		                 Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	resInfo_(resInfo),
 	daughters_(daughters),
 	nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
 	chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
 	massParent_(0.0), massDaug1_(0.0), massDaug2_(0.0), massBachelor_(0.0),
-	resName_(resName),
-	resMass_(resMass),
-	resWidth_(resWidth),
-	resSpin_(resSpin),
-	resCharge_(resCharge),
+	resName_( (resInfo!=0) ? resInfo->getName() : "" ),
+	sanitisedName_( (resInfo!=0) ? resInfo->getSanitisedName() : "" ),
+	resMass_( (resInfo!=0) ? resInfo->getMass() : 0 ),
+	resWidth_( (resInfo!=0) ? resInfo->getWidth() : 0 ),
+	resSpin_( (resInfo!=0) ? resInfo->getSpin() : 0 ),
+	resCharge_( (resInfo!=0) ? resInfo->getCharge() : 0 ),
 	resPairAmpInt_(resPairAmpInt),
 	parR_(4.0),
 	resR_(4.0),
@@ -53,27 +49,82 @@ LauAbsResonance::LauAbsResonance(const TString& resName, Double_t resMass, Doubl
 	p_(0.0),
 	pstar_(0.0)
 {
-	if (daughters_) {
-		nameParent_ = this->getNameParent();
-		nameDaug1_ = this->getNameDaug1();
-		nameDaug2_ = this->getNameDaug2();
-		nameBachelor_ = this->getNameBachelor();
-		massParent_ = this->getMassParent();
-		massDaug1_ = this->getMassDaug1();
-		massDaug2_ = this->getMassDaug2();
-		massBachelor_ = this->getMassBachelor();
-		chargeParent_ = this->getChargeParent();
-		chargeDaug1_ = this->getChargeDaug1();
-		chargeDaug2_ = this->getChargeDaug2();
-		chargeBachelor_ = this->getChargeBachelor();
-	} else {
-		std::cerr<<"ERROR in LauAbsResonance : daughters_ pointer is NULL."<<std::endl;
+	if ( resInfo == 0 ) {
+		std::cerr << "ERROR in LauAbsResonance constructor : null LauResonanceInfo object provided" << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	}
+
+	if ( daughters_ == 0 ) {
+		std::cerr << "ERROR in LauAbsResonance constructor : null LauDaughters object provided" << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	nameParent_ = this->getNameParent();
+	nameDaug1_ = this->getNameDaug1();
+	nameDaug2_ = this->getNameDaug2();
+	nameBachelor_ = this->getNameBachelor();
+	massParent_ = this->getMassParent();
+	massDaug1_ = this->getMassDaug1();
+	massDaug2_ = this->getMassDaug2();
+	massBachelor_ = this->getMassBachelor();
+	chargeParent_ = this->getChargeParent();
+	chargeDaug1_ = this->getChargeDaug1();
+	chargeDaug2_ = this->getChargeDaug2();
+	chargeBachelor_ = this->getChargeBachelor();
 
 	// check that the total charge adds up to that of the resonance
 	Int_t totalCharge = chargeDaug1_ + chargeDaug2_;
-	if ( (totalCharge != resCharge_) && (resName != "NonReson") && (!resName.BeginsWith("BelleNR")) ) {
-		std::cerr<<"ERROR in LauAbsResonance : "<<"Total charge of daughters = "<<totalCharge<<". Resonance charge = "<<resCharge_<<"."<<std::endl;
+	if ( (totalCharge != resCharge_) && (resPairAmpInt_ != 0) ) {
+		std::cerr << "ERROR in LauAbsResonance : Total charge of daughters = " << totalCharge << ". Resonance charge = " << resCharge_ << "." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+}
+
+// Constructor
+LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	resInfo_(0),
+	daughters_(daughters),
+	nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
+	chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
+	massParent_(0.0), massDaug1_(0.0), massDaug2_(0.0), massBachelor_(0.0),
+	resName_(resName),
+	sanitisedName_(resName),
+	resMass_(0),
+	resWidth_(0),
+	resSpin_(0),
+	resCharge_(0),
+	resPairAmpInt_(resPairAmpInt),
+	parR_(4.0),
+	resR_(4.0),
+	barrierType_(BWPrimeBarrier),
+	flipHelicity_(kFALSE),
+	ignoreMomenta_(kFALSE),
+	q_(0.0),
+	p_(0.0),
+	pstar_(0.0)
+{
+	if ( daughters_ == 0 ) {
+		std::cerr << "ERROR in LauAbsResonance constructor : null LauDaughters object provided" << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	nameParent_ = this->getNameParent();
+	nameDaug1_ = this->getNameDaug1();
+	nameDaug2_ = this->getNameDaug2();
+	nameBachelor_ = this->getNameBachelor();
+	massParent_ = this->getMassParent();
+	massDaug1_ = this->getMassDaug1();
+	massDaug2_ = this->getMassDaug2();
+	massBachelor_ = this->getMassBachelor();
+	chargeParent_ = this->getChargeParent();
+	chargeDaug1_ = this->getChargeDaug1();
+	chargeDaug2_ = this->getChargeDaug2();
+	chargeBachelor_ = this->getChargeBachelor();
+
+	// check that the total charge adds up to that of the resonance
+	Int_t totalCharge = chargeDaug1_ + chargeDaug2_;
+	if ( (totalCharge != resCharge_) && (resPairAmpInt_ != 0) ) {
+		std::cerr << "ERROR in LauAbsResonance : Total charge of daughters = " << totalCharge << ". Resonance charge = " << resCharge_ << "." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 }
@@ -119,7 +170,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 		pstar_ = kinematics->getp3_Parent();
 
 	} else {
-		std::cerr<<"ERROR in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array."<<std::endl;
+		std::cerr << "ERROR in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -172,12 +223,16 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 void LauAbsResonance::changeResonance(const Double_t newMass, const Double_t newWidth, const Int_t newSpin)
 {
 	if (newMass > 0.0) {
-		resMass_ = newMass;
-		std::cout << "INFO in LauAbsResonance::changeResonance : Setting mass to " << resMass_ << std::endl;
+		resMass_->valueAndRange(newMass,0.0,3.0*newMass);
+		resMass_->initValue(newMass);
+		resMass_->genValue(newMass);
+		std::cout << "INFO in LauAbsResonance::changeResonance : Setting mass to " << resMass_->value() << std::endl;
 	}
 	if (newWidth > 0.0) {
-		resWidth_ = newWidth;
-		std::cout << "INFO in LauAbsResonance::changeResonance : Setting width to " << resWidth_ << std::endl;
+		resWidth_->valueAndRange(newWidth,0.0,3.0*newWidth);
+		resWidth_->initValue(newWidth);
+		resWidth_->genValue(newWidth);
+		std::cout << "INFO in LauAbsResonance::changeResonance : Setting width to " << resWidth_->value() << std::endl;
 	}
 	if (newSpin > -1) {
 		resSpin_ = newSpin;
@@ -189,6 +244,32 @@ void LauAbsResonance::setResonanceParameter(const TString& name, const Double_t 
 {
 	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
 	std::cerr << "WARNING in LauAbsResonance::setResonanceParameter : Unable to set parameter \"" << name << "\" to value: " << value << "." << std::endl;
+}
+
+void LauAbsResonance::floatResonanceParameter(const TString& name) 
+{
+	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
+	std::cerr << "WARNING in LauAbsResonance::floatResonanceParameter : Unable to release parameter \"" << name << "\"." << std::endl;
+}
+
+LauParameter* LauAbsResonance::getResonanceParameter(const TString& name) 
+{
+	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
+	std::cerr << "WARNING in LauAbsResonance::getResonanceParameter : Unable to get parameter \"" << name << "\"." << std::endl;
+	return 0;
+}
+
+void LauAbsResonance::addFloatingParameter( LauParameter* param )
+{
+	if ( param == 0 ) {
+		return;
+	}
+
+	if ( param->clone() ) {
+		resParameters_.push_back( param->parent() );
+	} else {
+		resParameters_.push_back( param );
+	}
 }
 
 Double_t LauAbsResonance::getMassParent() const

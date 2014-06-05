@@ -75,6 +75,12 @@ class LauFitNtuple {
 		void writeOutFitResults();
 
 	private:
+		//! Copy constructor (not implemented)
+		LauFitNtuple(const LauFitNtuple& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauFitNtuple& operator=(const LauFitNtuple& rhs);
+
 		//! Name of root file
 		TString rootFileName_;
 		//! Root file

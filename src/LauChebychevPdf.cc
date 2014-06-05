@@ -69,13 +69,6 @@ LauChebychevPdf::~LauChebychevPdf()
 	// Destructor
 }
 
-LauChebychevPdf::LauChebychevPdf(const LauChebychevPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	// Copy constructor
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 inline static double p0(double ,double a) {  return a; }
 inline static double p1(double t,double a,double b) {  return a*t+b; }
 inline static double p2(double t,double a,double b,double c) {  return p1(t,p1(t,a,b),c); }

@@ -59,6 +59,12 @@ class LauKMatrixPropFactory {
 		//! Private constructor (to ensure the singleton nature of this class)
 		LauKMatrixPropFactory();
 
+		//! Copy constructor (not implemented)
+		LauKMatrixPropFactory(const LauKMatrixPropFactory& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKMatrixPropFactory& operator=(const LauKMatrixPropFactory& rhs);
+
 		//! The singleton instance
 		static LauKMatrixPropFactory* theFactory_;
 

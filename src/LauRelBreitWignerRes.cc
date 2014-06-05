@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -20,13 +20,14 @@
 ClassImp(LauRelBreitWignerRes)
 
 
-LauRelBreitWignerRes::LauRelBreitWignerRes(TString resName, Double_t resMass, Double_t resWidth, Int_t resSpin,
-		Int_t resCharge, Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
+LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	q0_(0.0),
 	p0_(0.0),
 	pstar0_(0.0),
+	resMass_(0.0),
 	resMassSq_(0.0),
+	resWidth_(0.0),
 	mDaugSum_(0.0),
 	mDaugSumSq_(0.0),
 	mDaugDiff_(0.0),
@@ -47,15 +48,17 @@ void LauRelBreitWignerRes::initialise()
 	// Set-up various constants. This must be called again if the mass/width/spin
 	// of a resonance changes...  
 
+	resMass_   = this->getMass();
+	resWidth_  = this->getWidth();
+
 	Int_t resSpin = this->getSpin();
-	Double_t resMass = this->getMass();
 	Double_t massDaug1 = this->getMassDaug1();
 	Double_t massDaug2 = this->getMassDaug2();
 	Double_t massBachelor = this->getMassBachelor();
 	Double_t massParent = this->getMassParent();
 
 	// Create the mass squares, sums, differences etc.
-	resMassSq_ = resMass*resMass;
+	resMassSq_ = resMass_*resMass_;
 	mDaugSum_  = massDaug1 + massDaug2;
 	mDaugSumSq_ = mDaugSum_*mDaugSum_;
 	mDaugDiff_ = massDaug1 - massDaug2;
@@ -65,14 +68,15 @@ void LauRelBreitWignerRes::initialise()
 
 	// Create an effective resonance pole mass to protect against resonances
 	// that are below threshold
-	Double_t effResMass = resMass;
+	Double_t effResMass = resMass_;
+	Double_t effResMassSq = resMassSq_;
 	if (resMassSq_ - mDaugSumSq_ < 0.0 ){
 		Double_t minMass = mDaugSum_;
 		Double_t maxMass = massParent - massBachelor;
-		Double_t tanhTerm = std::tanh( (resMass - ((minMass + maxMass)/2))/(maxMass-minMass));
+		Double_t tanhTerm = std::tanh( (resMass_ - ((minMass + maxMass)/2))/(maxMass-minMass));
 		effResMass = minMass + (maxMass-minMass)*(1+tanhTerm)/2;
+		effResMassSq = effResMass*effResMass;
 	}
-	Double_t effResMassSq = effResMass*effResMass;
 
 	// Decay momentum of either daughter in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
@@ -126,7 +130,7 @@ void LauRelBreitWignerRes::setBarrierRadii(const Double_t resRadius, const Doubl
 	const Double_t resR = this->getResBWRadius();
 	const Double_t parR = this->getParBWRadius();
 
-	std::cout << "INFO in LauRelBreitWignerRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
+	//std::cout << "INFO in LauRelBreitWignerRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
 
 	Double_t zR0 = q0_*q0_*resR*resR;
 	Double_t zB0 = p0_*p0_*parR*parR;
@@ -220,6 +224,12 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t p = this->getP();
 	//Double_t pstar = this->getPstar();
 
+	// If the mass is floating and its value has changed we need to
+	// recalculate everything that assumes that value
+	if ( (!this->fixMass()) && resMass != resMass_ ) {
+		this->initialise();
+	}
+
 	const Double_t resR = this->getResBWRadius();
 	const Double_t parR = this->getParBWRadius();
 	Double_t zR = q*q*resR*resR;
@@ -236,7 +246,7 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	} else if (resSpin == 1) {
 		qTerm = qRatio*qRatio*qRatio;
 	} else if (resSpin == 2) {
-		qTerm = TMath::Power(qRatio, 5.0);
+		qTerm = qRatio*qRatio*qRatio*qRatio*qRatio;
 	} else {
 		qTerm = TMath::Power(qRatio, 2*resSpin + 1);  
 	}
@@ -253,5 +263,19 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude.rescale((fFactorRRatio*fFactorBRatio*spinTerm)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauRelBreitWignerRes::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixMass() ) {
+		this->addFloatingParameter( this->getMassPar() );
+	}
+	if ( ! this->fixWidth() ) {
+		this->addFloatingParameter( this->getWidthPar() );
+	}
+
+	return this->getParameters();
 }
 

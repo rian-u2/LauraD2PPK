@@ -156,6 +156,12 @@ class LauFitDataTree {
 		void loadData();
 
 	private:
+		//! Copy constructor (not implemented)
+		LauFitDataTree(const LauFitDataTree& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauFitDataTree& operator=(const LauFitDataTree& rhs);
+
 		//! The type used to map the leaf names to the vector indices
 		typedef std::map<TString,UInt_t> LauNameIndexMap;
 

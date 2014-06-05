@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -34,17 +34,11 @@ class LauKappaRes : public LauAbsResonance {
 	public:
 		//! Constructor
 		/*!
-			\param [in] resName the name of the resonance
-			\param [in] resMass the mass of the resonance
-			\param [in] resWidth the width of the resonance
-			\param [in] resSpin the spin of the resonance
-			\param [in] resCharge the charge of the resonance
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauKappaRes(TString resName, Double_t resMass, Double_t resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt,
-				const LauDaughters* daughters);
+		LauKappaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor
 		virtual ~LauKappaRes();
@@ -65,63 +59,97 @@ class LauKappaRes : public LauAbsResonance {
 		*/
 		virtual void setResonanceParameter(const TString& name, const Double_t value);
 
-	protected:
-		//! Set the parameter values
+		//! Allow the various parameters to float in the fit
 		/*!
-			\param [in] b1 factor from BES data
-			\param [in] b2 factor from BES data
-			\param [in] A factor from BES data
-			\param [in] m0 factor from BES data
+			\param [in] name the name of the parameter to be floated
 		*/
-		void setConstants(const Double_t b1, const Double_t b2, const Double_t A, const Double_t m0);
+		virtual void floatResonanceParameter(const TString& name);
 
+		//! Access the given resonance parameter
+		/*!
+			\param [in] name the name of the parameter
+			\return the corresponding parameter
+		 */
+		virtual LauParameter* getResonanceParameter(const TString& name);
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
+	protected:
 		//! Set the b1 parameter
 		/*!
 			\param [in] b1 new value for b1 parameter
 		*/
-		void setB1Value(const Double_t b1) { b1_ = b1; }
+		void setB1Value(const Double_t b1);
 
 		//! Set the b2 parameter
 		/*!
 			\param [in] b2 new value for b2 parameter
 		*/
-		void setB2Value(const Double_t b2) { b2_ = b2; }
+		void setB2Value(const Double_t b2);
 
 		//! Set the A parameter
 		/*!
 			\param [in] A new value for A parameter
 		*/
-		void setAValue(const Double_t A) { A_ = A; }
+		void setAValue(const Double_t A);
 
 		//! Set the m0 parameter
 		/*!
 			\param [in] m0 new value for m0 parameter
 		*/
-		void setM0Value(const Double_t m0) { m0_ = m0; m0Sq_ = m0*m0; denom_ = m0Sq_ - sAdler_; }
+		void setM0Value(const Double_t m0);
 
 		//! Get the b1 parameter value
 		/*!
 			\return value of the b1 parameter
 		*/
-		Double_t getB1Value() const { return b1_; }
+		Double_t getB1Value() const { return (b1_!=0) ? b1_->value() : 0.0; }
 
 		//! Get the b2 parameter value
 		/*!
 			\return value of the b2 parameter
 		*/
-		Double_t getB2Value() const { return b2_; }
+		Double_t getB2Value() const { return (b2_!=0) ? b2_->value() : 0.0; }
 
 		//! Get the A parameter value
 		/*!
 			\return value of the A parameter
 		*/
-		Double_t getAValue() const { return A_; }
+		Double_t getAValue() const { return (a_!=0) ? a_->value() : 0.0; }
 
 		//! Get the m0 parameter value
 		/*!
 			\return value of the m0 parameter
 		*/
-		Double_t getM0Value() const { return m0_; }
+		Double_t getM0Value() const { return (m0_!=0) ? m0_->value() : 0.0; }
+
+		//! Fix the b1 parameter value
+		/*!
+			\return kTRUE if the b1 parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixB1Value() const { return (b1_!=0) ? b1_->fixed() : 0.0; }
+
+		//! Fix the b2 parameter value
+		/*!
+			\return kTRUE if the b2 parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixB2Value() const { return (b2_!=0) ? b2_->fixed() : 0.0; }
+
+		//! Fix the A parameter value
+		/*!
+			\return kTRUE if the A parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixAValue() const { return (a_!=0) ? a_->fixed() : 0.0; }
+
+		//! Fix the m0 parameter value
+		/*!
+			\return kTRUE if the m0 parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixM0Value() const { return (m0_!=0) ? m0_->fixed() : 0.0; }
 
 		//! Complex resonant amplitude
 		/*!
@@ -134,24 +162,25 @@ class LauKappaRes : public LauAbsResonance {
 		void checkDaughterTypes() const;
 
 	private:
-		//! Define m mSum as mK + mPi
-		Double_t mSum_; 
-		//! Square of mSum
-		Double_t mSumSq_; 
+		//! Copy constructor (not implemented)
+		LauKappaRes(const LauKappaRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKappaRes& operator=(const LauKappaRes& rhs);
+
+		//! Square of (mK + mPi)
+		const Double_t mSumSq_; 
 		//! Defined as mK*mK - 0.5*mPi*mPi
-		Double_t sAdler_;
+		const Double_t sAdler_;
+
 		//! Factor from BES data
-		Double_t b1_; 
+		LauParameter* b1_; 
 		//! Factor from BES data
-		Double_t b2_; 
+		LauParameter* b2_; 
 		//! Factor from BES data
-		Double_t A_; 
+		LauParameter* a_; 
 		//! Factor from BES data
-		Double_t m0_; 
-		//! Square of m0
-		Double_t m0Sq_; 
-		//! Defined as m0Sq - sAdler
-		Double_t denom_;
+		LauParameter* m0_; 
 
 		ClassDef(LauKappaRes,0) // Kappa resonance model
 

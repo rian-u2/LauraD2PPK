@@ -89,35 +89,6 @@ LauDPDepCruijffPdf::~LauDPDepCruijffPdf()
 	// Destructor
 }
 
-LauDPDepCruijffPdf::LauDPDepCruijffPdf(const LauDPDepCruijffPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa()),
-	kinematics_( other.kinematics_ ),
-	mean_(0),
-	sigmaL_(0),
-	sigmaR_(0),
-	alphaL_(0),
-	alphaR_(0),
-	meanVal_(0.0),
-	sigmaLVal_(0.0),
-	sigmaRVal_(0.0),
-	alphaLVal_(0.0),
-	alphaRVal_(0.0),
-	meanCoeffs_( other.meanCoeffs_ ),
-	sigmaLCoeffs_( other.sigmaLCoeffs_ ),
-	sigmaRCoeffs_( other.sigmaRCoeffs_ ),
-	alphaLCoeffs_( other.alphaLCoeffs_ ),
-	alphaRCoeffs_( other.alphaRCoeffs_ ),
-	dpAxis_( other.dpAxis_ )
-{
-	// Copy constructor
-	mean_ = this->findParameter("mean");
-	sigmaR_ = this->findParameter("sigmaR");
-	sigmaL_ = this->findParameter("sigmaL");
-	alphaR_ = this->findParameter("alphaR");
-	alphaL_ = this->findParameter("alphaL");
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void LauDPDepCruijffPdf::calcNorm() 
 {
 	this->setNorm(1.0);

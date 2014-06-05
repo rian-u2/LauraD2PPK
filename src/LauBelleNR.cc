@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -18,21 +18,31 @@
 
 #include "LauBelleNR.hh"
 #include "LauDaughters.hh"
+#include "LauParameter.hh"
+#include "LauResonanceInfo.hh"
 
 ClassImp(LauBelleNR)
 
 
-LauBelleNR::LauBelleNR(const TString& resName, const LauAbsResonance::LauResonanceModel resType,
-		       const Double_t resMass, const Double_t resWidth, const Int_t resSpin,
-		       const Int_t resCharge, const Int_t resPairAmpInt, const LauDaughters* daughters) :
-	LauAbsResonance(resName, resMass, resWidth, resSpin, resCharge, resPairAmpInt, daughters),
-	alpha_(0.0),
+LauBelleNR::LauBelleNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,
+		       const Int_t resPairAmpInt, const LauDaughters* daughters) :
+	LauAbsResonance(resInfo, resPairAmpInt, daughters),
+	alpha_(0),
 	model_(resType)
 {
+	TString parName = this->getSanitisedName();
+	parName += "_alpha";
+	alpha_ = resInfo->getExtraParameter( parName );
+	if ( alpha_ == 0 ) {
+		alpha_ = new LauParameter( parName, 0.0, 0.0, 10.0, kTRUE );
+		alpha_->secondStage(kTRUE);
+		resInfo->addExtraParameter( alpha_ );
+	}
 }
 
 LauBelleNR::~LauBelleNR()
 {
+	delete alpha_;
 }
 
 void LauBelleNR::initialise()
@@ -55,15 +65,28 @@ LauComplex LauBelleNR::resAmp(Double_t mass, Double_t spinTerm)
 {
 	Double_t magnitude(1.0);
 
+	Double_t alpha = this->getAlpha();
+
 	if ( model_ == LauAbsResonance::BelleNR ) {
-		magnitude = spinTerm * TMath::Exp(-alpha_*mass*mass);
+		magnitude = spinTerm * TMath::Exp(-alpha*mass*mass);
 	} else if ( model_ == LauAbsResonance::PowerLawNR ) {
-		magnitude = spinTerm * TMath::Power(mass*mass, -alpha_);
+		magnitude = spinTerm * TMath::Power(mass*mass, -alpha);
 	}
 
 	LauComplex resAmplitude(magnitude, 0.0);
 
 	return resAmplitude;
+}
+
+const std::vector<LauParameter*>& LauBelleNR::getFloatingParameters()
+{
+	this->clearFloatingParameters();
+
+	if ( ! this->fixAlpha() ) {
+		this->addFloatingParameter( alpha_ );
+	}
+
+	return this->getParameters();
 }
 
 void LauBelleNR::setResonanceParameter(const TString& name, const Double_t value) 
@@ -75,5 +98,36 @@ void LauBelleNR::setResonanceParameter(const TString& name, const Double_t value
 	} else {
 		std::cerr << "WARNING in LauBelleNR::setResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
 	}
+}
+
+void LauBelleNR::floatResonanceParameter(const TString& name)
+{
+	if (name == "alpha") {
+		if ( alpha_->fixed() ) { 
+			alpha_->fixed( kFALSE );
+			this->addFloatingParameter( alpha_ );
+		} else {
+			std::cerr << "WARNING in LauBelleNR::floatResonanceParameter: Parameter already floating.  No parameter changes made." << std::endl;
+		}
+	} else {
+		std::cerr << "WARNING in LauBelleNR::fixResonanceParameter: Parameter name not reconised.  No parameter changes made." << std::endl;
+	}
+}
+
+LauParameter* LauBelleNR::getResonanceParameter(const TString& name)
+{
+	if (name == "alpha") {
+		return alpha_;
+	} else {
+		std::cerr << "WARNING in LauBelleNR::getResonanceParameter: Parameter name not reconised." << std::endl;
+		return 0;
+	}
+}
+
+void LauBelleNR::setAlpha(const Double_t alpha)
+{
+	alpha_->value( alpha );
+	alpha_->genValue( alpha );
+	alpha_->initValue( alpha );
 }
 

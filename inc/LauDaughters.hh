@@ -150,6 +150,9 @@ class LauDaughters {
 		void sanityCheck();
 
 	private:
+		//! Copy assignment operator (not implemented)
+		LauDaughters& operator=( const LauDaughters& rhs );
+
 		//! Dalitz plot kinematics 
 		LauKinematics* kinematics_;
 

@@ -245,6 +245,12 @@ class LauKMatrixPropagator {
 		Bool_t checkPhaseSpaceType(Int_t phaseSpaceInt) const;
 
         private:
+		//! Copy constructor (not implemented)
+		LauKMatrixPropagator(const LauKMatrixPropagator& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauKMatrixPropagator& operator=(const LauKMatrixPropagator& rhs);
+
 		//! Create a map for the K-matrix parameters
 		typedef std::map<int, std::vector<LauParameter> > KMatrixParamMap;
 

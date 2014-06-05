@@ -83,15 +83,6 @@ Lau1DHistPdf::~Lau1DHistPdf()
 	delete hist_; hist_ = 0;
 }
 
-Lau1DHistPdf::Lau1DHistPdf(const Lau1DHistPdf& other) : LauAbsPdf(other.varName(), other.getParameters(), other.getMinAbscissa(), other.getMaxAbscissa())
-{
-	hist_ = other.hist_ ? dynamic_cast<TH1*>(other.hist_->Clone()) : 0;
-	useInterpolation_ = other.useInterpolation_;
-	fluctuateBins_ = other.fluctuateBins_;
-	this->setRandomFun(other.getRandomFun());
-	this->calcNorm();
-}
-
 void Lau1DHistPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 {
 	if (this->heightUpToDate()) {

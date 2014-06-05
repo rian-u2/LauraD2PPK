@@ -39,6 +39,12 @@ class LauIntegrals {
 		//! Destructor
 		virtual ~LauIntegrals();
 
+		//! Copy constructor
+		LauIntegrals(const LauIntegrals& rhs);
+
+		//! Copy assignment operator
+		LauIntegrals& operator=(const LauIntegrals& rhs);
+
 		//! Calculate the Gauss-Legendre weights
 		/*!
 		    \param [in] numPoints the number of points in the integration

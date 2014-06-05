@@ -45,9 +45,6 @@ class LauGaussPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~LauGaussPdf();
 
-		//! Copy constructor
-		LauGaussPdf(const LauGaussPdf& other);
-
 		//! Calculate the likelihood (and intermediate info) for a given abscissa
 		/*!
 		    \param [in] abscissas the values of the abscissa(s)
@@ -68,6 +65,12 @@ class LauGaussPdf : public LauAbsPdf {
 	protected:
 
 	private:
+		//! Copy constructor (not implemented)
+		LauGaussPdf(const LauGaussPdf& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauGaussPdf& operator=(const LauGaussPdf& rhs);
+
 		//! Gaussian mean
 		LauAbsRValue* mean_;
 		//! Gaussian sigma

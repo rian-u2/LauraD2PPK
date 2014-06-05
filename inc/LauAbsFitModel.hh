@@ -29,6 +29,7 @@
     - initialise()
     - initialiseDPModels()
     - propagateParUpdates()
+    - recalculateNormalisation()
     - scfDPSmear()
     - setAmpCoeffSet()
     - setNBkgndEvents()
@@ -53,8 +54,9 @@
 #include "TStopwatch.h"
 #include "TVectorDfwd.h"
 
-#include <vector>
 #include <iosfwd>
+#include <set>
+#include <vector>
 
 #include "LauFitObject.hh"
 #include "LauFormulaPar.hh"
@@ -324,6 +326,8 @@ class LauAbsFitModel : public LauFitObject {
 		typedef std::vector<LauParameter*> LauParameterPList;
 		//! List of parameter pointers
 		typedef std::vector<LauAbsRValue*> LauAbsRValuePList;
+		//! Set of parameter pointers
+		typedef std::set<LauParameter*> LauParameterPSet;
 		//! List of parameters
 		typedef std::vector<LauParameter> LauParameterList;
 		//! A type to store background classes 
@@ -408,6 +412,9 @@ class LauAbsFitModel : public LauFitObject {
 			initial, min, max and fixed values
 		*/
 		virtual void initialise() = 0;
+
+		//! Recalculate normalisation the signal DP model(s)
+		virtual void recalculateNormalisation() = 0;
 
 		//! Initialise the DP models
 		virtual void initialiseDPModels() = 0;
@@ -655,6 +662,10 @@ class LauAbsFitModel : public LauFitObject {
 		const LauParameterPList& fitPars() const {return fitVars_;}
 		LauParameterPList& fitPars() {return fitVars_;}
 
+		//! Access the fit variables which affect the DP normalisation
+		const LauParameterPSet& resPars() const {return resVars_;}
+		LauParameterPSet& resPars() {return resVars_;}
+
 		//! Access the extra variables
 		const LauParameterList& extraPars() const {return extraVars_;}
 		LauParameterList& extraPars() {return extraVars_;}
@@ -689,6 +700,12 @@ class LauAbsFitModel : public LauFitObject {
 		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
 
 	private:
+		//! Copy constructor (not implemented)
+		LauAbsFitModel(const LauAbsFitModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauAbsFitModel& operator=(const LauAbsFitModel& rhs);
+
 		// Setup a struct to store information on constrained fit parameters
 		/*!
 		  \struct StoreConstraints
@@ -746,8 +763,11 @@ class LauAbsFitModel : public LauFitObject {
 		//! The number of the current experiment
 		UInt_t iExpt_;
 
-		//! Internal vectors of fit parameters
+		//! Internal vector of fit parameters
 		LauParameterPList fitVars_;
+
+		//! Internal set of fit parameters upon which the DP normalisation depends
+		LauParameterPSet resVars_;
 
 		//! Extra variables that aren't in the fit but are stored in the ntuple
 		LauParameterList extraVars_;

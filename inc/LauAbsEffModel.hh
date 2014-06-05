@@ -25,6 +25,7 @@
 
 #include "Rtypes.h"
 
+class LauDaughters;
 class LauKinematics;
 
 
@@ -69,6 +70,9 @@ class LauAbsEffModel {
 	private:
 		//! Copy constructor - not implemented
 		LauAbsEffModel( const LauAbsEffModel& rhs );
+
+		//! Copy assignment operator - not implemented
+		LauAbsEffModel& operator=( const LauAbsEffModel& rhs );
 
 		ClassDef(LauAbsEffModel, 0)   // pABC for the signal efficiency across the DP
 

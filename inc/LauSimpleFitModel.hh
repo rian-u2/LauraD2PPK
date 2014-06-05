@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -33,7 +33,7 @@
 class TH2;
 class LauAbsBkgndDPModel;
 class LauAbsCoeffSet;
-class LauAbsDPDynamics;
+class LauIsobarDynamics;
 class LauAbsPdf;
 class LauEffModel;
 class LauEmbeddedData;
@@ -48,7 +48,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		/*! 
 			\param [in] sigDPModel the signal DP model
 		*/	
-		explicit LauSimpleFitModel(LauAbsDPDynamics* sigDPModel);
+		explicit LauSimpleFitModel(LauIsobarDynamics* sigDPModel);
 
 		//! Destructor
 		virtual ~LauSimpleFitModel();
@@ -185,6 +185,9 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		//! Initialise the signal DP model
 		virtual void initialiseDPModels();
+
+		//! Recalculate Normalization the signal DP models
+		virtual void recalculateNormalisation();
 
 		//! Update the coefficients
 		virtual void updateCoeffs();
@@ -351,8 +354,14 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		void appendBinCentres( LauFitDataTree* inputData );
 
 	private:
+		//! Copy constructor (not implemented)
+		LauSimpleFitModel(const LauSimpleFitModel& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauSimpleFitModel& operator=(const LauSimpleFitModel& rhs);
+
 		//! The signal Dalitz plot model
-		LauAbsDPDynamics* sigDPModel_;
+		LauIsobarDynamics* sigDPModel_;
 
 		//! The background Dalitz Plot model
 		LauBkgndDPModelList bkgndDPModels_;

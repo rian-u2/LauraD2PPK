@@ -1,5 +1,5 @@
 
-// Copyright University of Warwick 2004 - 2013.
+// Copyright University of Warwick 2004 - 2014.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -33,17 +33,11 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 	public:
 		//! Constructor
 		/*!
-			\param [in] resName the name of the resonance
-			\param [in] resMass the mass of the resonance
-			\param [in] resWidth the width of the resonance
-			\param [in] resSpin the spin of the resonance
-			\param [in] resCharge the charge of the resonance
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauRelBreitWignerRes(TString resName, Double_t resMass, Double_t resWidth,
-				Int_t resSpin, Int_t resCharge, Int_t resPairAmpInt, 
-				const LauDaughters* daughters);
+		LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor	
 		virtual ~LauRelBreitWignerRes();
@@ -65,6 +59,12 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 		*/
 		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
 
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
 	protected:
 		//! Complex resonant amplitude
 		/*!
@@ -82,14 +82,24 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 
 
 	private:
+		//! Copy constructor (not implemented)
+		LauRelBreitWignerRes(const LauRelBreitWignerRes& rhs);
+
+		//! Copy assignment operator (not implemented)
+		LauRelBreitWignerRes& operator=(const LauRelBreitWignerRes& rhs);
+
 		//! Momentum of the daughters in the resonance rest frame (at pole mass)
 		Double_t q0_;
 		//! Momentum of the bachelor in the resonance rest frame (at pole mass)
 		Double_t p0_;
 		//! Momentum of the bachelor in the parent rest frame (at pole mass)
 		Double_t pstar0_;
+		//! The resonance mass
+		Double_t resMass_;
 		//! Square of the resonance mass
 		Double_t resMassSq_;
+		//! The resonance width
+		Double_t resWidth_;
 		//! Sum of the two daughter masses
 		Double_t mDaugSum_;
 		//! Square of the sum of the two daughter masses

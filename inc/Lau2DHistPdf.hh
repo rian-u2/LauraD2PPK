@@ -50,9 +50,6 @@ class Lau2DHistPdf : public LauAbsPdf {
 		//! Destructor
 		virtual ~Lau2DHistPdf();
 
-		//! Copy constructor
-		Lau2DHistPdf(const Lau2DHistPdf& other);
-
 		//! Get the minimum value of x-axis abscissa
 		Double_t getMinX() const {return minX_;}
 
@@ -146,6 +143,12 @@ class Lau2DHistPdf : public LauAbsPdf {
 		Double_t interpolateXYNorm(Double_t x, Double_t y) const;
 
 	private:
+		//! Copy constructor (not implemented)
+		Lau2DHistPdf(const Lau2DHistPdf& other);
+
+		//! Copy assignment operator (not implemented)
+		Lau2DHistPdf& operator=(const Lau2DHistPdf& other);
+
 		//! The underlying histogram
 		TH2* hist_;
 		//! Projection of histogram x-axis

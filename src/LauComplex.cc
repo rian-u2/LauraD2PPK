@@ -32,7 +32,7 @@
 
 #include "LauComplex.hh"
 
-ClassImp(LauComplex)
+ClassImp(LauComplex);
 
 
 void LauComplex::print() const

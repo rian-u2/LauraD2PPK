@@ -263,6 +263,12 @@ class LauAbsPdf {
 		*/
 		virtual Bool_t heightUpToDate() const {return heightUpToDate_;}
 
+		//! Set whether the height is up to date
+		/*!
+		    \param [in] hutd whether the height is up to date
+		*/
+		virtual void heightUpToDate(Bool_t hutd) {heightUpToDate_ = hutd;}
+
 		//! Check if the PDF is to be cached
 		/*!
 		    \return true if the PDF is to be cached
@@ -299,12 +305,6 @@ class LauAbsPdf {
 		    \param [in] doCachePDF whether the PDF is to be cached
 		*/
 		virtual void cachePDF( Bool_t doCachePDF ) {cachePDF_ = doCachePDF;}
-
-		//! Set whether the height is up to date
-		/*!
-		    \param [in] hutd whether the height is up to date
-		*/
-		virtual void heightUpToDate(Bool_t hutd) {heightUpToDate_ = hutd;}
 
 		//! Integrate the PDF using the Gauss-Legendre method
 		/*!

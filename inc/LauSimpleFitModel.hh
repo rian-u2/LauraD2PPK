@@ -82,9 +82,10 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 			\param [in] dpHisto the DP histogram of the SCF fraction value
 			\param [in] upperHalf whether this histogram is only in the upper half of a symmetric DP
+			\param [in] fluctuateBins whether the bins on the histogram should be varied in accordance with their uncertainties (for evaluation of systematic uncertainties)
 			\param [in] scfMap the (optional) smearing matrix
 		*/
-		void splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf = kFALSE, LauScfMap* scfMap = 0 );
+		void splitSignalComponent( const TH2* dpHisto, const Bool_t upperHalf = kFALSE, const Bool_t fluctuateBins = kFALSE, LauScfMap* scfMap = 0 );
 
 		//! Split the signal component into well reconstructed and mis-reconstructed parts
 		/*!
@@ -94,7 +95,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 			\param [in] scfFrac the SCF fraction value
 			\param [in] fixed whether the SCF fraction is fixed or floated in the fit
 		*/
-		void splitSignalComponent( Double_t scfFrac, Bool_t fixed );
+		void splitSignalComponent( const Double_t scfFrac, const Bool_t fixed );
 
 		//! Determine whether we are splitting the signal into TM and SCF parts
 		Bool_t useSCF() const { return useSCF_; }
@@ -126,7 +127,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		//! Embed full simulation events for the signal, rather than generating toy from the PDFs
 		/*!
-			\param [in] fileName the name of the file containing SP events
+			\param [in] fileName the name of the file containing the events
 			\param [in] treeName the name of the tree 
 			\param [in] reuseEventsWithinEnsemble
 			\param [in] reuseEventsWithinExperiment
@@ -139,7 +140,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Embed full simulation events for the given background class, rather than generating toy from the PDFs
 		/*!
 			\param [in] bkgndClass the name of the background class
-			\param [in] fileName the name of the file containing SP events
+			\param [in] fileName the name of the file containing the events
 			\param [in] treeName the name of the tree 
 			\param [in] reuseEventsWithinEnsemble
 			\param [in] reuseEventsWithinExperiment
@@ -194,8 +195,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Toy MC generation and fitting overloaded functions
 		virtual Bool_t genExpt();
 
-		//! Calculate things that depend on the fit parameters
-		//! after they have been updated by Minuit
+		//! Calculate things that depend on the fit parameters after they have been updated by Minuit
 		virtual void propagateParUpdates();
 
 		//! Read in the input fit data variables, e.g. m13Sq and m23Sq
@@ -212,7 +212,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		//! Print the fit fractions, total DP rate and mean efficiency
 		/*!
-			\param [out] output the output to be printed 
+			\param [out] output the stream to which to print
 		*/	
 		virtual void printFitFractions(std::ostream& output);
 
@@ -227,6 +227,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 		// Methods to do with calculating the likelihood functions
 		// and manipulating the fitting parameters.
+
 		//! Get the total likelihood for each event
 		/*!
 			\param [in] iEvt the event number 
@@ -339,14 +340,16 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Check if the mis-reconstructed signal is to be smeared in the DP
 		virtual Bool_t scfDPSmear() const {return (scfMap_ != 0);}
 
-		//! We'll be caching the DP amplitudes and efficiencies of the centres of the true bins.
-		//! To do so, we attach some fake points at the end of inputData, the number of the entry
-		//! minus the total number of events corresponding to the number of the histogram for that
-		//! given true bin in the LauScfMap object. (What this means is that when Laura is provided with
-		//! the LauScfMap object by the user, it's the latter who has to make sure that it contains the
-		//! right number of histograms and in exactly the right order!)
+		//! Append fake data points to the inputData for each bin in the SCF smearing matrix
 		/*!
-			\param [in] inputData the fit data 
+		   We'll be caching the DP amplitudes and efficiencies of the centres of the true bins.
+		   To do so, we attach some fake points at the end of inputData, the number of the entry
+		   minus the total number of events corresponding to the number of the histogram for that
+		   given true bin in the LauScfMap object. (What this means is that when Laura is provided with
+		   the LauScfMap object by the user, it's the latter who has to make sure that it contains the
+		   right number of histograms and in exactly the right order!)
+
+		   \param [in] inputData the fit data 
 		*/	
 		void appendBinCentres( LauFitDataTree* inputData );
 
@@ -387,7 +390,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Number of extra PDF parameters
 		UInt_t nExtraPdfPar_; 
 
-		//! Number of parameters
+		//! Number of normalisation parameters (i.e. yields)
 		UInt_t nNormPar_;
 
 		//! Magnitudes and Phases
@@ -444,7 +447,8 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! The complex coefficients
 		std::vector<LauComplex> coeffs_;
 
-		// Embedding SP events
+		// Embedding full simulation events
+
 		//! The signal event tree 
 		LauEmbeddedData* signalTree_;
 

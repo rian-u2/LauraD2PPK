@@ -141,7 +141,7 @@ void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 }
 
-void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHalf, LauScfMap* scfMap )
+void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, const Bool_t upperHalf, const Bool_t fluctuateBins, LauScfMap* scfMap )
 {
 	if ( useSCF_ == kTRUE ) {
 		std::cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << std::endl;
@@ -155,7 +155,7 @@ void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHa
 
 	LauDaughters* daughters = sigDPModel_->getDaughters();
 	scfFracHist_ = new LauEffModel( daughters, 0 );
-	scfFracHist_->setEffHisto( dpHisto, kTRUE, kFALSE, 0.0, 0.0, upperHalf, daughters->squareDP() );
+	scfFracHist_->setEffHisto( dpHisto, kTRUE, fluctuateBins, 0.0, 0.0, upperHalf, daughters->squareDP() );
 
 	scfMap_ = scfMap;
 
@@ -163,7 +163,7 @@ void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, Bool_t upperHa
 	useSCFHist_ = kTRUE;
 }
 
-void LauSimpleFitModel::splitSignalComponent( Double_t scfFrac, Bool_t fixed )
+void LauSimpleFitModel::splitSignalComponent( const Double_t scfFrac, const Bool_t fixed )
 {
 	if ( useSCF_ == kTRUE ) {
 		std::cerr << "ERROR in LauSimpleFitModel::splitSignalComponent : Have already setup SCF." << std::endl;

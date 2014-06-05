@@ -67,7 +67,7 @@ class LauDatabasePDG {
 		LauDatabasePDG();
 
 		//! Destructor
-		~LauDatabasePDG();
+		virtual ~LauDatabasePDG();
 
 		//! Copy constructor (not inplemented)
 		LauDatabasePDG( const LauDatabasePDG& other );

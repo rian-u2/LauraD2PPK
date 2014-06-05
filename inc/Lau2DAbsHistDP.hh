@@ -69,7 +69,7 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		    \param [in] errorHi the histogram containing the upper uncertainties on the bins 
 		    \param [in] errorLo the histogram containing the lower uncertainties on the bins
 		*/
-		void doBinFluctuation(TH2* hist, TH2* errorHi, TH2* errorLo);
+		void doBinFluctuation(TH2* hist, const TH2* errorHi, const TH2* errorLo);
 
 		//! Rescale the histogram bin contents based on the desired average efficiency and its uncertainty
 		/*!
@@ -79,15 +79,15 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		    \param [in] avEff the desired average efficiency
 		    \param [in] avEffError the error on that efficiency
 		*/
-		void raiseOrLowerBins(TH2* hist, Double_t avEff, Double_t avEffError);
+		void raiseOrLowerBins(TH2* hist, const Double_t avEff, const Double_t avEffError);
 
 		//! Compute the average bin content for bins within the kinematic boundary
 		/*!
 		    This method just uses the raw bin contents with no interpolation
-		    \param [in,out] hist the histogram
+		    \param [in] hist the histogram
 		    \return the average value over the DP
 		*/
-		Double_t computeAverageContents(TH2 const * const hist) const;
+		Double_t computeAverageContents(const TH2* hist) const;
 
 		//! Check whether the given co-ordinates are within the kinematic boundary
 		/*!

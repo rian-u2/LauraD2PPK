@@ -4,13 +4,36 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v2r2
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+5th June 2014 Thomas Latham
+
+* Fix issue in asymmetric efficiency histogram errors
+  - Fluctuation of bins was incorrectly sampling - assumed area each side of peak was the same
+
+3rd June 2014 Rafael Coutinho
+
+* Implement generation of toy MC from fit results in fitSlave
+
 20th May 2014 Daniel Craik
+(in branch for v3r0)
 
 * Add support for K*_0(1430) and a_0(980) to LauFlatteRes
 
 13th May 2014 Daniel Craik
+(in branch for v3r0)
 
 * Fix bug where illegal characters were being propagated from resonance names into TBranch names
+
+5th May 2014 Louis Henry
+
+* Fix compilation problem by making LauDatabasePDG destructor virtual
+
+4th May 2014 Thomas Latham
+
+* Provide a new argument to Lau*FitModel::splitSignalComponent to allow fluctuation of the bins on the SCF fraction histogram
 
 29th April 2014 Thomas Latham
 
@@ -85,6 +108,7 @@
   - Both LauSimpleFitModel and LauCPFitModel updated
 
 28th March 2014 Daniel Craik
+(in branch for release in v2r2)
 
 * Added support for asymmetric errors to Lau2DHistDP, Lau2DSplineDP and LauEffModel.
 

@@ -13,6 +13,10 @@
 * Fix issue in asymmetric efficiency histogram errors
   - Fluctuation of bins was incorrectly sampling - assumed area each side of peak was the same
 
+3rd June 2014 Rafael Coutinho
+
+* Implement generation of toy MC from fit results in fitSlave
+
 5th May 2014 Louis Henry
 
 * Fix compilation problem by making LauDatabasePDG destructor virtual

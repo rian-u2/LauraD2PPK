@@ -25,6 +25,7 @@
 
 #include "Rtypes.h"
 
+class LauDaughters;
 class LauKinematics;
 
 

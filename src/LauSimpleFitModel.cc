@@ -390,10 +390,9 @@ void LauSimpleFitModel::initialiseDPModels()
 
 void LauSimpleFitModel::recalculateNormalisation()
 {
-	std::cout << "INFO in LauSimpleFitModel::recalculateNormalizationInDPModels : Recalc Norm in DP model" << std::endl;
+	//std::cout << "INFO in LauSimpleFitModel::recalculateNormalizationInDPModels : Recalc Norm in DP model" << std::endl;
 	sigDPModel_->recalculateNormalisation();
-	LauFitDataTree* inputFitData = this->fitData();
-	sigDPModel_->fillDataTree(*inputFitData);
+	sigDPModel_->modifyDataTree();
 }
 
 void LauSimpleFitModel::setSignalDPParameters()

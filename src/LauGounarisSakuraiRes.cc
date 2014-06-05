@@ -132,7 +132,7 @@ void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadi
 	const Double_t resR = this->getResBWRadius();
 	const Double_t parR = this->getParBWRadius();
 
-	std::cout << "INFO in LauGounarisSakuraiRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
+	//std::cout << "INFO in LauGounarisSakuraiRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
 
 	Double_t zR0 = q0_*q0_*resR*resR;
 	Double_t zB0 = p0_*p0_*parR*parR;

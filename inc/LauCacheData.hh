@@ -72,6 +72,12 @@ class LauCacheData {
 		*/
 		inline void storethPrime(Double_t thPrime) {thPrime_ = thPrime;}
 
+		//! Set the tagging category
+		/*!
+		    \param [in] tagCat the tagging category
+		*/
+		inline void storeTagCat(Int_t tagCat) {tagCat_ = tagCat;}
+
 		//! Set the efficiency
 		/*!
 		    \param [in] eff the efficiency
@@ -126,6 +132,12 @@ class LauCacheData {
 		*/
 		inline Double_t retrievethPrime() const {return thPrime_;}
 
+		//! Retrieve the tagging category
+		/*!
+		    \return the tagging category
+		*/
+		inline Int_t retrieveTagCat() const {return tagCat_;}
+
 		//! Retrieve the efficiency
 		/*!
 		    \return the efficiency
@@ -156,6 +168,18 @@ class LauCacheData {
 		*/
 		inline const std::vector<Double_t>& retrieveImagAmp() const {return imagAmp_;}
 
+		//! Retrieve the real parts of the amplitudes
+		/*!
+		    \return the real parts of the amplitudes
+		*/
+		inline std::vector<Double_t>& retrieveRealAmp() {return realAmp_;}
+
+		//! Retrieve the imaginary parts of the amplitudes
+		/*!
+		    \return the imaginary parts of the amplitudes
+		*/
+		inline std::vector<Double_t>& retrieveImagAmp() {return imagAmp_;}
+
 	protected:
 
 	private:
@@ -170,6 +194,9 @@ class LauCacheData {
 
 		//! The square Dalitz plot coordinate, theta'
 		Double_t thPrime_;
+
+		//! The tagging category
+		Int_t tagCat_;
 
 		//! The efficiency
 		Double_t eff_;

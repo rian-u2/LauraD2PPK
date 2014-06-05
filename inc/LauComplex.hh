@@ -47,12 +47,15 @@
 class LauComplex {
 
 	public:
+		//! Default Constructor
+		inline LauComplex() : re_(0.0), im_(0.0) {}
+
 		//! Constructor
 		/*!
 		    \param [in] a the value corresponding to the real part of the complex number
 		    \param [in] b the value corresponding to the imaginary part of the complex number
 		*/
-		inline LauComplex(Double_t a=0.0, Double_t b=0.0) : re_(a), im_(b) {}
+		inline LauComplex(Double_t a, Double_t b) : re_(a), im_(b) {}
 
 		//! Destructor
 		virtual ~LauComplex() {}

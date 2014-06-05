@@ -535,12 +535,11 @@ void LauCPFitModel::initialise()
 
 void LauCPFitModel::recalculateNormalisation()
 {
-	std::cout << "INFO in LauCPFitModel::recalculateNormalizationInDPModels : Recalc Norm in DP model" << std::endl;
+	//std::cout << "INFO in LauCPFitModel::recalculateNormalizationInDPModels : Recalc Norm in DP model" << std::endl;
 	negSigModel_->recalculateNormalisation();
 	posSigModel_->recalculateNormalisation();
-	LauFitDataTree* inputFitData = this->fitData();
-	negSigModel_->fillDataTree(*inputFitData);
-	posSigModel_->fillDataTree(*inputFitData);
+	negSigModel_->modifyDataTree();
+	posSigModel_->modifyDataTree();
 }
 
 void LauCPFitModel::initialiseDPModels()

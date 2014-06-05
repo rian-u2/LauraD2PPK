@@ -19,6 +19,7 @@
 #ifndef LAU_ISOBAR_DYNAMICS
 #define LAU_ISOBAR_DYNAMICS
 
+#include <set>
 #include <vector>
 
 #include "TString.h"
@@ -178,14 +179,14 @@ class LauIsobarDynamics {
 		/*!
 		    \param [in] iEvt the event number
 		*/
-		void calcLikelihoodInfo(UInt_t iEvt);
+		void calcLikelihoodInfo(const UInt_t iEvt);
 
 		//! Calculate the likelihood (and all associated information) given values of the Dalitz plot coordinates
 		/*!
 		    \param [in] m13Sq the invariant mass squared of the first and third daughters
 		    \param [in] m23Sq the invariant mass squared of the second and third daughters
 		*/
-		void calcLikelihoodInfo(Double_t m13Sq, Double_t m23Sq);
+		void calcLikelihoodInfo(const Double_t m13Sq, const Double_t m23Sq);
 
 		//! Calculate the likelihood (and all associated information) given values of the Dalitz plot coordinates and the tagging category
 		/*!
@@ -194,13 +195,13 @@ class LauIsobarDynamics {
 		    \param [in] m23Sq the invariant mass squared of the second and third daughters
 		    \param [in] tagCat the tagging category
 		*/
-		void calcLikelihoodInfo(Double_t m13Sq, Double_t m23Sq, Int_t tagCat);
+		void calcLikelihoodInfo(const Double_t m13Sq, const Double_t m23Sq, const Int_t tagCat);
 
 		//! Calculate the fit fractions, mean efficiency and total DP rate
 		/*!
 		    \param [in] init whether the calculated values should be stored as the initial/generated values or the fitted values
 		*/
-		void calcExtraInfo(Bool_t init = kFALSE);
+		void calcExtraInfo(const Bool_t init = kFALSE);
 
 		//! Calculates whether an event with the current kinematics should be accepted in order to produce a distribution of events that matches the model e.g. when reweighting embedded data
 		/*!
@@ -301,6 +302,9 @@ class LauIsobarDynamics {
 		    \param [in] fitDataTree the data source
 		*/
 		void fillDataTree(const LauFitDataTree& fitDataTree);
+
+		//! Recache the amplitude values for those that have changed
+		void modifyDataTree();
 
 		//! Check whether this model includes a named resonance
 		/*!
@@ -476,23 +480,23 @@ class LauIsobarDynamics {
 		//! Initialise the internal storage for this model
 		void initialiseVectors();
 
+		//! Zero the various values used to store integrals info
+		void resetNormVectors();
+
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
 		void calcDPNormalisation();
 
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
 		void calcDPNormalisationScheme();
 
+		//! Determine which amplitudes and integrals need to be recalculated
+		void findIntegralsToBeRecalculated();
+
 		//! Calculate the Dalitz plot normalisation integrals over a given range
 		/*!
-		    \param [in] minm13 the minimum value of m13 in the integration range
-		    \param [in] maxm13 the maximum value of m13 in the integration range
-		    \param [in] minm23 the minimum value of m23 in the integration range
-		    \param [in] maxm23 the maximum value of m23 in the integration range
-		    \param [in] m13BinWidth the bin width in m13
-		    \param [in] m23BinWidth the bin width in m23
+		    \param [in] intInfo the integration information object
 		*/
-		void calcDPPartialIntegral(Double_t minm13, Double_t maxm13, Double_t minm23,
-				Double_t maxm23, Double_t m13BinWidth, Double_t m23BinWidth);
+		void calcDPPartialIntegral(LauDPPartialIntegralInfo* intInfo);
 
 		//! Write the results of the integrals (and related information) to a file
 		void writeIntegralsFile();
@@ -503,15 +507,30 @@ class LauIsobarDynamics {
 		    \param [in] realPart the real part of the amplitude
 		    \param [in] imagPart the imaginary part of the amplitude
 		*/
-		void setFFTerm(UInt_t index, Double_t realPart, Double_t imagPart);
+		void setFFTerm(const UInt_t index, const Double_t realPart, const Double_t imagPart);
+
+		//! Calculate the amplitudes for all resonances for the current kinematics
+		void calculateAmplitudes();
+
+		//! Calculate or retrieve the cached value of the amplitudes for all resonances at the specified integration grid point
+		/*!
+		    \param [in,out] intInfo the integration information object
+		    \param [in] m13Point the grid index in m13
+		    \param [in] m23Point the grid index in m23
+		*/
+		void calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, const UInt_t m13Point, const UInt_t m23Point );
+
+		//! Add the amplitude values (with the appropriate weight) at the current grid point to the running integral values
+		/*!
+		    \param [in] weight the weight to apply
+		*/
+		void addGridPointToIntegrals(const Double_t weight);
 
 		//! Calculate the total Dalitz plot amplitude at the current point in the Dalitz plot
 		/*!
-		    \param [in] cacheResData whether the amplitudes have already been cached
-		    \param [in] weight the weight to apply (used when calculating the integrals)
 		    \param [in] useEff whether to apply efficiency corrections
 		*/
-		void dynamics(Bool_t cacheResData = kTRUE, Double_t weight = 1.0, Bool_t useEff = kTRUE);
+		void calcTotalAmp(const Bool_t useEff);
 
 		//! Obtain the efficiency of the current event from the model
 		/*!
@@ -542,7 +561,7 @@ class LauIsobarDynamics {
 		/*!
 		    \param [in] index the index of the amplitude component within the model
 		*/
-		LauComplex resAmp(Int_t index);
+		void resAmp(const UInt_t index);
 
 		//! Load the data for a given event
 		/*!
@@ -691,6 +710,9 @@ class LauIsobarDynamics {
 		//! The square Dalitz plot coordinate theta'
 		Double_t thPrime_;
 
+		//! The tagging category
+		Int_t tagCat_;
+
 		//! The efficiency at the current point in the Dalitz plot
 		Double_t eff_;
 
@@ -762,6 +784,15 @@ class LauIsobarDynamics {
 
 		//! List of floating resonance parameters
 		std::vector<LauParameter*> resonancePars_;
+
+		//! List of floating resonance parameter values from previous calculation
+		std::vector<Double_t> resonanceParValues_;
+
+		//! Index in sigResonances_ to point to the corresponding signal resonance for each floating parameter
+		std::vector<UInt_t> resonanceParResIndex_;
+
+		//! Resonance indices for which the amplitudes and integrals should be recalculated
+		std::set<UInt_t> integralsToBeCalculated_;
 
 		ClassDef(LauIsobarDynamics,0)
 };

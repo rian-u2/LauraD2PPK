@@ -130,7 +130,7 @@ void LauRelBreitWignerRes::setBarrierRadii(const Double_t resRadius, const Doubl
 	const Double_t resR = this->getResBWRadius();
 	const Double_t parR = this->getParBWRadius();
 
-	std::cout << "INFO in LauRelBreitWignerRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
+	//std::cout << "INFO in LauRelBreitWignerRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
 
 	Double_t zR0 = q0_*q0_*resR*resR;
 	Double_t zB0 = p0_*p0_*parR*parR;

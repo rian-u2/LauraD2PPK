@@ -1652,6 +1652,12 @@ Bool_t LauIsobarDynamics::generate()
 	nSigGenLoop_ = 0;
 	Bool_t generatedSig(kFALSE);
 
+	// We need to make sure to calculate everything for every resonance
+	integralsToBeCalculated_.clear();
+	for ( UInt_t i(0); i < nAmp_; ++i ) {
+		integralsToBeCalculated_.insert(i);
+	}
+
 	while (generatedSig == kFALSE && nSigGenLoop_ < iterationsMax_) {
 
 		// Generates uniform DP phase-space distribution

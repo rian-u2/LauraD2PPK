@@ -26,24 +26,24 @@
 
 ClassImp(LauAbsPdf)
 
-	// Constructor for the abstract PDF class.
-	LauAbsPdf::LauAbsPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
-			Double_t minAbscissa, Double_t maxAbscissa) :
-		varNames_(),
-		param_(params),
-		norm_(0.0),
-		maxHeight_(0.0),
-		heightUpToDate_(kFALSE),
-		minAbscissas_(),
-		maxAbscissas_(),
-		randomFun_(LauRandom::randomFun()),
-		cachePDF_(kFALSE),
-		unNormPDFVal_(0.0),
-		nNormPoints_(50),
-		integMethod_(GaussLegendre),
-		withinNormCalc_(kFALSE),
-		withinGeneration_(kFALSE),
-		normWeightsDone_(kFALSE)
+// Constructor for the abstract PDF class.
+LauAbsPdf::LauAbsPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
+		     Double_t minAbscissa, Double_t maxAbscissa) :
+	varNames_(),
+	param_(params),
+	norm_(0.0),
+	maxHeight_(0.0),
+	heightUpToDate_(kFALSE),
+	minAbscissas_(),
+	maxAbscissas_(),
+	randomFun_(LauRandom::randomFun()),
+	cachePDF_(kFALSE),
+	unNormPDFVal_(0.0),
+	nNormPoints_(50),
+	integMethod_(GaussLegendre),
+	withinNormCalc_(kFALSE),
+	withinGeneration_(kFALSE),
+	normWeightsDone_(kFALSE)
 {
 	// Store the variable name
 	varNames_.insert( std::make_pair( 0, theVarName ) );
@@ -54,7 +54,7 @@ ClassImp(LauAbsPdf)
 }
 
 LauAbsPdf::LauAbsPdf(const std::vector<TString>& theVarNames, const std::vector<LauAbsRValue*>& params,
-		const LauFitData& minAbscissas, const LauFitData& maxAbscissas) :
+		     const LauFitData& minAbscissas, const LauFitData& maxAbscissas) :
 	varNames_(),
 	param_(params),
 	norm_(0.0),

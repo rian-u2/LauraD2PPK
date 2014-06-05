@@ -20,6 +20,7 @@
 #include "TSystem.h"
 
 #include "Lau2DAbsHistDP.hh"
+#include "LauBifurcatedGaussPdf.hh"
 #include "LauDaughters.hh"
 #include "LauKinematics.hh"
 #include "LauRandom.hh"
@@ -59,34 +60,54 @@ void Lau2DAbsHistDP::doBinFluctuation(TH2* hist)
 	}
 }
 
-void Lau2DAbsHistDP::doBinFluctuation(TH2* hist, TH2* errorHi, TH2* errorLo)
+void Lau2DAbsHistDP::doBinFluctuation(TH2* hist, const TH2* errorHi, const TH2* errorLo)
 {
-	TRandom* random = LauRandom::randomFun();
+	LauParameter* mean = new LauParameter("mean",   0.5, 0.0, 1.0, kFALSE);
+	LauParameter* sigL = new LauParameter("sigmaL", 0.5, 0.0, 1.0, kFALSE);
+	LauParameter* sigR = new LauParameter("sigmaR", 0.5, 0.0, 1.0, kFALSE);
+
+	std::vector<LauAbsRValue*> pars(3);
+	pars[0] = mean;
+	pars[1] = sigL;
+	pars[2] = sigR;
+
+	const TString varName("tmp");
 
 	Int_t nBinsX = static_cast<Int_t>(hist->GetNbinsX());
 	Int_t nBinsY = static_cast<Int_t>(hist->GetNbinsY());
 
+	LauFitData genData;
+
 	for (Int_t i(0); i<nBinsX; ++i) {
 		for (Int_t j(0); j<nBinsY; ++j) {
-			Double_t currentContent = hist->GetBinContent(i+1,j+1);
-			Double_t currentErrorHi = errorHi->GetBinContent(i+1,j+1);
-			Double_t currentErrorLo = errorLo->GetBinContent(i+1,j+1);
-			Double_t shift = random->Gaus(0.,1.);
-			Double_t newContent(currentContent);
+			const Double_t currentContent = hist->GetBinContent(i+1,j+1);
+			const Double_t currentErrorLo = errorLo->GetBinContent(i+1,j+1);
+			const Double_t currentErrorHi = errorHi->GetBinContent(i+1,j+1);
 
-			if(shift>0) newContent += shift*currentErrorHi;
-			else newContent += shift*currentErrorLo;
+			mean->value( currentContent );
+			sigL->value( currentErrorLo );
+			sigR->value( currentErrorHi );
 
-			if (newContent<0.0) {
-				hist->SetBinContent(i+1,j+1,0.0);
-			} else {
-				hist->SetBinContent(i+1,j+1,newContent);
-			}
+			const Double_t minVal = TMath::Max( 0.0, currentContent-5.0*currentErrorLo );
+			const Double_t maxVal = TMath::Min( 1.0, currentContent+5.0*currentErrorHi );
+
+			LauBifurcatedGaussPdf bfgaus(varName, pars, minVal, maxVal);
+			bfgaus.heightUpToDate(kFALSE);
+			genData = bfgaus.generate(0);
+
+			const Double_t newContent = genData[varName];
+
+			hist->SetBinContent(i+1,j+1,newContent);
 		}
 	}
+
+	delete pars[0];
+	delete pars[1];
+	delete pars[2];
+	pars.clear();
 }
 
-void Lau2DAbsHistDP::raiseOrLowerBins(TH2* hist, Double_t avEff, Double_t avEffError)
+void Lau2DAbsHistDP::raiseOrLowerBins(TH2* hist, const Double_t avEff, const Double_t avEffError)
 {
 	TRandom* random = LauRandom::randomFun();
 
@@ -96,7 +117,7 @@ void Lau2DAbsHistDP::raiseOrLowerBins(TH2* hist, Double_t avEff, Double_t avEffE
 	hist->Scale( newAvg / curAvg );
 }
 
-Double_t Lau2DAbsHistDP::computeAverageContents(TH2 const * const hist) const
+Double_t Lau2DAbsHistDP::computeAverageContents(const TH2* hist) const
 {
 	Double_t totalContent(0.0);
 	Int_t binsWithinDPBoundary(0);

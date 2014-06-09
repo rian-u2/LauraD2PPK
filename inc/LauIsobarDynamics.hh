@@ -208,13 +208,13 @@ class LauIsobarDynamics {
 		    Uses the accept/reject method.
 		    \return kTRUE if the event has been accepted, kFALSE otherwise
 		*/
- 	        Bool_t gotReweightedEvent();
+		Bool_t gotReweightedEvent();
 
 		//! Calculate the acceptance rate, for events with the current kinematics, when generating events according to the model
 		/*!
 		    \return the weight for the current kinematics
 		*/
- 	        Double_t getEventWeight();
+		Double_t getEventWeight();
 
 		//! Retrieve the total amplitude for the current event
 		/*!
@@ -788,8 +788,8 @@ class LauIsobarDynamics {
 		//! List of floating resonance parameter values from previous calculation
 		std::vector<Double_t> resonanceParValues_;
 
-		//! Index in sigResonances_ to point to the corresponding signal resonance for each floating parameter
-		std::vector<UInt_t> resonanceParResIndex_;
+		//! Indices in sigResonances_ to point to the corresponding signal resonance(s) for each floating parameter
+		std::vector< std::vector<UInt_t> > resonanceParResIndex_;
 
 		//! Resonance indices for which the amplitudes and integrals should be recalculated
 		std::set<UInt_t> integralsToBeCalculated_;

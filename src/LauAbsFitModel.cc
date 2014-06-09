@@ -909,22 +909,22 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	// - use the rescaling value fitToyMCScale_
 
 	// Store the info on the number of experiments, first expt and current expt
-	UInt_t oldNExpt(this->nExpt());
-	UInt_t oldFirstExpt(this->firstExpt());
-	UInt_t oldIExpt(iExpt_);
+	const UInt_t oldNExpt(this->nExpt());
+	const UInt_t oldFirstExpt(this->firstExpt());
+	const UInt_t oldIExpt(iExpt_);
 
 	// Turn off Poisson smearing if required
-	Bool_t poissonSmearing(this->doPoissonSmearing());
+	const Bool_t poissonSmearing(this->doPoissonSmearing());
 	this->doPoissonSmearing(fitToyMCPoissonSmear_);
 
 	// Turn off embedding, since we need toy MC, not reco'ed events
-	Bool_t enableEmbeddingOrig(this->enableEmbedding());
+	const Bool_t enableEmbeddingOrig(this->enableEmbedding());
 	this->enableEmbedding(kFALSE);
 
 	// Need to make sure that the generation of the DP co-ordinates is
 	// switched on if any of our PDFs depend on it
-	Bool_t origUseDP = this->useDP();
-	if ( this->pdfsDependOnDP() && !origUseDP ) {
+	const Bool_t origUseDP = this->useDP();
+	if ( !origUseDP && this->pdfsDependOnDP() ) {
 		this->useDP( kTRUE );
 		this->initialiseDPModels();
 	}

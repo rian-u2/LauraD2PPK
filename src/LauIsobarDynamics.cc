@@ -186,19 +186,18 @@ void LauIsobarDynamics::resetNormVectors()
 
 void LauIsobarDynamics::recalculateNormalisation()
 {
+	if ( recalcNormalisation_ == kFALSE ) {
+		return;
+	}
+
+	// We need to calculate the normalisation constants for the
+	// Dalitz plot generation/fitting.
+
 	integralsDone_ = kFALSE;
 
 	this->resetNormVectors();
-
-	if ( nAmp_ == 0 ) {
-		std::cout << "No contributions to DP model, not performing normalisation integrals." << std::endl;
-	} else {
-
-		// We need to calculate the normalisation constants for the
-		// Dalitz plot generation/fitting.
-		this->findIntegralsToBeRecalculated();
-		this->calcDPNormalisation();
-	}
+	this->findIntegralsToBeRecalculated();
+	this->calcDPNormalisation();
 
 	integralsDone_ = kTRUE;
 }
@@ -206,7 +205,7 @@ void LauIsobarDynamics::recalculateNormalisation()
 void LauIsobarDynamics::findIntegralsToBeRecalculated()
 {
 	// Loop through the resonance parameters and see which ones have changed
-	// For those that have changed mark the corresponding resonance as needing to be re-evaluated
+	// For those that have changed mark the corresponding resonance(s) as needing to be re-evaluated
 
 	integralsToBeCalculated_.clear();
 
@@ -216,8 +215,12 @@ void LauIsobarDynamics::findIntegralsToBeRecalculated()
 		if ( newValue != resonanceParValues_[iPar] ) {
 			resonanceParValues_[iPar] = newValue;
 
-			UInt_t index = resonanceParResIndex_[iPar];
-			integralsToBeCalculated_.insert(index);
+			const std::vector<UInt_t>& indices = resonanceParResIndex_[iPar];
+			std::vector<UInt_t>::const_iterator indexIter = indices.begin();
+			const std::vector<UInt_t>::const_iterator indexEnd = indices.end();
+			for( ; indexIter != indexEnd; ++indexIter) {
+				integralsToBeCalculated_.insert(*indexIter);
+			}
 		}
 	}
 }
@@ -247,9 +250,26 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 		for ( std::vector<LauParameter*>::const_iterator parIter = resPars.begin(); parIter != resPars.end(); ++parIter ) {
 			if ( uniqueResPars.insert( *parIter ).second ) {
+				// This parameter has not already been added to
+				// the list of unique ones.  Add it, its value
+				// and its associated resonance ID to the
+				// appropriate lists.
 				resonancePars_.push_back( *parIter );
 				resonanceParValues_.push_back( (*parIter)->value() );
-				resonanceParResIndex_.push_back( resIndex );
+				std::vector<UInt_t> resIndices( 1, resIndex );
+				resonanceParResIndex_.push_back( resIndices );
+			} else {
+				// This parameter has already been added to the
+				// list of unique ones.  However, we still need
+				// to indicate that this resonance should be
+				// associated with it.
+				std::vector<LauParameter*>::const_iterator uniqueParIter = resonancePars_.begin();
+				std::vector<std::vector<UInt_t> >::iterator indicesIter = resonanceParResIndex_.begin();
+				while( (*uniqueParIter) != (*parIter) ) {
+					++uniqueParIter;
+					++indicesIter;
+				}
+				( *indicesIter ).push_back( resIndex );
 			}
 		}
 
@@ -279,6 +299,14 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 			integralsToBeCalculated_.insert(i);
 		}
 
+		// Calculate and cache the normalisations of each resonance _dynamic_ amplitude
+		// (e.g. Breit-Wigner contribution, not from the complex coefficients).
+		// These are stored in fNorm_[i].
+		// fSqSum[i] is the total of the dynamical amplitude squared for a given resonance, i.
+		// We require that:
+		// |fNorm_[i]|^2 * |fSqSum[i]|^2 = 1,
+		// i.e. fNorm_[i] normalises each resonance contribution to give the same number of
+		// events in the DP, accounting for the total DP area and the dynamics of the resonance.
 		this->calcDPNormalisation();
 
 		// Write the integrals to a file (mainly for debugging purposes)
@@ -290,30 +318,21 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 	std::cout << std::setprecision(10);
 
-	// Calculate and cache the relative normalisations of each resonance _dynamic_ amplitude
-	// (e.g. Breit-Wigner contribution, not from the complex amplitude/phase) w.r.t. the
-	// total DP amplitude. These are stored in fNorm_[i].
-	// fSqSum[i] is the event-by-event running total of the dynamical amplitude 
-	// squared for a given resonance, i. We require that:
-	// |fNorm_[i]|^2 * |fSqSum[i]|^2 = 1,
-	// i.e. fNorm_[i] normalises each resonance contribution to give the same number of
-	// events in the DP, accounting for the total DP area and the
-	// dynamics of the resonance.
-
 	std::cout<<"INFO in LauIsobarDynamics::initialise : Summary of the integrals:"<<std::endl;
+
 	for (UInt_t i = 0; i < nAmp_; i++) {
 		std::cout<<" fNorm["<<i<<"] = "<<fNorm_[i]<<std::endl;
 		std::cout<<" fSqSum["<<i<<"] = "<<fSqSum_[i]<<std::endl;
 	}
 
-	for (UInt_t i = 0; i < nAmp_; i++) {    
+	for (UInt_t i = 0; i < nAmp_; i++) {
 		for (UInt_t j = 0; j < nAmp_; j++) {
 			std::cout<<" fifjEffSum["<<i<<"]["<<j<<"] = "<<fifjEffSum_[i][j];
 		}
 		std::cout<<std::endl;
 	}
 
-	for (UInt_t i = 0; i < nAmp_; i++) {    
+	for (UInt_t i = 0; i < nAmp_; i++) {
 		for (UInt_t j = 0; j < nAmp_; j++) {
 			std::cout<<" fifjSum["<<i<<"]["<<j<<"] = "<<fifjSum_[i][j];
 		}
@@ -323,6 +342,7 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	// Calculate the initial fit fractions (for later comparison with Toy MC, if required)
 	this->updateCoeffs(coeffs);
 	this->calcExtraInfo(kTRUE);
+
 	for (UInt_t i = 0; i < nAmp_; i++) {
 		for (UInt_t j = i; j < nAmp_; j++) {
 			std::cout<<"INFO in LauIsobarDynamics::initialise : Initial fit fraction for amplitude ("<<i<<","<<j<<") = "<<fitFrac_[i][j].genValue()<<std::endl;
@@ -435,7 +455,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 	getChar << std::setprecision(10);
 
 	// Write out daughter types (pi, pi0, K, K0s?)
-	for (i = 0; i < 3; i++) {    
+	for (i = 0; i < 3; i++) {
 		getChar << typDaug_[i] << " ";
 	}
 
@@ -521,8 +541,10 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	}
 
 	// implement the helicity flip here
-	if (flipHelicity_ && daughters_->getCharge(resPairAmpInt) == 0) {	  
-		if ( daughters_->getChargeParent() == 0 && daughters_->getTypeParent() > 0 ) {
+	if (flipHelicity_ && daughters_->getCharge(resPairAmpInt) == 0 && daughters_->getChargeParent() == 0 && daughters_->getTypeParent() > 0 ) {
+		if ( ( resPairAmpInt == 1 && TMath::Abs(daughters_->getTypeDaug2()) == TMath::Abs(daughters_->getTypeDaug3()) ) ||
+		     ( resPairAmpInt == 2 && TMath::Abs(daughters_->getTypeDaug1()) == TMath::Abs(daughters_->getTypeDaug3()) ) ||
+		     ( resPairAmpInt == 3 && TMath::Abs(daughters_->getTypeDaug1()) == TMath::Abs(daughters_->getTypeDaug2()) ) ) {
 			theResonance->flipHelicity(kTRUE);
 		}
 	}
@@ -539,7 +561,7 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 
 	// Always force the non-resonant amplitude pair to have resPairAmp = 0
 	// in case the user chooses the wrong number.
-	if ( resType == LauAbsResonance::FlatNR || 
+	if ( resType == LauAbsResonance::FlatNR ||
 	     resType == LauAbsResonance::NRModel ) {
 		std::cout<<"INFO in LauIsobarDynamics::addResonance : Setting resPairAmp to 0 for "<<resonanceName<<" contribution."<<std::endl;
 		resPairAmp_.push_back(0);
@@ -558,13 +580,13 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	return theResonance;
 }
 
-void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const TString& paramFileName, Int_t resPairAmpInt, 
+void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const TString& paramFileName, Int_t resPairAmpInt,
 						Int_t nChannels, Int_t nPoles, Int_t rowIndex)
 {
 	// Define the K-matrix propagator. The resPairAmpInt integer specifies which mass combination should be used
 	// for the invariant mass-squared variable "s". The pole masses and coupling constants are defined in the
 	// paramFileName parameter file. The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
-	// The integer rowIndex specifies which row of the propagator should be used when 
+	// The integer rowIndex specifies which row of the propagator should be used when
 	// summing over all amplitude channels: S-wave will be the first row, so rowIndex = 1.
 
 	if (rowIndex < 1) {
@@ -613,7 +635,7 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 		nAmp_++;
 		sigResonances_.push_back(prodPole);
 
-		// Also store the propName-poleName pair for calculating total fit fractions later on 
+		// Also store the propName-poleName pair for calculating total fit fractions later on
 		// (avoiding the need to use dynamic casts to check which resonances are of the K-matrix type)
 		kMatrixPropSet_[poleName] = propName;
 
@@ -632,7 +654,7 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex)
 {
 
-	// Add a K-matrix production "slowly-varying part" (SVP) term, using the K-matrix propagator 
+	// Add a K-matrix production "slowly-varying part" (SVP) term, using the K-matrix propagator
 	// given by the propName. Here, channelIndex is the integer specifying the channel number.
 
 	// First, find the K-matrix propagator.
@@ -661,7 +683,7 @@ void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString&
 		++nAmp_;
 		sigResonances_.push_back(prodSVP);
 
-		// Also store the SVPName-propName pair for calculating total fit fractions later on 
+		// Also store the SVPName-propName pair for calculating total fit fractions later on
 		// (avoiding the need to use dynamic casts to check which resonances are of the K-matrix type)
 		kMatrixPropSet_[SVPName] = propName;
 
@@ -1312,7 +1334,7 @@ void LauIsobarDynamics::calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, 
 
 void LauIsobarDynamics::calculateAmplitudes()
 {
-	std::set<UInt_t>::const_iterator iter = integralsToBeCalculated_.begin(); 
+	std::set<UInt_t>::const_iterator iter = integralsToBeCalculated_.begin();
 	const std::set<UInt_t>::const_iterator intEnd = integralsToBeCalculated_.end();
 
 	for ( ; iter != intEnd; ++iter) {
@@ -1332,7 +1354,7 @@ void LauIsobarDynamics::calcTotalAmp(const Bool_t useEff)
 
 	// Loop over all signal amplitudes
 	LauComplex ATerm;
-	for (UInt_t i = 0; i < nAmp_; ++i) {  
+	for (UInt_t i = 0; i < nAmp_; ++i) {
 
 		// Get the partial complex amplitude - (mag, phase)*(resonance dynamics)
 		ATerm = Amp_[i]*ff_[i];
@@ -1387,10 +1409,10 @@ void LauIsobarDynamics::addGridPointToIntegrals(const Double_t weight)
 	}
 }
 
-void LauIsobarDynamics::resAmp(const UInt_t index) 
-{  
-	// Routine to calculate the resonance dynamics (amplitude) 
-	// using the appropriate Breit-Wigner/Form Factors. 
+void LauIsobarDynamics::resAmp(const UInt_t index)
+{
+	// Routine to calculate the resonance dynamics (amplitude)
+	// using the appropriate Breit-Wigner/Form Factors.
 
 	if ( index >= nAmp_ ) {
 		std::cerr<<"ERROR in LauIsobarDynamics::resAmp : index = "<<index<<" is not within the range 0 to "<<nAmp_-1<<std::endl;
@@ -1408,7 +1430,7 @@ void LauIsobarDynamics::resAmp(const UInt_t index)
 
 	// Get the integer index of the resonance.
 	// TODO - is this check really needed?
-	const Int_t resInt = resIntAmp_[index];  
+	const Int_t resInt = resIntAmp_[index];
 	if ( resInt < 0 || resInt >= static_cast<Int_t>(LauResonanceMaker::get().getNResDefMax()) ) {
 		std::cerr<<"ERROR in LauIsobarDynamics::resAmp : Probably bad resonance name."<<std::endl;
 		ff_[index] = LauComplex(0.0, 0.0);
@@ -1429,9 +1451,9 @@ void LauIsobarDynamics::resAmp(const UInt_t index)
 	}
 }
 
-void LauIsobarDynamics::setFFTerm(const UInt_t index, const Double_t realPart, const Double_t imagPart) 
-{  
-	// Function to set the internal ff term (normally calculated using resAmp(index).  
+void LauIsobarDynamics::setFFTerm(const UInt_t index, const Double_t realPart, const Double_t imagPart)
+{
+	// Function to set the internal ff term (normally calculated using resAmp(index).
 	if ( index >= nAmp_ ) {
 		std::cerr<<"ERROR in LauIsobarDynamics::setFFTerm : index = "<<index<<" is not within the range 0 to "<<nAmp_-1<<std::endl;
 		return;
@@ -1524,7 +1546,7 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 
 	for (mapIter = kMatrixPropagators_.begin(); mapIter != kMatrixPropagators_.end(); ++mapIter) {
 
-	        LauKMatrixPropagator* thePropagator = mapIter->second;
+		LauKMatrixPropagator* thePropagator = mapIter->second;
 
 		TString propName = thePropagator->getName();
 
@@ -1532,8 +1554,8 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 		Double_t kMatrixTotFitFrac(0.0);
 
 		for (i = 0; i < nAmp_; i++) {
-	    
-		        Bool_t gotKMRes1 = this->gotKMatrixMatch(i, propName);
+
+			Bool_t gotKMRes1 = this->gotKMatrixMatch(i, propName);
 			if (gotKMRes1 == kFALSE) {continue;}
 
 			Double_t fifjSumReal = fifjSum_[i][i].re();
@@ -1543,10 +1565,10 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 			//Double_t sumEffTerm = Amp_[i].abs2()*fifjEffSumReal*fNorm_[i]*fNorm_[i];
 
 			kMatrixTotFitFrac += sumTerm;
-			
+
 			for (j = i+1; j < nAmp_; j++) {
 
-			        Bool_t gotKMRes2 = this->gotKMatrixMatch(j, propName);
+				Bool_t gotKMRes2 = this->gotKMatrixMatch(j, propName);
 				if (gotKMRes2 == kFALSE) {continue;}
 
 				LauComplex AmpjConj = Amp_[j].conj();
@@ -1555,55 +1577,55 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 				Double_t crossTerm = 2.0*(AmpTerm*fifjSum_[i][j]).re()*fNorm_[i]*fNorm_[j];
 				//Double_t crossEffTerm = 2.0*(AmpTerm*fifjEffSum_[i][j]).re()*fNorm_[i]*fNorm_[j];
 
-				kMatrixTotFitFrac += crossTerm;	      
-				
+				kMatrixTotFitFrac += crossTerm;
+
 			}
-			
+
 		}
-	  
+
 		kMatrixTotFitFrac /= fifjTot;
 
 		TString parName("KMatrixTotFF_"); parName += propInt;
 		extraParameters_[propInt].name( parName );
 		extraParameters_[propInt] =  kMatrixTotFitFrac;
 		if (init) {
-		        extraParameters_[propInt].genValue(kMatrixTotFitFrac);
-		        extraParameters_[propInt].initValue(kMatrixTotFitFrac);
+			extraParameters_[propInt].genValue(kMatrixTotFitFrac);
+			extraParameters_[propInt].initValue(kMatrixTotFitFrac);
 		}
 
 		std::cout<<"INFO in LauIsobarDynamics::calcExtraInfo : Total K-matrix fit fraction for propagator "<<propName<<" is "<<kMatrixTotFitFrac<<std::endl;
-		
+
 		++propInt;
 
 	}
-	
+
 
 }
 
 Bool_t LauIsobarDynamics::gotKMatrixMatch(UInt_t resAmpInt, const TString& propName) const
 {
 
-        Bool_t gotMatch(kFALSE);
-  	    
+	Bool_t gotMatch(kFALSE);
+
 	if (resAmpInt >= nAmp_) {return kFALSE;}
 
 	const LauAbsResonance* theResonance = sigResonances_[resAmpInt];
-	    
+
 	if (theResonance == 0) {return kFALSE;}
 
 	Int_t resModelInt = theResonance->getResonanceModel();
 
 	if (resModelInt == LauAbsResonance::KMatrix) {
-    
-                TString resName = theResonance->getResonanceName();
-    
+
+		TString resName = theResonance->getResonanceName();
+
 		KMStringMap::const_iterator kMPropSetIter = kMatrixPropSet_.find(resName);
 
 		if (kMPropSetIter != kMatrixPropSet_.end()) {
-                        TString kmPropString = kMPropSetIter->second;
+			TString kmPropString = kMPropSetIter->second;
 			if (kmPropString == propName) {gotMatch = kTRUE;}
 		}
-		
+
 	}
 
 	return gotMatch;
@@ -1621,7 +1643,7 @@ Double_t LauIsobarDynamics::calcSigDPNorm()
 		Double_t fifjEffSumReal = fifjEffSum_[i][i].re();
 		// We need to normalise this contribution w.r.t. the complete dynamics in the DP.
 		// Hence we scale by the fNorm_i factor (squared), which is calculated by the
-		// initialise() function, when the normalisation integrals are calculated and cached. 
+		// initialise() function, when the normalisation integrals are calculated and cached.
 		// We also include the complex amplitude squared to get the total normalisation
 		// contribution from this resonance.
 		DPNorm_ += Amp_[i].abs2()*fifjEffSumReal*fNorm_[i]*fNorm_[i];
@@ -1649,20 +1671,20 @@ Bool_t LauIsobarDynamics::generate()
 	// Routine to generate a signal event according to the Dalitz plot
 	// model we have defined.
 
-	nSigGenLoop_ = 0;
-	Bool_t generatedSig(kFALSE);
-
 	// We need to make sure to calculate everything for every resonance
 	integralsToBeCalculated_.clear();
 	for ( UInt_t i(0); i < nAmp_; ++i ) {
 		integralsToBeCalculated_.insert(i);
 	}
 
+	nSigGenLoop_ = 0;
+	Bool_t generatedSig(kFALSE);
+
 	while (generatedSig == kFALSE && nSigGenLoop_ < iterationsMax_) {
 
 		// Generates uniform DP phase-space distribution
 		Double_t m13Sq(0.0), m23Sq(0.0);
-		kinematics_->genFlatPhaseSpace(m13Sq, m23Sq);	
+		kinematics_->genFlatPhaseSpace(m13Sq, m23Sq);
 
 		// If we're in a symmetrical DP then we should only generate events in one half
 		if ( symmetricalDP_ && m13Sq > m23Sq ) {
@@ -1671,33 +1693,25 @@ Bool_t LauIsobarDynamics::generate()
 			m23Sq = tmpSq;
 		}
 
-		// calculates the amplitudes and total amplitude for the given DP point
+		// Calculate the amplitudes and total amplitude for the given DP point
 		this->calcLikelihoodInfo(m13Sq, m23Sq);
 
-		if (integralsDone_ == kTRUE) {
 
-			// Very important line to avoid bias in MC generation for the accept/reject method.
-			// Make sure that the total amplitude squared is below some number, given
-			// by aSqMaxSet_. If it is, then the event is valid.
-			// Otherwise, go through another toy MC loop until we can generate the event
-			// OK, or until we reach the maximum iteration limit.
-
-			Double_t randNo = LauRandom::randomFun()->Rndm();
-
-			if (randNo > ASq_/aSqMaxSet_) {
-				nSigGenLoop_++;
-			} else {
-				generatedSig = kTRUE;
-				nSigGenLoop_ = 0;
-				if (ASq_ > aSqMaxVar_) {aSqMaxVar_ = ASq_;}
-			}
-
+		// Throw the random number and check it against the ratio of ASq and the accept/reject ceiling
+		const Double_t randNo = LauRandom::randomFun()->Rndm();
+		if (randNo > ASq_/aSqMaxSet_) {
+			++nSigGenLoop_;
 		} else {
-			// For toy MC numerical integration only
 			generatedSig = kTRUE;
+			nSigGenLoop_ = 0;
+
+			// Keep a note of the maximum ASq that we've found
+			if (ASq_ > aSqMaxVar_) {aSqMaxVar_ = ASq_;}
 		}
+
 	} // while loop
 
+	// Check that all is well with the generation
 	Bool_t sigGenOK(kTRUE);
 	if (GenOK != this->checkToyMC(kFALSE,kFALSE)) {
 		sigGenOK = kFALSE;
@@ -1712,6 +1726,7 @@ LauIsobarDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMe
 	ToyMCStatus ok(GenOK);
 
 	if (nSigGenLoop_ >= iterationsMax_) {
+		// Exceeded maximum allowed iterations - the generation is too inefficient
 		if (printErrorMessages) {
 			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : More than "<<iterationsMax_<<" iterations required."<<std::endl;
 			std::cerr<<"                                         : Try to decrease the maximum allowed value of the total amplitude squared using the "
@@ -1723,6 +1738,7 @@ LauIsobarDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMe
 		std::cout<<"INFO in LauIsobarDynamics::checkToyMC : |A|^2 max reset to "<<aSqMaxSet_<<std::endl;
 		ok = MaxIterError;
 	} else if (aSqMaxVar_ > aSqMaxSet_) {
+		// Found a value of ASq higher than the accept/reject ceiling - the generation is biased
 		if (printErrorMessages) {
 			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : aSqMaxSet_ was set to "<<aSqMaxSet_<<" but actual aSqMax was "<<aSqMaxVar_<<std::endl;
 			std::cerr<<"                                         : Run was invalid, as any generated MC will be biased, according to the accept/reject method!"<<std::endl;
@@ -1776,7 +1792,7 @@ void LauIsobarDynamics::calcLikelihoodInfo(const UInt_t iEvt)
 
 	// Update the dynamics - calculates totAmp_ and then ASq_ = totAmp_.abs2() * eff_
 	// All calculated using cached information on the individual amplitudes and efficiency.
-	this->calcTotalAmp(kTRUE);  
+	this->calcTotalAmp(kTRUE);
 
 	// Calculate the normalised matrix element squared value
 	if (DPNorm_ > 1e-10) {
@@ -1820,9 +1836,13 @@ void LauIsobarDynamics::calcLikelihoodInfo(const Double_t m13Sq, const Double_t 
 
 void LauIsobarDynamics::modifyDataTree()
 {
+	if ( recalcNormalisation_ == kFALSE ) {
+		return;
+	}
+
 	const UInt_t nEvents = data_.size();
 
-	std::set<UInt_t>::const_iterator iter = integralsToBeCalculated_.begin(); 
+	std::set<UInt_t>::const_iterator iter = integralsToBeCalculated_.begin();
 	const std::set<UInt_t>::const_iterator intEnd = integralsToBeCalculated_.end();
 
 	for (UInt_t iEvt = 0; iEvt < nEvents; ++iEvt) {
@@ -1846,7 +1866,7 @@ void LauIsobarDynamics::modifyDataTree()
 	}
 }
 
-void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree) 
+void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 {
 	// In LauFitDataTree, the first two variables should always be m13^2 and m23^2.
 	// Other variables follow thus: charge/flavour tag prob, etc.
@@ -1865,7 +1885,7 @@ void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	// Data structure that will cache the variables required to 
+	// Data structure that will cache the variables required to
 	// calculate the signal likelihood for this experiment
 	for ( std::vector<LauCacheData*>::iterator iter = data_.begin(); iter != data_.end(); ++iter ) {
 		delete (*iter);
@@ -1933,9 +1953,9 @@ void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 
 Bool_t LauIsobarDynamics::gotReweightedEvent()
 {
-        // Select the event (kinematics_) using an accept/reject method based on the
-        // ratio of the current value of ASq to the maximal value.
-        Bool_t accepted(kFALSE);
+	// Select the event (kinematics_) using an accept/reject method based on the
+	// ratio of the current value of ASq to the maximal value.
+	Bool_t accepted(kFALSE);
 
 	// calculate the ff_ terms and retrieves eff_ from the efficiency model
 	this->calculateAmplitudes();
@@ -1944,7 +1964,7 @@ Bool_t LauIsobarDynamics::gotReweightedEvent()
 
 	// Compare the ASq value with the maximal value (set by the user)
 	if (LauRandom::randomFun()->Rndm() < ASq_/aSqMaxSet_) {
-	        accepted = kTRUE;
+		accepted = kTRUE;
 	}
 
 	if (ASq_ > aSqMaxVar_) {aSqMaxVar_ = ASq_;}
@@ -2005,9 +2025,9 @@ TString LauIsobarDynamics::getConjResName(const TString& resName) const
        Ssiz_t index1 = resName.Index("+");
        Ssiz_t index2 = resName.Index("-");
        if (index1 != -1) {
-                conjName.Replace(index1, 1, "-");
+	       conjName.Replace(index1, 1, "-");
        } else if (index2 != -1) {
-                conjName.Replace(index2, 1, "+");
+	       conjName.Replace(index2, 1, "+");
        }
 
        return conjName;

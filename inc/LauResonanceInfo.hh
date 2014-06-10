@@ -95,6 +95,16 @@ class LauResonanceInfo {
 		*/
 		LauResonanceInfo* createChargeConjugate();
 
+		//! Create another record that will share parameters with this one
+		/*!
+		    The name needs to be specified.
+		    The spin and charge are assumed to be the same.
+		    The mass, width and other parameters will be cloned.
+
+		    \param [in] name the name of the resonant particle
+		*/
+		LauResonanceInfo* createSharedParameterRecord( const TString& name );
+
 		//! Retrieve an extra parameter of the resonance
 		/*!
 		    \return the extra parameter (or null pointer if not found)
@@ -150,6 +160,9 @@ class LauResonanceInfo {
 
 		//! The conjugate info object
 		LauResonanceInfo* conjugate_;
+
+		//! Other info objects that share parameters with this one
+		std::vector<LauResonanceInfo*> sharedParRecords_;
 
 		//! Extra parameters
 		std::set<LauParameter*> extraPars_;

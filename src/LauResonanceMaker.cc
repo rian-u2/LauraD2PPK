@@ -119,6 +119,11 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
+	// LASS nonresonant model
+	neutral = neutral->createSharedParameterRecord("LASSNR0");
+	positve = positve->createSharedParameterRecord("LASSNR+");
+	negatve = negatve->createSharedParameterRecord("LASSNR-");
+	resInfo_.push_back( neutral );
 	// K*_2(1430)
 	neutral = new LauResonanceInfo("K*0_2(1430)",   1.4324,   0.109,    2,     0           );
 	positve = new LauResonanceInfo("K*+_2(1430)",   1.4256,   0.0985,   2,     1           );
@@ -346,9 +351,6 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
         neutral = new LauResonanceInfo("PolNR_P2",      0.0,      0.0,     1,      0           );
 	resInfo_.push_back( neutral );
-	// LASS nonresonant model
-	neutral = new LauResonanceInfo("LASSNR",        1.412,    0.294,   0,      0           );
-	resInfo_.push_back( neutral );
 
 	nResDefMax_ = resInfo_.size();
 }
@@ -523,35 +525,6 @@ Int_t LauResonanceMaker::resTypeInt(const TString& name) const
 
 	return resTypInt;
 }
-
-/*
-std::vector<LauParameter*> LauResonanceMaker::getFloatingParameters()
-{
-	std::vector<LauParameter*> param;
-
-	for (std::vector<LauResonanceInfo*>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
-		LauParameter* massPar = (*iter)->getMass();
-		if ( ! massPar->fixed() ) {
-			if ( massPar->clone() ) {
-				massPar = massPar->parent();
-			}
-			std::cout << "INFO in LauResonanceMaker::getFloatingParameters: resNameMass = " << massPar->name() << ", fixed = "<< massPar->fixed() << std::endl;
-			param.push_back(massPar);
-		}
-
-		LauParameter* widthPar = (*iter)->getWidth();
-		if ( ! widthPar->fixed() ) {
-			if ( widthPar->clone() ) {
-				widthPar = widthPar->parent();
-			}
-			std::cout << "INFO in LauResonanceMaker::getFloatingParameters: resNameWidth = " << widthPar->name() << ", fixed = "<< widthPar->fixed() << std::endl;
-			param.push_back(widthPar);
-		}
-	}
-
-	return param;
-}
-*/
 
 void LauResonanceMaker::printAll( ostream& stream ) const
 {

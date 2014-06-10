@@ -44,21 +44,6 @@ LauResonanceInfo::~LauResonanceInfo()
 	delete width_; width_ = 0;
 }
 
-/*
-LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other ) :
-	name_( other.name_ ),
-	sanitisedName_( other.sanitisedName_ ),
-	mass_( other.mass_->createClone() ),
-	width_( other.width_->createClone() ),
-	spin_( other.spin_ ),
-	charge_( other.charge_ ),
-	range_( other.range_ ),
-	conjugate_( other.conjugate_ ),
-	extraPars_( other.extraPars_ )
-{
-}
-*/
-
 LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other, const TString& newName, const Int_t newCharge ) :
 	name_(newName),
 	sanitisedName_(""),
@@ -104,6 +89,15 @@ LauResonanceInfo* LauResonanceInfo::createChargeConjugate()
 	return conjugate;
 }
 
+LauResonanceInfo* LauResonanceInfo::createSharedParameterRecord( const TString& name )
+{
+	LauResonanceInfo* newinfo = new LauResonanceInfo( *this, name, charge_ );
+
+	sharedParRecords_.push_back(newinfo);
+
+	return newinfo;
+}
+
 LauParameter* LauResonanceInfo::getExtraParameter( const TString& parName )
 {
 	LauParameter* par(0);
@@ -125,6 +119,10 @@ void LauResonanceInfo::addExtraParameter( LauParameter* param )
 
 	if ( conjugate_ != 0 ) {
 		conjugate_->addCloneOfExtraParameter(param);
+	}
+
+	for ( std::vector<LauResonanceInfo*>::iterator iter = sharedParRecords_.begin(); iter != sharedParRecords_.end(); ++iter ) {
+		(*iter)->addCloneOfExtraParameter(param);
 	}
 }
 
@@ -184,3 +182,4 @@ void LauResonanceInfo::sanitiseName()
 	sanitisedName_ = sanitisedName_.ReplaceAll(".","");
 	sanitisedName_.Remove(TString::kBoth,'_');
 }
+

@@ -79,7 +79,10 @@ int main( int argc, char** argv )
 	LauAbsResonance* res(0);
 	LauIsobarDynamics* negSigModel = new LauIsobarDynamics(negDaughters, 0);
 	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW); // resPairAmpInt = 2 => resonance mass is m13.
-	res = negSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);
+	res = negSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS_BW);
+	res->floatResonanceParameter("a");
+	res->floatResonanceParameter("r");
+	res = negSigModel->addResonance("LASSNR0",     2, LauAbsResonance::LASS_NR);
 	res = negSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW); // resPairAmpInt = 1 => resonance mass is m23.
 	res = negSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
 	res = negSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
@@ -89,7 +92,10 @@ int main( int argc, char** argv )
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, 0);
 	res = posSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
-	res = posSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);
+	res = posSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS_BW);
+	res->floatResonanceParameter("a");
+	res->floatResonanceParameter("r");
+	res = posSigModel->addResonance("LASSNR0",     2, LauAbsResonance::LASS_NR);
 	res = posSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW);
 	res = posSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
 	res = posSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
@@ -136,11 +142,12 @@ int main( int argc, char** argv )
 	a1CoeffSet->setParameterValue("Delta",3.0,kTRUE);
 	a1CoeffSet->floatParameter("A");
 	a1CoeffSet->floatParameter("Delta");
+	LauAbsCoeffSet* a2CoeffSet = a1CoeffSet->createClone("LASSNR0", LauAbsCoeffSet::TieCPPars);
 
-	LauAbsCoeffSet* a2CoeffSet = new LauBelleCPCoeffSet("rho0(770)",   0.66,  1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
-	LauAbsCoeffSet* a3CoeffSet = new LauBelleCPCoeffSet("f_0(980)",    1.00, -1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
-	LauAbsCoeffSet* a4CoeffSet = new LauBelleCPCoeffSet("chi_c0",      0.33,  0.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
-	LauAbsCoeffSet* a5CoeffSet = new LauBelleCPCoeffSet("NonReson",    0.50,  1.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a3CoeffSet = new LauBelleCPCoeffSet("rho0(770)",   0.66,  1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a4CoeffSet = new LauBelleCPCoeffSet("f_0(980)",    1.00, -1.00, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a5CoeffSet = new LauBelleCPCoeffSet("chi_c0",      0.33,  0.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
+	LauAbsCoeffSet* a6CoeffSet = new LauBelleCPCoeffSet("NonReson",    0.50,  1.50, 0.00, 0.00, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE, kTRUE);
 
 	std::vector<LauAbsCoeffSet*> coeffset;
 	coeffset.push_back( a0CoeffSet );
@@ -149,6 +156,7 @@ int main( int argc, char** argv )
 	coeffset.push_back( a3CoeffSet );
 	coeffset.push_back( a4CoeffSet );
 	coeffset.push_back( a5CoeffSet );
+	coeffset.push_back( a6CoeffSet );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
@@ -202,7 +210,7 @@ int main( int argc, char** argv )
 	}
 
 	// Generate toy from the fitted parameters
-	//fitModel->compareFitData(100, fitToyFileName);
+	fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);

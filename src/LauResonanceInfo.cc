@@ -57,7 +57,7 @@ LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other, const TString
 {
 	this->sanitiseName();
 	mass_ = other.mass_->createClone( sanitisedName_+"_MASS" );
-	width_ = other.mass_->createClone( sanitisedName_+"_WIDTH" );
+	width_ = other.width_->createClone( sanitisedName_+"_WIDTH" );
 	for ( std::set<LauParameter*>::iterator iter = other.extraPars_.begin(); iter != other.extraPars_.end(); ++iter ) {
 		TString parName = (*iter)->name();
 		parName.Remove(0, parName.Last('_'));

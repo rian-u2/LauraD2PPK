@@ -753,11 +753,27 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 
 			messageFromMaster_->ReadFastArray( parValues_, nPars );
 
+			// Update all the floating parameters with their new values
+			// Also check if we have any parameters on which the DP integrals depend
+			// and whether they have changed since the last iteration
+			Bool_t recalcNorm(kFALSE);
+			const LauParameterPSet::const_iterator resVarsEnd = resVars_.end();
 			for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 				if ( ! fitVars_[iPar]->fixed() ) {
+					if ( resVars_.find( fitVars_[iPar] ) != resVarsEnd ) {
+						if ( fitVars_[iPar]->value() != parValues_[iPar] ) {
+							recalcNorm = kTRUE;
+						}
+					}
 					fitVars_[iPar]->value( parValues_[iPar] );
 				}
 			}
+
+			// If so, then recalculate the normalisation
+			if (recalcNorm) {
+				this->recalculateNormalisation();
+			}
+
 			this->propagateParUpdates();
 
 			Double_t negLogLike = this->getTotNegLogLikelihood();
@@ -1100,6 +1116,7 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 
 	// Update all the floating ones with their new values
 	// Also check if we have any parameters on which the DP integrals depend
+	// and whether they have changed since the last iteration
 	Bool_t recalcNorm(kFALSE);
 	const LauParameterPSet::const_iterator resVarsEnd = resVars_.end();
 	for (UInt_t i(0); i<nParams_; ++i) {

@@ -22,6 +22,7 @@
 #include "LauDaughters.hh"
 #include "LauFlatteRes.hh"
 #include "LauFlatNR.hh"
+#include "LauModIndPartWave.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauKappaRes.hh"
 #include "LauLASSRes.hh"
@@ -488,6 +489,13 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
 		theResonance =
 			new LauPolNR(resInfo, resPairAmpInt, daughters);
+
+	} else if ( resType == LauAbsResonance::MIPW ) {
+
+		// Model independent partial wave
+		std::cout<<"                                        : Using model independent partial wave lineshape. "<<std::endl;
+		theResonance =
+			new LauModIndPartWave(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::BW ) {
 

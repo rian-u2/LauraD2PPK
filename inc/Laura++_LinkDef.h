@@ -76,6 +76,7 @@
 #pragma link C++ class LauMagPhaseCoeffSet;
 #pragma link C++ class LauMagPhaseCPCoeffSet;
 #pragma link C++ class LauMinuit;
+#pragma link C++ class LauModIndPartWave;
 #pragma link C++ class LauNovosibirskPdf;
 #pragma link C++ class LauNRAmplitude;
 #pragma link C++ class LauParameter;

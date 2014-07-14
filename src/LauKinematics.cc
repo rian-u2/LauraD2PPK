@@ -476,11 +476,19 @@ Double_t LauKinematics::pCalc(Double_t energy, Double_t massSq) const
 void LauKinematics::flipAndUpdateKinematics()
 {
 	// Flips the DP variables m13^2 <-> m23^2.
-	// Used in the case of symmetrical Dalitz plots (i.e. when two of
-	// the daughter tracks are the same type) within the Dynamics()
-	// function.
+	// Used in the case of symmetrical Dalitz plots (i.e. when two of the
+	// daughter tracks are the same type) within the
+	// LauIsobarDynamics::resAmp function.
 	this->updateKinematics(m23Sq_, m13Sq_);
+}
 
+void LauKinematics::rotateAndUpdateKinematics()
+{
+	// Cyclically rotates the DP variables (m12 -> m23, m23 -> m13, m13 -> m12)
+	// Used in the case of fully symmetric Dalitz plots (i.e. when all
+	// three of the daughter tracks are the same type) within the
+	// LauIsobarDynamics::resAmp function.
+	this->updateKinematics(m12Sq_, m13Sq_);
 }
 
 void LauKinematics::updateMassSq_m23(Double_t m23, Double_t c23)

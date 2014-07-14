@@ -680,6 +680,9 @@ class LauIsobarDynamics {
 		//! Whether the Dalitz plot is symmetrical
 		Bool_t symmetricalDP_;
 
+		//! Whether the Dalitz plot is fully symmetric
+		Bool_t fullySymmetricDP_;
+
 		//! Whether the integrals have been performed
 		Bool_t integralsDone_;
 

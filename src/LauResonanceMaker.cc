@@ -170,6 +170,9 @@ void LauResonanceMaker::createResonanceVector()
 	// f_0(1710)
 	neutral = new LauResonanceInfo("f_0(1710)",     1.720,    0.135,    0,     0           );
 	resInfo_.push_back( neutral );
+	// f_2(2010)
+	neutral = new LauResonanceInfo("f_2(2010)",     2.011,    0.202,    2,     0           );
+	resInfo_.push_back( neutral );
 
 	// omega resonances            name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
         // omega(782)

@@ -231,9 +231,15 @@ class LauKinematics {
 
 		//! Flips the DP variables m13^2 <-> m23^2 and recalculates all kinematic quantities
 		/*!
-		   Useful in the case of symmetrical Dalitz plots, i.e. when two final state particles are identical
+		    Useful in the case of symmetrical Dalitz plots, i.e. when two final state particles are identical
 		*/
 		void flipAndUpdateKinematics();
+
+		//! Cyclically rotates the DP variables (m12 -> m23, m23 -> m13, m13 -> m12) and recalculates all kinematic quantities
+		/*!
+		    Useful in the case of a fully symmetric Dalitz plot, i.e. when all three final state particles are identical
+		*/
+		void rotateAndUpdateKinematics();
 
 		//! Get the m1 mass
 		/*!

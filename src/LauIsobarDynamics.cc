@@ -55,6 +55,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
 	currentEvent_(0),
 	symmetricalDP_(kFALSE),
+	fullySymmetricDP_(kFALSE),
 	integralsDone_(kFALSE),
 	normalizationSchemeDone_(kFALSE),
 	intFileName_("integ.dat"),
@@ -83,6 +84,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 {
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
+		fullySymmetricDP_ = daughters->gotFullySymmetricDP();
 		typDaug_.push_back(daughters->getTypeDaug1());
 		typDaug_.push_back(daughters->getTypeDaug2());
 		typDaug_.push_back(daughters->getTypeDaug3());
@@ -111,6 +113,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
 	currentEvent_(0),
 	symmetricalDP_(kFALSE),
+	fullySymmetricDP_(kFALSE),
 	integralsDone_(kFALSE),
 	normalizationSchemeDone_(kFALSE),
 	intFileName_("integ.dat"),
@@ -140,6 +143,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	// Constructor for the isobar signal model
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
+		fullySymmetricDP_ = daughters->gotFullySymmetricDP();
 		typDaug_.push_back(daughters->getTypeDaug1());
 		typDaug_.push_back(daughters->getTypeDaug2());
 		typDaug_.push_back(daughters->getTypeDaug3());
@@ -1449,6 +1453,34 @@ void LauIsobarDynamics::resAmp(const UInt_t index)
 		// Flip the m_13^2 and m_23^2 variables back to their original values
 		kinematics_->flipAndUpdateKinematics();
 	}
+
+	// If we have a fully symmetric DP we need to calculate the amplitude at 6 points
+	else if (fullySymmetricDP_ == kTRUE) {
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff_[index] += sigResonance->amplitude(kinematics_);
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff_[index] += sigResonance->amplitude(kinematics_);
+
+		// rotate, flip and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+		ff_[index] += sigResonance->amplitude(kinematics_);
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff_[index] += sigResonance->amplitude(kinematics_);
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff_[index] += sigResonance->amplitude(kinematics_);
+
+		// rotate and flip to get us back to where we started
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+	}
 }
 
 void LauIsobarDynamics::setFFTerm(const UInt_t index, const Double_t realPart, const Double_t imagPart)
@@ -1687,6 +1719,7 @@ Bool_t LauIsobarDynamics::generate()
 		kinematics_->genFlatPhaseSpace(m13Sq, m23Sq);
 
 		// If we're in a symmetrical DP then we should only generate events in one half
+		// TODO - what do we do for fully symmetric?
 		if ( symmetricalDP_ && m13Sq > m23Sq ) {
 			Double_t tmpSq = m13Sq;
 			m13Sq = m23Sq;

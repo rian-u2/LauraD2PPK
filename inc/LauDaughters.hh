@@ -59,11 +59,17 @@ class LauDaughters {
 		//! Copy constructor
 		LauDaughters( const LauDaughters& rhs );
 
-		//! Is Dalitz plot symmetric
+		//! Is Dalitz plot symmetric, i.e. 2 identical particles
 		/*!
 		    \return true/false whether the DP is symmetric
 		*/
 		Bool_t gotSymmetricalDP() const {return symmetricalDP_;}
+
+		//! Is Dalitz plot fully symmetric, i.e. 3 identical particles
+		/*!
+		    \return true/false whether the DP is fully symmetric
+		*/
+		Bool_t gotFullySymmetricDP() const {return fullySymmetricDP_;}
 
 		//! Determine to use or not the square Dalitz plot
 		/*!
@@ -170,6 +176,9 @@ class LauDaughters {
 
 		//! Boolean flag for symmetrical Dalitz plot
 		Bool_t symmetricalDP_;
+
+		//! Boolean flag for fully symmetric Dalitz plot
+		Bool_t fullySymmetricDP_;
 
 		ClassDef(LauDaughters, 0)   // Specify what daughters are allowed
 

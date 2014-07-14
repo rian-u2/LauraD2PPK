@@ -27,7 +27,8 @@ ClassImp(LauDaughters)
 LauDaughters::LauDaughters(Int_t codeParent, Int_t code1, Int_t code2, Int_t code3, Bool_t useSquareDP) :
 	kinematics_(0),
 	parent_(0),
-	symmetricalDP_(kFALSE)
+	symmetricalDP_(kFALSE),
+	fullySymmetricDP_(kFALSE)
 {
 	this->createParticleLists();
 
@@ -45,7 +46,8 @@ LauDaughters::LauDaughters(Int_t codeParent, Int_t code1, Int_t code2, Int_t cod
 LauDaughters::LauDaughters(const TString& nameParent, const TString& name1, const TString& name2, const TString& name3, Bool_t useSquareDP) :
 	kinematics_(0),
 	parent_(0),
-	symmetricalDP_(kFALSE)
+	symmetricalDP_(kFALSE),
+	fullySymmetricDP_(kFALSE)
 {
 	this->createParticleLists();
 
@@ -64,7 +66,8 @@ LauDaughters::~LauDaughters()
 LauDaughters::LauDaughters( const LauDaughters& rhs ) :
 	kinematics_(0),
 	parent_(0),
-	symmetricalDP_(kFALSE)
+	symmetricalDP_(kFALSE),
+	fullySymmetricDP_(kFALSE)
 {
 	this->createParticleLists();
 
@@ -166,7 +169,12 @@ void LauDaughters::testDPSymmetry()
 	// Check to see if we have a symmetrical DP.
 
 	symmetricalDP_ = kFALSE;
-        if ( daughters_[0]->code() == daughters_[1]->code() ) {
+	fullySymmetricDP_ = kFALSE;
+
+        if ( daughters_[0]->code() == daughters_[1]->code() && daughters_[0]->code() == daughters_[2]->code() ) {
+		std::cout<<"INFO in LauDaughters::testDPSymmetry : We have a fully symmetric DP. "<<std::endl;
+		fullySymmetricDP_ = kTRUE;
+	} else if ( daughters_[0]->code() == daughters_[1]->code() ) {
 		std::cout<<"INFO in LauDaughters::testDPSymmetry : We have a symmetrical DP. "<<std::endl;
 		symmetricalDP_ = kTRUE;
 	} else if ( daughters_[0]->code() == daughters_[2]->code() ) {

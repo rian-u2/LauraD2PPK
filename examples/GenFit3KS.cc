@@ -16,7 +16,7 @@
 #include "LauMagPhaseCoeffSet.hh"
 #include "LauVetoes.hh"
 
-void usage( std::ostream& out, const TString& progName )
+void usage( std::ostream& out, const char* progName )
 {
 	out<<"Usage:\n";
 	out<<progName<<" gen [nExpt = 1] [firstExpt = 0]\n";
@@ -28,9 +28,9 @@ int main( int argc, char** argv )
 {
 	// Process command-line arguments
 	// Usage:
-	// ./GenFit3pi gen [nExpt = 1] [firstExpt = 0]
+	// ./GenFit3KS gen [nExpt = 1] [firstExpt = 0]
 	// or
-	// ./GenFit3pi fit <iFit> [nExpt = 1] [firstExpt = 0]
+	// ./GenFit3KS fit <iFit> [nExpt = 1] [firstExpt = 0]
 	if ( argc < 2 ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
@@ -70,53 +70,34 @@ int main( int argc, char** argv )
 	// stored in the toy MC ntuple then set this to kTRUE
 	Bool_t squareDP = kFALSE;
 
-	// This defines the DP => decay is B+ -> K+ K+ K-
-	// Particle 1 = K+
-	// Particle 2 = K+
-	// Particle 3 = K-
+	// This defines the DP => decay is B0 -> KS KS KS
+	// Particle 1 = KS
+	// Particle 2 = KS
+	// Particle 3 = KS
 	// The DP is defined in terms of m13Sq and m23Sq
-	LauDaughters* daughters = new LauDaughters("B+", "K+", "K+", "K-", squareDP);
+	LauDaughters* daughters = new LauDaughters("B0", "K_S0", "K_S0", "K_S0", squareDP);
 
 	// Optionally apply some vetoes to the DP
 	LauVetoes* vetoes = new LauVetoes();
 
 	// Define the efficiency model (defaults to unity everywhere)
 	// Can optionally provide a histogram to model variation over DP
-	// (example syntax given in commented-out section)
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);
-	//TFile *effHistFile = TFile::Open("histoFiles/effHistos.root", "read");
-	//TH2* effHist = dynamic_cast<TH2*>(effHistFile->Get("effHist"));
-	//Bool_t useInterpolation = kTRUE;
-	//Bool_t fluctuateBins = kFALSE;
-	//Bool_t useUpperHalf = kTRUE;
-	//effModel->setEffHisto(effHist, useInterpolation, fluctuateBins, 0.0, 0.0, useUpperHalf, squareDP);
 
 	// Create the isobar model
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-
-	// Add various components to the isobar model,
-	// optionally allowing the masses and width to float in the fit
-	LauAbsResonance* res(0);
-
-	//addResonance arguments: resName, resPairAmpInt, resType
-	res = sigModel->addResonance("phi(1020)",   1, LauAbsResonance::RelBW);
-	//changeResonance arguments: newMass, newWidth, newSpin
-	res->changeResonance(1.019, 0.0044, -1);
-	res->fixMass(kFALSE);
-	res->fixWidth(kFALSE);
-
-	res = sigModel->addResonance("f'_2(1525)",  1, LauAbsResonance::RelBW);
-	res->fixMass(kFALSE);
-	res->fixWidth(kFALSE);
-
-	res = sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
+	LauAbsResonance* reson(0);
+	reson = sigModel->addResonance("f_0(980)",     3, LauAbsResonance::Flatte);
+	reson = sigModel->addResonance("f_0(1710)",    3, LauAbsResonance::RelBW);
+	reson = sigModel->addResonance("f_2(2010)",    3, LauAbsResonance::RelBW);
+	reson = sigModel->addResonance("chi_c0",       3, LauAbsResonance::RelBW);
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and
 	// error.
-	sigModel->setASqMaxValue(14.5);  
+	sigModel->setASqMaxValue(0.285);  
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
@@ -125,42 +106,39 @@ int main( int argc, char** argv )
 	// Here we're using the magnitude and phase form:
 	// c_j = a_j exp(i*delta_j)
 	std::vector<LauAbsCoeffSet*> coeffset;
-	coeffset.push_back( new LauMagPhaseCoeffSet("phi(1020)",  1.0, 0.0,  kTRUE,  kTRUE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 1.0, 0.0, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",   1.0, 0.0, kFALSE, kFALSE) );
-
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",    1.00,  0.00,  kTRUE,  kTRUE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1710)",   0.40,  1.11, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(2010)",   0.45,  2.50, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("chi_c0",      0.40,  0.63, kFALSE, kFALSE) );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	Int_t nSigEvents = 5000;
-	Bool_t fixNSigEvents = kFALSE;
-	LauParameter * signalEvents = new LauParameter("signalEvents", nSigEvents, -1.0*nSigEvents, 2.0*nSigEvents, fixNSigEvents);
-	fitModel->setNSigEvents(signalEvents);
+	LauParameter * nSigEvents = new LauParameter("nSigEvents",10000.0,-50000.0,50000.0,kFALSE);
+	fitModel->setNSigEvents(nSigEvents);
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
 	fitModel->setNExpts( nExpt, firstExpt );
 
+
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
 
 	// Randomise initial fit values for the signal mode
-	fitModel->useRandomInitFitPars(kFALSE);
+	fitModel->useRandomInitFitPars(kTRUE);
 
 	// Switch on/off Poissonian smearing of total number of events
-	fitModel->doPoissonSmearing(kTRUE);
+	const Bool_t poissonSmear = ( fitModel->nBkgndClasses() > 0 );
+	fitModel->doPoissonSmearing(poissonSmear);
 
 	// Switch on/off Extended ML Fit option
-	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
+	const Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
 	fitModel->doEMLFit(emlFit);
 
-	// Switch on the two-stage fit (for the resonance parameters)
-	fitModel->twoStageFit(kTRUE);
-
-	TString dataFile("data.root");
-
+	// Set the names of the files to read/write
+	TString dataFile("gen.root");
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
@@ -182,7 +160,7 @@ int main( int argc, char** argv )
 	}
 
 	// Generate toy from the fitted parameters
-	fitModel->compareFitData(10, fitToyFileName);
+	//fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);

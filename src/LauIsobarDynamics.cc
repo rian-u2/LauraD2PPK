@@ -24,6 +24,7 @@
 
 #include "LauAbsEffModel.hh"
 #include "LauAbsResonance.hh"
+#include "LauAbsIncohRes.hh"
 #include "LauBelleNR.hh"
 #include "LauBelleSymNR.hh"
 #include "LauCacheData.hh"
@@ -50,6 +51,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	kinematics_(daughters_ ? daughters_->getKinematics() : 0),
 	effModel_(effModel),
 	nAmp_(0),
+	nIncohAmp_(0),
 	DPNorm_(0.0),
 	DPRate_("DPRate", 0.0, 0.0, 1000.0),
 	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
@@ -95,6 +97,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	}
 
 	sigResonances_.clear();
+	sigIncohResonances_.clear();
 	kMatrixPropagators_.clear();
 	kMatrixPropSet_.clear();
 	extraParameters_.clear();
@@ -108,6 +111,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	effModel_(effModel),
 	scfFractionModel_(scfFractionModel),
 	nAmp_(0),
+	nIncohAmp_(0),
 	DPNorm_(0.0),
 	DPRate_("DPRate", 0.0, 0.0, 1000.0),
 	meanDPEff_("meanDPEff", 0.0, 0.0, 1.0),
@@ -150,6 +154,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	}
 
 	sigResonances_.clear();
+	sigIncohResonances_.clear();
 	kMatrixPropagators_.clear();
 	kMatrixPropSet_.clear();
 	extraParameters_.clear();
@@ -176,6 +181,7 @@ void LauIsobarDynamics::resetNormVectors()
 	for (UInt_t i = 0; i < nAmp_; i++) {
 
 		fSqSum_[i] = 0.0;
+		fSqEffSum_[i] = 0.0;
 		fNorm_[i] = 0.0;
 		ff_[i].zero();
 
@@ -185,6 +191,13 @@ void LauIsobarDynamics::resetNormVectors()
 			fifjSum_[i][j].zero();
 
 		}
+	}
+
+	for (UInt_t i = 0; i < nIncohAmp_; i++) {
+		fSqSum_[i+nAmp_] = 0.0;
+		fSqEffSum_[i+nAmp_] = 0.0;
+		fNorm_[i+nAmp_] = 0.0;
+		incohInten_[i] = 0.0;
 	}
 }
 
@@ -280,6 +293,41 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 		++resIndex;
 	}
 
+	for ( std::vector<LauAbsIncohRes*>::iterator resIter = sigIncohResonances_.begin(); resIter != sigIncohResonances_.end(); ++resIter ) {
+		(*resIter)->initialise();
+
+		// Check if this resonance has floating parameters
+		// Append all unique parameters to our list
+		const std::vector<LauParameter*>& resPars = (*resIter)->getFloatingParameters();
+
+		for ( std::vector<LauParameter*>::const_iterator parIter = resPars.begin(); parIter != resPars.end(); ++parIter ) {
+			if ( uniqueResPars.insert( *parIter ).second ) {
+				// This parameter has not already been added to
+				// the list of unique ones.  Add it, its value
+				// and its associated resonance ID to the
+				// appropriate lists.
+				resonancePars_.push_back( *parIter );
+				resonanceParValues_.push_back( (*parIter)->value() );
+				std::vector<UInt_t> resIndices( 1, resIndex );
+				resonanceParResIndex_.push_back( resIndices );
+			} else {
+				// This parameter has already been added to the
+				// list of unique ones.  However, we still need
+				// to indicate that this resonance should be
+				// associated with it.
+				std::vector<LauParameter*>::const_iterator uniqueParIter = resonancePars_.begin();
+				std::vector<std::vector<UInt_t> >::iterator indicesIter = resonanceParResIndex_.begin();
+				while( (*uniqueParIter) != (*parIter) ) {
+					++uniqueParIter;
+					++indicesIter;
+				}
+				( *indicesIter ).push_back( resIndex );
+			}
+		}
+
+		++resIndex;
+	}
+
 	if ( resonancePars_.empty() ) {
 		recalcNormalisation_ = kFALSE;
 	} else {
@@ -289,7 +337,7 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 	// Print summary of what we have so far to screen
 	this->initSummary();
 
-	if ( nAmp_ == 0 ) {
+	if ( nAmp_+nIncohAmp_ == 0 ) {
 		std::cout << "INFO in LauIsobarDynamics::initialise : No contributions to DP model, not performing normalisation integrals." << std::endl;
 	} else {
 
@@ -299,7 +347,7 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 		// Since this is the initialisation, we need to calculate everything for every resonance
 		integralsToBeCalculated_.clear();
-		for ( UInt_t i(0); i < nAmp_; ++i ) {
+		for ( UInt_t i(0); i < nAmp_+nIncohAmp_; ++i ) {
 			integralsToBeCalculated_.insert(i);
 		}
 
@@ -324,9 +372,10 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 	std::cout<<"INFO in LauIsobarDynamics::initialise : Summary of the integrals:"<<std::endl;
 
-	for (UInt_t i = 0; i < nAmp_; i++) {
+	for (UInt_t i = 0; i < nAmp_+nIncohAmp_; i++) {
 		std::cout<<" fNorm["<<i<<"] = "<<fNorm_[i]<<std::endl;
 		std::cout<<" fSqSum["<<i<<"] = "<<fSqSum_[i]<<std::endl;
+		std::cout<<" fSqEffSum["<<i<<"] = "<<fSqEffSum_[i]<<std::endl;
 	}
 
 	for (UInt_t i = 0; i < nAmp_; i++) {
@@ -351,6 +400,10 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 		for (UInt_t j = i; j < nAmp_; j++) {
 			std::cout<<"INFO in LauIsobarDynamics::initialise : Initial fit fraction for amplitude ("<<i<<","<<j<<") = "<<fitFrac_[i][j].genValue()<<std::endl;
 		}
+	}
+
+	for (UInt_t i = 0; i < nIncohAmp_; i++) {
+		std::cout<<"INFO in LauIsobarDynamics::initialise : Initial fit fraction for incoherent amplitude ("<<i<<","<<i<<") = "<<fitFrac_[i+nAmp_][i+nAmp_].genValue()<<std::endl;
 	}
 
 	std::cout<<"INFO in LauIsobarDynamics::initialise : Initial efficiency = "<<meanDPEff_.initValue()<<std::endl;
@@ -378,6 +431,12 @@ void LauIsobarDynamics::initSummary()
 		}
 	}
 
+	for (i = 0; i < nIncohAmp_; i++) {
+		if (incohResPairAmp_[i] == 1) {
+			std::cout<<"                                       : "<<incohResTypAmp_[i]<<" (incoherent) to "<<name2<<", "<< name3<<std::endl;
+		}
+	}
+
 	std::cout<<std::endl;
 
 	std::cout<<"                                       : In tracks 1 and 3:"<<std::endl;
@@ -387,12 +446,24 @@ void LauIsobarDynamics::initSummary()
 		}
 	}
 
+	for (i = 0; i < nIncohAmp_; i++) {
+		if (incohResPairAmp_[i] == 2) {
+			std::cout<<"                                       : "<<incohResTypAmp_[i]<<" (incoherent) to "<<name1<<", "<< name3<<std::endl;
+		}
+	}
+
 	std::cout<<std::endl;
 
 	std::cout<<"                                       : In tracks 1 and 2:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 3) {
 			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name1<<", "<< name2<<std::endl;
+		}
+	}
+
+	for (i = 0; i < nIncohAmp_; i++) {
+		if (incohResPairAmp_[i] == 3) {
+			std::cout<<"                                       : "<<incohResTypAmp_[i]<<" (incoherent) to "<<name1<<", "<< name2<<std::endl;
 		}
 	}
 
@@ -409,13 +480,15 @@ void LauIsobarDynamics::initSummary()
 
 void LauIsobarDynamics::initialiseVectors()
 {
-	fSqSum_.clear();     fSqSum_.resize(nAmp_);
+	fSqSum_.clear();     fSqSum_.resize(nAmp_+nIncohAmp_);
+	fSqEffSum_.clear();  fSqEffSum_.resize(nAmp_+nIncohAmp_);
 	fifjEffSum_.clear(); fifjEffSum_.resize(nAmp_);
 	fifjSum_.clear();    fifjSum_.resize(nAmp_);
 	ff_.clear();         ff_.resize(nAmp_);
-	fNorm_.clear();      fNorm_.resize(nAmp_);
-	fitFrac_.clear();    fitFrac_.resize(nAmp_);
-	fitFracEffUnCorr_.clear();    fitFracEffUnCorr_.resize(nAmp_);
+	incohInten_.clear(); incohInten_.resize(nIncohAmp_);
+	fNorm_.clear();      fNorm_.resize(nAmp_+nIncohAmp_);
+	fitFrac_.clear();    fitFrac_.resize(nAmp_+nIncohAmp_);
+	fitFracEffUnCorr_.clear();    fitFracEffUnCorr_.resize(nAmp_+nIncohAmp_);
 
 	LauComplex null(0.0, 0.0);
 
@@ -425,12 +498,27 @@ void LauIsobarDynamics::initialiseVectors()
 		ff_[i] = null;
 		fifjEffSum_[i].resize(nAmp_);
 		fifjSum_[i].resize(nAmp_);
-		fitFrac_[i].resize(nAmp_);
-		fitFracEffUnCorr_[i].resize(nAmp_);
+		fitFrac_[i].resize(nAmp_+nIncohAmp_);
+		fitFracEffUnCorr_[i].resize(nAmp_+nIncohAmp_);
 
 		for (UInt_t j = 0; j < nAmp_; j++) {
 			fifjEffSum_[i][j] = null;
 			fifjSum_[i][j] = null;
+			fitFrac_[i][j].valueAndRange(0.0, -100.0, 100.0);
+			fitFracEffUnCorr_[i][j].valueAndRange(0.0, -100.0, 100.0);
+		}
+		for (UInt_t j = nAmp_; j < nAmp_+nIncohAmp_; j++) {
+			fitFrac_[i][j].valueAndRange(0.0, -100.0, 100.0);
+			fitFracEffUnCorr_[i][j].valueAndRange(0.0, -100.0, 100.0);
+		}
+	}
+	for (UInt_t i = nAmp_; i < nAmp_+nIncohAmp_; i++) {
+		fSqSum_[i] = 0.0; fNorm_[i] = 0.0;
+		incohInten_[i-nAmp_] = 0.0;
+		fitFrac_[i].resize(nAmp_+nIncohAmp_);
+		fitFracEffUnCorr_[i].resize(nAmp_+nIncohAmp_);
+
+		for (UInt_t j = 0; j < nAmp_+nIncohAmp_; j++) {
 			fitFrac_[i][j].valueAndRange(0.0, -100.0, 100.0);
 			fitFracEffUnCorr_[i][j].valueAndRange(0.0, -100.0, 100.0);
 		}
@@ -497,6 +585,13 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 	getChar << std::endl;
 
+	// Similar to fSqSum, but with the efficiency term included.
+	for (i = 0; i < nAmp_; i++) {
+		getChar << fSqEffSum_[i] << " ";
+	}
+
+	getChar << std::endl;
+
 	// Write out the f_i*f_j_conj*eff values = resAmp_i*resAmp_j_conj*eff.
 	// Note that only the top half of the i*j "matrix" is required, as it
 	// is symmetric w.r.t i, j.
@@ -513,6 +608,47 @@ void LauIsobarDynamics::writeIntegralsFile()
 		for (j = i; j < nAmp_; j++) {
 			getChar << fifjSum_[i][j] << " ";
 		}
+	}
+
+	getChar << std::endl;
+
+	// Write out number of incoherent resonances in the Dalitz plot model
+	getChar << nIncohAmp_ << std::endl;
+
+	// Write out the incoherent resonances
+	for (i = 0; i < nIncohAmp_; i++) {
+		getChar << incohResTypAmp_[i] << " ";
+	}
+
+	getChar << std::endl;
+
+	// Write out the incoherent resonance model types (BW, RelBW etc...)
+	for (i = 0; i < nIncohAmp_; i++) {
+		LauAbsResonance* theResonance = sigIncohResonances_[i];
+		Int_t resModelInt = theResonance->getResonanceModel();
+		getChar << resModelInt << " ";
+	}
+
+	getChar << std::endl;
+
+	// Write out the track pairings for each incoherent resonance. This is specified
+	// by the resPairAmpInt integer in the addIncohResonance function.
+	for (i = 0; i < nIncohAmp_; i++) {
+		getChar << incohResPairAmp_[i] << " ";
+	}
+
+	getChar << std::endl;
+
+	// Write out the fSqSum = |ff|^2, where |ff|^2 = incohResAmp()
+	for (i = nAmp_; i < nAmp_+nIncohAmp_; i++) {
+		getChar << fSqSum_[i] << " ";
+	}
+
+	getChar << std::endl;
+
+	// Similar to fSqSum, but with the efficiency term included.
+	for (i = nAmp_; i < nAmp_+nIncohAmp_; i++) {
+		getChar << fSqEffSum_[i] << " ";
 	}
 
 	getChar << std::endl;
@@ -561,7 +697,6 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	// Set the resonance name and what track is the bachelor
 	TString resonanceName = theResonance->getResonanceName();
 	resTypAmp_.push_back(resonanceName);
-	resIntAmp_.push_back(resonanceMaker.resTypeInt(resonanceName));
 
 	// Always force the non-resonant amplitude pair to have resPairAmp = 0
 	// in case the user chooses the wrong number.
@@ -580,6 +715,47 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	sigResonances_.push_back(theResonance);
 
 	std::cout<<"INFO in LauIsobarDynamics::addResonance : Successfully added resonance. Total number of resonances so far = "<<nAmp_<<std::endl;
+
+	return theResonance;
+}
+
+LauAbsResonance* LauIsobarDynamics::addIncoherentResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType)
+{
+	// Function to add an incoherent resonance in a Dalitz plot.
+	// No check is made w.r.t flavour and charge conservation rules, and so
+	// the user is responsible for checking the internal consistency of
+	// their function statements with these laws. For example, the program
+	// will not prevent the user from asking for a rho resonance in a K-pi
+	// pair or a K* resonance in a pi-pi pair.
+	// However, to assist the user, a summary of the resonant structure requested
+	// by the user is printed before the program runs. It is important to check this
+	// information when you first define your Dalitz plot model before doing
+	// any fitting/generating.
+	// Arguments are: resonance name, integer to specify the resonance track pairing
+	// (1 => m_23, 2 => m_13, 3 => m_12), i.e. the bachelor track number.
+	// The third argument resType specifies the shape of the resonance 
+	// Gaussian (GaussIncoh), for example.
+
+	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
+	LauAbsIncohRes *theResonance = (LauAbsIncohRes*)resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType);
+
+	if (theResonance == 0) {
+		std::cerr<<"ERROR in LauIsobarDynamics::addIncohResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
+		return 0;
+	}
+
+	// Set the resonance name and what track is the bachelor
+	TString resonanceName = theResonance->getResonanceName();
+	incohResTypAmp_.push_back(resonanceName);
+	incohResPairAmp_.push_back(resPairAmpInt);
+
+	// Increment the number of resonance amplitudes we have so far
+	++nIncohAmp_;
+
+	// Finally, add the resonance object to the internal array
+	sigIncohResonances_.push_back(theResonance);
+
+	std::cout<<"INFO in LauIsobarDynamics::addIncohResonance : Successfully added incoherent resonance. Total number of incoherent resonances so far = "<<nIncohAmp_<<std::endl;
 
 	return theResonance;
 }
@@ -633,7 +809,6 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 		LauAbsResonance* prodPole = new LauKMatrixProdPole(poleName, poleIndex, resPairAmpInt, thePropagator, daughters_);
 
 		resTypAmp_.push_back(poleName);
-		resIntAmp_.push_back(0);
 		resPairAmp_.push_back(resPairAmpInt);
 
 		nAmp_++;
@@ -681,7 +856,6 @@ void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString&
 		LauAbsResonance* prodSVP = new LauKMatrixProdSVP(SVPName, channelIndex, resPairAmpInt, thePropagator, daughters_);
 
 		resTypAmp_.push_back(SVPName);
-		resIntAmp_.push_back(0);
 		resPairAmp_.push_back(resPairAmpInt);
 
 		++nAmp_;
@@ -718,6 +892,17 @@ LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name)
 		}
 	}
 
+	for (std::vector<LauAbsIncohRes*>::iterator iter=sigIncohResonances_.begin(); iter!=sigIncohResonances_.end(); ++iter) {
+		theResonance = (*iter);
+		if (theResonance != 0) {
+			TString resString = theResonance->getResonanceName();
+			resString.ToLower();
+			if (resString.BeginsWith(testName, TString::kExact)) {
+				return theResonance;
+			}
+		}
+	}
+
 	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<std::endl;
 	return 0;
 }
@@ -729,6 +914,17 @@ const LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name) con
 	const LauAbsResonance* theResonance(0);
 
 	for (std::vector<LauAbsResonance*>::const_iterator iter=sigResonances_.begin(); iter!=sigResonances_.end(); ++iter) {
+		theResonance = (*iter);
+		if (theResonance != 0) {
+			TString resString = theResonance->getResonanceName();
+			resString.ToLower();
+			if (resString.BeginsWith(testName, TString::kExact)) {
+				return theResonance;
+			}
+		}
+	}
+
+	for (std::vector<LauAbsIncohRes*>::const_iterator iter=sigIncohResonances_.begin(); iter!=sigIncohResonances_.end(); ++iter) {
 		theResonance = (*iter);
 		if (theResonance != 0) {
 			TString resString = theResonance->getResonanceName();
@@ -755,22 +951,6 @@ void LauIsobarDynamics::removeCharge(TString& string) const
 	}
 }
 
-void LauIsobarDynamics::changeResonance(const TString& resName, Double_t newMass, Double_t newWidth, Int_t newSpin)
-{
-	// Change the mass, width or spin of a resonance.
-
-	if (newMass > 0.0 || newWidth > 0.0 || newSpin > -1) {
-		std::cerr<<"ERROR in LauIsobarDynamics::changeResonance : mass, width and spin parameters all out of range."<<std::endl;
-		return;
-	}
-
-	LauAbsResonance* theRes = this->findResonance(resName);
-	if (theRes != 0) {
-		theRes->changeResonance(newMass, newWidth, newSpin);
-	}
-
-}
-
 void LauIsobarDynamics::calcDPNormalisation()
 {
 	if (!normalizationSchemeDone_) {
@@ -782,7 +962,7 @@ void LauIsobarDynamics::calcDPNormalisation()
 		this->calcDPPartialIntegral( *it );
 	}
 
-	for (UInt_t i = 0; i < nAmp_; ++i) {
+	for (UInt_t i = 0; i < nAmp_+nIncohAmp_; ++i) {
 		fNorm_[i] = 0.0;
 		if (fSqSum_[i] > 0.0) {fNorm_[i] = TMath::Sqrt(1.0/(fSqSum_[i]));}
 	}
@@ -831,6 +1011,27 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		}
 	}
 
+	for ( std::vector<LauAbsIncohRes*>::const_iterator iter = sigIncohResonances_.begin(); iter != sigIncohResonances_.end(); ++iter ) {
+		Double_t width = (*iter)->getWidth();
+		if ( width > 0.020 || width == 0.0 ) { continue; }
+		Double_t mass = (*iter)->getMass();
+		Int_t pair = (*iter)->getPairInt();
+		TString name = (*iter)->getResonanceName();
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: "<<name<<", mass = "<<mass<<", width = "<<width<<", pair int = "<<pair<<std::endl;
+		if ( pair == 1 ) {
+			if ( mass < minm23 || mass > maxm23 ){ continue; }
+			m23NarrowRes.insert( std::make_pair(width,mass) );
+		} else if ( pair == 2 ) {
+			if ( mass < minm13 || mass > maxm13 ){ continue; }
+			m13NarrowRes.insert( std::make_pair(width,mass) );
+		} else if ( pair == 3 ) {
+			if ( mass < minm12 || mass > maxm12 ){ continue; }
+			m12NarrowRes.insert( std::make_pair(width,mass) );
+		} else {
+			std::cerr<<"WARNING in LauIsobarDynamics::calcDPNormalisationScheme : strange pair integer, "<<pair<<", for resonance \""<<(*iter)->getResonanceName()<<std::endl;
+		}
+	}
+
 	// Find the narrowest resonance in each mass pairing
 	const Bool_t e12 = m12NarrowRes.empty();
 	const Bool_t e13 = m13NarrowRes.empty();
@@ -852,14 +1053,14 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		// If we have no narrow resonances just integrate the whole
 		// DP with the standard bin widths
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..."<<std::endl;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	} else if ( ! e12 ) {
 		// If we have a narrow resonance on the diagonal then we'll have to
 		// just use a narrow bin width over the whole DP (1/10 of the width
 		// of the narrowest resonance in any mass pair)
 		m13BinWidth = m23BinWidth = 10.0*TMath::Min( w12, TMath::Min( w13, w23 ) );
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole Dalitz plot with bin width of "<<m13BinWidth<<" GeV/c2..."<<std::endl;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	} else if ( s13==1 && e23 ) {
 		// We have a single narrow resonance in m13
 		// Divide the plot into 3 regions: the resonance band and
@@ -873,15 +1074,15 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		// as a separate region
 		if ( resMin < (minm13+50.0*m13BinWidth_) ) {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m13, close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m13, dividing Dalitz plot into three regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin, resMax, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin, resMax, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		}
 	} else if ( s13==2 && e23 ) {
 		// We have a two narrow resonances in m13
@@ -905,34 +1106,34 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		if ( res1Min < (minm13+50.0*m13BinWidth_) ) {
 			if ( res1Max > res2Min ) {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found in m13, both close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m13BinWidth = TMath::Min(res1Width,res2Width)/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			} else {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found in m13, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m13BinWidth = res1Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m13BinWidth = res2Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			}
 		} else {
 			if ( res1Max > res2Min ) {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found close together in m13, dividing Dalitz plot into three regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m13BinWidth = TMath::Min(res1Width,res2Width)/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			} else {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found in m13, dividing Dalitz plot into five regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, res1Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Max, res2Min, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Max, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m13BinWidth = res1Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Min, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res1Min, res1Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m13BinWidth = res2Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(res2Min, res2Max, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			}
 		}
 	} else if ( s23==1 && e13 ) {
@@ -948,15 +1149,15 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		// as a separate region
 		if ( resMin < (minm23+50.0*m23BinWidth_) ) {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m23, close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, resMax, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, resMax, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m23, dividing Dalitz plot into three regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, resMin, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, resMin, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMin, resMax, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMin, resMax, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		}
 	} else if ( s23==2 && e13 ) {
 		// We have a two narrow resonances in m23
@@ -980,34 +1181,34 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		if ( res1Min < (minm23+50.0*m23BinWidth_) ) {
 			if ( res1Max > res2Min ) {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found in m23, both close to threshold, dividing Dalitz plot into two regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m23BinWidth = TMath::Min(res1Width,res2Width)/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			} else {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found in m23, one close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m23BinWidth = res1Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res1Max, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res1Max, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m23BinWidth = res2Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			}
 		} else {
 			if ( res1Max > res2Min ) {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found close together in m23, dividing Dalitz plot into three regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m23BinWidth = TMath::Min(res1Width,res2Width)/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Min, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Min, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			} else {
 				std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Two narrow resonances found in m23, dividing Dalitz plot into five regions..."<<std::endl;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth, precision, nAmp_));
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, res1Min, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Max, res2Min, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Max, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m23BinWidth = res1Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Min, res1Max, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res1Min, res1Max, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 				m23BinWidth = res2Width/100.0;
-				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_));
+				dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, res2Min, res2Max, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			}
 		}
 	} else if ( s13==1 && s23==1 ) {
@@ -1030,61 +1231,61 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m13 and one in m23, both close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else if ( resMin13 < (minm13+50.0*m13BinWidth_) ) {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m13, close to threshold, and one in m23, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else if ( resMin23 < (minm23+50.0*m23BinWidth_) ) {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in m23, close to threshold, and one in m13, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One narrow resonance found in both m13 and m23, neither close to threshold, dividing Dalitz plot into nine regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		}
 	} else if ( e23 && s13>1 ) {
 		// We have multiple narrow resonances in m13 only.
@@ -1100,9 +1301,9 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			}
 		}
 		Double_t resMax = mass + 5.0*width;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		m13BinWidth = w13;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	} else if ( e13 && s23>1 ) {
 		// We have multiple narrow resonances in m23 only.
 		// Divide the plot into 2 regions: threshold to the most
@@ -1117,9 +1318,9 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			}
 		}
 		Double_t resMax = mass + 5.0*width;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, resMax, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		m23BinWidth = w23;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, resMax, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, resMax, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	} else if ( s13==1 && s23>1 ) {
 		// We've got a single narrow resonance in m13 and multiple
 		// narrow resonances in m23.  Divide the plot into 6 regions.
@@ -1143,32 +1344,32 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Multiple narrow resonances found in m23 and one in m13, close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Multiple narrow resonances found in m23 and one in m13, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMin13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMin13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		}
 	} else if ( s13>1 && s23==1 ) {
 		// We've got a single narrow resonance in m23 and multiple
@@ -1193,30 +1394,30 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Multiple narrow resonances found in m13 and one in m23, close to threshold, dividing Dalitz plot into four regions..."<<std::endl;
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		} else {
 			std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Multiple narrow resonances found in m13 and one in m23, not close to threshold, dividing Dalitz plot into six regions..."<<std::endl;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = m13BinWidth_;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = m23BinWidth_;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_));
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMin23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 			m13BinWidth = w13;
 			m23BinWidth = w23;
-			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+			dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMin23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		}
 	} else {
 		// We've got multiple narrow resonances in both m13 and m23.
@@ -1244,16 +1445,16 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 
 		m13BinWidth = m13BinWidth_;
 		m23BinWidth = m23BinWidth_;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		m13BinWidth = m13BinWidth_;
 		m23BinWidth = w23;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(resMax13, maxm13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		m13BinWidth = w13;
 		m23BinWidth = m23BinWidth_;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, resMax23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 		m13BinWidth = w13;
 		m23BinWidth = w23;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_));
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, resMax13, minm23, resMax23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	}
 
 	normalizationSchemeDone_ = kTRUE;
@@ -1330,6 +1531,20 @@ void LauIsobarDynamics::calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, 
 		}
 	}
 
+	for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+
+		if ( integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd ) {
+			// Calculate the dynamics for this resonance
+			this->incohResAmp(iAmp);
+
+			// Store the new value in the integration info object
+			intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+		} else {
+			// Retrieve the cached value of the amplitude
+			incohInten_[iAmp] = intInfo->getIntensity( m13Point, m23Point, iAmp );
+		}
+	}
+
 	// If we haven't cached the data, then we need to find out the efficiency.
 	eff_ = this->retrieveEfficiency();
 
@@ -1344,7 +1559,11 @@ void LauIsobarDynamics::calculateAmplitudes()
 	for ( ; iter != intEnd; ++iter) {
 
 		// Calculate the dynamics for this resonance
-		this->resAmp(*iter);
+		if(*iter < nAmp_) {
+			this->resAmp(*iter);
+		} else {
+			this->incohResAmp(*iter-nAmp_);
+		}
 	}
 
 	// If we haven't cached the data, then we need to find out the efficiency.
@@ -1374,6 +1593,19 @@ void LauIsobarDynamics::calcTotalAmp(const Bool_t useEff)
 	// |Sum of partial amplitudes|^2
 	ASq_ = totAmp_.abs2();
 
+	for (UInt_t i = 0; i < nIncohAmp_; ++i) {
+		
+		// Get the partial complex amplitude - (mag, phase)
+		ATerm = Amp_[i+nAmp_];
+
+		// Scale this contribution by its relative normalisation w.r.t. the whole dynamics
+		ATerm.rescale(fNorm_[i+nAmp_]);
+
+		// Add this partial amplitude to the sum
+		ASq_ += ATerm.abs2()*incohInten_[i];
+
+	}
+
 	// Apply the efficiency correction for this event.
 	// Multiply the amplitude squared sum by the DP efficiency
 	if ( useEff ) {
@@ -1399,6 +1631,7 @@ void LauIsobarDynamics::addGridPointToIntegrals(const Double_t weight)
 		// Add the dynamical amplitude squared for this resonance.
 		Double_t fSqVal = ff_[i].abs2();
 		fSqSum_[i] += fSqVal*weight;
+		fSqEffSum_[i] += fSqVal*effWeight;
 
 		for (UInt_t j = i; j < nAmp_; ++j) {
 
@@ -1410,6 +1643,13 @@ void LauIsobarDynamics::addGridPointToIntegrals(const Double_t weight)
 			fifjSumTerm.rescale(weight);
 			fifjSum_[i][j] += fifjSumTerm;
 		}
+	}
+	for (UInt_t i = 0; i < nIncohAmp_; ++i) {
+
+		// Add the dynamical amplitude squared for this resonance.
+		Double_t fSqVal = incohInten_[i];
+		fSqSum_[i+nAmp_] += fSqVal*weight;
+		fSqEffSum_[i+nAmp_] += fSqVal*effWeight;
 	}
 }
 
@@ -1428,15 +1668,6 @@ void LauIsobarDynamics::resAmp(const UInt_t index)
 
 	if (sigResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::resAmp : Couldn't retrieve valid resonance with index = "<<index<<std::endl;
-		ff_[index] = LauComplex(0.0, 0.0);
-		return;
-	}
-
-	// Get the integer index of the resonance.
-	// TODO - is this check really needed?
-	const Int_t resInt = resIntAmp_[index];
-	if ( resInt < 0 || resInt >= static_cast<Int_t>(LauResonanceMaker::get().getNResDefMax()) ) {
-		std::cerr<<"ERROR in LauIsobarDynamics::resAmp : Probably bad resonance name."<<std::endl;
 		ff_[index] = LauComplex(0.0, 0.0);
 		return;
 	}
@@ -1483,6 +1714,75 @@ void LauIsobarDynamics::resAmp(const UInt_t index)
 	}
 }
 
+void LauIsobarDynamics::incohResAmp(const UInt_t index)
+{
+	// Routine to calculate the resonance dynamics (amplitude)
+	// using the appropriate Breit-Wigner/Form Factors.
+
+	if ( index >= nIncohAmp_ ) {
+		std::cerr<<"ERROR in LauIsobarDynamics::incohResAmp : index = "<<index<<" is not within the range 0 to "<<nIncohAmp_-1<<std::endl;
+		return;
+	}
+
+	// Get the signal resonance from the stored vector
+	LauAbsIncohRes* sigResonance = sigIncohResonances_[index];
+
+	if (sigResonance == 0) {
+		std::cerr<<"ERROR in LauIsobarDynamics::incohResAmp : Couldn't retrieve valid incoherent resonance with index = "<<index<<std::endl;
+		incohInten_[index] = 0.0;
+		return;
+	}
+
+	LauComplex ff = sigResonance->amplitude(kinematics_);
+	incohInten_[index] = sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+	// If we have a symmetrical Dalitz plot, flip the m_13^2 and m_23^2
+	// variables, recalculate the dynamics, and combine both contributions.
+	if (symmetricalDP_ == kTRUE) {
+		kinematics_->flipAndUpdateKinematics();
+
+		ff = sigResonance->amplitude(kinematics_);
+		incohInten_[index] += sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+		// Flip the m_13^2 and m_23^2 variables back to their original values
+		kinematics_->flipAndUpdateKinematics();
+	}
+
+	// If we have a fully symmetric DP we need to calculate the amplitude at 6 points
+	else if (fullySymmetricDP_ == kTRUE) {
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff = sigResonance->amplitude(kinematics_);
+		incohInten_[index] += sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff = sigResonance->amplitude(kinematics_);
+		incohInten_[index] += sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+		// rotate, flip and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+		ff = sigResonance->amplitude(kinematics_);
+		incohInten_[index] += sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff = sigResonance->amplitude(kinematics_);
+		incohInten_[index] += sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		ff = sigResonance->amplitude(kinematics_);
+		incohInten_[index] += sigResonance->intensityFactor(kinematics_)*ff.abs2();
+
+		// rotate and flip to get us back to where we started
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+	}
+
+}
+
 void LauIsobarDynamics::setFFTerm(const UInt_t index, const Double_t realPart, const Double_t imagPart)
 {
 	// Function to set the internal ff term (normally calculated using resAmp(index).
@@ -1492,6 +1792,17 @@ void LauIsobarDynamics::setFFTerm(const UInt_t index, const Double_t realPart, c
 	}
 
 	ff_[index].setRealImagPart( realPart, imagPart );
+}
+
+void LauIsobarDynamics::setIncohIntenTerm(const UInt_t index, const Double_t value)
+{
+	// Function to set the internal incoherent intensity term (normally calculated using incohResAmp(index).
+	if ( index >= nIncohAmp_ ) {
+		std::cerr<<"ERROR in LauIsobarDynamics::setFFTerm : index = "<<index<<" is not within the range 0 to "<<nIncohAmp_-1<<std::endl;
+		return;
+	}
+
+	incohInten_[index] = value;
 }
 
 void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
@@ -1522,13 +1833,19 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 	}
 
 	for (i = 0; i < nAmp_; i++) {
-		for (j = i+1; j < nAmp_; j++) {
+		for (j = i+1; j < nAmp_+nIncohAmp_; j++) {
 			// Calculate the cross-terms
 			TString name = "A"; name += i; name += "A"; name += j; name += "_FitFrac";
 			fitFrac_[i][j].name(name);
 
 			name += "EffUnCorr";
 			fitFracEffUnCorr_[i][j].name(name);
+
+			if(j >= nAmp_) {
+				//Set off-diagonal incoherent terms to zero
+				fitFrac_[i][j] = 0.;
+				fitFracEffUnCorr_[i][j] = 0.;
+			}
 
 			LauComplex AmpjConj = Amp_[j].conj();
 			LauComplex AmpTerm = Amp_[i]*AmpjConj;
@@ -1541,6 +1858,39 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 
 			fitFrac_[i][j] = crossTerm;
 			fitFracEffUnCorr_[i][j] = crossEffTerm;
+		}
+	}
+
+	for (i = nAmp_; i < nAmp_+nIncohAmp_; i++) {
+
+		// Calculate the incoherent terms
+		TString name = "A"; name += i; name += "Sq_FitFrac";
+		fitFrac_[i][i].name(name);
+
+		name += "EffUnCorr";
+		fitFracEffUnCorr_[i][i].name(name);
+
+		Double_t sumTerm = Amp_[i].abs2()*fSqSum_[i]*fNorm_[i]*fNorm_[i];
+		fifjTot += sumTerm;
+
+		Double_t sumEffTerm = Amp_[i].abs2()*fSqEffSum_[i]*fNorm_[i]*fNorm_[i];
+		fifjEffTot += sumEffTerm;
+
+		fitFrac_[i][i] = sumTerm;
+		fitFracEffUnCorr_[i][i] = sumEffTerm;
+	}
+
+	for (i = nAmp_; i < nAmp_+nIncohAmp_; i++) {
+		for (j = i+1; j < nAmp_+nIncohAmp_; j++) {
+			//Set off-diagonal incoherent terms to zero
+			TString name = "A"; name += i; name += "A"; name += j; name += "_FitFrac";
+			fitFrac_[i][j].name(name);
+
+			name += "EffUnCorr";
+			fitFracEffUnCorr_[i][j].name(name);
+
+			fitFrac_[i][j] = 0.;
+			fitFracEffUnCorr_[i][j] = 0.;
 		}
 	}
 
@@ -1558,8 +1908,8 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 	}
 
 	// Now divide the fitFraction sums by the overall integral
-	for (i = 0; i < nAmp_; i++) {
-		for (j = i; j < nAmp_; j++) {
+	for (i = 0; i < nAmp_+nIncohAmp_; i++) {
+		for (j = i; j < nAmp_+nIncohAmp_; j++) {
 			// Get the actual fractions by dividing by the total DP rate
 			fitFrac_[i][j] /= fifjTot;
 			fitFracEffUnCorr_[i][j] /= fifjEffTot;
@@ -1695,6 +2045,10 @@ Double_t LauIsobarDynamics::calcSigDPNorm()
 		}
 	}
 
+	for (UInt_t i = 0; i < nIncohAmp_; i++) {
+		DPNorm_ += Amp_[i+nAmp_].abs2()*fSqEffSum_[i+nAmp_]*fNorm_[i+nAmp_]*fNorm_[i+nAmp_];
+	}
+
 	return DPNorm_;
 }
 
@@ -1705,7 +2059,7 @@ Bool_t LauIsobarDynamics::generate()
 
 	// We need to make sure to calculate everything for every resonance
 	integralsToBeCalculated_.clear();
-	for ( UInt_t i(0); i < nAmp_; ++i ) {
+	for ( UInt_t i(0); i < nAmp_+nIncohAmp_; ++i ) {
 		integralsToBeCalculated_.insert(i);
 	}
 
@@ -1720,7 +2074,7 @@ Bool_t LauIsobarDynamics::generate()
 
 		// If we're in a symmetrical DP then we should only generate events in one half
 		// TODO - what do we do for fully symmetric?
-		if ( symmetricalDP_ && m13Sq > m23Sq ) {
+		if ( symmetricalDP_ && !fullySymmetricDP_ && m13Sq > m23Sq ) {
 			Double_t tmpSq = m13Sq;
 			m13Sq = m23Sq;
 			m23Sq = tmpSq;
@@ -1819,8 +2173,12 @@ void LauIsobarDynamics::calcLikelihoodInfo(const UInt_t iEvt)
 	// use realAmp and imagAmp to create the resonance amplitudes
 	const std::vector<Double_t>& realAmp = currentEvent_->retrieveRealAmp();
 	const std::vector<Double_t>& imagAmp = currentEvent_->retrieveImagAmp();
+	const std::vector<Double_t>& incohInten = currentEvent_->retrieveIncohIntensities();
 	for (UInt_t i = 0; i < nAmp_; i++) {
 		this->setFFTerm(i, realAmp[i], imagAmp[i]);
+	}
+	for (UInt_t i = 0; i < nIncohAmp_; i++) {
+		this->setIncohIntenTerm(i, incohInten[i]);
 	}
 
 	// Update the dynamics - calculates totAmp_ and then ASq_ = totAmp_.abs2() * eff_
@@ -1884,6 +2242,7 @@ void LauIsobarDynamics::modifyDataTree()
 
 		std::vector<Double_t>& realAmp = currentEvent_->retrieveRealAmp();
 		std::vector<Double_t>& imagAmp = currentEvent_->retrieveImagAmp();
+		std::vector<Double_t>& incohInten = currentEvent_->retrieveIncohIntensities();
 
 		const Double_t m13Sq = currentEvent_->retrievem13Sq();
 		const Double_t m23Sq = currentEvent_->retrievem23Sq();
@@ -1893,8 +2252,12 @@ void LauIsobarDynamics::modifyDataTree()
 
 		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
 			const UInt_t i = *iter;
-			realAmp[i] = ff_[i].re();
-			imagAmp[i] = ff_[i].im();
+			if(*iter < nAmp_) {
+				realAmp[i] = ff_[i].re();
+				imagAmp[i] = ff_[i].im();
+			} else {
+				incohInten[i-nAmp_] = incohInten_[i-nAmp_];
+			}
 		}
 	}
 }
@@ -1906,7 +2269,7 @@ void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 
 	// Since this is the first caching, we need to make sure to calculate everything for every resonance
 	integralsToBeCalculated_.clear();
-	for ( UInt_t i(0); i < nAmp_; ++i ) {
+	for ( UInt_t i(0); i < nAmp_+nIncohAmp_; ++i ) {
 		integralsToBeCalculated_.insert(i);
 	}
 
@@ -1981,6 +2344,7 @@ void LauIsobarDynamics::fillDataTree(const LauFitDataTree& inputFitTree)
 		data_[iEvt]->storeJacobian(jacobian);
 		data_[iEvt]->storeRealAmp(realAmp);
 		data_[iEvt]->storeImagAmp(imagAmp);
+		data_[iEvt]->storeIncohIntensities(incohInten_);
 	}
 }
 
@@ -2022,8 +2386,8 @@ Double_t LauIsobarDynamics::getEventWeight()
 void LauIsobarDynamics::updateCoeffs(const std::vector<LauComplex>& coeffs)
 {
 	// Check that the number of coeffs is correct
-	if (coeffs.size() != this->getnAmp()) {
-		std::cerr << "ERROR in LauIsobarDynamics::updateCoeffs : Expected " << this->getnAmp() << " but got " << coeffs.size() << std::endl;
+	if (coeffs.size() != this->getnTotAmp()) {
+		std::cerr << "ERROR in LauIsobarDynamics::updateCoeffs : Expected " << this->getnTotAmp() << " but got " << coeffs.size() << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 

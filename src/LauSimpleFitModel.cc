@@ -371,7 +371,7 @@ void LauSimpleFitModel::initialise()
 void LauSimpleFitModel::initialiseDPModels()
 {
 	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nAmp = sigDPModel_->getnAmp();
+	UInt_t nAmp = sigDPModel_->getnTotAmp();
 	if (nAmp != nSigComp_) {
 		std::cerr << "ERROR in LauSimpleFitModel::initialiseDPModels : Number of signal DP components with magnitude and phase set not right." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);

@@ -23,6 +23,7 @@
 #include "LauFlatteRes.hh"
 #include "LauFlatNR.hh"
 #include "LauModIndPartWave.hh"
+#include "LauGaussIncohRes.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauKappaRes.hh"
 #include "LauLASSRes.hh"
@@ -333,12 +334,28 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	neutral = new LauResonanceInfo("BelleNR",       0.0,      0.0,     0,      0           );
 	resInfo_.push_back( neutral );
+	positve = new LauResonanceInfo("BelleNR+",      0.0,      0.0,     0,      1           );
+	negatve = positve->createChargeConjugate();
+	resInfo_.push_back( positve );
+	resInfo_.push_back( negatve );
 	neutral = new LauResonanceInfo("BelleNR_Swave", 0.0,      0.0,     0,      0           );
 	resInfo_.push_back( neutral );
+	positve = new LauResonanceInfo("BelleNR_Swave+",0.0,      0.0,     0,      1           );
+	negatve = positve->createChargeConjugate();
+	resInfo_.push_back( positve );
+	resInfo_.push_back( negatve );
 	neutral = new LauResonanceInfo("BelleNR_Pwave", 0.0,      0.0,     1,      0           );
 	resInfo_.push_back( neutral );
+	positve = new LauResonanceInfo("BelleNR_Pwave+",0.0,      0.0,     1,      1           );
+	negatve = positve->createChargeConjugate();
+	resInfo_.push_back( positve );
+	resInfo_.push_back( negatve );
 	neutral = new LauResonanceInfo("BelleNR_Dwave", 0.0,      0.0,     2,      0           );
 	resInfo_.push_back( neutral );
+	positve = new LauResonanceInfo("BelleNR_Dwave+",0.0,      0.0,     2,      1           );
+	negatve = positve->createChargeConjugate();
+	resInfo_.push_back( positve );
+	resInfo_.push_back( negatve );
 	// Taylor expansion nonresonant model
 	neutral = new LauResonanceInfo("NRTaylor",      0.0,      0.0,     0,      0           );
 	resInfo_.push_back( neutral );
@@ -499,6 +516,13 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		std::cout<<"                                        : Using model independent partial wave lineshape. "<<std::endl;
 		theResonance =
 			new LauModIndPartWave(resInfo, resPairAmpInt, daughters);
+
+	} else if ( resType == LauAbsResonance::GaussIncoh ) {
+
+		// Incoherent Gaussian
+		std::cout<<"                                        : Using incoherent Gaussian lineshape. "<<std::endl;
+		theResonance =
+			new LauGaussIncohRes(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::BW ) {
 

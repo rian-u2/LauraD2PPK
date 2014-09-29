@@ -25,17 +25,17 @@
 namespace LauConstants {
 
 		//! Mass of charged D (GeV/c^2) 
-		const Double_t mD		= 1.8693;     
+		const Double_t mD		= 1.86961;     
 		//! Mass of neutral D (GeV/c^2)
-		const Double_t mD0		= 1.8645;     
+		const Double_t mD0		= 1.86484;
 		//! Mass of Ds (GeV/c^2)		
-		const Double_t mDs		= 1.96849;    
+		const Double_t mDs		= 1.96830;    
 		//! Mass of charged B (GeV/c^2)
-		const Double_t mB		= 5.2791;     
+		const Double_t mB		= 5.27926;
 		//! Mass of neutral B_d (GeV/c^2)
-		const Double_t mB0		= 5.2794;    
+		const Double_t mB0		= 5.27958;
 		//! Mass of neutral B_s (GeV/c^2)
-		const Double_t mBs0		= 5.3668;    
+		const Double_t mBs0		= 5.36677;
 		//! Mass of pi+- (GeV/c^2)			
 		const Double_t mPi		= 0.13957018; 
 		//! Mass of pi0 (GeV/c^2)
@@ -43,9 +43,9 @@ namespace LauConstants {
 		//! Mass of K+- (GeV/c^2)
 		const Double_t mK		= 0.493677; 
 		//! Mass of K0 (GeV/c^2)
-		const Double_t mK0		= 0.497648; 
+		const Double_t mK0		= 0.497614; 
 		//! Mass of eta (GeV/c^2)
-		const Double_t mEta		= 0.54775; 
+		const Double_t mEta		= 0.547862; 
 	    	//! Mass of eta' (GeV/c^2)
 	    	const Double_t mEtaPrime	= 0.95778;
 
@@ -75,13 +75,13 @@ namespace LauConstants {
 		const Double_t mEtaPrimeSq	= mEtaPrime*mEtaPrime;
 
 		//! Lifetime of the B+ in ps
-		const Double_t tauB		= 1.671; 
+		const Double_t tauB		= 1.638; 
 		//! Lifetime of the B0 in ps
-		const Double_t tauB0		= 1.536;  
+		const Double_t tauB0		= 1.519;  
 		//! Mass difference of the B_H and B_L
-		const Double_t deltaMd		= 0.502;  
+		const Double_t deltaMd		= 0.510;  
 		//! Angle beta of the unitarity triangle
-		const Double_t beta		= 21.7*TMath::DegToRad();  
+		const Double_t beta		= 21.50*TMath::DegToRad();  
 		//! Sine of twice the angle beta of the unitarity triangle
 		const Double_t sin2beta		= TMath::Sin(2.0*beta);  
 

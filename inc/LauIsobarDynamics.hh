@@ -30,6 +30,7 @@
 class LauCacheData;
 class LauDaughters;
 class LauAbsEffModel;
+class LauAbsIncohRes;
 class LauFitDataTree;
 class LauKMatrixPropagator;
 class LauDPPartialIntegralInfo;
@@ -99,6 +100,15 @@ class LauIsobarDynamics {
 		*/
 		LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
 
+		//! Add an incoherent resonance to the Dalitz plot
+		/*!
+		    \param [in] resName the name of the resonant particle
+		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
+		    \param [in] resType the model for the resonance dynamics
+		    \return the newly created resonance
+		*/
+		LauAbsResonance* addIncoherentResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
+
 		//! Define a new K-matrix Propagator
 		/*!
 		    \param [in] propName the name of the propagator
@@ -126,16 +136,6 @@ class LauIsobarDynamics {
 		    \param [in] channelIndex the index of the channel within the propagator
 		*/
 		void addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex);
-
-		//! Change the properties of a resonance particle within this model
-		/*!
-		    Note that parameters set to -1 are ignored.
-		    \param [in] resName the name of the resonance to modify
-		    \param [in] newMass the new mass for this resonance
-		    \param [in] newWidth the new width for this resonance
-		    \param [in] newSpin the new spin for this resonance
-		*/
-		void changeResonance(const TString& resName, Double_t newMass = -1.0, Double_t newWidth = -1.0, Int_t newSpin = -1);
 
 		//! Set the maximum value of A squared to be used in the accept/reject
 		/*!
@@ -401,11 +401,23 @@ class LauIsobarDynamics {
 		*/
 		inline const LauParArray& getFitFractionsEfficiencyUncorrected() const {return fitFracEffUnCorr_;}
 
-		//! Retrieve the number of amplitude components
+		//! Retrieve the total number of amplitude components
 		/*!
-		    \return the number of amplitude components
+		    \return the total number of amplitude components
 		*/
-		inline UInt_t getnAmp() const {return nAmp_;}
+		inline UInt_t getnTotAmp() const {return nAmp_+nIncohAmp_;}
+
+		//! Retrieve the number of coherent amplitude components
+		/*!
+		    \return the number of coherent amplitude components
+		*/
+		inline UInt_t getnCohAmp() const {return nAmp_;}
+
+		//! Retrieve the number of incoherent amplitude components
+		/*!
+		    \return the number of incoherent amplitude components
+		*/
+		inline UInt_t getnIncohAmp() const {return nIncohAmp_;}
 
 		//! Retrieve the normalisation factor for the log-likelihood function
 		/*!
@@ -509,6 +521,13 @@ class LauIsobarDynamics {
 		*/
 		void setFFTerm(const UInt_t index, const Double_t realPart, const Double_t imagPart);
 
+		//! Set the dynamic part of the intensity for a given incoherent amplitude component at the current point in the Dalitz plot
+		/*!
+		    \param [in] index the index of the incoherent amplitude component
+		    \param [in] value the intensity
+		*/
+		void setIncohIntenTerm(const UInt_t index, const Double_t value);
+
 		//! Calculate the amplitudes for all resonances for the current kinematics
 		void calculateAmplitudes();
 
@@ -562,6 +581,12 @@ class LauIsobarDynamics {
 		    \param [in] index the index of the amplitude component within the model
 		*/
 		void resAmp(const UInt_t index);
+
+		//! Calculate the dynamic part of the intensity for a given incoherent component at the current point in the Dalitz plot
+		/*!
+		    \param [in] index the index of the incoherent component within the model
+		*/
+		void incohResAmp(const UInt_t index);
 
 		//! Load the data for a given event
 		/*!
@@ -629,6 +654,9 @@ class LauIsobarDynamics {
 		//! The number of amplitude components
 		UInt_t nAmp_;
 
+		//! The number of incoherent amplitude components
+		UInt_t nIncohAmp_;
+
 		//! The complex coefficients for the amplitude components
 		std::vector<LauComplex> Amp_;
 
@@ -659,6 +687,9 @@ class LauIsobarDynamics {
 		//! The resonances in the model
 		std::vector<LauAbsResonance*> sigResonances_;
 
+		//! The incoherent resonances in the model
+		std::vector<LauAbsIncohRes*> sigIncohResonances_;
+
 		//! The K-matrix propagators
 		KMPropMap kMatrixPropagators_;
 
@@ -668,11 +699,14 @@ class LauIsobarDynamics {
 		//! The resonance types of all of the amplitude components
 		std::vector<TString> resTypAmp_;
 
-		//! The index within the resonance maker for each amplitude component
-		std::vector<Int_t> resIntAmp_;
-
 		//! The index of the daughter not produced by the resonance for each amplitude component
 		std::vector<Int_t> resPairAmp_;
+
+		//! The resonance types of all of the incoherent amplitude components
+		std::vector<TString> incohResTypAmp_;
+
+		//! The index of the daughter not produced by the resonance for each incoherent amplitude component
+		std::vector<Int_t> incohResPairAmp_;
 
 		//! The PDG codes of the daughters
 		std::vector<Int_t> typDaug_;
@@ -749,8 +783,14 @@ class LauIsobarDynamics {
 		//! The dynamic part of the amplitude for each amplitude component at the current point in the Dalitz plot
 		std::vector<LauComplex> ff_;
 
+		//! The dynamic part of the intensity for each incoherent amplitude component at the current point in the Dalitz plot
+		std::vector<Double_t> incohInten_;
+
 		//! The event-by-event running total of the dynamical amplitude squared for each amplitude component
 		std::vector<Double_t> fSqSum_;
+
+		//! The event-by-event running total of the dynamical amplitude squared for each amplitude component
+		std::vector<Double_t> fSqEffSum_;
 
 		//! The normalisation factors for the dynamic parts of the amplitude for each amplitude component
 		std::vector<Double_t> fNorm_;

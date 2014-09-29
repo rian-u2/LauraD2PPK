@@ -108,6 +108,12 @@ class LauCacheData {
 		*/
 		inline void storeImagAmp(const std::vector<Double_t>& imagAmp) {imagAmp_ = imagAmp;}
 
+		//! Set the incoherent intensities
+		/*!
+		    \param [in] incohIntensities the intensities of the incoherent contributions
+		*/
+		inline void storeIncohIntensities(const std::vector<Double_t>& incohIntensities) {incohIntensities_ = incohIntensities;}
+
 		//! Retrieve the invariant mass squared of the first and third daugthers
 		/*!
 		    \return m13 squared
@@ -168,6 +174,12 @@ class LauCacheData {
 		*/
 		inline const std::vector<Double_t>& retrieveImagAmp() const {return imagAmp_;}
 
+		//! Retrieve the incoherent intensities
+		/*!
+		    \return the intensities of the incoherent contributions
+		*/
+		inline const std::vector<Double_t>& retrieveIncohIntensities() const {return incohIntensities_;}
+
 		//! Retrieve the real parts of the amplitudes
 		/*!
 		    \return the real parts of the amplitudes
@@ -179,6 +191,12 @@ class LauCacheData {
 		    \return the imaginary parts of the amplitudes
 		*/
 		inline std::vector<Double_t>& retrieveImagAmp() {return imagAmp_;}
+
+		//! Retrieve the incoherent intensities
+		/*!
+		    \return the intensities of the incoherent contributions
+		*/
+		inline std::vector<Double_t>& retrieveIncohIntensities() {return incohIntensities_;}
 
 	protected:
 
@@ -212,6 +230,9 @@ class LauCacheData {
 
 		//! The imaginary parts of the amplitudes
 		std::vector<Double_t> imagAmp_;
+
+		//! The intensities of the incoherent contributions
+		std::vector<Double_t> incohIntensities_;
 
 		ClassDef(LauCacheData,0) // Cached Data Class
 };

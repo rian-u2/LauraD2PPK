@@ -20,6 +20,7 @@
 #pragma link C++ class LauAbsEffModel;
 #pragma link C++ class LauAbsFitter;
 #pragma link C++ class LauAbsFitModel;
+#pragma link C++ class LauAbsIncohRes;
 #pragma link C++ class LauAbsPdf;
 #pragma link C++ class LauAbsResonance;
 #pragma link C++ class LauAbsRValue;
@@ -57,6 +58,7 @@
 #pragma link C++ class LauFlatteRes;
 #pragma link C++ class LauFlatNR;
 #pragma link C++ class LauFormulaPar;
+#pragma link C++ class LauGaussIncohRes;
 #pragma link C++ class LauGaussPdf;
 #pragma link C++ class LauGenNtuple;
 #pragma link C++ class LauGounarisSakuraiRes;

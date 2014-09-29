@@ -545,8 +545,8 @@ void LauCPFitModel::recalculateNormalisation()
 void LauCPFitModel::initialiseDPModels()
 {
 	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nNegAmp = negSigModel_->getnAmp();
-	UInt_t nPosAmp = posSigModel_->getnAmp();
+	UInt_t nNegAmp = negSigModel_->getnTotAmp();
+	UInt_t nPosAmp = posSigModel_->getnTotAmp();
 	if ( nNegAmp != nPosAmp ) {
 		std::cerr << "ERROR in LauCPFitModel::initialiseDPModels : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
 		gSystem->Exit(EXIT_FAILURE);

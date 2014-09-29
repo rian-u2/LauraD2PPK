@@ -123,13 +123,13 @@ void LauMagPhaseCoeffSet::finaliseValues()
 	// Check now whether the phase lies in the right range (-pi to pi).
 	Bool_t withinRange(kFALSE);
 	while (withinRange == kFALSE) {
-		if (phase > -LauConstants::pi && phase < LauConstants::pi) {
+		if (phase > -LauConstants::pi && phase <= LauConstants::pi) {
 			withinRange = kTRUE;
 		} else {
 			// Not within the specified range
 			if (phase > LauConstants::pi) {
 				phase -= LauConstants::twoPi;
-			} else if (phase < -LauConstants::pi) {
+			} else if (phase <= -LauConstants::pi) {
 				phase += LauConstants::twoPi;
 			}
 		}

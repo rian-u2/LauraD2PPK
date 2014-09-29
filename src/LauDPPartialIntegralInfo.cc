@@ -14,7 +14,8 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 						   const Double_t minm23, const Double_t maxm23,
 						   const Double_t m13BinWidth, const Double_t m23BinWidth,
 						   const Double_t precision,
-						   const UInt_t nAmp) :
+						   const UInt_t nAmp,
+						   const UInt_t nIncohAmp) :
 	minm13_(minm13),
 	maxm13_(maxm13),
 	minm23_(minm23),
@@ -23,7 +24,8 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 	m23BinWidth_(m23BinWidth),
 	nm13Points_(static_cast<UInt_t>((maxm13-minm13)/m13BinWidth)),
 	nm23Points_(static_cast<UInt_t>((maxm23-minm23)/m23BinWidth)),
-	nAmp_(nAmp)
+	nAmp_(nAmp),
+	nIncohAmp_(nIncohAmp)
 {
 	const Double_t meanm13 = 0.5*(minm13 + maxm13);
 	const Double_t rangem13 = maxm13 - minm13;
@@ -92,11 +94,13 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 	weights_.resize( nm13Points_ );
 	efficiencies_.resize( nm13Points_ );
 	amplitudes_.resize( nm13Points_ );
+	incohIntensities_.resize( nm13Points_ );
 	for (UInt_t i = 0; i < nm13Points_; ++i) {
 
 		weights_[i].resize( nm23Points_ );
 		efficiencies_[i].resize( nm23Points_ );
 		amplitudes_[i].resize( nm23Points_ );
+		incohIntensities_[i].resize( nm23Points_ );
 
 		for (UInt_t j = 0; j < nm23Points_; ++j) {
 
@@ -107,6 +111,7 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 			weights_[i][j] = weight;
 
 			amplitudes_[i][j].resize( nAmp_ );
+			incohIntensities_[i][j].resize( nIncohAmp_ );
 
 		} // j weights loop
 	} // i weights loop

@@ -43,6 +43,7 @@ LauCacheData::LauCacheData(const LauCacheData& rhs)
 	this->storeJacobian(rhs.retrieveJacobian());
 	this->storeRealAmp(rhs.retrieveRealAmp());
 	this->storeImagAmp(rhs.retrieveImagAmp());
+	this->storeIncohIntensities(rhs.retrieveIncohIntensities());
 }
 
 LauCacheData& LauCacheData::operator=(const LauCacheData& rhs)
@@ -57,6 +58,7 @@ LauCacheData& LauCacheData::operator=(const LauCacheData& rhs)
 		this->storeJacobian(rhs.retrieveJacobian());
 		this->storeRealAmp(rhs.retrieveRealAmp());
 		this->storeImagAmp(rhs.retrieveImagAmp());
+		this->storeIncohIntensities(rhs.retrieveIncohIntensities());
 	}
 	return *this;
 }

@@ -42,13 +42,15 @@ class LauDPPartialIntegralInfo {
 		    \param [in] m13BinWidth the m13 bin width
 		    \param [in] m23BinWidth the m23 bin width
 		    \param [in] precision the precision required for the Gauss-Legendre weights
-		    \param [in] nAmp the number of amplitude components
+		    \param [in] nAmp the number of coherent amplitude components
+		    \param [in] nIncohAmp the number of incoherent amplitude components
 		*/
 		LauDPPartialIntegralInfo(const Double_t minm13, const Double_t maxm13,
 					 const Double_t minm23, const Double_t maxm23,
 					 const Double_t m13BinWidth, const Double_t m23BinWidth,
 					 const Double_t precision,
-					 const UInt_t nAmp);
+					 const UInt_t nAmp,
+					 const UInt_t nIncohAmp);
 
 		//! Destructor
 		virtual ~LauDPPartialIntegralInfo();
@@ -157,6 +159,24 @@ class LauDPPartialIntegralInfo {
 		*/
 		inline void storeAmplitude(const UInt_t m13Point, const UInt_t m23Point, const UInt_t iAmp, const LauComplex& amplitude) { amplitudes_[m13Point][m23Point][iAmp] = amplitude; }
 
+		//! Retrieve the intensity for the given grid point and intensity index
+		/*!
+		    \param [in] m13Point the grid index in m13
+		    \param [in] m23Point the grid index in m23
+		    \param [in] iAmp the intensity index
+		    \return the intensity value
+		*/
+		inline Double_t getIntensity(const UInt_t m13Point, const UInt_t m23Point, const UInt_t iAmp) const { return incohIntensities_[m13Point][m23Point][iAmp]; }
+
+		//! Store the intensity for the given grid point and intensity index
+		/*!
+		    \param [in] m13Point the grid index in m13
+		    \param [in] m23Point the grid index in m23
+		    \param [in] iAmp the intensity index
+		    \param [in] intensity the new intensity value
+		*/
+		inline void storeIntensity(const UInt_t m13Point, const UInt_t m23Point, const UInt_t iAmp, const Double_t intensity) { incohIntensities_[m13Point][m23Point][iAmp] = intensity; }
+
 	private:
 		//! Copy constructor (not implemented)
 		LauDPPartialIntegralInfo( const LauDPPartialIntegralInfo& other );
@@ -191,6 +211,9 @@ class LauDPPartialIntegralInfo {
 		//! The number of amplitude components
 		const UInt_t nAmp_;
 
+		//! The number of amplitude components
+		const UInt_t nIncohAmp_;
+
 		//! The m13 positions of the grid points
 		std::vector<Double_t> m13Points_;
 
@@ -211,6 +234,9 @@ class LauDPPartialIntegralInfo {
 
 		//! The amplitude values at each 2D grid point
 		std::vector< std::vector< std::vector<LauComplex> > > amplitudes_;
+
+		//! The incoherent intensity values at each 2D grid point
+		std::vector< std::vector< std::vector<Double_t> > > incohIntensities_;
 
 		ClassDef(LauDPPartialIntegralInfo, 0)
 };

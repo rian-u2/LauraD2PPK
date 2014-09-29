@@ -56,7 +56,8 @@ class LauAbsResonance {
 			BelleSymNR,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
 			TaylorNR,	/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR,		/*!< an empirical polynomial nonresonant amplitude */
-			MIPW 		/*!< a model independent partial wave */
+			MIPW, 		/*!< a model independent partial wave */
+			GaussIncoh	/*!< an incoherent Gaussian shape */
 		};
 
 		//! Define the allowed types of barrier factors 

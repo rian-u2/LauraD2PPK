@@ -4,6 +4,17 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+29th September 2014 Daniel Craik
+
+* Add support for incoherent resonances in the signal model
+  - LauIsobarDynamics updated to include incoherent terms
+  - ABC for incoherent resonances, LauAbsIncohRes, added deriving from LauAbsResonance
+  - LauGaussIncohRes added to implement a Gaussian incoherent resonance, deriving from LauAbsIncohRes
+  - Small changes to various other classes to enable incoherent terms
+* Fixed small bug in LauMagPhaseCoeffSet which could hang if phase is exactly pi or -pi
+* Added charged version of the BelleNR resonances to LauResonanceMaker
+* Updated parameters in LauConstants to match PDG 2014
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r2
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

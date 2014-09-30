@@ -78,8 +78,8 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.reserve(100);
 	// rho resonances              name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// rho(770)
-	neutral = new LauResonanceInfo("rho0(770)",     0.77549,  0.1491,   1,     0,       5.3);
-	positve = new LauResonanceInfo("rho+(770)",     0.77549,  0.1491,   1,     1,       5.3);
+	neutral = new LauResonanceInfo("rho0(770)",     0.77526,  0.1478,   1,     0,       5.3);
+	positve = new LauResonanceInfo("rho+(770)",     0.77511,  0.1491,   1,     1,       5.3);
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -101,8 +101,8 @@ void LauResonanceMaker::createResonanceVector()
 
 	// K* resonances               name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// K*(892)
-	neutral = new LauResonanceInfo("K*0(892)",      0.89594,  0.0487,   1,     0,       3.4);
-	positve = new LauResonanceInfo("K*+(892)",      0.89166,  0.0508,   1,     1,       3.4);
+	neutral = new LauResonanceInfo("K*0(892)",      0.89581,  0.0474,   1,     0,       3.0);
+	positve = new LauResonanceInfo("K*+(892)",      0.89166,  0.0508,   1,     1,       3.0);
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -143,7 +143,7 @@ void LauResonanceMaker::createResonanceVector()
 
 	// phi resonances              name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// phi(1020)
-	neutral = new LauResonanceInfo("phi(1020)",     1.019455, 0.00426,  1,     0           );
+	neutral = new LauResonanceInfo("phi(1020)",     1.019461, 0.004266, 1,     0           );
 	resInfo_.push_back( neutral );
 	// phi(1680)
 	neutral = new LauResonanceInfo("phi(1680)",     1.680,    0.150,    1,     0           );
@@ -169,7 +169,7 @@ void LauResonanceMaker::createResonanceVector()
 	neutral = new LauResonanceInfo("f'_2(1525)",    1.525,    0.073,    2,     0           );
 	resInfo_.push_back( neutral );
 	// f_0(1710)
-	neutral = new LauResonanceInfo("f_0(1710)",     1.720,    0.135,    0,     0           );
+	neutral = new LauResonanceInfo("f_0(1710)",     1.722,    0.135,    0,     0           );
 	resInfo_.push_back( neutral );
 	// f_2(2010)
 	neutral = new LauResonanceInfo("f_2(2010)",     2.011,    0.202,    2,     0           );
@@ -182,8 +182,8 @@ void LauResonanceMaker::createResonanceVector()
 
 	// a resonances                name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// a_0(980)
-	neutral = new LauResonanceInfo("a0_0(980)",     0.9847,   0.092,    0,     0           );
-	positve = new LauResonanceInfo("a+_0(980)",     0.9847,   0.092,    0,     1           );
+	neutral = new LauResonanceInfo("a0_0(980)",     0.980,    0.092,    0,     0           );
+	positve = new LauResonanceInfo("a+_0(980)",     0.980,    0.092,    0,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -196,8 +196,8 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// a_2(1320)
-	neutral = new LauResonanceInfo("a0_2(1320)",    1.3183,   0.107,    2,     0           );
-	positve = new LauResonanceInfo("a+_2(1320)",    1.3183,   0.107,    2,     1           );
+	neutral = new LauResonanceInfo("a0_2(1320)",    1.3190,   0.1050,   2,     0           );
+	positve = new LauResonanceInfo("a+_2(1320)",    1.3190,   0.1050,   2,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -205,26 +205,29 @@ void LauResonanceMaker::createResonanceVector()
 
 	// charmonium resonances       name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// chi_c0
-	neutral = new LauResonanceInfo("chi_c0",        3.41475,  0.0104,   0,     0           );
+	neutral = new LauResonanceInfo("chi_c0",        3.41475,  0.0105,   0,     0           );
+	resInfo_.push_back( neutral );
+	// chi_c1
+	neutral = new LauResonanceInfo("chi_c1",        3.51066,  0.00084,  0,     0           );
 	resInfo_.push_back( neutral );
 	// chi_c2
-	neutral = new LauResonanceInfo("chi_c2",        3.55620,  0.00198,  2,     0           );
+	neutral = new LauResonanceInfo("chi_c2",        3.55620,  0.00193,  2,     0           );
 	resInfo_.push_back( neutral );
 	// X(3872)
-	neutral = new LauResonanceInfo("X(3872)",       3.87168,   0.0012,   1,    0           );
+	neutral = new LauResonanceInfo("X(3872)",       3.87169,   0.0012,   1,    0           );
 	resInfo_.push_back( neutral );
 
 	// unknown scalars             name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// sigma
-	neutral = new LauResonanceInfo("sigma0",        0.560,    0.500,    0,     0           );
-	positve = new LauResonanceInfo("sigma+",        0.560,    0.500,    0,     1           );
+	neutral = new LauResonanceInfo("sigma0",        0.475,    0.550,    0,     0           );
+	positve = new LauResonanceInfo("sigma+",        0.475,    0.550,    0,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// kappa
-	neutral = new LauResonanceInfo("kappa0",        0.720,    0.700,    0,     0           );
-	positve = new LauResonanceInfo("kappa+",        0.720,    0.700,    0,     1           );
+	neutral = new LauResonanceInfo("kappa0",        0.682,    0.547,    0,     0           );
+	positve = new LauResonanceInfo("kappa+",        0.682,    0.547,    0,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -239,8 +242,8 @@ void LauResonanceMaker::createResonanceVector()
 
 	// excited charm states        name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// D*
-	neutral = new LauResonanceInfo("D*0",           2.00698,  0.0021,   1,     0           );
-	positve = new LauResonanceInfo("D*+",           2.01028,  0.000096, 1,     1           );
+	neutral = new LauResonanceInfo("D*0",           2.00696,  0.0021,   1,     0           );
+	positve = new LauResonanceInfo("D*+",           2.01026,  83.4e-6,  1,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -255,26 +258,32 @@ void LauResonanceMaker::createResonanceVector()
 	// D*_2
 	//AVERAGE--neutral = new LauResonanceInfo("D*0_2",         2.4618,   0.049,    2,     0           );
 	neutral = new LauResonanceInfo("D*0_2",         2.4626,   0.049,    2,     0           );
-	positve = new LauResonanceInfo("D*+_2",         2.4644,   0.037,    2,     1           );
+	positve = new LauResonanceInfo("D*+_2",         2.4643,   0.037,    2,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// D1(2420)
-	neutral = new LauResonanceInfo("D1(2420)",      2.4213,   0.0271,   1,     0           );
+	neutral = new LauResonanceInfo("D0_1(2420)",    2.4214,   0.0274,   1,     0           );
+	positve = new LauResonanceInfo("D+_1(2420)",    2.4232,   0.025,    1,     0           );
+	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
+	resInfo_.push_back( positve );
+	resInfo_.push_back( negatve );
 	// D(2600)
 	//OLD--neutral = new LauResonanceInfo("D0(2600)",      2.6087,   0.093,    0,     0           );
+	//OLD--positve = new LauResonanceInfo("D0(2600)",      2.6213,   0.093,    0,     0           );
 	neutral = new LauResonanceInfo("D0(2600)",      2.612,    0.093,    0,     0           );
-	positve = new LauResonanceInfo("D+(2600)",      2.6213,   0.093,    0,     1           );
+	positve = new LauResonanceInfo("D+(2600)",      2.612,    0.093,    0,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// D(2760)
 	//OLD--	neutral = new LauResonanceInfo("D0(2760)",      2.7633,   0.061,    1,     0           );
+	//OLD--	positve = new LauResonanceInfo("D+(2760)",      2.7697,   0.061,    1,     1           );
 	neutral = new LauResonanceInfo("D0(2760)",      2.761,    0.063,    1,     0           );
-	positve = new LauResonanceInfo("D+(2760)",      2.7697,   0.061,    1,     1           );
+	positve = new LauResonanceInfo("D+(2760)",      2.761,    0.063,    1,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
@@ -288,22 +297,22 @@ void LauResonanceMaker::createResonanceVector()
 
 	// excited strange charm       name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// Ds*
-	positve = new LauResonanceInfo("Ds*+",          2.1123,   0.002,    1,     1           );
+	positve = new LauResonanceInfo("Ds*+",          2.1121,   0.0019,   1,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// Ds0*(2317)
-	positve = new LauResonanceInfo("Ds0*+(2317)",   2.3178,   0.004,    0,     1           );
+	positve = new LauResonanceInfo("Ds*+_0(2317)",  2.3177,   0.0038,   0,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// Ds2*(2573)
-	positve = new LauResonanceInfo("Ds2*+(2573)",   2.5719,   0.017,    2,     1           );
+	positve = new LauResonanceInfo("Ds*+_2(2573)",  2.5719,   0.017,    2,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
 	// Ds1*(2700)
-	positve = new LauResonanceInfo("Ds1*+(2700)",   2.709,    0.125,    1,     1           );
+	positve = new LauResonanceInfo("Ds*+_1(2700)",  2.709,    0.117,    1,     1           );
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
@@ -311,7 +320,7 @@ void LauResonanceMaker::createResonanceVector()
 	// excited bottom states       name,            mass,     width,    spin,  charge,  range parameter (defaults to 4.0)
 	// B*
 	neutral = new LauResonanceInfo("B*0",           5.3252,   0.00,     1,     0,       6.0);
-	positve = new LauResonanceInfo("B*+",           5.3250,   0.00,     1,     1,       6.0);
+	positve = new LauResonanceInfo("B*+",           5.3252,   0.00,     1,     1,       6.0);
 	negatve = positve->createChargeConjugate();
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );

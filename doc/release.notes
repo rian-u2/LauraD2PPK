@@ -4,6 +4,17 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+30th September 2014 Thomas Latham
+
+* Fix issue in the checks on toy MC generation validity
+  - in the case of exceeding max iterations it was possible to enter an infinite loop
+  - the checks now detect all three possible states:
+    - aSqMaxSet_ is too low (generation is biased) => increase aSqMaxSet_ value
+    - aSqMaxSet_ is too high => reduce aSqMaxSet_ value to improve efficiency
+    - aSqMaxSet_ is high (causing low efficiency) but cannot be lowered without biasing => increase iterationsMax_ limit
+* Update resonance parameter in LauResonanceMaker to match PDG 2014
+* Modify behaviour when TTree objects are saved into files to avoid having multiple cycle numbers present
+
 29th September 2014 Daniel Craik
 
 * Add support for incoherent resonances in the signal model

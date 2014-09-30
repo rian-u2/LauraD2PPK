@@ -180,7 +180,7 @@ class LauDaughters {
 		//! Boolean flag for fully symmetric Dalitz plot
 		Bool_t fullySymmetricDP_;
 
-		ClassDef(LauDaughters, 0)   // Specify what daughters are allowed
+		ClassDef(LauDaughters, 0)
 
 };
 

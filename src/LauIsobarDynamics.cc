@@ -2100,7 +2100,7 @@ Bool_t LauIsobarDynamics::generate()
 
 	// Check that all is well with the generation
 	Bool_t sigGenOK(kTRUE);
-	if (GenOK != this->checkToyMC(kFALSE,kFALSE)) {
+	if (GenOK != this->checkToyMC(kTRUE,kFALSE)) {
 		sigGenOK = kFALSE;
 	}
 
@@ -2115,21 +2115,34 @@ LauIsobarDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMe
 	if (nSigGenLoop_ >= iterationsMax_) {
 		// Exceeded maximum allowed iterations - the generation is too inefficient
 		if (printErrorMessages) {
-			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : More than "<<iterationsMax_<<" iterations required."<<std::endl;
-			std::cerr<<"                                         : Try to decrease the maximum allowed value of the total amplitude squared using the "
-				 <<"LauIsobarDynamics::setASqMaxValue(Double_t) function and re-run."<<std::endl;
-			std::cerr<<"                                         : This needs to be, perhaps significantly, less than "<<aSqMaxSet_<<std::endl;
-			std::cerr<<"                                         : Maximum value of ASq so far = "<<aSqMaxVar_<<std::endl;
+			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : More than "<<iterationsMax_<<" iterations performed and no event accepted."<<std::endl;
 		}
-		aSqMaxSet_ = 1.01 * aSqMaxVar_;
-		std::cout<<"INFO in LauIsobarDynamics::checkToyMC : |A|^2 max reset to "<<aSqMaxSet_<<std::endl;
-		ok = MaxIterError;
+
+		if ( aSqMaxSet_ > 1.01 * aSqMaxVar_ ) {
+			if (printErrorMessages) {
+				std::cerr<<"                                         : |A|^2 maximum was set to "<<aSqMaxSet_<<" but this appears to be too high."<<std::endl;
+				std::cerr<<"                                         : Maximum value of |A|^2 found so far = "<<aSqMaxVar_<<std::endl;
+				std::cerr<<"                                         : The value of |A|^2 maximum will be decreased and the generation restarted."<<std::endl;
+			}
+			aSqMaxSet_ = 1.01 * aSqMaxVar_;
+			std::cout<<"INFO in LauIsobarDynamics::checkToyMC : |A|^2 max reset to "<<aSqMaxSet_<<std::endl;
+			ok = MaxIterError;
+		} else {
+			if (printErrorMessages) {
+				std::cerr<<"                                         : |A|^2 maximum was set to "<<aSqMaxSet_<<", which seems to be correct for the given model."<<std::endl;
+				std::cerr<<"                                         : However, the generation is very inefficient - please check your model."<<std::endl;
+				std::cerr<<"                                         : The maximum number of iterations will be increased and the generation restarted."<<std::endl;
+			}
+			iterationsMax_ *= 2;
+			std::cout<<"INFO in LauIsobarDynamics::checkToyMC : max number of iterations reset to "<<iterationsMax_<<std::endl;
+			ok = MaxIterError;
+		}
 	} else if (aSqMaxVar_ > aSqMaxSet_) {
 		// Found a value of ASq higher than the accept/reject ceiling - the generation is biased
 		if (printErrorMessages) {
-			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : aSqMaxSet_ was set to "<<aSqMaxSet_<<" but actual aSqMax was "<<aSqMaxVar_<<std::endl;
+			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : |A|^2 maximum was set to "<<aSqMaxSet_<<" but a value exceeding this was found: "<<aSqMaxVar_<<std::endl;
 			std::cerr<<"                                         : Run was invalid, as any generated MC will be biased, according to the accept/reject method!"<<std::endl;
-			std::cerr<<"                                         : Please set aSqMaxSet >= "<<aSqMaxVar_<<" using the LauIsobarDynamics::setASqMaxValue(Double_t) function and re-run."<<std::endl;
+			std::cerr<<"                                         : The value of |A|^2 maximum be reset to be > "<<aSqMaxVar_<<" and the generation restarted."<<std::endl;
 		}
 		aSqMaxSet_ = 1.01 * aSqMaxVar_;
 		std::cout<<"INFO in LauIsobarDynamics::checkToyMC : |A|^2 max reset to "<<aSqMaxSet_<<std::endl;

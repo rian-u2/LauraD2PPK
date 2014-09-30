@@ -187,7 +187,7 @@ void LauGenNtuple::writeOutGenResults()
 		rootFile_ = rootTree_->GetCurrentFile();
 	}
 	rootFile_->cd();
-	rootFile_->Write();
+	rootTree_->Write("",TObject::kOverwrite);
 	rootFile_->Close();
 	delete rootFile_;  rootFile_ = 0;
 }

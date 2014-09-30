@@ -265,7 +265,7 @@ void LauFitNtuple::writeOutFitResults()
 {
 	// Write out the fit ntuple to the appropriate root file
 	rootFile_->cd();
-	rootFile_->Write();
+	fitResults_->Write("",TObject::kOverwrite);
 	rootFile_->Close();
 	delete rootFile_; rootFile_ = 0;
 }

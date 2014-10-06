@@ -63,7 +63,7 @@ class LauBlattWeisskopfFactor {
 		LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const Double_t resRadius, const BarrierType barrierType, const BlattWeisskopfCategory category );
 
 		//! Destructor
-		~LauBlattWeisskopfFactor();
+		virtual ~LauBlattWeisskopfFactor();
 
 		//! Method to create a new factor with cloned radius parameter
 		/*!

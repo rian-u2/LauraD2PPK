@@ -35,7 +35,7 @@ LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_
 	mParentSq_(0.0),
 	mBachSq_(0.0),
 	FR0_(1.0),
-	FB0_(1.0)
+	FP0_(1.0)
 {
 }
 
@@ -51,7 +51,6 @@ void LauRelBreitWignerRes::initialise()
 	resMass_   = this->getMass();
 	resWidth_  = this->getWidth();
 
-	Int_t resSpin = this->getSpin();
 	Double_t massDaug1 = this->getMassDaug1();
 	Double_t massDaug2 = this->getMassDaug2();
 	Double_t massBachelor = this->getMassBachelor();
@@ -109,90 +108,11 @@ void LauRelBreitWignerRes::initialise()
 		pstar0_ = TMath::Sqrt( termStarBach );
 	}
 
-	// Blatt-Weisskopf barrier factor constant: z = q^2*radius^2
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
-	const Double_t resR = this->getResBWRadius();
-	const Double_t parR = this->getParBWRadius();
-	const BarrierType barrierType = this->getBarrierType();
-	this->setBarrierRadii(resR, parR, barrierType);
-
-	if (resSpin > 5) {
-		std::cerr << "WARNING in LauRelBreitWignerRes::initialise : Resonances spin is > 5.  Blatt-Weisskopf form factors will be set to 1.0" << std::endl;
-	}
-}
-
-void LauRelBreitWignerRes::setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const BarrierType type)
-{
-	// Reset the Blatt-Weisskopf barrier radius for the resonance and its parent
-	this->LauAbsResonance::setBarrierRadii( resRadius, parRadius, type );
-
-	// Recalculate the Blatt-Weisskopf form factor for the case when m = m_0
-	const Double_t resR = this->getResBWRadius();
-	const Double_t parR = this->getParBWRadius();
-
-	//std::cout << "INFO in LauRelBreitWignerRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
-
-	Double_t zR0 = q0_*q0_*resR*resR;
-	Double_t zB0 = p0_*p0_*parR*parR;
-	if ( ( type == LauAbsResonance::BWPrimeBarrier ) || ( type == LauAbsResonance::ExpBarrier ) ) {
-		FR0_ = (resR==0.0) ? 1.0 : this->calcFFactor(zR0);
-		FB0_ = (parR==0.0) ? 1.0 : this->calcFFactor(zB0);
-	}
-}
-
-Double_t LauRelBreitWignerRes::calcFFactor(Double_t z)
-{
-	// Calculate the requested form factor for the resonance, given the z value
-	Double_t fFactor(1.0);
-
-	// For scalars the form factor is always unity
-	// TODO: and we currently don't have formulae for spin > 5
-	Int_t resSpin = this->getSpin();
-	if ( (resSpin == 0) || (resSpin>5) ) {
-		return fFactor;
-	}
-
-	const BarrierType barrierType = this->getBarrierType();
-	if ( barrierType == LauAbsResonance::BWBarrier ) {
-		if (resSpin == 1) {
-			fFactor = TMath::Sqrt(2.0*z/(z + 1.0));
-		} else if (resSpin == 2) {
-			fFactor = TMath::Sqrt(13.0*z*z/(z*z + 3.0*z + 9.0));
-		} else if (resSpin == 3) {
-			fFactor = TMath::Sqrt(277.0*z*z*z/(z*z*z + 6.0*z*z + 45.0*z + 225.0));
-		} else if (resSpin == 4) {
-			fFactor = TMath::Sqrt(12746.0*z*z*z*z/(z*z*z*z + 10.0*z*z*z + 135.0*z*z + 1575.0*z + 11025.0));
-		} else if (resSpin == 5) {
-			fFactor = TMath::Sqrt(998881.0*z*z*z*z*z/(z*z*z*z*z + 15.0*z*z*z*z + 315.0*z*z*z + 6300.0*z*z + 99225.0*z + 893025.0));
-		}
-	} else if ( barrierType == LauAbsResonance::BWPrimeBarrier ) {
-		if (resSpin == 1) {
-			fFactor = TMath::Sqrt(1.0/(z + 1.0));
-		} else if (resSpin == 2) {
-			fFactor = TMath::Sqrt(1.0/(z*z + 3.0*z + 9.0));
-		} else if (resSpin == 3) {
-			fFactor = TMath::Sqrt(1.0/(z*z*z + 6.0*z*z + 45.0*z + 225.0));
-		} else if (resSpin == 4) {
-			fFactor = TMath::Sqrt(1.0/(z*z*z*z + 10.0*z*z*z + 135.0*z*z + 1575.0*z + 11025.0));
-		} else if (resSpin == 5) {
-			fFactor = TMath::Sqrt(1.0/(z*z*z*z*z + 15.0*z*z*z*z + 315.0*z*z*z + 6300.0*z*z + 99225.0*z + 893025.0));
-		}
-	} else if ( barrierType == LauAbsResonance::ExpBarrier ) {
-		if (resSpin == 1) {
-			fFactor = TMath::Exp( -TMath::Sqrt(z) );
-		} else if (resSpin == 2) {
-			fFactor = TMath::Exp( -z );
-		} else if (resSpin == 3) {
-			fFactor = TMath::Exp( -TMath::Sqrt(z*z*z) );
-		} else if (resSpin == 4) {
-			fFactor = TMath::Exp( -z*z );
-		} else if (resSpin == 5) {
-			fFactor = TMath::Exp( -TMath::Sqrt(z*z*z*z*z) );
-		}
-	}
-
-	return fFactor;
-
+	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+	FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
+	FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
 }
 
 LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
@@ -230,16 +150,14 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 		this->initialise();
 	}
 
-	const Double_t resR = this->getResBWRadius();
-	const Double_t parR = this->getParBWRadius();
-	Double_t zR = q*q*resR*resR;
-	Double_t zB = p*p*parR*parR;
-	Double_t fFactorR = (resR==0.0) ? 1.0 : this->calcFFactor(zR);
-	Double_t fFactorB = (parR==0.0) ? 1.0 : this->calcFFactor(zB);
-	Double_t fFactorRRatio = fFactorR/FR0_;
-	Double_t fFactorBRatio = fFactorB/FB0_;
+	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+	const Double_t fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
+	const Double_t fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
+	const Double_t fFactorRRatio = fFactorR/FR0_;
+	const Double_t fFactorBRatio = fFactorB/FP0_;
 
-	Double_t qRatio = q/q0_;
+	const Double_t qRatio = q/q0_;
 	Double_t qTerm(0.0);
 	if (resSpin == 0) {
 		qTerm = qRatio;
@@ -251,10 +169,10 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 		qTerm = TMath::Power(qRatio, 2*resSpin + 1);  
 	}
 
-	Double_t totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
+	const Double_t totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
 
-	Double_t massSq = mass*mass;
-	Double_t massSqTerm = resMassSq_ - massSq;
+	const Double_t massSq = mass*mass;
+	const Double_t massSqTerm = resMassSq_ - massSq;
 
 	// Compute the complex amplitude
 	resAmplitude = LauComplex(massSqTerm, resMass*totWidth);
@@ -274,6 +192,12 @@ const std::vector<LauParameter*>& LauRelBreitWignerRes::getFloatingParameters()
 	}
 	if ( ! this->fixWidth() ) {
 		this->addFloatingParameter( this->getWidthPar() );
+	}
+	if ( ! this->fixResRadius() ) {
+		this->addFloatingParameter( this->getResBWFactor()->getRadiusParameter() );
+	}
+	if ( ! this->fixParRadius() ) {
+		this->addFloatingParameter( this->getParBWFactor()->getRadiusParameter() );
 	}
 
 	return this->getParameters();

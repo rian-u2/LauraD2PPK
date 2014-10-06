@@ -14,6 +14,7 @@
 #include "LauEffModel.hh"
 #include "LauIsobarDynamics.hh"
 #include "LauMagPhaseCoeffSet.hh"
+#include "LauResonanceMaker.hh"
 #include "LauVetoes.hh"
 
 void usage( std::ostream& out, const TString& progName )
@@ -104,8 +105,11 @@ int main( int argc, char** argv )
 	//effModel->setEffHisto(effHist, useInterpolation, fluctuateBins, 0.0, 0.0, useUpperHalf, squareDP);
 
 	// Create the isobar model
+	LauResonanceMaker& resMaker = LauResonanceMaker::get();
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     1.5 );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
+
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-	sigModel->setBarrierRadii( 4.0, 1.5 );
 	LauAbsResonance* reson(0);
 	reson = sigModel->addResonance("rho0(770)",  1, LauAbsResonance::GS);		// resPairAmpInt = 1 => resonance mass is m23.
 	reson = sigModel->addResonance("rho0(1450)", 1, LauAbsResonance::RelBW);

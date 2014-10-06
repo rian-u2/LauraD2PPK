@@ -51,14 +51,6 @@ class LauRelBreitWignerRes : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::RelBW;}
 
-		//! Set the form factor model and parameters
-		/*!
-			\param [in] resRadius the radius of the barrier for the resonance decay
-			\param [in] parRadius the radius of the barrier for the parent decay
-			\param [in] type the form-factor model
-		*/
-		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
-
 		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
 		/*!
 		    \return floating parameters of the resonance
@@ -112,11 +104,10 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 		Double_t mParentSq_;
 		//! Square of the bachelor mass
 		Double_t mBachSq_;
-
 		//! Value of the form factor for resonance decay (at pole mass)
 		Double_t FR0_;
 		//! Value of the form factor for parent decay (at pole mass)
-		Double_t FB0_;
+		Double_t FP0_;
 
 		ClassDef(LauRelBreitWignerRes,0) // Relativistic Breit-Wigner resonance model
 

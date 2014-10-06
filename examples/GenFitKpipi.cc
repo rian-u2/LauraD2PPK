@@ -17,12 +17,13 @@
 #include "LauGaussPdf.hh"
 #include "LauIsobarDynamics.hh"
 #include "LauLinearPdf.hh"
+#include "LauResonanceMaker.hh"
 #include "LauSumPdf.hh"
 #include "LauVetoes.hh"
 
 /*
  * Histogram ROOT files for this example are available at the following URL:
- * http://www.slac.stanford.edu/~tlatham/public/Laura++-example-histograms/
+ * http://www.slac.stanford.edu/~tlatham/public/Laura++-example-histograms/histos.tar.gz
  *\  Please copy the "histos" directory into the working directory.
  */
 
@@ -141,10 +142,15 @@ int main( int argc, char** argv )
 
 
 	// Create the signal dynamics
+	LauResonanceMaker& resMaker = LauResonanceMaker::get();
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     4.0 );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Kstar,      4.0 );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Charmonium, 4.0 );
+
 	LauIsobarDynamics* negSigModel = new LauIsobarDynamics(negDaughters, negEffModel);
 	negSigModel->setIntFileName("integ_neg.dat");
 	negSigModel->setASqMaxValue(3.00);
-	negSigModel->setBarrierRadii(4.0, 4.0);
 
 	LauAbsResonance* res(0);
 	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
@@ -164,7 +170,6 @@ int main( int argc, char** argv )
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, posEffModel);
 	posSigModel->setIntFileName("integ_pos.dat");
 	posSigModel->setASqMaxValue(3.00);
-	posSigModel->setBarrierRadii(4.0, 4.0);
 
 	res = posSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
 	res = posSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);

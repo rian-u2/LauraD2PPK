@@ -51,14 +51,6 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::GS;}
 
-		//! Set the form factor model and parameters
-		/*!
-			\param [in] resRadius the radius of the barrier for the resonance decay
-			\param [in] parRadius the radius of the barrier for the parent decay
-			\param [in] type the form-factor model
-		*/	
-		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const LauAbsResonance::BarrierType type);
-
 		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
 		/*!
 		    \return floating parameters of the resonance
@@ -72,13 +64,6 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 			\param [in] spinTerm Zemach spin term
 		*/	
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
-
-		//! Calculate the form factor for the resonance
-		/*!
-			\param [in] z particle momentum multipled by the barrier radius
-			\return value of the form factor 
-		*/	
-		Double_t calcFFactor(Double_t z);
 
 	private:
 		//! Copy constructor (not implemented)
@@ -117,21 +102,10 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		Double_t dhdm0_; 
 		//! Extra parameter required by GS shape
 		Double_t d_;
-
-		//! Radius of the barrier for resonance decay
-		Double_t resR_; 
-		//! Radius of the barrier for parent decay
-		Double_t parR_;
-		//! Square of the radius of the barrier for resonance decay
-		Double_t resRSq_; 
-		//! Square of the radius of the barrier for parent decay
-		Double_t parRSq_; 
 		//! Value of the form factor for resonance decay (at pole mass)
 		Double_t FR0_; 
 		//! Value of the form factor for parent decay (at pole mass)
-		Double_t FB0_;
-		//! Model to be used for the form factor
-		LauAbsResonance::BarrierType barrierType_;
+		Double_t FP0_;
 
 		ClassDef(LauGounarisSakuraiRes,0) // Gounaris-Sakurai resonance model
 

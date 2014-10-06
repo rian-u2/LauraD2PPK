@@ -26,6 +26,7 @@
 
 #include "TString.h"
 
+#include "LauBlattWeisskopfFactor.hh"
 #include "LauComplex.hh"
 #include "LauParameter.hh"
 
@@ -58,13 +59,6 @@ class LauAbsResonance {
 			PolNR,		/*!< an empirical polynomial nonresonant amplitude */
 			MIPW, 		/*!< a model independent partial wave */
 			GaussIncoh	/*!< an incoherent Gaussian shape */
-		};
-
-		//! Define the allowed types of barrier factors 
-		enum BarrierType {
-			BWBarrier,	/*!< Blatt-Weisskopf barrier factor (for use when momentum terms not used in angular term) */
-			BWPrimeBarrier,	/*!< Blatt-Weisskopf barrier factor (for use when momentum terms are used in angular term) - the default */
-			ExpBarrier	/*!< expoential barrier factor (mostly used for virtual contributions) */
 		};
 
 		//! Constructor (for use by standard resonances)
@@ -200,6 +194,17 @@ class LauAbsResonance {
 		*/
 		void changeResonance(const Double_t newMass, const Double_t newWidth, const Int_t newSpin);
 
+		//! Allow the Blatt-Weisskopf radius for the resonance and parent factors to be changed
+		/*!
+			Negative values wil be ignored, so if, for example, you
+			want to only change the parent radius you can provide a
+			negative value for the resonance radius
+
+			\param [in] resRadius new value of the resonance radius 
+			\param [in] parRadius new value of the parent radius
+		*/
+		void changeBWBarrierRadii(const Double_t resRadius, const Double_t parRadius);
+
 		//! Set value of the various parameters
 		/*!
 			\param [in] name the name of the parameter to be changed
@@ -248,14 +253,21 @@ class LauAbsResonance {
 		/*!
 			\param [in] resRadius the radius of the barrier for the resonance decay
 			\param [in] parRadius the radius of the barrier for the parent decay
-			\param [in] type the form-factor model
 		*/
-		virtual void setBarrierRadii(const Double_t resRadius, const Double_t parRadius, const BarrierType type)
+		void setBarrierRadii(LauBlattWeisskopfFactor* resRadius, LauBlattWeisskopfFactor* parRadius)
 		{
-			resR_ = resRadius;
-			parR_ = parRadius;
-			barrierType_ = type;
+			resBWFactor_ = resRadius;
+			parBWFactor_ = parRadius;
 		}
+
+		//! Fix or release the Blatt-Weisskopf barrier radii
+		void fixBarrierRadii(const Bool_t fixResRadius, const Bool_t fixParRadius);
+
+		//! Get the status of resonance barrier radius (fixed or released)
+		Bool_t fixResRadius() const;
+
+		//! Get the status of parent barrier radius (fixed or released)
+		Bool_t fixParRadius() const;
 
 	protected:
 		//! Get the name of the parent particle
@@ -290,12 +302,12 @@ class LauAbsResonance {
 		//! Get the current value of the bachelor momentum in the parent rest frame
 		Double_t getPstar() const {return pstar_;}
 
-		//! Get the radius of the centrifugal barrier for the parent decay
-		Double_t getParBWRadius() const {return parR_;}
-		//! Get the radius of the centrifugal barrier for the resonance decay
-		Double_t getResBWRadius() const {return resR_;}
-		//! Get the form factor model
-		BarrierType getBarrierType() const {return barrierType_;}
+		//! Get the centrifugal barrier for the parent decay
+		LauBlattWeisskopfFactor* getParBWFactor() {return parBWFactor_;}
+		const LauBlattWeisskopfFactor* getParBWFactor() const {return parBWFactor_;}
+		//! Get the centrifugal barrier for the resonance decay
+		LauBlattWeisskopfFactor* getResBWFactor() {return resBWFactor_;}
+		const LauBlattWeisskopfFactor* getResBWFactor() const {return resBWFactor_;}
 
 		//! Access the resonance info object
 		LauResonanceInfo* getResInfo() const {return resInfo_;}
@@ -383,12 +395,10 @@ class LauAbsResonance {
 		Int_t resCharge_; 
 		//! DP axis identifier
 		Int_t resPairAmpInt_;
-		//! Radius of the barrier for parent decay
-		Double_t parR_;
-		//! Radius of the barrier for resonance decay
-		Double_t resR_;
-		//! Model to be used for the form factor
-		BarrierType barrierType_;
+		//! Blatt Weisskopf barrier for parent decay
+		LauBlattWeisskopfFactor* parBWFactor_;
+		//! Blatt Weisskopf barrier for resonance decay
+		LauBlattWeisskopfFactor* resBWFactor_;
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;

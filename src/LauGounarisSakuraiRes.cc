@@ -38,7 +38,7 @@ LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const In
 	dhdm0_(0.0),
 	d_(0.0),
 	FR0_(1.0),
-	FB0_(1.0)
+	FP0_(1.0)
 {
 }
 
@@ -107,12 +107,11 @@ void LauGounarisSakuraiRes::initialise()
 		pstar0_ = TMath::Sqrt( termStarBach );
 	}
 
-	// Blatt-Weisskopf barrier factor constant: z = q^2*radius^2
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
-	const Double_t resR = this->getResBWRadius();
-	const Double_t parR = this->getParBWRadius();
-	const BarrierType barrierType = this->getBarrierType();
-	this->setBarrierRadii(resR, parR, barrierType);
+	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+	FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
+	FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
 
 	// Calculate the extra things needed by the G-S shape
 	h0_ = 2.0*LauConstants::invPi * q0_/resMass_ * TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi));
@@ -121,40 +120,6 @@ void LauGounarisSakuraiRes::initialise()
 		* TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi))
 		+ resMass_/(LauConstants::twoPi*q0_)
 		- LauConstants::mPi*LauConstants::mPi*resMass_/(LauConstants::pi*q0_*q0_*q0_);
-}
-
-void LauGounarisSakuraiRes::setBarrierRadii(Double_t resRadius, Double_t parRadius, LauAbsResonance::BarrierType type)
-{
-	// Reset the Blatt-Weisskopf barrier radius for the resonance and its parent
-	this->LauAbsResonance::setBarrierRadii( resRadius, parRadius, type );
-	
-	// Recalculate the Blatt-Weisskopf form factor for the case when m = m_0
-	const Double_t resR = this->getResBWRadius();
-	const Double_t parR = this->getParBWRadius();
-
-	//std::cout << "INFO in LauGounarisSakuraiRes::setBarrierRadii : Recalculating barrier factor normalisations for new radii: resonance = " << resR << ", parent = " << parR << std::endl;
-
-	Double_t zR0 = q0_*q0_*resR*resR;
-	Double_t zB0 = p0_*p0_*parR*parR;
-	if ( ( type == LauAbsResonance::BWPrimeBarrier ) || ( type == LauAbsResonance::ExpBarrier ) ) {
-		FR0_ = (resR==0.0) ? 1.0 : this->calcFFactor(zR0);
-		FB0_ = (parR==0.0) ? 1.0 : this->calcFFactor(zB0);
-	}
-}
-
-Double_t LauGounarisSakuraiRes::calcFFactor(Double_t z)
-{
-	// Calculate the requested form factor for the resonance, given the z value
-	Double_t fFactor(1.0);
-	const BarrierType barrierType = this->getBarrierType();
-	if ( barrierType == LauAbsResonance::BWBarrier ) {
-		fFactor = TMath::Sqrt(2.0*z/(z + 1.0));
-	} else if ( barrierType == LauAbsResonance::BWPrimeBarrier ) {
-		fFactor = TMath::Sqrt(1.0/(z + 1.0));
-	} else if ( barrierType == LauAbsResonance::ExpBarrier ) {
-		fFactor = TMath::Exp( -TMath::Sqrt(z) );
-	}
-	return fFactor;
 }
 
 LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
@@ -179,8 +144,8 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	// pstar is the momentum of the bachelor in the parent rest-frame.
 	// These quantities have been calculate in LauAbsResonance::amplitude(...)
 
-	Double_t resMass = this->getMass();
-	Double_t resWidth = this->getWidth();
+	const Double_t resMass = this->getMass();
+	const Double_t resWidth = this->getWidth();
 
 	// If the mass is floating and its value has changed we need to
 	// recalculate everything that assumes that value
@@ -188,36 +153,34 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 		this->initialise();
 	}
 
-	Double_t q = this->getQ();
-	Double_t p = this->getP();
-	//Double_t pstar = this->getPstar();
+	const Double_t q = this->getQ();
+	const Double_t p = this->getP();
+	//const Double_t pstar = this->getPstar();
 
-	const Double_t resR = this->getResBWRadius();
-	const Double_t parR = this->getParBWRadius();
-	Double_t zR = q*q*resR*resR;
-	Double_t zB = p*p*parR*parR;
-	Double_t fFactorR = (resR==0.0) ? 1.0 : this->calcFFactor(zR);
-	Double_t fFactorB = (parR==0.0) ? 1.0 : this->calcFFactor(zB);
-	Double_t fFactorRRatio = fFactorR/FR0_;
-	Double_t fFactorBRatio = fFactorB/FB0_;
+	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+	const Double_t fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
+	const Double_t fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
+	const Double_t fFactorRRatio = fFactorR/FR0_;
+	const Double_t fFactorBRatio = fFactorB/FP0_;
 
-	Double_t qRatio = q/q0_;
-	Double_t qTerm = qRatio*qRatio*qRatio;
+	const Double_t qRatio = q/q0_;
+	const Double_t qTerm = qRatio*qRatio*qRatio;
 
-	Double_t totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
+	const Double_t totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
 
-	Double_t massSq = mass*mass;
-	Double_t massSqTerm = resMassSq_ - massSq;
+	const Double_t massSq = mass*mass;
+	const Double_t massSqTerm = resMassSq_ - massSq;
 
-	Double_t h = 2.0*LauConstants::invPi * q/mass * TMath::Log((mass + 2.0*q)/(2.0*LauConstants::mPi));
-	Double_t f = totWidth * resMassSq_/(q0_*q0_*q0_) * (q*q * (h - h0_) + massSqTerm * q0_*q0_ * dhdm0_);
+	const Double_t h = 2.0*LauConstants::invPi * q/mass * TMath::Log((mass + 2.0*q)/(2.0*LauConstants::mPi));
+	const Double_t f = totWidth * resMassSq_/(q0_*q0_*q0_) * (q*q * (h - h0_) + massSqTerm * q0_*q0_ * dhdm0_);
 
 	// Compute the complex amplitude
 	resAmplitude = LauComplex(massSqTerm + f, resMass*totWidth);
 
 	// Scale by the denominator factor, as well as the spin term and Blatt-Weisskopf factors
-	Double_t numerFactor = fFactorRRatio*fFactorBRatio*spinTerm*(1 + d_ * resWidth/resMass);
-	Double_t denomFactor = (massSqTerm + f)*(massSqTerm + f) + resMassSq_*totWidth*totWidth;
+	const Double_t numerFactor = fFactorRRatio*fFactorBRatio*spinTerm*(1 + d_ * resWidth/resMass);
+	const Double_t denomFactor = (massSqTerm + f)*(massSqTerm + f) + resMassSq_*totWidth*totWidth;
 	resAmplitude.rescale(numerFactor/denomFactor);
 
 	return resAmplitude;
@@ -232,6 +195,12 @@ const std::vector<LauParameter*>& LauGounarisSakuraiRes::getFloatingParameters()
 	}
 	if ( ! this->fixWidth() ) {
 		this->addFloatingParameter( this->getWidthPar() );
+	}
+	if ( ! this->fixResRadius() ) {
+		this->addFloatingParameter( this->getResBWFactor()->getRadiusParameter() );
+	}
+	if ( ! this->fixParRadius() ) {
+		this->addFloatingParameter( this->getParBWFactor()->getRadiusParameter() );
 	}
 
 	return this->getParameters();

@@ -77,10 +77,6 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	nSigGenLoop_(0),
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
-	setBarrierRadius_(kFALSE),
-	resBarrierRadius_(4.0),
-	parBarrierRadius_(4.0),
-	barrierType_( LauAbsResonance::BWPrimeBarrier ),
 	flipHelicity_(kTRUE),
 	recalcNormalisation_(kFALSE)
 {
@@ -137,10 +133,6 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	nSigGenLoop_(0),
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
-	setBarrierRadius_(kFALSE),
-	resBarrierRadius_(4.0),
-	parBarrierRadius_(4.0),
-	barrierType_( LauAbsResonance::BWPrimeBarrier ),
 	flipHelicity_(kTRUE),
 	recalcNormalisation_(kFALSE)
 {
@@ -655,7 +647,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 }
 
-LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType)
+LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauBlattWeisskopfFactor::BarrierType bwType)
 {
 	// Function to add a resonance in a Dalitz plot.
 	// No check is made w.r.t flavour and charge conservation rules, and so
@@ -673,7 +665,7 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	// Relativistic Breit-Wigner (RelBW) or Flatte distribution (Flatte), for example.
 
 	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
-	LauAbsResonance *theResonance = resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType);
+	LauAbsResonance *theResonance = resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType, bwCategory, bwType);
 
 	if (theResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
@@ -687,11 +679,6 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 		     ( resPairAmpInt == 3 && TMath::Abs(daughters_->getTypeDaug1()) == TMath::Abs(daughters_->getTypeDaug2()) ) ) {
 			theResonance->flipHelicity(kTRUE);
 		}
-	}
-
-	// Set the Blatt-Weisskopf barrier factors as appropriate
-	if (setBarrierRadius_) {
-		theResonance->setBarrierRadii(resBarrierRadius_, parBarrierRadius_, barrierType_);
 	}
 
 	// Set the resonance name and what track is the bachelor

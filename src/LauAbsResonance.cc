@@ -40,9 +40,8 @@ LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairA
 	resSpin_( (resInfo!=0) ? resInfo->getSpin() : 0 ),
 	resCharge_( (resInfo!=0) ? resInfo->getCharge() : 0 ),
 	resPairAmpInt_(resPairAmpInt),
-	parR_(4.0),
-	resR_(4.0),
-	barrierType_(BWPrimeBarrier),
+	parBWFactor_(0),
+	resBWFactor_(0),
 	flipHelicity_(kFALSE),
 	ignoreMomenta_(kFALSE),
 	q_(0.0),
@@ -94,9 +93,8 @@ LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpI
 	resSpin_(0),
 	resCharge_(0),
 	resPairAmpInt_(resPairAmpInt),
-	parR_(4.0),
-	resR_(4.0),
-	barrierType_(BWPrimeBarrier),
+	parBWFactor_(0),
+	resBWFactor_(0),
 	flipHelicity_(kFALSE),
 	ignoreMomenta_(kFALSE),
 	q_(0.0),
@@ -240,6 +238,24 @@ void LauAbsResonance::changeResonance(const Double_t newMass, const Double_t new
 	}
 }
 
+void LauAbsResonance::changeBWBarrierRadii(const Double_t resRadius, const Double_t parRadius)
+{
+	if ( resRadius >= 0.0 && resBWFactor_ != 0 ) {
+		LauParameter* resBWRadius = resBWFactor_->getRadiusParameter();
+		resBWRadius->value(resRadius);
+		resBWRadius->initValue(resRadius);
+		resBWRadius->genValue(resRadius);
+		std::cout << "INFO in LauAbsResonance::changeBWBarrierRadii : Setting resonance factor radius to " << resBWRadius->value() << std::endl;
+	}
+	if ( parRadius >= 0.0 && parBWFactor_ != 0 ) {
+		LauParameter* parBWRadius = parBWFactor_->getRadiusParameter();
+		parBWRadius->value(parRadius);
+		parBWRadius->initValue(parRadius);
+		parBWRadius->genValue(parRadius);
+		std::cout << "INFO in LauAbsResonance::changeBWBarrierRadii : Setting parent factor radius to " << parBWRadius->value() << std::endl;
+	}
+}
+
 void LauAbsResonance::setResonanceParameter(const TString& name, const Double_t value) 
 {
 	//This function should always be overwritten if needed in classes inheriting from LauAbsResonance.
@@ -270,6 +286,47 @@ void LauAbsResonance::addFloatingParameter( LauParameter* param )
 	} else {
 		resParameters_.push_back( param );
 	}
+}
+
+void LauAbsResonance::fixBarrierRadii(const Bool_t fixResRad, const Bool_t fixParRad)
+{
+	if ( resBWFactor_ == 0 ) {
+		std::cerr << "WARNING in LauAbsResonance::fixBarrierRadii : resonance barrier factor not present, cannot fix/float it" << std::endl;
+		return;
+	}
+
+	if ( parBWFactor_ == 0 ) {
+		std::cerr << "WARNING in LauAbsResonance::fixBarrierRadii : parent barrier factor not present, cannot fix/float it" << std::endl;
+		return;
+	}
+
+	LauParameter* resBWRadius = resBWFactor_->getRadiusParameter();
+	resBWRadius->fixed(fixResRad);
+
+	LauParameter* parBWRadius = parBWFactor_->getRadiusParameter();
+	parBWRadius->fixed(fixParRad);
+}
+
+Bool_t LauAbsResonance::fixResRadius() const
+{
+	if ( resBWFactor_ == 0 ) {
+		std::cerr << "WARNING in LauAbsResonance::fixResRadius : resonance barrier factor not present" << std::endl;
+		return kTRUE;
+	}
+
+	LauParameter* bwRadius = resBWFactor_->getRadiusParameter();
+	return bwRadius->fixed();
+}
+
+Bool_t LauAbsResonance::fixParRadius() const
+{
+	if ( parBWFactor_ == 0 ) {
+		std::cerr << "WARNING in LauAbsResonance::fixBarrierRadii : parent barrier factor not present" << std::endl;
+		return kTRUE;
+	}
+
+	LauParameter* bwRadius = parBWFactor_->getRadiusParameter();
+	return bwRadius->fixed();
 }
 
 Double_t LauAbsResonance::getMassParent() const

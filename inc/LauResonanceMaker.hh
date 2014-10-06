@@ -43,10 +43,19 @@ class LauResonanceMaker {
 		    \param [in] daughters defines the Dalitz plot in which the resonance should be created
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
-		    \param [in] resType the type of the resonance.
+		    \param [in] resType the type of the resonance
+		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    \param [in] bwType the Blatt-Weisskopf barrier type
 		    \return the resonance
 		*/
-		LauAbsResonance* getResonance(const LauDaughters* daughters, const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
+		LauAbsResonance* getResonance(const LauDaughters* daughters, const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory = LauBlattWeisskopfFactor::Default, const LauBlattWeisskopfFactor::BarrierType bwType = LauBlattWeisskopfFactor::BWPrimeBarrier);
+
+		//! Set the BW radius for the given category
+		/*!
+		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    \param [in] bwRadius the radius value to be used for the given category
+		*/
+		void setDefaultBWRadius(const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Double_t bwRadius);
 
 		//! Retrieve the integer index for the specified resonance
 		/*!
@@ -71,6 +80,9 @@ class LauResonanceMaker {
 		//! Create the list of known resonances
 		void createResonanceVector();
 
+		//! Retrieve Blatt-Weisskopf factor for the given category
+		LauBlattWeisskopfFactor* getBWFactor( const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauResonanceInfo* resInfo, const LauBlattWeisskopfFactor::BarrierType bwType );
+
 	private:
 		//! Constructor
 		LauResonanceMaker();
@@ -92,6 +104,17 @@ class LauResonanceMaker {
 
 		//! The known resonances
 		std::vector<LauResonanceInfo*> resInfo_;
+
+		//! The Blatt-Weisskopf factor objects for each category
+		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,LauBlattWeisskopfFactor*> BWFactorCategoryMap;
+		BWFactorCategoryMap bwFactors_;
+
+		//! The default radius for each Blatt-Weisskopf category
+		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,Double_t> BWRadiusCategoryMap;
+		BWRadiusCategoryMap bwDefaultRadii_;
+
+		//! The Blatt-Weisskopf factor objects for resonances in the independent category
+		std::vector<LauBlattWeisskopfFactor*> bwIndepFactors_;
 
 		ClassDef(LauResonanceMaker,0) // Kinematic routines
 };

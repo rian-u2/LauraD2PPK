@@ -96,9 +96,11 @@ class LauIsobarDynamics {
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the model for the resonance dynamics
+		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    \param [in] bwType the Blatt-Weisskopf barrier type
 		    \return the newly created resonance
 		*/
-		LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType);
+		LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory = LauBlattWeisskopfFactor::Default, const LauBlattWeisskopfFactor::BarrierType bwType = LauBlattWeisskopfFactor::BWPrimeBarrier);
 
 		//! Add an incoherent resonance to the Dalitz plot
 		/*!
@@ -325,51 +327,6 @@ class LauIsobarDynamics {
 		    \param [in] coeffs the new set of coefficients
 		*/
 		void updateCoeffs(const std::vector<LauComplex>& coeffs);
-
-		//! Set the parameters for the barrier factors for new resonances
-		/*!
-		    \param [in] resRadius the radius due to the resonance
-		    \param [in] parRadius the radius due to the parent
-		    \param [in] type the type of the barrier factor
-		 */
-		inline void setBarrierRadii( Double_t resRadius, Double_t parRadius = 4.0,
-				LauAbsResonance::BarrierType type = LauAbsResonance::BWPrimeBarrier )
-		{
-			setBarrierRadius_ = kTRUE;
-			resBarrierRadius_ = resRadius;
-			parBarrierRadius_ = parRadius;
-			barrierType_ = type;
-		}
-
-		//! Set the radius of the barrier factor due to the resonance to use for new amplitude components
-		/*!
-		    \param [in] radius the barrier radius
-		*/
-		inline void setResBarrierRadius(Double_t radius) {setBarrierRadius_ = kTRUE; resBarrierRadius_ = radius;}
-
-		//! Set the radius of the barrier factor due to the parent to use for new amplitude components
-		/*!
-		    \param [in] radius the barrier radius
-		*/
-		inline void setParBarrierRadius(Double_t radius) {setBarrierRadius_ = kTRUE; parBarrierRadius_ = radius;}
-
-		//! Set the type of barrier factor to use for new amplitude components
-		/*!
-		    \param [in] type the type of barrier factor. Allowed types are: BWBarrier, BWPrimeBarrier and ExpBarrier.
-		*/
-		inline void setBarrierType( LauAbsResonance::BarrierType type ) {setBarrierRadius_ = kTRUE; barrierType_ = type;}
-
-		//! Retrieve the radius of the barrier factor due to the resonance to use for new amplitude components
-		/*!
-		    \return the barrier radius
-		*/
-		inline Double_t getResBarrierRadius() const {return resBarrierRadius_;}
-
-		//! Retrieve the radius of the barrier factor due to the parent to use for new amplitude components
-		/*!
-		    \return the barrier radius
-		*/
-		inline Double_t getParBarrierRadius() const {return parBarrierRadius_;}
 
 		//! Set the helicity flip flag for new amplitude components
 		/*!
@@ -806,18 +763,6 @@ class LauIsobarDynamics {
 
 		//! The maximum value of A squared that has been seen so far while generating
 		Double_t aSqMaxVar_;
-
-		//! Should the radii of the resonance barrier factors be adjusted for new amplitude components
-		Bool_t setBarrierRadius_;
-
-		//! The radius of the resonance barrier factor for new amplitude components
-		Double_t resBarrierRadius_;
-
-		//! The radius of the parent barrier factor for new amplitude components
-		Double_t parBarrierRadius_;
-
-		//! The type of the barrier factor for new amplitude components
-		LauAbsResonance::BarrierType barrierType_;
 
 		//! The helicity flip flag for new amplitude components
 		Bool_t flipHelicity_;

@@ -20,14 +20,15 @@
 ClassImp(LauResonanceInfo)
 
 
-LauResonanceInfo::LauResonanceInfo(const TString& name, Double_t mass, Double_t width, Int_t spin, Int_t charge, Double_t range) :
+LauResonanceInfo::LauResonanceInfo(const TString& name, const Double_t mass, const Double_t width, const Int_t spin, const Int_t charge, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Double_t bwRadius) :
 	name_(name),
 	sanitisedName_(""),
 	mass_(0),
 	width_(0),
 	spin_(spin),
 	charge_(charge),
-	range_(range),
+	bwCategory_(bwCategory),
+	bwRadius_(bwRadius),
 	conjugate_(0),
 	extraPars_()
 {
@@ -51,7 +52,8 @@ LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other, const TString
 	width_(0),
 	spin_(other.spin_),
 	charge_(newCharge),
-	range_(other.range_),
+	bwCategory_(other.bwCategory_),
+	bwRadius_(other.bwRadius_),
 	conjugate_(0),
 	extraPars_()
 {
@@ -148,7 +150,7 @@ ostream& operator<<( ostream& stream, const LauResonanceInfo& infoRecord )
 	} else {
 		stream << "charge =  " << infoRecord.getCharge() << ", ";
 	}
-	stream << "range = " << infoRecord.getRange();
+	stream << "BW radius = " << infoRecord.getBWRadius();
 
 	return stream;
 }

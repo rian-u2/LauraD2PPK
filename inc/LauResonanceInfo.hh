@@ -24,6 +24,8 @@
 
 #include "TString.h"
 
+#include "LauBlattWeisskopfFactor.hh"
+
 class LauParameter;
 
 
@@ -37,9 +39,10 @@ class LauResonanceInfo {
 		    \param [in] width the width of the resonant particle
 		    \param [in] spin the spin of the resonant particle
 		    \param [in] charge the charge of the resonant particle
-		    \param [in] range the range of the resonant particle
+		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    \param [in] bwRadius the Blatt-Weisskopf radius of the resonant particle
 		*/
-		LauResonanceInfo(const TString& name, Double_t mass, Double_t width, Int_t spin, Int_t charge, Double_t range = 4.0);
+		LauResonanceInfo(const TString& name, const Double_t mass, const Double_t width, const Int_t spin, const Int_t charge, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Double_t bwRadius = 4.0);
 
 		//! Destructor
 		virtual ~LauResonanceInfo();
@@ -75,7 +78,7 @@ class LauResonanceInfo {
 		/*!
 		    \return the spin of the resonant particle
 		*/
-		Int_t getSpin() const {return spin_;}
+		UInt_t getSpin() const {return spin_;}
 
 		//! Retrieve the charge of the resonant particle
 		/*!
@@ -83,11 +86,17 @@ class LauResonanceInfo {
 		*/
 		Int_t getCharge() const {return charge_;}
 
-		//! Retrieve the range of the resonant particle
+		//! Retrieve the BW category of the resonant particle
 		/*!
-		    \return the range of the resonant particle
+		    \return the BW category of the resonant particle
 		*/
-		Double_t getRange() const {return range_;}
+		LauBlattWeisskopfFactor::BlattWeisskopfCategory getBWCategory() const {return bwCategory_;}
+
+		//! Retrieve the BW radius of the resonant particle
+		/*!
+		    \return the BW radius of the resonant particle
+		*/
+		Double_t getBWRadius() const {return bwRadius_;}
 
 		//! Create the charge conjugate particle info record
 		/*!
@@ -150,13 +159,16 @@ class LauResonanceInfo {
 		LauParameter* width_;
 
 		//! The spin of the resonant particle
-		Int_t spin_;
+		UInt_t spin_;
 
 		//! The charge of the resonant particle
 		Int_t charge_;
 
-		//! The range of the resonant particle
-		Double_t range_;
+		//! The Blatt-Weisskopf barrier factor category
+		LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory_;
+
+		//! The Blatt-Weisskopf radius of the resonant particle
+		Double_t bwRadius_;
 
 		//! The conjugate info object
 		LauResonanceInfo* conjugate_;

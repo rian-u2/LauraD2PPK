@@ -619,16 +619,35 @@ LauComplex LauKMatrixPropagator::calcKKRho(Double_t s) const
 
 LauComplex LauKMatrixPropagator::calcFourPiRho(Double_t s) const
 {
-	// Calculate the 4pi phase space factor. This uses a parameterisation that approximates
-	// the multi-body phase space double integral.
+	// Calculate the 4pi phase space factor. This uses a 6th-order polynomial 
+        // parameterisation that approximates the multi-body phase space double integral
+        // defined in Eq 4 of the A&S paper hep-ph/0204328. This form agrees with the 
+        // BaBar model (another 6th order polynomial from s^4 down to 1/s^2), but avoids the
+        // exponential increase at small values of s (~< 0.1) arising from 1/s and 1/s^2.
+        // Eq 4 is evaluated for each value of s by assuming incremental steps of 1e-3 GeV^2 
+        // for s1 and s2, the invariant energy squared of each of the di-pion states,
+        // with the integration limits of s1 = (2*mpi)^2 to (sqrt(s) - 2*mpi)^2 and
+        // s2 = (2*mpi)^2 to (sqrt(s) - sqrt(s1))^2. The mass M of the rho is taken to be
+        // 0.775 GeV and the energy-dependent width of the 4pi system 
+        // Gamma(s) = gamma_0*rho1^3(s), where rho1 = sqrt(1.0 - 4*mpiSq/s) and gamma_0 is 
+        // the "width" of the 4pi state at s = 1, which is taken to be 0.3 GeV 
+        // (~75% of the total width from PDG estimates of the f0(1370) -> 4pi state).
+        // The normalisation term rho_0 is found by ensuring that the phase space integral
+        // at s = 1 is equal to sqrt(1.0 - 16*mpiSq/s). Note that the exponent for this 
+        // factor in hep-ph/0204328 is wrong; it should be 0.5, i.e. sqrt, not n = 1 to 5.
+        // Plotting the value of this double integral as a function of s can then be fitted
+        // to a 6th-order polynomial (for s < 1), which is the result used below
+
 	LauComplex rho(0.0, 0.0);
 	if (TMath::Abs(s) < 1e-10) {return rho;}
 
 	if (s <= 1.0) {
-		Double_t term1 = (((11.3153*s - 21.8845)*s + 16.8358)*s - 6.39017)*s + 1.2274;
-		term1 += 0.00370909/(s*s);
-		term1 -= 0.111203/s;
-		rho.setRealPart( term1*fourPiFactor2_ );
+	        Double_t rhoTerm = ((1.07885*s + 0.13655)*s - 0.29744)*s - 0.20840;
+	        rhoTerm = ((rhoTerm*s + 0.13851)*s - 0.01933)*s + 0.00051;
+		// For some values of s (below 2*mpi), this term is a very small 
+		// negative number. Check for this and set the rho term to zero.
+		if (rhoTerm < 0.0) {rhoTerm = 0.0;}
+		rho.setRealPart( rhoTerm );
 	} else {
 		rho.setRealPart( TMath::Sqrt(1.0 - (fourPiFactor1_/s)) );
 	}
@@ -654,13 +673,21 @@ LauComplex LauKMatrixPropagator::calcEtaEtaRho(Double_t s) const
 
 LauComplex LauKMatrixPropagator::calcEtaEtaPRho(Double_t s) const
 {
-	// Calculate the eta-eta' phase space factor
+	// Calculate the eta-eta' phase space factor. Note that the
+        // mass difference term m_eta - m_eta' is not included,
+        // since this corresponds to a "t or u-channel crossing",
+        // which means that we cannot simply analytically continue 
+        // this part of the phase space factor below threshold, which
+        // we can do for s-channel contributions. This is actually an 
+        // unsolved problem, e.g. see Guo et al 1409.8652, and 
+        // Danilkin et al 1409.7708. Anisovich and Sarantsev in 
+        // hep-ph/0204328 "solve" this issue by setting the mass 
+        // difference term to unity, which is what we do here...
+
 	LauComplex rho(0.0, 0.0);
 	if (TMath::Abs(s) < 1e-10) {return rho;}
 
-	Double_t sqrtTerm1 = (-mEtaEtaPSumSq_/s) + 1.0;
-	Double_t sqrtTerm2 = (-mEtaEtaPDiffSq_/s) + 1.0;
-	Double_t sqrtTerm = sqrtTerm1*sqrtTerm2;
+	Double_t sqrtTerm = (-mEtaEtaPSumSq_/s) + 1.0;
 	if (sqrtTerm < 0.0) {
 		rho.setImagPart( TMath::Sqrt(-sqrtTerm) );
 	} else {

@@ -4,6 +4,17 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+9th October 2014 John Back
+
+* Corrected the eta-eta' and 4pi phase space factors in LauKMatrixPropagator,
+  which is used for the K-matrix amplitude:
+  - calcEtaEtaPRho() does not include the mass difference term m_eta - m_eta'
+    following the recommendation in hep-ph/0204328 and from advice from M Pennington
+  - calcFourPiRho() incorporates a better parameterisation of the double integral of Eq 4 in
+    hep-ph/0204328 which avoids the exponential increase for small values of s (~< 0.1)
+  - More detailed comments are provided in the above two functions to explain what is
+    going on and the reason for the choices made
+
 30th September 2014 Thomas Latham
 
 * Fix issue in the checks on toy MC generation validity

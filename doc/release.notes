@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+10th October 2014 Thomas Latham
+
+* Add new method to LauResonanceMaker to set whether the radius of a given Blatt-Weisskopf category should be fixed of floated
+* Modify the methods of LauResonanceMaker to set the radius value and whether it should be floated so that they work before and after the resonances have been created
+
 9th October 2014 John Back
 
 * Corrected the eta-eta' and 4pi phase space factors in LauKMatrixPropagator,
@@ -14,6 +19,10 @@
     hep-ph/0204328 which avoids the exponential increase for small values of s (~< 0.1)
   - More detailed comments are provided in the above two functions to explain what is
     going on and the reason for the choices made
+
+6th October 2014 Thomas Latham
+
+* Implement the mechanism for floating Blatt-Weisskopf barrier factor radius parameters
 
 30th September 2014 Thomas Latham
 
@@ -37,6 +46,36 @@
 * Added charged version of the BelleNR resonances to LauResonanceMaker
 * Updated parameters in LauConstants to match PDG 2014
 
+14th July 2014 Thomas Latham
+
+* Add intial support for fully-symmetric final states such as B0 -> KS KS KS
+  - Performs the symmetrisation of the signal model
+  - Background (and efficiency) histogram classes need some work if the user wants to provide folded histograms
+
+8th July 2014 Daniel Craik
+
+* Add class for model-independent partial wave
+  - Uses splines to produce a smooth amplitude from a set of magnitude and phase values at given invariant masses
+  - The individual magnitudes and phases can be floated in the fit
+
+16th June 2014 Thomas Latham
+
+* Allow floating of resonance parameters in simultaneous fits
+
+13th June 2014 Thomas Latham
+
+* Fix bug in LauResonanceInfo cloning method, where the width parameter was given a clone of the mass
+
+10th June 2014 Thomas Latham
+
+* Add new function to allow sharing of resonance parameters between components that are not charged conjugates, e.g. LASS_BW and LASS_NR
+
+9th June 2014 Thomas Latham and Daniel Craik
+
+* Fix bug in the new integration scheme
+  - Was not accounting for cases where several resonances share a floating parameter
+  - Meant that the integrals and caches for that resonance were not being updated
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r2
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -46,19 +85,51 @@
 * Fix issue in asymmetric efficiency histogram errors
   - Fluctuation of bins was incorrectly sampling - assumed area each side of peak was the same
 
+5th June 2014 Thomas Latham
+(in branch for release in v3r0)
+
+* Introduce intelligent calculation of amplitudes during recalculation of integrals and recaching of data points
+  - Floating resonance parameters is now much more efficient
+* Make resonance parameters second-stage, also improves fit timing when floating them
+
 3rd June 2014 Rafael Coutinho
 
 * Implement generation of toy MC from fit results in fitSlave
 
+27th May 2014 Thomas Latham
+(in branch for release in v3r0)
+
+* Complete audit of special functions
+* Remove unncessary LauAbsDPDynamics base class and move all functionality into LauIsobarDynamics
+
 20th May 2014 Daniel Craik
-(in branch for v3r0)
+(in branch for release in v3r0)
 
 * Add support for K*_0(1430) and a_0(980) to LauFlatteRes
 
+16th-19th May 2014 Thomas Latham and Daniel Craik
+(in branch for release in v3r0)
+
+* Update all other lineshapes so that their parameters can float
+  - The only resonance parameters that now cannot float are the Blatt-Weisskopf barrier factor radii
+
+15th May 2014 Thomas Latham
+(in branch for release in v3r0)
+
+* Change the mechanism for getting floating resonance parameters into the fit
+  - Moved from LauResonanceMaker to the resonances themselves
+  - Lays some groundwork for improving the efficiency of recalculating the integrals
+  - LauBelleNR and LauBelleSymNR lineshape parameters can now be floated
+
 13th May 2014 Daniel Craik
-(in branch for v3r0)
+(in branch for release in v3r0)
 
 * Fix bug where illegal characters were being propagated from resonance names into TBranch names
+
+6th May 2014 Thomas Latham
+(in branch for release in v3r0)
+
+* Provide accessors for mass and width parameters
 
 5th May 2014 Louis Henry
 
@@ -73,6 +144,18 @@
 * Fix bug in the determination of the integration scheme
   - Nearby narrow resonances caused problems if their "zones" overlap
   - These zones are now merged together
+
+29th April 2014 Thomas Latham
+(in branch for release in v3r0)
+
+* Some improvments to integration scheme storage
+
+26th April 2014 Juan Otalo
+(in branch for release in v3r0)
+
+* Make integation scheme fixed after first determination
+  - is stored in a new class LauDPPartialIntegralInfo
+  - used on subsequent re-evaluations of the integrals
 
 23rd April 2014 Thomas Latham
 
@@ -124,6 +207,10 @@
   - Factor two missing in the denominator
   - New penalty term is: ( x-mean )^2 / 2*(width^2)
 
+4th April 2014 Thomas Latham
+
+* Add storage of fit fractions that have not been efficiency corrected
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r1
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -156,6 +243,15 @@
 * Added the ability to add Gaussian contraints to LauFormulaPars of fit parameters
   - User supplies the information but the LauFormulaPar is constructed behind the scenes
 
+18th March 2014 Thomas Latham
+
+* Improve behaviour of toy generation from fit results
+
+13th March 2014 Juan Otalo
+(in branch for release in v3r0)
+
+* Extended ability to float mass and width to other resonance lineshapes (Flatte, LASS and G-S)
+
 11th March 2014 Mark Whitehead 
 (in branch for release in v2r1)
 
@@ -164,6 +260,15 @@
   - Many files updated to accept LauAbsRValues instead of LauParameters
 * Fairly major clean up of obsolete functions in LauAbsPdf
   - Only LauLinearPdf used any of them, this has now been updated
+
+10th March 2014 Thomas Latham
+(in branch for release in v3r0)
+
+* First attempt at floating resonance parameters (work mostly from Juan)
+  - Only works for RelBW lineshape
+  - Can only float mass and width
+  - Works nicely!
+  - Still needs much work to generalise and make more efficient
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r0

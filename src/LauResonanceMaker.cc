@@ -398,8 +398,42 @@ void LauResonanceMaker::setDefaultBWRadius(const LauBlattWeisskopfFactor::BlattW
 {
 	if ( bwCategory == LauBlattWeisskopfFactor::Default || bwCategory == LauBlattWeisskopfFactor::Indep ) {
 		std::cerr << "WARNING in LauResonanceMaker::setDefaultBWRadius : cannot set radius values for Default or Indep categories" << std::endl;
+		return;
 	}
+
+	// Check if a LauBlattWeisskopfFactor object has been created for this category
+	// If it has then we can set it directly
+	// If not then we just store the value to be used when it is created later
+	BWFactorCategoryMap::iterator factor_iter = bwFactors_.find( bwCategory );
+	if ( factor_iter != bwFactors_.end() ) {
+		LauBlattWeisskopfFactor* bwFactor = factor_iter->second;
+		LauParameter* radius = bwFactor->getRadiusParameter();
+		radius->value(bwRadius);
+		radius->initValue(bwRadius);
+		radius->genValue(bwRadius);
+	}
+
 	bwDefaultRadii_[bwCategory] = bwRadius;
+}
+
+void LauResonanceMaker::fixBWRadius(const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Bool_t fixRadius)
+{
+	if ( bwCategory == LauBlattWeisskopfFactor::Default || bwCategory == LauBlattWeisskopfFactor::Indep ) {
+		std::cerr << "WARNING in LauResonanceMaker::fixBWRadius : cannot fix/float radius values for Default or Indep categories" << std::endl;
+		return;
+	}
+
+	// Check if a LauBlattWeisskopfFactor object has been created for this category
+	// If it has then we can set it directly
+	// If not then we just store the value to be used when it is created later
+	BWFactorCategoryMap::iterator factor_iter = bwFactors_.find( bwCategory );
+	if ( factor_iter != bwFactors_.end() ) {
+		LauBlattWeisskopfFactor* bwFactor = factor_iter->second;
+		LauParameter* radius = bwFactor->getRadiusParameter();
+		radius->fixed(fixRadius);
+	}
+
+	bwFixRadii_[bwCategory] = fixRadius;
 }
 
 LauBlattWeisskopfFactor* LauResonanceMaker::getBWFactor( const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauResonanceInfo* resInfo, const LauBlattWeisskopfFactor::BarrierType bwType )
@@ -407,7 +441,7 @@ LauBlattWeisskopfFactor* LauResonanceMaker::getBWFactor( const LauBlattWeisskopf
 	LauBlattWeisskopfFactor* bwFactor(0);
 
 	BWFactorCategoryMap::iterator factor_iter = bwFactors_.find( bwCategory );
-	BWRadiusCategoryMap::iterator radius_iter = bwDefaultRadii_.find( bwCategory );
+	BWRadiusCategoryMap::const_iterator radius_iter = bwDefaultRadii_.find( bwCategory );
 
 	if ( bwCategory == LauBlattWeisskopfFactor::Indep ) {
 		bwFactor = new LauBlattWeisskopfFactor( *resInfo, bwType, bwCategory );
@@ -426,6 +460,15 @@ LauBlattWeisskopfFactor* LauResonanceMaker::getBWFactor( const LauBlattWeisskopf
 			std::cerr << "WARNING in LauResonanceMaker::getBWFactor : A barrier factor already exists for the specified category but does not have the specified barrier type.\n";
 			std::cerr << "                                          : If you want to use that type you will need to use a different category for this resonance." << std::endl;
 		}
+	}
+
+	BWRadiusFixedCategoryMap::const_iterator radius_fixed_iter = bwFixRadii_.find( bwCategory );
+
+	if ( radius_fixed_iter != bwFixRadii_.end() ) {
+		const Bool_t fixed = radius_fixed_iter->second;
+
+		LauParameter* radius = bwFactor->getRadiusParameter();
+		radius->fixed( fixed );
 	}
 
 	return bwFactor;

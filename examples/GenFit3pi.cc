@@ -105,9 +105,13 @@ int main( int argc, char** argv )
 	//effModel->setEffHisto(effHist, useInterpolation, fluctuateBins, 0.0, 0.0, useUpperHalf, squareDP);
 
 	// Create the isobar model
+
+	// Set the values of the Blatt-Weisskopf barrier radii and whether they are fixed or floating
 	LauResonanceMaker& resMaker = LauResonanceMaker::get();
-	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     1.5 );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     5.0 );
 	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
+	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Parent,  kTRUE );
+	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Light,  kFALSE );
 
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 	LauAbsResonance* reson(0);
@@ -124,7 +128,7 @@ int main( int argc, char** argv )
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and
 	// error.
-	sigModel->setASqMaxValue(0.27);  
+	sigModel->setASqMaxValue(0.32);  
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);

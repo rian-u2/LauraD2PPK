@@ -57,6 +57,13 @@ class LauResonanceMaker {
 		*/
 		void setDefaultBWRadius(const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Double_t bwRadius);
 
+		//! Fix or release the Blatt-Weisskopf barrier radius for the given category
+		/*!
+		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    \param [in] fixRadius new status of the radius (kTRUE = fixed, kFALSE = floating)
+		*/
+		void fixBWRadius(const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Bool_t fixRadius);
+
 		//! Retrieve the integer index for the specified resonance
 		/*!
 		    \param [in] name the name of the resonant particle
@@ -112,6 +119,10 @@ class LauResonanceMaker {
 		//! The default radius for each Blatt-Weisskopf category
 		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,Double_t> BWRadiusCategoryMap;
 		BWRadiusCategoryMap bwDefaultRadii_;
+
+		//! The fixed/floating status of the radius for each Blatt-Weisskopf category
+		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,Bool_t> BWRadiusFixedCategoryMap;
+		BWRadiusFixedCategoryMap bwFixRadii_;
 
 		//! The Blatt-Weisskopf factor objects for resonances in the independent category
 		std::vector<LauBlattWeisskopfFactor*> bwIndepFactors_;

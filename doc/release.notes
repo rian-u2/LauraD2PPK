@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+13th October 2014 Thomas Latham
+
+* Modify Makefile to allow compilation with ROOT 6 (in addition to maintaining support for ROOT 5)
+* Fix a few compilation errors on MacOSX 10.9
+
 13th October 2014 Daniel Craik
 
 * Update LauModIndPartWave to allow knots at kinematic limits to be modified

@@ -183,6 +183,6 @@ class LauResonanceInfo {
 
 };
 
-ostream& operator<<( ostream& stream, const LauResonanceInfo& infoRecord );
+std::ostream& operator<<( std::ostream& stream, const LauResonanceInfo& infoRecord );
 
 #endif

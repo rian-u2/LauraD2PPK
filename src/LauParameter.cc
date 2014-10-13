@@ -815,7 +815,7 @@ Double_t operator /= (Double_t& lhs, const LauParameter& rhs)
 }
 
 // ostream operator
-ostream& operator << (ostream& stream, const LauParameter& par)
+std::ostream& operator << (std::ostream& stream, const LauParameter& par)
 {
 	stream << par.value();
 	return stream;

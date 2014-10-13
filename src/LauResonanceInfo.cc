@@ -138,7 +138,7 @@ void LauResonanceInfo::addCloneOfExtraParameter( LauParameter* param )
 	extraPars_.insert( cloneParam );
 }
 
-ostream& operator<<( ostream& stream, const LauResonanceInfo& infoRecord )
+std::ostream& operator<<( std::ostream& stream, const LauResonanceInfo& infoRecord )
 {
 	stream << infoRecord.getName() << ": ";
 	stream << "mass = " << infoRecord.getMass()->value() << ", ";

@@ -81,7 +81,7 @@ class LauResonanceMaker {
 		/*!
 		    \param [in,out] stream the stream to which to print the info
 		*/
-		void printAll( ostream& stream ) const;
+		void printAll( std::ostream& stream ) const;
 
 	protected:
 		//! Create the list of known resonances

@@ -677,7 +677,7 @@ Int_t LauResonanceMaker::resTypeInt(const TString& name) const
 	return resTypInt;
 }
 
-void LauResonanceMaker::printAll( ostream& stream ) const
+void LauResonanceMaker::printAll( std::ostream& stream ) const
 {
 	for ( std::vector<LauResonanceInfo*>::const_iterator iter = resInfo_.begin(); iter != resInfo_.end(); ++iter ) {
 		stream << (**iter) << std::endl;

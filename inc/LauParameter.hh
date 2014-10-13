@@ -22,6 +22,7 @@
 #ifndef LAU_PARAMETER
 #define LAU_PARAMETER
 
+#include <iosfwd>
 #include <map>
 #include <vector>
 
@@ -569,7 +570,7 @@ Double_t operator *= (Double_t& lhs, const LauParameter& rhs);
 Double_t operator /= (Double_t& lhs, const LauParameter& rhs);
 
 //! Output stream operator
-ostream& operator << (ostream& stream, const LauParameter& par);
+std::ostream& operator << (std::ostream& stream, const LauParameter& par);
 
 //! Type to define an array of parameters
 typedef std::vector< std::vector<LauParameter> >  LauParArray;

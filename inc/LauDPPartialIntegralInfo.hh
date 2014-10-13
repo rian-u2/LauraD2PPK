@@ -241,6 +241,6 @@ class LauDPPartialIntegralInfo {
 		ClassDef(LauDPPartialIntegralInfo, 0)
 };
 
-ostream& operator<<( ostream& stream, const LauDPPartialIntegralInfo& infoRecord );
+std::ostream& operator<<( std::ostream& stream, const LauDPPartialIntegralInfo& infoRecord );
 
 #endif

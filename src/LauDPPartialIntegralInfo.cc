@@ -121,7 +121,7 @@ LauDPPartialIntegralInfo::~LauDPPartialIntegralInfo()
 {
 }
 
-ostream& operator<<( ostream& stream, const LauDPPartialIntegralInfo& infoRecord )
+std::ostream& operator<<( std::ostream& stream, const LauDPPartialIntegralInfo& infoRecord )
 {
 	stream << "minm13 = " << infoRecord.getMinm13() << ", ";
 	stream << "maxm13 = " << infoRecord.getMaxm13() << ", ";

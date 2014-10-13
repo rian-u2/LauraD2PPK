@@ -43,9 +43,10 @@ else
   ROOTBINDIR := $(ROOTSYS)/bin
 endif
 
-ROOTCONFIG := $(ROOTBINDIR)/root-config
-ARCH       := $(shell $(ROOTCONFIG) --arch)
-PLATFORM   := $(shell $(ROOTCONFIG) --platform)
+ROOTCONFIG  := $(ROOTBINDIR)/root-config
+ARCH        := $(shell $(ROOTCONFIG) --arch)
+PLATFORM    := $(shell $(ROOTCONFIG) --platform)
+ROOTVERSION := $(shell $(ROOTCONFIG) --version | awk -F. '{print $$1}')
 
 INCLUDES = 
 SRCDIR   = src
@@ -59,16 +60,16 @@ CXX      = g++
 LD       = g++
 CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
 MFLAGS   = -MM
-SOFLAGS  = -shared
+LDFLAGS  = -shared
 endif
 
 ifeq ($(ARCH),macosx64)
-# For Mac OS X you may need to put -m64 in CXXFLAGS and SOFLAGS.
+# This set here should work for MacOSX.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -m64
+CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
 MFLAGS   = -MM
-SOFLAGS  = -m64 -dynamiclib -single_module -undefined dynamic_lookup
+LDFLAGS  = -dynamiclib -single_module -undefined dynamic_lookup
 endif
 
 # --- Internal configuration ----------------------------------
@@ -76,8 +77,10 @@ PACKAGE=Laura++
 DEPDIR=$(WORKDIR)/dependencies
 OBJDIR=$(WORKDIR)/objects
 
-INCLUDES += -I$(INCDIR) -I$(shell $(ROOTBINDIR)/root-config --incdir)
+INCLUDES += -I$(INCDIR)
 CXXFLAGS += $(INCLUDES)
+CXXFLAGS += $(shell $(ROOTCONFIG) --cflags)
+LDFLAGS  += $(shell $(ROOTCONFIG) --ldflags)
 SKIPLIST  = test.cc
 CINTFILE  = $(WORKDIR)/$(PACKAGE)Cint.cc
 CINTOBJ   = $(OBJDIR)/$(PACKAGE)Cint.o
@@ -116,8 +119,13 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.cc
 # Rule to make ROOTCINT output file
 $(CINTOBJ): $(HHLIST) $(INCDIR)/$(PACKAGE)_LinkDef.h
 	@mkdir -p $(OBJDIR)
+ifeq ($(ROOTVERSION),5)
 	@echo "Running rootcint"
 	@$(ROOTBINDIR)/rootcint -f $(CINTFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
+else
+	@echo "Running rootcling"
+	@$(ROOTBINDIR)/rootcling -f $(CINTFILE) -s $(SHLIBFILE) -rml $(SHLIBFILE) -rml libEG.so -rml libHist.so -rml libMatrix.so -rml libNet.so -rml libRIO.so -rml libTree.so -rml libMathCore.so -rml libCore.so -rmf $(ROOTMAPFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
+endif
 	@echo "Compiling $(CINTFILE)"
 	@$(CXX) $(CXXFLAGS) -c $(CINTFILE) -o $(CINTOBJ)
 
@@ -133,18 +141,26 @@ $(SHLIBFILE): $(OLIST) $(CINTOBJ)
 	@echo "Making $(SHLIBFILE)"
 	@mkdir -p $(LIBDIR)
 	@rm -f $(SHLIBFILE)
-	@$(CXX) $(OLIST) $(CINTOBJ) $(SOFLAGS) -o $(SHLIBFILE)
+	@$(CXX) $(OLIST) $(CINTOBJ) $(LDFLAGS) -o $(SHLIBFILE)
 
+ifeq ($(ROOTVERSION),5)
 # Rule to create rootmap file
 $(ROOTMAPFILE): $(SHLIBFILE)
 	@echo "Making $(ROOTMAPFILE)"
 	@mkdir -p $(LIBDIR)
 	@rm -f $(ROOTMAPFILE)
 	@rlibmap -f -o $(ROOTMAPFILE) -l $(SHLIBFILE) -d libCore.so libEG.so libHist.so libMathCore.so libMatrix.so libNet.so libRIO.so libTree.so -c $(INCDIR)/$(PACKAGE)_LinkDef.h
+endif
 
 # Useful build targets
 lib: $(LIBFILE) 
+
+ifeq ($(ROOTVERSION),5)
 shlib: $(SHLIBFILE) $(ROOTMAPFILE)
+else
+shlib: $(SHLIBFILE)
+endif
+
 clean:
 	rm -rf $(WORKDIR)
 	rm -f $(LIBFILE)

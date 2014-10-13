@@ -150,7 +150,7 @@
 
 * Some improvments to integration scheme storage
 
-26th April 2014 Juan Otalo
+26th April 2014 Juan Otalora
 (in branch for release in v3r0)
 
 * Make integation scheme fixed after first determination
@@ -247,7 +247,7 @@
 
 * Improve behaviour of toy generation from fit results
 
-13th March 2014 Juan Otalo
+13th March 2014 Juan Otalora
 (in branch for release in v3r0)
 
 * Extended ability to float mass and width to other resonance lineshapes (Flatte, LASS and G-S)

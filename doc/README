@@ -42,6 +42,11 @@ To build the example code:
 cd examples
 make
 
+(On MacOSX it is currently necessary to also do:
+ln -s ../lib .
+in order to successfully run the examples.
+We hope to have a solution to avoid this step soon.)
+
 To build the online doxygen documentation just run doxygen in the top level
 Laura++ directory and then load the index.html file found in doxygen/html.
 
@@ -70,6 +75,7 @@ Mark Whitehead
 Daniel Craik
 Rafael Coutinho
 Charlotte Wallace
+Juan Otalora
 
 Many thanks also go to numerous members of the BaBar and LHCb collaborations
 for their helpful input. 

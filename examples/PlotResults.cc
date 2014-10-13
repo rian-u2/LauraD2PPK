@@ -310,7 +310,7 @@ void plotDists(const TString& fileName, const TString& treeName, Int_t numExpts)
 
 	TString texName("dists.tex");
 	cout<<"Opening file \""<<texName<<"\" for writing table."<<endl;
-	ofstream fout(texName);
+	std::ofstream fout(texName);
 
 	// write the table heading
 	fout<<"\\begin{tabular}{lcccccc}"<<endl;

@@ -49,13 +49,25 @@ class LauModIndPartWave : public LauAbsResonance {
     //! Add a knot to the magnitude and phase splines
     /*!
       Knots must be added in ascending order and two knots cannot be placed at the same mass.
+      Knots are added automatically at the upper and lower kinematic thesholds and can be updated using LauModIndPartWave::setKnotAmp.
       \param [in] mass the mass at which the knot is placed
+      \param [in] magVal the value of the magnitude at the knot
+      \param [in] phaseVal the value of the phase at the knot
+      \param [in] fixMag whether the magnitude parameter should be fixed at the knot (default is false)
+      \param [in] fixPhase whether the phase parameter should be fixed at the knot (default is false)
+    */
+    void addKnot(Double_t mass, Double_t magVal, Double_t phaseVal, Bool_t fixMag=kFALSE, Bool_t fixPhase=kFALSE);
+
+    //! Set the magnitude and phase at a given knot
+    /*!
+      The knot at the upper (lower) kinematic threshold can be accessed as knot -1 (0)
+      \param [in] knot the knot to be updated
       \param [in] magVal the value of the magnitude at the knot
       \param [in] phaseVal the value of the phase at the knot
       \param [in] fixMag whether the magnitude parameter should be fixed at the knot
       \param [in] fixPhase whether the phase parameter should be fixed at the knot
     */
-    void addKnot(Double_t mass, Double_t magVal, Double_t phaseVal, Bool_t fixMag=kTRUE, Bool_t fixPhase=kTRUE);
+    void setKnotAmp(Int_t knot, Double_t magVal, Double_t phaseVal, Bool_t fixMag, Bool_t fixPhase);
 
     //! Get the resonance model type
     /*!
@@ -100,6 +112,15 @@ class LauModIndPartWave : public LauAbsResonance {
 
     //! Flag to identify whether the model has been intialised yet
     Bool_t initialised_;
+
+    //! Magnitude for the knot at the upper kinematic threshold
+    Double_t upperThresholdMag_;
+    //! Phase for the knot at the upper kinematic threshold
+    Double_t upperThresholdPhase_;
+    //! Whether the magnitude should be fixed for the knot at the upper kinematic threshold
+    Bool_t fixUpperThresholdMag_;
+    //! Whether the phase should be fixed for the knot at the upper kinematic threshold
+    Bool_t fixUpperThresholdPhase_;
 
     ClassDef(LauModIndPartWave,0) // model independent partial wave
 

@@ -35,9 +35,13 @@ ClassImp(LauModIndPartWave)
 LauModIndPartWave::LauModIndPartWave(LauResonanceInfo* resInfo, Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),
   nKnots_(0),
-  initialised_(kFALSE)
+  initialised_(kFALSE),
+  upperThresholdMag_(0.01),
+  upperThresholdPhase_(0.),
+  fixUpperThresholdMag_(kFALSE),
+  fixUpperThresholdPhase_(kFALSE)
 {
-  this->addKnot(this->getMassDaug1() + this->getMassDaug2(),0.0,0.0);
+  this->addKnot(this->getMassDaug1() + this->getMassDaug2(),0.01,0.0);
 }
 
 LauModIndPartWave::~LauModIndPartWave()
@@ -63,8 +67,8 @@ LauModIndPartWave::~LauModIndPartWave()
 void LauModIndPartWave::initialise()
 {
   if(!initialised_) {
-    //lock the amplitude at the upper kinematic limit to zero
-    this->addKnot(this->getMassParent() - this->getMassBachelor(),0.0,0.0);
+    //Use values for upper threshold knot that were set using setKnotAmp
+    this->addKnot(this->getMassParent() - this->getMassBachelor(),upperThresholdMag_,upperThresholdPhase_, fixUpperThresholdMag_, fixUpperThresholdPhase_);
     initialised_ = kTRUE;
   }
   if(magSpline_!=0) {
@@ -136,7 +140,58 @@ void LauModIndPartWave::addKnot(Double_t mass, Double_t magVal, Double_t phaseVa
     this->getResInfo()->addExtraParameter(phasePars_[nKnots_]);
   }
 
+  std::cout << "INFO in LauModIndPartWave::addKnot : Knot added to resonance " << this->getResonanceName() << " at mass " << mass << std::endl;
+  if(fixMag) std::cout << "                                     Magnitude fixed to " << magVal << std::endl;
+  else std::cout << "                                     Magnitude set to " << magVal << std::endl;
+  if(fixPhase) std::cout << "                                     Phase fixed to " << phaseVal << std::endl;
+  else std::cout << "                                     Phase set to " << phaseVal << std::endl;
+
   ++nKnots_;
+}
+
+void LauModIndPartWave::setKnotAmp(Int_t knot, Double_t magVal, Double_t phaseVal, Bool_t fixMag, Bool_t fixPhase) {
+
+  //Out of range
+  if(knot > nKnots_ || knot < -1) {
+    std::cerr << "WARNING in LauModIndPartWave::setKnotAmp : Index " << knot << " does not correspond to an existing knot in resonance " << this->getResonanceName() << std::endl;
+    std::cerr << "                                           Index must be in range -1 to " << nKnots_-1 << std::endl;
+    return;
+  }
+
+  //Special value to access upper threshold knot (only added during initialisation)
+  if(knot == -1) {
+    upperThresholdMag_ = magVal;
+    upperThresholdPhase_ = phaseVal;
+    fixUpperThresholdMag_ = fixMag;
+    fixUpperThresholdPhase_ = fixPhase;
+
+    std::cout << "INFO in LauModIndPartWave::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at upper kinematic threshold" << std::endl;
+    if(fixMag) std::cout << "                                        Magnitude fixed to " << magVal << std::endl;
+    else std::cout << "                                        Magnitude set to " << magVal << std::endl;
+    if(fixPhase) std::cout << "                                        Phase fixed to " << phaseVal << std::endl;
+    else std::cout << "                                        Phase set to " << phaseVal << std::endl;
+  }
+
+  //Otherwise edit the values directly
+  else {
+    magnitudes_[knot] = magVal;
+    magnitudePars_[knot]->value(magVal);
+    magnitudePars_[knot]->genValue(magVal);
+    magnitudePars_[knot]->initValue(magVal);
+    magnitudePars_[knot]->fixed(fixMag);
+    phases_[knot] = phaseVal;
+    phasePars_[knot]->value(phaseVal);
+    phasePars_[knot]->genValue(phaseVal);
+    phasePars_[knot]->initValue(phaseVal);
+    phasePars_[knot]->fixed(fixPhase);
+
+    if(knot == 0) std::cout << "INFO in LauModIndPartWave::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at lower kinematic threshold" << std::endl;
+    else std::cout << "INFO in LauModIndPartWave::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at mass " << masses_[knot] << std::endl;
+    if(fixMag) std::cout << "                                        Magnitude fixed to " << magVal << std::endl;
+    else std::cout << "                                        Magnitude set to " << magVal << std::endl;
+    if(fixPhase) std::cout << "                                        Phase fixed to " << phaseVal << std::endl;
+    else std::cout << "                                        Phase set to " << phaseVal << std::endl;
+  }
 }
 
 LauComplex LauModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)

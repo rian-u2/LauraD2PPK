@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+13th October 2014 Daniel Craik
+
+* Update LauModIndPartWave to allow knots at kinematic limits to be modified
+  - Add new method setKnotAmp to modify existing knots (and the knot at the upper kinematic limit which is automatically added at initialisation)
+* Update doxygen for LauIsobarDynamics::addIncoherentResonance to mention that incoherent resonances must be added last
+
 10th October 2014 Thomas Latham
 
 * Add new method to LauResonanceMaker to set whether the radius of a given Blatt-Weisskopf category should be fixed of floated

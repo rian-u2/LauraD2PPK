@@ -104,6 +104,7 @@ class LauIsobarDynamics {
 
 		//! Add an incoherent resonance to the Dalitz plot
 		/*!
+		    Note that incoherent components must be added to the model last
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the model for the resonance dynamics

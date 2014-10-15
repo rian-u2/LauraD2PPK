@@ -93,6 +93,12 @@
 * Fix bug in the new integration scheme
   - Was not accounting for cases where several resonances share a floating parameter
   - Meant that the integrals and caches for that resonance were not being updated
+* Introduce a change in the implementation of the helicity flip for neutral parent decays
+  - Prior to this change the helicity was flipped for any neutral resonance in the decay of a neutral particle.
+  - Now the flip no longer occurs in flavour-specific decays (such as Bs0 -> D0bar K- pi+ or B0 -> K+ pi- pi0) since it is only required in flavour-conjugate modes (such as B0 -> KS pi+ pi-).
+  - This does not affect any physical results but it does contribute a pi phase flip to some odd-spin resonances (for example K*(892)0 in Bs0->D0barKpi).
+  - Therefore results are not necessarily comparable between fits run before and after this changeset.
+  - This change will first be released in v3r0.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v2r2

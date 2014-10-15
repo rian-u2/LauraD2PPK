@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+15th October 2014 Thomas Latham
+
+* Add methods to LauIsobarDynamics to make the integration binning more tunable by the user:
+  - setNarrowResonanceThreshold - modify the value below which a resonance is considered to be narrow (defaults to 0.02 GeV/c2)
+  - setIntegralBinningFactor - modify the factor by which the narrow resonance width is divided to obtain the bin size (defaults to 100)
+* Print warning messages if the memory usage is likely to be very large
+
 13th October 2014 Thomas Latham
 
 * Modify Makefile to allow compilation with ROOT 6 (in addition to maintaining support for ROOT 5)

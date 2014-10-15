@@ -89,7 +89,25 @@ class LauIsobarDynamics {
 		    \param [in] m13BinWidth the bin width to use when integrating over m13
 		    \param [in] m23BinWidth the bin width to use when integrating over m23
 		*/
-		void setIntegralBinWidths(Double_t m13BinWidth, Double_t m23BinWidth);
+		void setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth);
+
+		//! Set the value below which a resonance width is considered to be narrow
+		/*!
+		    Narrow resonances trigger different integration behaviour - dividing the DP into regions where a finer binning is used.
+		    This can cause high memory usage, so use this method and LauIsobarDynamics::setIntegralBinningFactor to tune this behaviour, if needed.
+
+		    \param [in] narrowWidth the value below which a resonance is considered to be narrow (defaults to 0.02 GeV/c2)
+		*/
+		void setNarrowResonanceThreshold(const Double_t narrowWidth) { narrowWidth_ = narrowWidth; }
+
+		//! Set the factor relating the width of a narrow resonance and the binning size in its integration region
+		/*!
+		    Narrow resonances trigger different integration behaviour - dividing the DP into regions where a finer binning is used.
+		    This can cause high memory usage, so use this method and LauIsobarDynamics::setNarrowResonanceThreshold to tune this behaviour, if needed.
+
+		    \param [in] binningFactor the factor by which the resonance width is divided to obtain the bin size (defaults to 100)
+		*/
+		void setIntegralBinningFactor(const Double_t binningFactor) { binningFactor_ = binningFactor; }
 
 		//! Add a resonance to the Dalitz plot
 		/*!
@@ -692,6 +710,12 @@ class LauIsobarDynamics {
 
 		//! The bin width to use when integrating over m23
 		Double_t m23BinWidth_;
+
+		//! The value below which a resonance width is considered to be narrow
+		Double_t narrowWidth_;
+
+		//! The factor relating the width of the narrowest resonance and the binning size
+		Double_t binningFactor_;
 
 		//! The invariant mass squared of the first and third daughters
 		Double_t m13Sq_;

@@ -63,6 +63,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
+	narrowWidth_(0.020),
+	binningFactor_(100.0),
 	m13Sq_(0.0),
 	m23Sq_(0.0),
 	mPrime_(0.0),
@@ -119,6 +121,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
+	narrowWidth_(0.020),
+	binningFactor_(100.0),
 	m13Sq_(0.0),
 	m23Sq_(0.0),
 	mPrime_(0.0),
@@ -1000,7 +1004,7 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 
 	for ( std::vector<LauAbsIncohRes*>::const_iterator iter = sigIncohResonances_.begin(); iter != sigIncohResonances_.end(); ++iter ) {
 		Double_t width = (*iter)->getWidth();
-		if ( width > 0.020 || width == 0.0 ) { continue; }
+		if ( width > narrowWidth_ || width == 0.0 ) { continue; }
 		Double_t mass = (*iter)->getMass();
 		Int_t pair = (*iter)->getPairInt();
 		TString name = (*iter)->getResonanceName();
@@ -1026,9 +1030,9 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	//const UInt_t s12 = e12 ? 0 : m12NarrowRes.size();
 	const UInt_t s13 = e13 ? 0 : m13NarrowRes.size();
 	const UInt_t s23 = e23 ? 0 : m23NarrowRes.size();
-	const Double_t w12 = e12 ? DBL_MAX : m12NarrowRes.begin()->first / 100.0;
-	const Double_t w13 = e13 ? DBL_MAX : m13NarrowRes.begin()->first / 100.0;
-	const Double_t w23 = e23 ? DBL_MAX : m23NarrowRes.begin()->first / 100.0;
+	const Double_t w12 = e12 ? DBL_MAX : m12NarrowRes.begin()->first / binningFactor_;
+	const Double_t w13 = e13 ? DBL_MAX : m13NarrowRes.begin()->first / binningFactor_;
+	const Double_t w23 = e23 ? DBL_MAX : m23NarrowRes.begin()->first / binningFactor_;
 
 	// Start off with default bin width (5 MeV)
 	Double_t m13BinWidth = m13BinWidth_;
@@ -1042,9 +1046,9 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..."<<std::endl;
 		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	} else if ( ! e12 ) {
-		// If we have a narrow resonance on the diagonal then we'll have to
-		// just use a narrow bin width over the whole DP (1/10 of the width
-		// of the narrowest resonance in any mass pair)
+		// If we have a narrow resonance on the diagonal then we'll
+		// have to just use a narrow bin width over the whole DP
+		// (a factor 10 larger than if we were doing this in a small region)
 		m13BinWidth = m23BinWidth = 10.0*TMath::Min( w12, TMath::Min( w13, w23 ) );
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole Dalitz plot with bin width of "<<m13BinWidth<<" GeV/c2..."<<std::endl;
 		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
@@ -1447,7 +1451,7 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	normalizationSchemeDone_ = kTRUE;
 }
 
-void LauIsobarDynamics::setIntegralBinWidths(Double_t m13BinWidth, Double_t m23BinWidth)
+void LauIsobarDynamics::setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth)
 {
 	// Specify whether we're going to use Gauss-Legendre integration to calculate the normalisation
 	// integrals, and the bin widths we require for the m13 and m23 axes. Note that the integration

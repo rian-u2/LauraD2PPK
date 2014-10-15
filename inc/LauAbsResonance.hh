@@ -154,8 +154,6 @@ class LauAbsResonance {
 		/*!
 		    \return floating parameters of the resonance
 		*/
-		//TODO - should this be pure virtual or should it return the default empty list?
-		//virtual const std::vector<LauParameter*>& getFloatingParameters() = 0;
 		virtual const std::vector<LauParameter*>& getFloatingParameters() { return this->getParameters(); };
 
 		//! Get the helicity flip flag

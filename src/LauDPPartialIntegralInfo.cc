@@ -43,6 +43,12 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 		return;
 	}
 
+	// Print a warning if we have a very large number of points
+	if ( (nm13Points_ * nm23Points_) > 8000000 ) {
+		std::cerr << "WARNING in LauDPPartialIntegralInfo constructor : The integration binning scheme has a very large number of bins, this could cause high memory consumption!" << std::endl;
+		std::cerr << "                                                : In case of problems, consider using LauIsobarDynamics::setNarrowResonanceThreshold and/or LauIsobarDynamics::setIntegralBinningFactor to tune the binning behaviour." << std::endl;
+	}
+
 	LauIntegrals dpIntegrals(precision);
 	dpIntegrals.calcGaussLegendreWeights(nm13Points_, m13Points_, m13Weights_);
 	dpIntegrals.calcGaussLegendreWeights(nm23Points_, m23Points_, m23Weights_);

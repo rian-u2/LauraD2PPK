@@ -70,6 +70,12 @@ class LauKMatrixPropagator {
 		*/	
 	        void setParameters(const TString& inputFile);
 
+                //! Get the scattering K matrix
+                /*!
+                        \return the real, symmetric scattering K matrix
+		*/
+                TMatrixD getKMatrix() const {return ScattKMatrix_;}
+
 		//! Get the real part of the term of the propagator
 		/*!
 			\param [in] channelIndex the channel number
@@ -135,6 +141,24 @@ class LauKMatrixPropagator {
 			/return the name of the propagator
 		*/
 		TString getName() const {return name_;}
+
+                //! Get the unitary transition amplitude for the given channel
+                /*!
+                        \param [in] s The invariant mass squared
+                        \param [in] channel The index number of the channel process
+                        \return the complex amplitude T
+		*/
+                LauComplex getTransitionAmp(Double_t s, Int_t channel);
+
+
+                //! Get the complex phase space term for the given channel and invariant mass squared
+                /*!
+                        \param [in] s The invariant mass squared
+                        \param [in] channel The index number of the channel process
+                        \return the complex phase space term rho(channel, channel)
+		*/
+                LauComplex getPhaseSpaceTerm(Double_t s, Int_t channel);
+
 
         protected:
 		//! Calculate the scattering K-matrix for the given value of s
@@ -244,6 +268,22 @@ class LauKMatrixPropagator {
 		*/
 		Bool_t checkPhaseSpaceType(Int_t phaseSpaceInt) const;
 
+
+                //! Get the unitary transition amplitude matrix for the given kinematics
+                /*!
+                        \param [in] kinematics The pointer to the constant kinematics
+		*/
+                void getTMatrix(const LauKinematics* kinematics);
+
+                //! Get the unitary transition amplitude matrix for the given kinematics
+                /*!
+                        \param [in] s The invariant mass squared of the system
+		*/
+                void getTMatrix(double s);
+
+                //! Get the square root of the phase space matrix
+                void getSqrtRhoMatrix();
+                
         private:
 		//! Copy constructor (not implemented)
 		LauKMatrixPropagator(const LauKMatrixPropagator& rhs);
@@ -283,14 +323,23 @@ class LauKMatrixPropagator {
 
 		//! Scattering K-matrix
 		TMatrixD ScattKMatrix_; 
-		//! Real part of the pahse space density diagonal matrix
+		//! Real part of the phase space density diagonal matrix
 		TMatrixD ReRhoMatrix_;
-		//! Imaginary part of the pahse space density diagonal matrix
+		//! Imaginary part of the phase space density diagonal matrix
 		TMatrixD ImRhoMatrix_;
 		//! Identity matrix
 		TMatrixD IMatrix_; 
 		//! Null matrix
 		TMatrixD zeroMatrix_;
+
+		//! Real part of the square root of the phase space density diagonal matrix
+		TMatrixD ReSqrtRhoMatrix_;
+		//! Imaginary part of the square root of the phase space density diagonal matrix
+		TMatrixD ImSqrtRhoMatrix_;
+                //! Real part of the unitary T matrix
+                TMatrixD ReTMatrix_;
+                //! Imaginary part of the unitary T matrix
+                TMatrixD ImTMatrix_;
 
 		//! Number of channels
 		Int_t nChannels_;

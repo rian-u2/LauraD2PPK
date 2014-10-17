@@ -17,6 +17,7 @@
 #include "LauTextFileParser.hh"
 
 #include "TMath.h"
+#include "TSystem.h"
 
 #include <iostream>
 #include <fstream>
@@ -60,7 +61,15 @@ LauKMatrixPropagator::LauKMatrixPropagator(const TString& name, const TString& p
 	verbose_(kFALSE)
 {
 	// Constructor
-	realProp_.Clear(); negImagProp_.Clear();
+
+        // Check that the index is OK
+        if (index_ < 0 || index_ >= nChannels_) {
+	        std::cerr << "ERROR in LauKMatrixPropagator constructor. The rowIndex, which is set to "
+			  << rowIndex << ", must be between 1 and the number of channels " 
+			  << nChannels_ << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
 	this->setParameters(paramFile);
 }
 
@@ -69,6 +78,13 @@ LauKMatrixPropagator::~LauKMatrixPropagator()
 	// Destructor
 	realProp_.Clear(); 
 	negImagProp_.Clear();
+        ScattKMatrix_.Clear();
+        ReRhoMatrix_.Clear();
+        ImRhoMatrix_.Clear();
+	ReTMatrix_.Clear();
+	ImTMatrix_.Clear();
+	IMatrix_.Clear();
+	zeroMatrix_.Clear();
 }
 
 LauComplex LauKMatrixPropagator::getPropTerm(Int_t channel) const
@@ -114,9 +130,12 @@ void LauKMatrixPropagator::updatePropagator(const LauKinematics* kinematics)
 	// i = index for the state (e.g. S-wave index = 0).
 	// Here, we only find the (I - iK*rho)^-1 matrix part.
 
+	if (!kinematics) {return;}
+
 	// Get the invariant mass squared (s) from the kinematics object. 
 	// Use the resPairAmpInt to find which mass-squared combination to use.
 	Double_t s(0.0);
+
 	if (resPairAmpInt_ == 1) {
 		s = kinematics->getm23Sq();
 	} else if (resPairAmpInt_ == 2) {
@@ -139,7 +158,7 @@ void LauKMatrixPropagator::updatePropagator(Double_t s)
 
 	// Check if we have almost the same s value as before. If so, don't re-calculate
 	// the propagator nor any of the pole mass summation terms.
-	if (TMath::Abs(s - previousS_) < 1e-6) {
+	if (TMath::Abs(s - previousS_) < 1e-6*s) {
 		//cout<<"Already got propagator for s = "<<s<<endl;
 		return;
 	}
@@ -368,9 +387,29 @@ void LauKMatrixPropagator::setParameters(const TString& inputFile)
 	zeroMatrix_.Clear();
 	zeroMatrix_.ResizeTo(nChannels_, nChannels_);
 
+	// Real K matrix
+	ScattKMatrix_.Clear();
+	ScattKMatrix_.ResizeTo(nChannels_, nChannels_);
+
+	// Real and imaginary propagator matrices
 	realProp_.Clear(); negImagProp_.Clear();
 	realProp_.ResizeTo(nChannels_, nChannels_);
 	negImagProp_.ResizeTo(nChannels_, nChannels_);
+
+	// Phase space matrices
+	ReRhoMatrix_.Clear(); ImRhoMatrix_.Clear();
+	ReRhoMatrix_.ResizeTo(nChannels_, nChannels_);
+	ImRhoMatrix_.ResizeTo(nChannels_, nChannels_);
+
+	// Square-root phase space matrices
+	ReSqrtRhoMatrix_.Clear(); ImSqrtRhoMatrix_.Clear();
+	ReSqrtRhoMatrix_.ResizeTo(nChannels_, nChannels_);
+	ImSqrtRhoMatrix_.ResizeTo(nChannels_, nChannels_);
+
+	// T matrices
+        ReTMatrix_.Clear(); ImTMatrix_.Clear();
+      	ReTMatrix_.ResizeTo(nChannels_, nChannels_);
+	ImTMatrix_.ResizeTo(nChannels_, nChannels_);
 
 	// All required parameters have been set
 	parametersSet_ = kTRUE;
@@ -388,9 +427,8 @@ void LauKMatrixPropagator::calcScattKMatrix(Double_t s)
 
 	if (verbose_) {cout<<"Within calcScattKMatrix for s = "<<s<<endl;}
 
-	// Clear the internal matrix and resize.
-	ScattKMatrix_.Clear();
-	ScattKMatrix_.ResizeTo(nChannels_, nChannels_);
+	// Initialise the K matrix to zero
+	ScattKMatrix_.Zero();
 
 	Int_t iChannel(0), jChannel(0), iPole(0);
 
@@ -544,9 +582,9 @@ void LauKMatrixPropagator::calcRhoMatrix(Double_t s)
 	// diagonal matrix for the given invariant mass squared quantity, s.
 	// The matrix can be complex if s is below threshold (so that
 	// the amplitude continues analytically).
-	ReRhoMatrix_.Clear(); ImRhoMatrix_.Clear();
-	ReRhoMatrix_.ResizeTo(nChannels_, nChannels_);
-	ImRhoMatrix_.ResizeTo(nChannels_, nChannels_);
+
+        // Initialise all entries to zero
+        ReRhoMatrix_.Zero(); ImRhoMatrix_.Zero();
 
 	LauComplex rho(0.0, 0.0);
 	Int_t phaseSpaceIndex(0);
@@ -768,4 +806,160 @@ Bool_t LauKMatrixPropagator::checkPhaseSpaceType(Int_t phaseSpaceInt) const
 	}
 
 	return passed;
+}
+
+LauComplex LauKMatrixPropagator::getTransitionAmp(Double_t s, Int_t channel)
+{
+
+        // Get the complex (unitary) transition amplitude T for the given channel
+	LauComplex TAmp(0.0, 0.0);
+
+	channel -= 1;
+	if (channel < 0 || channel >= nChannels_) {return TAmp;}
+
+        this->getTMatrix(s);
+	
+	TAmp.setRealPart(ReTMatrix_[index_][channel]);
+	TAmp.setImagPart(ImTMatrix_[index_][channel]);
+
+	return TAmp;
+
+}
+
+LauComplex LauKMatrixPropagator::getPhaseSpaceTerm(Double_t s, Int_t channel)
+{
+
+        // Get the complex (unitary) transition amplitude T for the given channel
+	LauComplex rho(0.0, 0.0);
+
+	channel -= 1;
+	if (channel < 0 || channel >= nChannels_) {return rho;}
+
+	// If s has changed from the previous value, recalculate rho
+	if (TMath::Abs(s - previousS_) > 1e-6*s) {
+	        this->calcRhoMatrix(s);
+	}
+
+	rho.setRealPart(ReRhoMatrix_[channel][channel]);
+	rho.setImagPart(ImRhoMatrix_[channel][channel]);
+
+	return rho;
+
+}
+
+void LauKMatrixPropagator::getTMatrix(const LauKinematics* kinematics) {
+
+        // Find the unitary T matrix, where T = [sqrt(rho)]^{*} T_hat sqrt(rho),
+        // and T_hat = (I - i K rho)^-1 * K is the Lorentz-invariant T matrix,
+        // which has phase-space factors included (rho). This function is not
+        // needed to calculate the K-matrix amplitudes, but allows us
+        // to check the variation of T as a function of s (kinematics)
+
+	if (!kinematics) {return;}
+
+	// Get the invariant mass squared (s) from the kinematics object. 
+	// Use the resPairAmpInt to find which mass-squared combination to use.
+	Double_t s(0.0);
+
+	if (resPairAmpInt_ == 1) {
+		s = kinematics->getm23Sq();
+	} else if (resPairAmpInt_ == 2) {
+		s = kinematics->getm13Sq();
+	} else if (resPairAmpInt_ == 3) {
+		s = kinematics->getm12Sq();
+	}
+
+	this->getTMatrix(s);
+
+}
+
+
+void LauKMatrixPropagator::getTMatrix(Double_t s)
+{
+
+        // Find the unitary transition T matrix, where 
+        // T = [sqrt(rho)]^{*} T_hat sqrt(rho), and
+        // T_hat = (I - i K rho)^-1 * K is the Lorentz-invariant T matrix,
+        // which has phase-space factors included (rho). Note that the first
+        // sqrt of the rho matrix is complex conjugated. 
+
+        // This function is not needed to calculate the K-matrix amplitudes, but 
+        // allows us to check the variation of T as a function of s (kinematics)
+
+        // Initialse the real and imaginary parts of the T matrix to zero
+        ReTMatrix_.Zero(); ImTMatrix_.Zero();
+
+        if (parametersSet_ == kFALSE) {return;}
+
+        // Update K, rho and the propagator (I - i K rho)^-1
+        this->updatePropagator(s);
+	
+	// Find the real and imaginary T_hat matrices
+	TMatrixD THatReal = realProp_*ScattKMatrix_;
+	TMatrixD THatImag(zeroMatrix_);
+	THatImag -= negImagProp_*ScattKMatrix_;
+
+	// Find the square-root of the phase space matrix
+	this->getSqrtRhoMatrix();
+
+	// Let sqrt(rho) = A + iB and T_hat = C + iD
+	// => T = A(CA-DB) + B(DA+CB) + i[A(DA+CB) + B(DB-CA)]
+	TMatrixD CA(THatReal);
+	CA *= ReSqrtRhoMatrix_;
+	TMatrixD DA(THatImag);
+	DA *= ReSqrtRhoMatrix_;
+	TMatrixD CB(THatReal);
+	CB *= ImSqrtRhoMatrix_;
+	TMatrixD DB(THatImag);
+	DB *= ImSqrtRhoMatrix_;
+
+	TMatrixD CAmDB(CA);
+	CAmDB -= DB;
+	TMatrixD DApCB(DA);
+	DApCB += CB;
+	TMatrixD DBmCA(DB);
+	DBmCA -= CA;
+
+	// Find the real and imaginary parts of the transition matrix T
+	ReTMatrix_ = ReSqrtRhoMatrix_*CAmDB + ImSqrtRhoMatrix_*DApCB;
+	ImTMatrix_ = ReSqrtRhoMatrix_*DApCB + ImSqrtRhoMatrix_*DBmCA;
+
+}
+
+void LauKMatrixPropagator::getSqrtRhoMatrix()
+{
+
+        // Find the square root of the (current) phase space matrix so that
+        // we can find T = [sqrt(rho)}^{*} T_hat sqrt(rho), where T_hat is the
+        // Lorentz-invariant T matrix = (I - i K rho)^-1 * K; note that the first
+        // sqrt of rho matrix is complex conjugated
+
+        // If rho = rho_i + i rho_r = a + i b, then sqrt(rho) = c + i d, where
+        // c = sqrt(0.5*(r+a)) and d = sqrt(0.5(r-a)), where r = sqrt(a^2 + b^2).
+        // Since rho is diagonal, then the square root of rho will also be diagonal,
+        // with its real and imaginary matrix elements equal to c and d, respectively
+
+        // Initialise the real and imaginary parts of the square root of 
+        // the rho matrix to zero
+        ReSqrtRhoMatrix_.Zero(); ImSqrtRhoMatrix_.Zero();
+
+        for (Int_t iChannel (0); iChannel < nChannels_; ++iChannel) {
+
+                Double_t realRho = ReRhoMatrix_[iChannel][iChannel];
+                Double_t imagRho = ImRhoMatrix_[iChannel][iChannel];
+
+                Double_t rhoMag = sqrt(realRho*realRho + imagRho*imagRho);
+                Double_t rhoSum = rhoMag + realRho;
+                Double_t rhoDiff = rhoMag - realRho;
+
+                Double_t reSqrtRho(0.0), imSqrtRho(0.0);
+                if (rhoSum > 0.0) {reSqrtRho = sqrt(0.5*rhoSum);}
+		if (rhoDiff > 0.0) {imSqrtRho = sqrt(0.5*rhoDiff);}
+
+                ReSqrtRhoMatrix_[iChannel][iChannel] = reSqrtRho;
+                ImSqrtRhoMatrix_[iChannel][iChannel] = imSqrtRho;
+
+        }
+
+
 }

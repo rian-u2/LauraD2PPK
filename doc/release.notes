@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+17th October 2014 John Back
+
+* Added the ability to calculate the transition amplitude matrix T in LauKMatrixPropagator,
+  as well as a few other minor speed-up changes and code checks. Example/PlotKMatrixTAmp.cc
+  can be used to check the T amplitude variation, phase shift and inelasticity, for a given 
+  K matrix channel, as a function of the invariant mass squared variable s
+
 15th October 2014 Thomas Latham
 
 * Add methods to LauIsobarDynamics to make the integration binning more tunable by the user:

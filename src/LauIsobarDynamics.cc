@@ -756,13 +756,17 @@ void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const T
 {
 	// Define the K-matrix propagator. The resPairAmpInt integer specifies which mass combination should be used
 	// for the invariant mass-squared variable "s". The pole masses and coupling constants are defined in the
-	// paramFileName parameter file. The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
+	// paramFileName parameter file. 
+        // The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
 	// The integer rowIndex specifies which row of the propagator should be used when
 	// summing over all amplitude channels: S-wave will be the first row, so rowIndex = 1.
 
-	if (rowIndex < 1) {
-		std::cerr<<"Error in defineKMatrixPropagator: rowIndex must be > 0 but is equal to "<<rowIndex<<std::endl;
-		return;
+        // Check that the rowIndex is valid
+	if (rowIndex < 1 || rowIndex > nChannels) {
+	        std::cerr << "ERROR in LauIsobarDynamics::defineKMatrixPropagator. The rowIndex, which is set to "
+			  << rowIndex << ", must be between 1 and the number of channels " 
+			  << nChannels << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	TString propagatorName(propName), parameterFile(paramFileName);

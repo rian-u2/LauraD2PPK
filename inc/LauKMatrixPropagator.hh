@@ -279,7 +279,7 @@ class LauKMatrixPropagator {
                 /*!
                         \param [in] s The invariant mass squared of the system
 		*/
-                void getTMatrix(double s);
+                void getTMatrix(Double_t s);
 
                 //! Get the square root of the phase space matrix
                 void getSqrtRhoMatrix();

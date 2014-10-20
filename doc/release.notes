@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v3r0
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 17th October 2014 John Back
 
 * Added the ability to calculate the transition amplitude matrix T in LauKMatrixPropagator,

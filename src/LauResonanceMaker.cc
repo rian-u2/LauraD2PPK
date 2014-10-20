@@ -36,7 +36,7 @@
 #include "LauResonanceMaker.hh"
 #include "LauSigmaRes.hh"
 
-ClassImp(LauResonanceMaker)
+ClassImp(LauResonanceMaker);
 
 
 LauResonanceMaker* LauResonanceMaker::resonanceMaker_ = 0;

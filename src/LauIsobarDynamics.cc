@@ -1840,6 +1840,7 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 				//Set off-diagonal incoherent terms to zero
 				fitFrac_[i][j] = 0.;
 				fitFracEffUnCorr_[i][j] = 0.;
+				continue;
 			}
 
 			LauComplex AmpjConj = Amp_[j].conj();

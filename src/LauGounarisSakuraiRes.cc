@@ -28,6 +28,8 @@ LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const In
 	resMass_(0.0),
 	resMassSq_(0.0),
 	resWidth_(0.0),
+	resRadius_(0.0),
+	parRadius_(0.0),
 	mDaugSum_(0.0),
 	mDaugSumSq_(0.0),
 	mDaugDiff_(0.0),
@@ -53,6 +55,8 @@ void LauGounarisSakuraiRes::initialise()
 
 	resMass_ = this->getMass();
 	resWidth_ = this->getWidth();
+	resRadius_ = this->getResRadius();
+	parRadius_ = this->getParRadius();
 
 	Int_t resSpin = this->getSpin();
 	Double_t massDaug1 = this->getMassDaug1();
@@ -146,10 +150,15 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	const Double_t resMass = this->getMass();
 	const Double_t resWidth = this->getWidth();
+	const Double_t resRadius = this->getResRadius();
+	const Double_t parRadius = this->getParRadius();
 
 	// If the mass is floating and its value has changed we need to
 	// recalculate everything that assumes that value
-	if ( (!this->fixMass()) && resMass != resMass_ ) {
+	// Similarly for the BW radii
+	if ( ( (!this->fixMass()) && resMass != resMass_ ) ||
+	     ( (!this->fixResRadius()) && resRadius != resRadius_ ) ||
+	     ( (!this->fixParRadius()) && parRadius != parRadius_ ) ) {
 		this->initialise();
 	}
 

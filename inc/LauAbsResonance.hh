@@ -249,13 +249,13 @@ class LauAbsResonance {
 
 		//! Set the form factor model and parameters
 		/*!
-			\param [in] resRadius the radius of the barrier for the resonance decay
-			\param [in] parRadius the radius of the barrier for the parent decay
+			\param [in] resFactor the barrier factor for the resonance decay
+			\param [in] parFactor the barrier factor for the parent decay
 		*/
-		void setBarrierRadii(LauBlattWeisskopfFactor* resRadius, LauBlattWeisskopfFactor* parRadius)
+		void setBarrierRadii(LauBlattWeisskopfFactor* resFactor, LauBlattWeisskopfFactor* parFactor)
 		{
-			resBWFactor_ = resRadius;
-			parBWFactor_ = parRadius;
+			resBWFactor_ = resFactor;
+			parBWFactor_ = parFactor;
 		}
 
 		//! Fix or release the Blatt-Weisskopf barrier radii
@@ -266,6 +266,12 @@ class LauAbsResonance {
 
 		//! Get the status of parent barrier radius (fixed or released)
 		Bool_t fixParRadius() const;
+
+		//! Get the radius of the resonance barrier factor
+		Double_t getResRadius() const;
+
+		//! Get the radius of the parent barrier factor
+		Double_t getParRadius() const;
 
 	protected:
 		//! Get the name of the parent particle

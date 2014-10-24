@@ -92,6 +92,10 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 		Double_t resMassSq_;
 		//! The resonance width
 		Double_t resWidth_;
+		//! The resonance barrier radius
+		Double_t resRadius_;
+		//! The parent barrier radius
+		Double_t parRadius_;
 		//! Sum of the two daughter masses
 		Double_t mDaugSum_;
 		//! Square of the sum of the two daughter masses

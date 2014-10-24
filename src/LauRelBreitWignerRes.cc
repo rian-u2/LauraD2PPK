@@ -28,6 +28,8 @@ LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_
 	resMass_(0.0),
 	resMassSq_(0.0),
 	resWidth_(0.0),
+	resRadius_(0.0),
+	parRadius_(0.0),
 	mDaugSum_(0.0),
 	mDaugSumSq_(0.0),
 	mDaugDiff_(0.0),
@@ -50,6 +52,8 @@ void LauRelBreitWignerRes::initialise()
 
 	resMass_   = this->getMass();
 	resWidth_  = this->getWidth();
+	resRadius_ = this->getResRadius();
+	parRadius_ = this->getParRadius();
 
 	Double_t massDaug1 = this->getMassDaug1();
 	Double_t massDaug2 = this->getMassDaug2();
@@ -137,16 +141,21 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	// pstar is the momentum of the bachelor in the parent rest-frame.
 	// These quantities have been calculate in LauAbsResonance::amplitude(...)
 
-	Int_t resSpin = this->getSpin();
-	Double_t resMass = this->getMass();
-	Double_t resWidth = this->getWidth();
-	Double_t q = this->getQ();
-	Double_t p = this->getP();
-	//Double_t pstar = this->getPstar();
+	const Int_t resSpin = this->getSpin();
+	const Double_t resMass = this->getMass();
+	const Double_t resWidth = this->getWidth();
+	const Double_t resRadius = this->getResRadius();
+	const Double_t parRadius = this->getParRadius();
+	const Double_t q = this->getQ();
+	const Double_t p = this->getP();
+	//const Double_t pstar = this->getPstar();
 
 	// If the mass is floating and its value has changed we need to
 	// recalculate everything that assumes that value
-	if ( (!this->fixMass()) && resMass != resMass_ ) {
+	// Similarly for the BW radii
+	if ( ( (!this->fixMass()) && resMass != resMass_ ) ||
+	     ( (!this->fixResRadius()) && resRadius != resRadius_ ) ||
+	     ( (!this->fixParRadius()) && parRadius != parRadius_ ) ) {
 		this->initialise();
 	}
 

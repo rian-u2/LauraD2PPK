@@ -321,12 +321,34 @@ Bool_t LauAbsResonance::fixResRadius() const
 Bool_t LauAbsResonance::fixParRadius() const
 {
 	if ( parBWFactor_ == 0 ) {
-		std::cerr << "WARNING in LauAbsResonance::fixBarrierRadii : parent barrier factor not present" << std::endl;
+		std::cerr << "WARNING in LauAbsResonance::fixParRadius : parent barrier factor not present" << std::endl;
 		return kTRUE;
 	}
 
 	LauParameter* bwRadius = parBWFactor_->getRadiusParameter();
 	return bwRadius->fixed();
+}
+
+Double_t LauAbsResonance::getResRadius() const
+{
+	if ( resBWFactor_ == 0 ) {
+		std::cerr << "WARNING in LauAbsResonance::getResRadius : resonance barrier factor not present" << std::endl;
+		return -1.0;
+	}
+
+	LauParameter* bwRadius = resBWFactor_->getRadiusParameter();
+	return bwRadius->value();
+}
+
+Double_t LauAbsResonance::getParRadius() const
+{
+	if ( parBWFactor_ == 0 ) {
+		std::cerr << "WARNING in LauAbsResonance::getParRadius : parent barrier factor not present" << std::endl;
+		return -1.0;
+	}
+
+	LauParameter* bwRadius = parBWFactor_->getRadiusParameter();
+	return bwRadius->value();
 }
 
 Double_t LauAbsResonance::getMassParent() const

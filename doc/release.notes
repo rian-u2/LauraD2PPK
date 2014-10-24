@@ -8,6 +8,11 @@
 			Laura++ v3r0
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+24th October 2014 Thomas Latham
+
+* Fixed bug in floating of Blatt-Weisskopf barrier radii
+  - The values at the pole mass were not being updated when the radii changed
+
 21st October 2014 Daniel Craik
 
 * Fixed bug in LauIsobarDynamics where multiple incoherent amplitudes led to nonsensical fit fractions

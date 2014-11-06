@@ -728,7 +728,7 @@ LauAbsResonance* LauIsobarDynamics::addIncoherentResonance(const TString& resNam
 	// Gaussian (GaussIncoh), for example.
 
 	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
-	LauAbsIncohRes *theResonance = (LauAbsIncohRes*)resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType);
+	LauAbsIncohRes *theResonance = dynamic_cast<LauAbsIncohRes*>( resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType) );
 
 	if (theResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::addIncohResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;

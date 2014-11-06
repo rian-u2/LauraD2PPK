@@ -15,6 +15,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <typeinfo>
 
 #include "TFile.h"
 #include "TH2.h"
@@ -39,6 +40,10 @@
 #include "LauRandom.hh"
 #include "LauScfMap.hh"
 #include "LauSimpleFitModel.hh"
+#include "TGraph2D.h"
+#include "TGraph.h"
+#include "TStyle.h"
+#include "TCanvas.h"
 
 ClassImp(LauSimpleFitModel)
 
@@ -2114,4 +2119,196 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 
 	delete weightsTuple;
 }
+
+
+void LauSimpleFitModel::savePDFPlots(const TString& label)
+{
+   savePDFPlotsWave(label, 0);
+   savePDFPlotsWave(label, 1);
+   savePDFPlotsWave(label, 2);
+
+   std::cout << "LauCPFitModel::plot" << std::endl;
+//	((LauIsobarDynamics*)sigDPModel_)->plot();
+
+   
+
+   //Double_t minm13 = sigDPModel_->getKinematics()->getm13Min();
+   Double_t minm13 = 0.0;
+   Double_t maxm13 = sigDPModel_->getKinematics()->getm13Max();
+   //Double_t minm23 = sigDPModel_->getKinematics()->getm23Min();
+   Double_t minm23 = 0.0;
+   Double_t maxm23 = sigDPModel_->getKinematics()->getm23Max();
+
+   Double_t mins13 = minm13*minm13;
+   Double_t maxs13 = maxm13*maxm13;
+   Double_t mins23 = minm23*minm23;
+   Double_t maxs23 = maxm23*maxm23;
+
+   Double_t s13, s23, chPdf;
+
+   Int_t n13=200.00, n23=200.00;
+   Double_t delta13, delta23;
+   delta13 = (maxs13 - mins13)/n13;
+   delta23 = (maxs23 - mins23)/n23;
+   UInt_t nAmp = sigDPModel_->getnCohAmp();
+   for (UInt_t resID = 0; resID <= nAmp; ++resID)
+   {
+	TGraph2D *dt = new TGraph2D();
+	TString resName = "TotalAmp";
+	if (resID != nAmp){
+		TString tStrResID = Form("%d", resID);
+		LauAbsResonance* resonance = sigDPModel_->getResonance(resID);
+		resName = resonance->getResonanceName();
+		std::cout << "resName = " << resName << std::endl;
+	}
+
+
+	resName.ReplaceAll("(", "");
+	resName.ReplaceAll(")", "");
+	resName.ReplaceAll("*", "Star");
+
+        TCanvas *c = new TCanvas("c"+resName+label,resName+" ("+label+")",0,0,600,400);
+	dt->SetName(resName+label);
+	dt->SetTitle(resName+" ("+label+")");
+	Int_t count=0;
+	for (Int_t i=0; i<n13; i++) {
+		s13 = mins13 + i*delta13;
+		for (Int_t j=0; j<n23; j++) {
+			s23 = mins23 + j*delta23;
+			if (sigDPModel_->getKinematics()->withinDPLimits2(s23, s13))
+			{
+				//if (s13 > 4) continue;
+				sigDPModel_->calcLikelihoodInfo(s13, s23);
+				LauComplex chAmp = sigDPModel_->getEvtDPAmp();
+				if (resID != nAmp){
+					chAmp = sigDPModel_->getAmplitude(resID);
+				}
+				chPdf = chAmp.abs2();
+				//if ((z > 0.04)||(z < -0.03)) continue;
+				//z = TMath::Log(z);
+				if (sigDPModel_->getDaughters()->gotSymmetricalDP()){
+					Double_t sLow = s13;
+					Double_t sHigh = s23;
+					if (sLow>sHigh) {
+						continue;
+						//sLow = s23;
+						//sHigh = s13;
+					}
+
+					//if (sLow > 3.5) continue;
+					//if (i<10) std::cout << "SymmetricalDP" << std::endl;
+					//if (z>0.02) z = 0.02;
+					//if (z<-0.02) z = -0.02;
+
+					dt->SetPoint(count,sHigh,sLow,chPdf);
+					count++;
+				}
+				else {
+					dt->SetPoint(count,s13,s23,chPdf);
+					count++;
+
+				}
+
+			}
+		}
+	}
+   	gStyle->SetPalette(1);
+   	dt->GetXaxis()->SetTitle("m_{K#pi}(low)");
+   	dt->GetYaxis()->SetTitle("m_{K#pi}(high)");
+   	dt->Draw("SURF1");
+   	dt->GetXaxis()->SetTitle("m_{K#pi}(low)");
+   	dt->GetYaxis()->SetTitle("m_{K#pi}(high)");
+   	c->SaveAs("plot_2D_"+resName + "_"+label+".C");
+
+   }
+}
+
+void LauSimpleFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
+{
+
+	std::cout << "label = "<< label <<  ", spin = "<< spin << std::endl;
+
+	TString tStrResID = "S_Wave";
+	if (spin == 1) tStrResID = "P_Wave";
+	if (spin == 2) tStrResID = "D_Wave";
+
+	std::cout << "LauSimpleFitModel::savePDFPlotsWave: "<< tStrResID << std::endl;
+
+	TCanvas *c = new TCanvas("c"+tStrResID+label,tStrResID+" ("+label+")",0,0,600,400);
+
+	Double_t minm13 = 0.0;
+	Double_t maxm13 = sigDPModel_->getKinematics()->getm13Max();
+	Double_t minm23 = 0.0;
+	Double_t maxm23 = sigDPModel_->getKinematics()->getm23Max();
+
+	Double_t mins13 = minm13*minm13;
+	Double_t maxs13 = maxm13*maxm13;
+	Double_t mins23 = minm23*minm23;
+	Double_t maxs23 = maxm23*maxm23;
+
+	Double_t s13, s23, chPdf;
+	TGraph2D *dt = new TGraph2D();
+	dt->SetName(tStrResID+label);
+	dt->SetTitle(tStrResID+" ("+label+")");
+
+	Int_t n13=200.00, n23=200.00;
+	Double_t delta13, delta23;
+	delta13 = (maxs13 - mins13)/n13;
+	delta23 = (maxs23 - mins23)/n23;
+	UInt_t nAmp = sigDPModel_->getnCohAmp();
+
+	Int_t count=0;
+	for (Int_t i=0; i<n13; i++) {
+		s13 = mins13 + i*delta13;
+		for (Int_t j=0; j<n23; j++) {
+			s23 = mins23 + j*delta23;
+			if (sigDPModel_->getKinematics()->withinDPLimits2(s23, s13))
+			{
+				//if (s13 > 4) continue;
+				LauComplex chAmp(0,0);
+				Bool_t noWaveRes = kTRUE;
+				sigDPModel_->calcLikelihoodInfo(s13, s23);
+				for (UInt_t resID = 0; resID < nAmp; ++resID)
+				{
+					LauAbsResonance* resonance = sigDPModel_->getResonance(resID);
+					Int_t spin_res = resonance->getSpin();
+					if (spin != spin_res) continue;
+					noWaveRes = kFALSE;
+					chAmp += sigDPModel_->getAmplitude(resID);
+				}
+
+				if (noWaveRes) return;
+
+				chPdf = chAmp.abs2();
+				if (sigDPModel_->getDaughters()->gotSymmetricalDP()){
+					Double_t sLow = s13;
+					Double_t sHigh = s23;
+					if (sLow>sHigh) {
+						continue;
+						//sLow = s23;
+						//sHigh = s13;
+					}
+					dt->SetPoint(count,sHigh,sLow,chPdf);
+					count++;
+				}
+				else {
+					dt->SetPoint(count,s13,s23,chPdf);
+					count++;
+
+				}
+
+			}
+		}
+	}
+	gStyle->SetPalette(1);
+	dt->GetXaxis()->SetTitle("pipi");
+	dt->GetYaxis()->SetTitle("pipi");
+	dt->Draw("SURF1");
+	dt->GetXaxis()->SetTitle("pipi");
+	dt->GetYaxis()->SetTitle("pipi");
+	c->SaveAs("plot_2D_"+tStrResID+"_"+label+".C");
+}
+
+
+
 

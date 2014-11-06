@@ -41,6 +41,14 @@
 #include "LauPrint.hh"
 #include "LauRandom.hh"
 #include "LauScfMap.hh"
+#include "TGraph2D.h"
+#include "TGraph.h"
+#include "TStyle.h"
+#include "TCanvas.h"
+#include "TGraph2D.h"
+#include "TGraph.h"
+#include "TStyle.h"
+#include "TCanvas.h"
 
 ClassImp(LauCPFitModel)
 
@@ -2900,4 +2908,236 @@ void LauCPFitModel::weightEvents( const TString& /*dataFileName*/, const TString
 	std::cerr << "ERROR in LauCPFitModel::weightEvents : Method not available for this fit model." << std::endl;
 	return;
 }
+
+
+void LauCPFitModel::savePDFPlots(const TString& label)
+{
+   savePDFPlotsWave(label, 0);
+   savePDFPlotsWave(label, 1);
+   savePDFPlotsWave(label, 2);
+
+   std::cout << "LauCPFitModel::plot" << std::endl;
+//	((LauIsobarDynamics*)negSigModel_)->plot();
+
+   
+
+   //Double_t minm13 = negSigModel_->getKinematics()->getm13Min();
+   Double_t minm13 = 0.0;
+   Double_t maxm13 = negSigModel_->getKinematics()->getm13Max();
+   //Double_t minm23 = negSigModel_->getKinematics()->getm23Min();
+   Double_t minm23 = 0.0;
+   Double_t maxm23 = negSigModel_->getKinematics()->getm23Max();
+
+   Double_t mins13 = minm13*minm13;
+   Double_t maxs13 = maxm13*maxm13;
+   Double_t mins23 = minm23*minm23;
+   Double_t maxs23 = maxm23*maxm23;
+
+   Double_t s13, s23, posChPdf, negChPdf;
+
+   TString xLabel = "s13";
+   TString yLabel = "s23";
+
+   if (negSigModel_->getDaughters()->gotSymmetricalDP())  { xLabel = "sHigh"; yLabel = "sLow";}
+
+   Int_t n13=200.00, n23=200.00;
+   Double_t delta13, delta23;
+   delta13 = (maxs13 - mins13)/n13;
+   delta23 = (maxs23 - mins23)/n23;
+   UInt_t nAmp = negSigModel_->getnCohAmp();
+   for (UInt_t resID = 0; resID <= nAmp; ++resID)
+   {
+	TGraph2D *posDt = new TGraph2D();
+	TGraph2D *negDt = new TGraph2D();
+	TGraph2D *acpDt = new TGraph2D();
+
+	TString resName = "TotalAmp";
+	if (resID != nAmp){
+		TString tStrResID = Form("%d", resID);
+		LauAbsResonance* resonance = negSigModel_->getResonance(resID);
+		resName = resonance->getResonanceName();
+		std::cout << "resName = " << resName << std::endl;
+	}
+
+
+	resName.ReplaceAll("(", "");
+	resName.ReplaceAll(")", "");
+	resName.ReplaceAll("*", "Star");
+
+	posDt->SetName(resName+label);
+	posDt->SetTitle(resName+" ("+label+") Positive");
+	negDt->SetName(resName+label);
+	negDt->SetTitle(resName+" ("+label+") Negative");
+	acpDt->SetName(resName+label);
+	acpDt->SetTitle(resName+" ("+label+") Asymmetry");
+
+	Int_t count=0;
+	for (Int_t i=0; i<n13; i++) {
+		s13 = mins13 + i*delta13;
+		for (Int_t j=0; j<n23; j++) {
+			s23 = mins23 + j*delta23;
+			if (negSigModel_->getKinematics()->withinDPLimits2(s23, s13))
+			{
+				if (negSigModel_->getDaughters()->gotSymmetricalDP() && (s13>s23) )  continue;
+
+				negSigModel_->calcLikelihoodInfo(s13, s23);
+				posSigModel_->calcLikelihoodInfo(s13, s23);
+
+				LauComplex negChAmp = negSigModel_->getEvtDPAmp();
+				LauComplex posChAmp = posSigModel_->getEvtDPAmp();
+
+				if (resID != nAmp){
+					negChAmp = negSigModel_->getAmplitude(resID);
+					posChAmp = posSigModel_->getAmplitude(resID);
+				}
+				negChPdf = negChAmp.abs2();
+				posChPdf = posChAmp.abs2();
+				negDt->SetPoint(count,s23,s13,negChPdf); // s23=sHigh, s13 = sLow
+				posDt->SetPoint(count,s23,s13,posChPdf); // s23=sHigh, s13 = sLow
+				acpDt->SetPoint(count,s23,s13, negChPdf - posChPdf); // s23=sHigh, s13 = sLow
+				count++;
+			}
+		}
+	}
+   	gStyle->SetPalette(1);
+        TCanvas *posC = new TCanvas("c"+resName+label + "Positive",resName+" ("+label+") Positive",0,0,600,400);
+   	posDt->GetXaxis()->SetTitle(xLabel);
+   	posDt->GetYaxis()->SetTitle(yLabel);
+   	posDt->Draw("SURF1");
+   	posDt->GetXaxis()->SetTitle(xLabel);
+   	posDt->GetYaxis()->SetTitle(yLabel);
+   	posC->SaveAs("plot_2D_"+resName + "_"+label+"Positive.C");
+
+        TCanvas *negC = new TCanvas("c"+resName+label + "Negative",resName+" ("+label+") Negative",0,0,600,400);
+   	negDt->GetXaxis()->SetTitle(xLabel);
+   	negDt->GetYaxis()->SetTitle(yLabel);
+   	negDt->Draw("SURF1");
+   	negDt->GetXaxis()->SetTitle(xLabel);
+   	negDt->GetYaxis()->SetTitle(yLabel);
+   	negC->SaveAs("plot_2D_"+resName + "_"+label+"Negative.C");
+
+        TCanvas *acpC = new TCanvas("c"+resName+label + "Asymmetry",resName+" ("+label+") Asymmetry",0,0,600,400);
+   	acpDt->GetXaxis()->SetTitle(xLabel);
+   	acpDt->GetYaxis()->SetTitle(yLabel);
+   	acpDt->Draw("SURF1");
+   	acpDt->GetXaxis()->SetTitle(xLabel);
+   	acpDt->GetYaxis()->SetTitle(yLabel);
+   	acpC->SaveAs("plot_2D_"+resName + "_"+label+"Asymmetry.C");
+   }
+}
+
+void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
+{
+
+	std::cout << "label = "<< label <<  ", spin = "<< spin << std::endl;
+
+	TString tStrResID = "S_Wave";
+	if (spin == 1) tStrResID = "P_Wave";
+	if (spin == 2) tStrResID = "D_Wave";
+
+	TString xLabel = "s13";
+   	TString yLabel = "s23";
+
+	std::cout << "LauSimpleFitModel::savePDFPlotsWave: "<< tStrResID << std::endl;
+
+	Double_t minm13 = 0.0;
+	Double_t maxm13 = negSigModel_->getKinematics()->getm13Max();
+	Double_t minm23 = 0.0;
+	Double_t maxm23 = negSigModel_->getKinematics()->getm23Max();
+
+	Double_t mins13 = minm13*minm13;
+	Double_t maxs13 = maxm13*maxm13;
+	Double_t mins23 = minm23*minm23;
+	Double_t maxs23 = maxm23*maxm23;
+
+	Double_t s13, s23, posChPdf, negChPdf;
+	TGraph2D *posDt = new TGraph2D();
+	TGraph2D *negDt = new TGraph2D();
+	TGraph2D *acpDt = new TGraph2D();
+
+
+	posDt->SetName(tStrResID+label);
+	posDt->SetTitle(tStrResID+" ("+label+") Positive");
+	negDt->SetName(tStrResID+label);
+	negDt->SetTitle(tStrResID+" ("+label+") Negative");
+	acpDt->SetName(tStrResID+label);
+	acpDt->SetTitle(tStrResID+" ("+label+") Asymmetry");
+
+	Int_t n13=200.00, n23=200.00;
+	Double_t delta13, delta23;
+	delta13 = (maxs13 - mins13)/n13;
+	delta23 = (maxs23 - mins23)/n23;
+	UInt_t nAmp = negSigModel_->getnCohAmp();
+
+	Int_t count=0;
+	for (Int_t i=0; i<n13; i++) 
+	{
+		s13 = mins13 + i*delta13;
+		for (Int_t j=0; j<n23; j++) 
+		{
+			s23 = mins23 + j*delta23;
+			if (negSigModel_->getKinematics()->withinDPLimits2(s23, s13))
+			{
+				if (negSigModel_->getDaughters()->gotSymmetricalDP() && (s13>s23) )  continue;
+
+				LauComplex negChAmp(0,0);
+				LauComplex posChAmp(0,0);
+				Bool_t noWaveRes = kTRUE;
+				negSigModel_->calcLikelihoodInfo(s13, s23);
+				for (UInt_t resID = 0; resID < nAmp; ++resID)
+				{
+					LauAbsResonance* resonance = negSigModel_->getResonance(resID);
+					Int_t spin_res = resonance->getSpin();
+					if (spin != spin_res) continue;
+					noWaveRes = kFALSE;
+					negChAmp += negSigModel_->getAmplitude(resID);
+					posChAmp += posSigModel_->getAmplitude(resID);
+				}
+
+				if (noWaveRes) return;
+
+				negChPdf = negChAmp.abs2();
+				posChPdf = posChAmp.abs2();
+				
+				negDt->SetPoint(count,s23,s13,negChPdf); // s23=sHigh, s13 = sLow
+				posDt->SetPoint(count,s23,s13,posChPdf); // s23=sHigh, s13 = sLow
+				acpDt->SetPoint(count,s23,s13, negChPdf - posChPdf); // s23=sHigh, s13 = sLow
+				count++;
+
+			}
+		}
+	}
+   	gStyle->SetPalette(1);
+        TCanvas *posC = new TCanvas("c"+tStrResID+label + "Positive",tStrResID+" ("+label+") Positive",0,0,600,400);
+   	posDt->GetXaxis()->SetTitle(xLabel);
+   	posDt->GetYaxis()->SetTitle(yLabel);
+   	posDt->Draw("SURF1");
+   	posDt->GetXaxis()->SetTitle(xLabel);
+   	posDt->GetYaxis()->SetTitle(yLabel);
+   	posC->SaveAs("plot_2D_"+tStrResID + "_"+label+"Positive.C");
+
+        TCanvas *negC = new TCanvas("c"+tStrResID+label + "Negative",tStrResID+" ("+label+") Negative",0,0,600,400);
+   	negDt->GetXaxis()->SetTitle(xLabel);
+   	negDt->GetYaxis()->SetTitle(yLabel);
+   	negDt->Draw("SURF1");
+   	negDt->GetXaxis()->SetTitle(xLabel);
+   	negDt->GetYaxis()->SetTitle(yLabel);
+   	negC->SaveAs("plot_2D_"+tStrResID + "_"+label+"Negative.C");
+
+        TCanvas *acpC = new TCanvas("c"+tStrResID+label + "Asymmetry",tStrResID+" ("+label+") Asymmetry",0,0,600,400);
+   	acpDt->GetXaxis()->SetTitle(xLabel);
+   	acpDt->GetYaxis()->SetTitle(yLabel);
+   	acpDt->Draw("SURF1");
+   	acpDt->GetXaxis()->SetTitle(xLabel);
+   	acpDt->GetYaxis()->SetTitle(yLabel);
+   	acpC->SaveAs("plot_2D_"+tStrResID + "_"+label+"Asymmetry.C");
+
+
+}
+
+
+
+
+
+
 

@@ -149,6 +149,10 @@ void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFile
 
 		this->fit(dataFileNameCopy, dataTreeNameCopy, histFileNameCopy, tableFileNameCopy);
 
+	} else if (runCode.Contains("plot")) {
+
+		this->savePDFPlots("plot");
+
 	} else if (runCode.Contains("reweight")) {
 
 		this->weightEvents(dataFileNameCopy, dataTreeNameCopy);

@@ -2466,3 +2466,24 @@ Double_t LauIsobarDynamics::retrieveScfFraction(Int_t tagCat)
 	return scfFraction;
 }
 
+LauAbsResonance* LauIsobarDynamics::getResonance(UInt_t& resIndex)
+{
+	LauAbsResonance* theResonance(0);
+	
+	UInt_t counter = 0;
+	std::vector<LauAbsResonance*> sigResonances = getResonances();
+
+	for (std::vector<LauAbsResonance*>::const_iterator iter=sigResonances.begin(); iter!=sigResonances.end(); ++iter) {
+		if (counter!=resIndex) {
+			counter++;
+			continue;
+		}
+		theResonance = (*iter);
+		return theResonance;
+	}
+
+	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance with index \""<<resIndex<<"\" in the model."<<std::endl;
+	return 0;
+}
+
+

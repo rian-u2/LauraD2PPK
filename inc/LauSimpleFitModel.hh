@@ -222,6 +222,19 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		*/	
 		virtual void writeOutTable(const TString& outputFile);
 
+		//! Save the pdf Plots for all the resonances of experiment number fitExp
+		/*!
+			\param [in] label  prefix for the file name to be saved
+		*/	
+		virtual void savePDFPlots(const TString& label);
+
+		//! Save the pdf Plots for the sum of ressonances correspondint to "sin" of experiment number fitExp
+		/*!
+			\param [in] label  prefix for the file name to be saved
+			\param [in] spin   spin of the wave to be saved
+		*/	
+		virtual void savePDFPlotsWave(const TString& label, const Int_t& spin);
+
 		//! Store the per event likelihood values
                 virtual void storePerEvtLlhds();
 

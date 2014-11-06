@@ -176,6 +176,12 @@ class LauIsobarDynamics {
 		*/
 		inline Double_t getASqMaxVarValue() const { return aSqMaxVar_; }
 
+		//! Retrieve the Amplitude  of resonance resID
+		/*!
+		    \return the Amplitude  of resonance resID
+		*/
+		inline LauComplex getAmplitude(Int_t resID) const { return (Amp_[resID]*ff_[resID]);}
+
 		//! Generate a toy MC signal event
 		/*!
 		    \return kTRUE if the event is successfully generated, kFALSE otherwise
@@ -431,6 +437,21 @@ class LauIsobarDynamics {
 		*/
 		inline LauAbsEffModel* getEffModel() {return effModel_;}
 
+
+		//! Retrieve the named resonance
+		/*!
+		    \param [in] name the name of the resonance to retrieve
+		    \return the named resonance
+		*/
+		LauAbsResonance* getResonance(UInt_t& resIndex);
+
+		//! Retrieve the resonance vector
+		/*!
+		    \return the resonance vector
+		*/
+
+		inline std::vector<LauAbsResonance*> getResonances() {return sigResonances_;}
+
 		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for the first (or only) tagging category
 		/*!
 		    \return the self cross feed fraction model
@@ -456,7 +477,7 @@ class LauIsobarDynamics {
 		inline std::vector<LauParameter> getExtraParameters() {return extraParameters_;}
 
 		//! Retrieve the floating parameters of the resonance models
-		/*!
+			/*!
 		    \return the list of floating parameters
 		*/
 		inline std::vector<LauParameter*>& getFloatingParameters() {return resonancePars_;}

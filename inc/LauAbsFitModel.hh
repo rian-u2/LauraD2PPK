@@ -174,6 +174,15 @@ class LauAbsFitModel : public LauFitObject {
 		*/	
 		void writeLatexTable(Bool_t writeTable) {writeLatexTable_ = writeTable;}
 
+		//! save files containing graphs of the resonance's PDFs
+		Bool_t saveFilePDF() const {return savePDF_;}
+
+		//! Turn on or off the save of files containing graphs of the resonance's PDFs
+		/*!
+			\param [in] savePDF boolean specifying whether or not the save of files containing graphs of the resonance's PDFs
+		*/	
+		void saveFilePDF(Bool_t savePDF) {savePDF_ = savePDF;}
+
 		//! Set up the sPlot ntuple
 		/*! 
 			\param [in] fileName the sPlot file name
@@ -468,6 +477,19 @@ class LauAbsFitModel : public LauFitObject {
 		*/	
 		virtual void finaliseFitResults(const TString& tableFileName) = 0;
 
+		//! Save the pdf Plots for all the resonances of experiment number fitExp
+		/*!
+			\param [in] label  prefix for the file name to be saved
+		*/	
+		virtual void savePDFPlots(const TString& label) = 0;
+
+		//! Save the pdf Plots for the sum of ressonances correspondint to "sin" of experiment number fitExp
+		/*!
+			\param [in] label  prefix for the file name to be saved
+			\param [in] spin   spin of the wave to be saved
+		*/	
+		virtual void savePDFPlotsWave(const TString& label, const Int_t& spin) = 0;
+
 		//! Write the latex table
 		/*! 
 			\param [in] outputFile the name of the output file
@@ -733,6 +755,8 @@ class LauAbsFitModel : public LauFitObject {
 		Bool_t useAsymmFitErrors_; 
 		//! Option to make toy from 1st successful experiment
 		Bool_t compareFitData_; 
+		//! Option to output a .C file of PDF's
+		Bool_t savePDF_; 
 		//! Option to output a Latex format table
 		Bool_t writeLatexTable_; 
 		//! Option to write sPlot data

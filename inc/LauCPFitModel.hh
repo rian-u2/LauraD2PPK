@@ -280,6 +280,22 @@ class LauCPFitModel : public LauAbsFitModel {
 		*/	
 		virtual void writeOutTable(const TString& outputFile);
 
+		//! Save the pdf Plots for all the resonances of experiment number fitExp
+		/*!
+			\param [in] fitExp the experiment number
+			\param [in] label  prefix for the file name to be saved
+		*/	
+		virtual void savePDFPlots(const TString& label);
+
+		//! Save the pdf Plots for the sum of ressonances correspondint to "sin" of experiment number fitExp
+		/*!
+			\param [in] fitExp the experiment number
+			\param [in] label  prefix for the file name to be saved
+			\param [in] spin   spin of the wave to be saved
+		*/	
+		virtual void savePDFPlotsWave(const TString& label, const Int_t& spin);
+
+
 		//! Store the per event likelihood values
                 virtual void storePerEvtLlhds();
 
@@ -427,6 +443,9 @@ class LauCPFitModel : public LauAbsFitModel {
 		   \param [in] inputData the fit data
 		*/
 		void appendBinCentres( LauFitDataTree* inputData );
+
+		LauIsobarDynamics* getNegSigModel() {return negSigModel_;}
+		LauIsobarDynamics* getPosSigModel() {return posSigModel_;}
 
 	private:
 		//! Copy constructor (not implemented)

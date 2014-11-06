@@ -23,6 +23,8 @@ void usage( std::ostream& out, const TString& progName )
 	out<<progName<<" gen [nExpt = 1] [firstExpt = 0]\n";
 	out<<"or\n";
 	out<<progName<<" fit <iFit> [nExpt = 1] [firstExpt = 0]"<<std::endl;
+	out<<"or\n";
+	out<<progName<<" plot"<<std::endl;
 }
 
 int main( int argc, char** argv )
@@ -60,6 +62,11 @@ int main( int argc, char** argv )
 			if ( argc > 4 ) {
 				firstExpt = atoi( argv[4] );
 			}
+		}
+	}  else if ( command == "plot" ) {
+		if ( argc > 2 ) {
+		usage( std::cerr, argv[0] );
+		return EXIT_FAILURE;
 		}
 	} else {
 		usage( std::cerr, argv[0] );

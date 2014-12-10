@@ -218,7 +218,7 @@ class LauAbsCoeffSet {
 		/*!
 		    \param [out] par pointer to the parameter
 		*/
-		void adjustName(LauParameter* par);
+		virtual void adjustName(LauParameter* par);
 
 		//! Minimum allowed value of magnitude parameters
 		static Double_t minMagnitude_;

@@ -4,6 +4,18 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+10th December 2014 Daniel Craik
+
+* Added coefficient sets to extract gamma from a simultaneous fit to CP and nonCP final states, 
+  such as the B0->D_CP K pi and B0->D0bar K pi Dalitz plots, as proposed in Phys. Rev. D79, 051301 (2009)
+  - LauPolarGammaCPCoeffSet uses the CP parameters r, delta and gamma directly
+  - LauRealImagGammaCPCoeffSet parameterises CPV as X_CP+/- and Y_CP+/-
+  - LauCartesianGammaCPCoeffSet parameterises CPV as X_CP, Y_CP DeltaX_CP DeltaY_CP
+  - Fixed CP parameters are not passed to the fitter so the same coefficient sets can be used for both the 
+    CP and nonCP Dalitz plots
+  - LauPolarGammaCPCoeffSet allows for a single gamma parameter to be shared between multiple resonances
+  - LauAbsCoeffSet::adjustName made virtual to allow global variables such as gamma to not receive a prefix
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r0
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

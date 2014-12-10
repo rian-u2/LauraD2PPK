@@ -35,6 +35,7 @@
 #pragma link C++ class LauBreitWignerRes;
 #pragma link C++ class LauCacheData;
 #pragma link C++ class LauCartesianCPCoeffSet;
+#pragma link C++ class LauCartesianGammaCPCoeffSet;
 #pragma link C++ class LauChebychevPdf;
 #pragma link C++ class LauCleoCPCoeffSet;
 #pragma link C++ class LauComplex;
@@ -87,9 +88,11 @@
 #pragma link C++ class LauParamFixed;
 #pragma link C++ class LauParticlePDG;
 #pragma link C++ class LauPolNR;
+#pragma link C++ class LauPolarGammaCPCoeffSet;
 #pragma link C++ class LauPrint;
 #pragma link C++ class LauRealImagCoeffSet;
 #pragma link C++ class LauRealImagCPCoeffSet;
+#pragma link C++ class LauRealImagGammaCPCoeffSet;
 #pragma link C++ class LauRelBreitWignerRes;
 #pragma link C++ class LauResonanceInfo;
 #pragma link C++ class LauResonanceMaker;

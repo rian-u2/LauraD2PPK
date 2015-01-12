@@ -73,7 +73,7 @@ void LauRelBreitWignerRes::initialise()
 	// that are below threshold
 	Double_t effResMass = resMass_;
 	Double_t effResMassSq = resMassSq_;
-	if (resMassSq_ - mDaugSumSq_ < 0.0 ){
+	if (resMassSq_ - mDaugSumSq_ < 0.0  || resMass_ > massParent - massBachelor){
 		Double_t minMass = mDaugSum_;
 		Double_t maxMass = massParent - massBachelor;
 		Double_t tanhTerm = std::tanh( (resMass_ - ((minMass + maxMass)/2))/(maxMass-minMass));

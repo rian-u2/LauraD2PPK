@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+31st December 2015 Daniel Craik
+
+* Added unbinned goodness of fit tests to examples
+
 12th January 2015 Daniel Craik
 
 * Calculate effective masses for virtual resonances above the upper kinematic limit

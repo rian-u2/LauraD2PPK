@@ -21,6 +21,7 @@
 #pragma link C++ class LauAbsFitter;
 #pragma link C++ class LauAbsFitModel;
 #pragma link C++ class LauAbsIncohRes;
+#pragma link C++ class LauAbsModIndPartWave;
 #pragma link C++ class LauAbsPdf;
 #pragma link C++ class LauAbsResonance;
 #pragma link C++ class LauAbsRValue;
@@ -80,7 +81,7 @@
 #pragma link C++ class LauMagPhaseCoeffSet;
 #pragma link C++ class LauMagPhaseCPCoeffSet;
 #pragma link C++ class LauMinuit;
-#pragma link C++ class LauModIndPartWave;
+#pragma link C++ class LauModIndPartWaveMagPhase;
 #pragma link C++ class LauNovosibirskPdf;
 #pragma link C++ class LauNRAmplitude;
 #pragma link C++ class LauParameter;

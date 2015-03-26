@@ -1,0 +1,79 @@
+
+// Copyright University of Warwick 2004 - 2014.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauModIndPartWaveMagPhase.hh
+    \brief File containing declaration of LauModIndPartWaveMagPhase class.
+ */
+
+/*! \class LauModIndPartWaveMagPhase
+    \brief Class for defining a model independent partial wave component where the amplitudes are parameterised in terms of magnitude and phase
+
+    This model uses splines to produce a partial wave from the magnitude and phase values of the amplitude at a series of points in the phase space.
+    The magnitude and phase at each point can be floated in the fit.
+ */
+
+#ifndef LAU_MODINDPARTWAVE_MAGPHASE
+#define LAU_MODINDPARTWAVE_MAGPHASE
+
+#include "LauComplex.hh"
+#include "LauAbsModIndPartWave.hh"
+
+class TSpline3;
+
+
+class LauModIndPartWaveMagPhase : public LauAbsModIndPartWave {
+
+	public:
+		//! Constructor
+		/*!
+		    \param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
+		    \param [in] resPairAmpInt the number of the daughter not produced by the resonance
+		    \param [in] daughters the daughter particles
+		 */
+		LauModIndPartWaveMagPhase(LauResonanceInfo* resInfo, Int_t resPairAmpInt, const LauDaughters* daughters);
+
+		//! Destructor
+		virtual ~LauModIndPartWaveMagPhase();
+
+		//! Set the values of the two real parameters that define the amplitude at a given knot
+		/*!
+		    \param [in] knot the knot to be updated
+		    \param [in] magVal the value of the magnitude at the knot
+		    \param [in] phaseVal the value of the phase at the knot
+		    \param [in] fixMagnitude whether the magnitude should be fixed
+		    \param [in] fixPhase whether the phase should be fixed
+		*/
+		virtual void setKnotAmp(const UInt_t knot, const Double_t magVal, const Double_t phaseVal, const Bool_t fixMagnitude, const Bool_t fixPhase);
+
+		//! Get the resonance model type
+		/*!
+		    \return the resonance model type
+		 */
+		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::MIPW_MagPhase;}
+
+	protected:
+		//! Evaluate the amplitude at the given point from the splines
+		/*!
+		    \param [in] mass appropriate invariant mass for the resonance
+		*/
+		virtual void evaluateAmplitude(const Double_t mass);
+
+		//! Method to create the parameter objects for the given knot
+		/*!
+		    \param [in] iKnot the index of the knot
+		*/
+		virtual void createAmpParameters(const UInt_t iKnot);
+
+	private:
+		ClassDef(LauModIndPartWaveMagPhase,0) // model independent partial wave
+
+};
+
+#endif

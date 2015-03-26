@@ -57,7 +57,8 @@ class LauAbsResonance {
 			BelleSymNR,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
 			TaylorNR,	/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR,		/*!< an empirical polynomial nonresonant amplitude */
-			MIPW, 		/*!< a model independent partial wave */
+			MIPW_MagPhase, 	/*!< a model independent partial wave - magnitude and phase representation */
+			MIPW_RealImag, 	/*!< a model independent partial wave - real and imaginary part representation */
 			GaussIncoh	/*!< an incoherent Gaussian shape */
 		};
 
@@ -155,6 +156,14 @@ class LauAbsResonance {
 		    \return floating parameters of the resonance
 		*/
 		virtual const std::vector<LauParameter*>& getFloatingParameters() { return this->getParameters(); };
+
+		//! Is the amplitude pre-symmetrised?
+		/*!
+		    The default value is kFALSE, so pre-symmetrised lineshapes should override this.
+
+		    \return whether the amplitude is already symmetrised
+		*/
+		virtual Bool_t preSymmetrised() const {return kFALSE;}
 
 		//! Get the helicity flip flag
 		/*! 

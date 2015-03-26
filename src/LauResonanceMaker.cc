@@ -22,13 +22,14 @@
 #include "LauDaughters.hh"
 #include "LauFlatteRes.hh"
 #include "LauFlatNR.hh"
-#include "LauModIndPartWave.hh"
 #include "LauGaussIncohRes.hh"
 #include "LauGounarisSakuraiRes.hh"
 #include "LauKappaRes.hh"
 #include "LauLASSRes.hh"
 #include "LauLASSBWRes.hh"
 #include "LauLASSNRRes.hh"
+#include "LauModIndPartWaveMagPhase.hh"
+#include "LauModIndPartWaveRealImag.hh"
 #include "LauNRAmplitude.hh"
 #include "LauPolNR.hh"
 #include "LauRelBreitWignerRes.hh"
@@ -626,12 +627,19 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		theResonance =
 			new LauPolNR(resInfo, resPairAmpInt, daughters);
 
-	} else if ( resType == LauAbsResonance::MIPW ) {
+	} else if ( resType == LauAbsResonance::MIPW_MagPhase ) {
 
 		// Model independent partial wave
-		std::cout<<"                                        : Using model independent partial wave lineshape. "<<std::endl;
+		std::cout<<"                                        : Using model independent partial wave lineshape (magnitude and phase). "<<std::endl;
 		theResonance =
-			new LauModIndPartWave(resInfo, resPairAmpInt, daughters);
+			new LauModIndPartWaveMagPhase(resInfo, resPairAmpInt, daughters);
+
+	} else if ( resType == LauAbsResonance::MIPW_RealImag ) {
+
+		// Model independent partial wave
+		std::cout<<"                                        : Using model independent partial wave lineshape (real and imaginary part). "<<std::endl;
+		theResonance =
+			new LauModIndPartWaveRealImag(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::GaussIncoh ) {
 

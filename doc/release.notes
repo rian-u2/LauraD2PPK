@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+26th March 2015 Thomas Latham
+
+* Reworked MIPW code into abstract base class and derived classes
+  to allow different representations of the amplitude at each knot
+
 31st December 2015 Daniel Craik
 
 * Added unbinned goodness of fit tests to examples

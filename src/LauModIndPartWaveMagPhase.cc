@@ -67,11 +67,11 @@ void LauModIndPartWaveMagPhase::createAmpParameters(const UInt_t iKnot)
 
 void LauModIndPartWaveMagPhase::setKnotAmp(const UInt_t knot, const Double_t magVal, const Double_t phaseVal, const Bool_t fixMagnitude, const Bool_t fixPhase)
 {
-	const UInt_t nKnots = this->nKnots();
+	const UInt_t nknots = this->nKnots();
 
-	if ( knot >= nKnots ) {
+	if ( knot >= nknots ) {
 		std::cerr << "WARNING in LauModIndPartWaveMagPhase::setKnotAmp : Index " << knot << " does not correspond to an existing knot in resonance " << this->getResonanceName() << std::endl;
-		std::cerr << "                                                 : Index must be in range 0 to " << nKnots-1 << std::endl;
+		std::cerr << "                                                 : Index must be in range 0 to " << nknots-1 << std::endl;
 		return;
 	}
 
@@ -96,7 +96,7 @@ void LauModIndPartWaveMagPhase::setKnotAmp(const UInt_t knot, const Double_t mag
 
 	if ( knot == 0 ) {
 		std::cout << "INFO in LauModIndPartWaveMagPhase::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at lower kinematic limit (" << masses[knot] << ")" << std::endl;
-	} else if ( knot == nKnots-1 ) {
+	} else if ( knot == nknots-1 ) {
 		std::cout << "INFO in LauModIndPartWaveMagPhase::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at upper kinematic limit (" << masses[knot] << ")" << std::endl;
 	} else {
 		std::cout << "INFO in LauModIndPartWaveMagPhase::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at mass " << masses[knot] << std::endl;

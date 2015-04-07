@@ -67,11 +67,11 @@ void LauModIndPartWaveRealImag::createAmpParameters(const UInt_t iKnot)
 
 void LauModIndPartWaveRealImag::setKnotAmp(const UInt_t knot, const Double_t realVal, const Double_t imagVal, const Bool_t fixRealPart, const Bool_t fixImagPart)
 {
-	const UInt_t nKnots = this->nKnots();
+	const UInt_t nknots = this->nKnots();
 
-	if ( knot >= nKnots ) {
+	if ( knot >= nknots ) {
 		std::cerr << "WARNING in LauModIndPartWaveRealImag::setKnotAmp : Index " << knot << " does not correspond to an existing knot in resonance " << this->getResonanceName() << std::endl;
-		std::cerr << "                                                 : Index must be in range 0 to " << nKnots-1 << std::endl;
+		std::cerr << "                                                 : Index must be in range 0 to " << nknots-1 << std::endl;
 		return;
 	}
 
@@ -96,7 +96,7 @@ void LauModIndPartWaveRealImag::setKnotAmp(const UInt_t knot, const Double_t rea
 
 	if ( knot == 0 ) {
 		std::cout << "INFO in LauModIndPartWaveRealImag::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at lower kinematic limit (" << masses[knot] << ")" << std::endl;
-	} else if ( knot == nKnots-1 ) {
+	} else if ( knot == nknots-1 ) {
 		std::cout << "INFO in LauModIndPartWaveRealImag::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at upper kinematic limit (" << masses[knot] << ")" << std::endl;
 	} else {
 		std::cout << "INFO in LauModIndPartWaveRealImag::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at mass " << masses[knot] << std::endl;

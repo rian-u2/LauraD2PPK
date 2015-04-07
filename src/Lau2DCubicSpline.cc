@@ -76,7 +76,8 @@ Lau2DCubicSpline::Lau2DCubicSpline(const TH2& h) :
     ymax(h.GetYaxis()->GetBinCenter(nBinsY - 1) + binSizeY),
     coeffs(CoeffRecLen * nBinsX * nBinsY)
 {
-    TAxis *xaxis = h.GetXaxis(), *yaxis = h.GetYaxis();
+    const TAxis* xaxis = h.GetXaxis();
+    const TAxis* yaxis = h.GetYaxis();
     // verify that all bins have same size
     for (Int_t i = 1; i < nBinsX; ++i) {
 	if (std::abs(xaxis->GetBinWidth(i) / binSizeX - 1.) > 1e-9) {

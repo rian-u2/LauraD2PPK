@@ -15,6 +15,11 @@ endif
 ROOTCONFIG := $(ROOTBINDIR)/root-config
 ARCH       := $(shell $(ROOTCONFIG) --arch)
 PLATFORM   := $(shell $(ROOTCONFIG) --platform)
+ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
+ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
+ROOTLIBS   += -lEG
+ROOTLIBS   += -lMinuit
+ROOTLIBS   += -lTreePlayer
 
 INCLUDES = 
 WORKDIR  = tmp
@@ -48,13 +53,9 @@ LAURALIBDIR=$(shell pwd | xargs dirname)/lib
 LAURALIB = $(LAURALIBDIR)/libLaura++.so
 UTILSLIB = $(PWD)/$(WORKDIR)/libLauraUtils.so
 
-ROOTLIBS      = $(shell root-config --libs)
-ROOTLIBS     += -lEG
-ROOTLIBS     += -lMinuit
-ROOTLIBS     += -lTreePlayer
-
-INCLUDES += -I$(INCDIR) -I$(shell $(ROOTBINDIR)/root-config --incdir)
+INCLUDES += -I$(INCDIR)
 CXXFLAGS += $(INCLUDES)
+CXXFLAGS += $(ROOTCFLAGS)
 
 default: bin
 

@@ -1671,7 +1671,7 @@ void LauIsobarDynamics::resAmp(const UInt_t index)
 
 	// If we have a symmetrical Dalitz plot, flip the m_13^2 and m_23^2
 	// variables, recalculate the dynamics, and combine both contributions.
-	if (symmetricalDP_ == kTRUE) {
+	if (symmetricalDP_ == kTRUE && sigResonance->preSymmetrised() == kFALSE ) {
 		kinematics_->flipAndUpdateKinematics();
 
 		ff_[index] += sigResonance->amplitude(kinematics_);

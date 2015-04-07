@@ -13,10 +13,10 @@
  */
 
 /*! \class LauModIndPartWaveRealImag
-    \brief Class for defining a model independent partial wave component where the amplitudes are parameterised in terms of magnitude and phase
+    \brief Class for defining a model independent partial wave component where the amplitudes are parameterised in terms of real and imaginary parts
 
-    This model uses splines to produce a partial wave from the magnitude and phase values of the amplitude at a series of points in the phase space.
-    The magnitude and phase at each point can be floated in the fit.
+    This model uses splines to produce a partial wave from the values of the real and imaginary parts of the amplitude at a series of points in the phase space.
+    The values at each point can be floated in the fit.
  */
 
 #ifndef LAU_MODINDPARTWAVE_REALIMAG

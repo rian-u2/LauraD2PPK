@@ -30,6 +30,8 @@
 #include "LauLASSNRRes.hh"
 #include "LauModIndPartWaveMagPhase.hh"
 #include "LauModIndPartWaveRealImag.hh"
+#include "LauModIndPartWaveSymMagPhase.hh"
+#include "LauModIndPartWaveSymRealImag.hh"
 #include "LauNRAmplitude.hh"
 #include "LauPolNR.hh"
 #include "LauRelBreitWignerRes.hh"
@@ -640,6 +642,20 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		std::cout<<"                                        : Using model independent partial wave lineshape (real and imaginary part). "<<std::endl;
 		theResonance =
 			new LauModIndPartWaveRealImag(resInfo, resPairAmpInt, daughters);
+
+	} else if ( resType == LauAbsResonance::MIPW_Sym_MagPhase ) {
+
+		// Model independent partial wave
+		std::cout<<"                                        : Using model independent partial wave lineshape for symmetric DPs (magnitude and phase). "<<std::endl;
+		theResonance =
+			new LauModIndPartWaveSymMagPhase(resInfo, resPairAmpInt, daughters);
+
+	} else if ( resType == LauAbsResonance::MIPW_Sym_RealImag ) {
+
+		// Model independent partial wave
+		std::cout<<"                                        : Using model independent partial wave lineshape for symmetric DPs (real and imaginary part). "<<std::endl;
+		theResonance =
+			new LauModIndPartWaveSymRealImag(resInfo, resPairAmpInt, daughters);
 
 	} else if ( resType == LauAbsResonance::GaussIncoh ) {
 

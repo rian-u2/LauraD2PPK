@@ -39,27 +39,29 @@ class LauAbsResonance {
 	public:
 		//! Define the allowed resonance types
 		enum LauResonanceModel {
-			BW,		/*!< simple Breit-Wigner */
-			RelBW,		/*!< relativistic Breit-Wigner */
-			GS,		/*!< a modified Breit-Wigner from Gounaris-Sakurai */
-			Flatte,		/*!< Flatte or coupled-channel Breit-Wigner */
-			Sigma,		/*!< special shape for the sigma or f_0(600) */
-			Kappa,		/*!< special shape for the kappa, a low-mass Kpi scalar */
-			Dabba,		/*!< special shape for the dabba, a low-mass Dpi scalar */
-			LASS,		/*!< the LASS amplitude to describe the Kpi S-wave */
-			LASS_BW,	/*!< the resonant part of the LASS amplitude */
-			LASS_NR,	/*!< the nonresonant part of the LASS amplitude */
-			KMatrix,	/*!< S-wave description using K-matrix and P-vector */
-			FlatNR,		/*!< a uniform nonresonant amplitude */
-			NRModel,	/*!< a theoretical model nonresonant amplitude */
-			BelleNR,	/*!< an empirical exponential nonresonant amplitude */
-			PowerLawNR,	/*!< an empirical power law nonresonant amplitude */
-			BelleSymNR,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
-			TaylorNR,	/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
-			PolNR,		/*!< an empirical polynomial nonresonant amplitude */
-			MIPW_MagPhase, 	/*!< a model independent partial wave - magnitude and phase representation */
-			MIPW_RealImag, 	/*!< a model independent partial wave - real and imaginary part representation */
-			GaussIncoh	/*!< an incoherent Gaussian shape */
+			BW,			/*!< simple Breit-Wigner */
+			RelBW,			/*!< relativistic Breit-Wigner */
+			GS,			/*!< a modified Breit-Wigner from Gounaris-Sakurai */
+			Flatte,			/*!< Flatte or coupled-channel Breit-Wigner */
+			Sigma,			/*!< special shape for the sigma or f_0(600) */
+			Kappa,			/*!< special shape for the kappa, a low-mass Kpi scalar */
+			Dabba,			/*!< special shape for the dabba, a low-mass Dpi scalar */
+			LASS,			/*!< the LASS amplitude to describe the Kpi S-wave */
+			LASS_BW,		/*!< the resonant part of the LASS amplitude */
+			LASS_NR,		/*!< the nonresonant part of the LASS amplitude */
+			KMatrix,		/*!< S-wave description using K-matrix and P-vector */
+			FlatNR,			/*!< a uniform nonresonant amplitude */
+			NRModel,		/*!< a theoretical model nonresonant amplitude */
+			BelleNR,		/*!< an empirical exponential nonresonant amplitude */
+			PowerLawNR,		/*!< an empirical power law nonresonant amplitude */
+			BelleSymNR,		/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
+			TaylorNR,		/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
+			PolNR,			/*!< an empirical polynomial nonresonant amplitude */
+			MIPW_MagPhase, 		/*!< a model independent partial wave - magnitude and phase representation */
+			MIPW_RealImag, 		/*!< a model independent partial wave - real and imaginary part representation */
+			MIPW_Sym_MagPhase, 	/*!< a model independent partial wave for symmetrised DPs - magnitude and phase representation */
+			MIPW_Sym_RealImag, 	/*!< a model independent partial wave for symmetrised DPs - real and imaginary part representation */
+			GaussIncoh		/*!< an incoherent Gaussian shape */
 		};
 
 		//! Constructor (for use by standard resonances)

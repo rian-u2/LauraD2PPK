@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+7th April 2015 Thomas Latham
+
+* Added versions of the MIPW classes for symmetrised DPs that are 'presymmetrised'
+
 26th March 2015 Thomas Latham
 
 * Reworked MIPW code into abstract base class and derived classes

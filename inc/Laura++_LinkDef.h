@@ -4,6 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class Lau1DCubicSpline;
 #pragma link C++ class Lau1DHistPdf;
 #pragma link C++ class Lau2DAbsDP;
 #pragma link C++ class Lau2DAbsDPPdf;

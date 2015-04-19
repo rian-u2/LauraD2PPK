@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+19th April 2015 Daniel Craik
+
+* Added Lau1DCubicSpline class for 1D spline interpolation
+
 7th April 2015 Thomas Latham
 
 * Added versions of the MIPW classes for symmetrised DPs that are 'presymmetrised'

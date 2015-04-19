@@ -280,16 +280,14 @@ class LauCPFitModel : public LauAbsFitModel {
 		*/	
 		virtual void writeOutTable(const TString& outputFile);
 
-		//! Save the pdf Plots for all the resonances of experiment number fitExp
+		//! Save the pdf Plots for all the resonances
 		/*!
-			\param [in] fitExp the experiment number
 			\param [in] label  prefix for the file name to be saved
 		*/	
 		virtual void savePDFPlots(const TString& label);
 
-		//! Save the pdf Plots for the sum of ressonances correspondint to "sin" of experiment number fitExp
+		//! Save the pdf Plots for the sum of resonances of a given spin
 		/*!
-			\param [in] fitExp the experiment number
 			\param [in] label  prefix for the file name to be saved
 			\param [in] spin   spin of the wave to be saved
 		*/	

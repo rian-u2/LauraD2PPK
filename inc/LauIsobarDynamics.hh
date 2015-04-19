@@ -440,7 +440,7 @@ class LauIsobarDynamics {
 
 		//! Retrieve the named resonance
 		/*!
-		    \param [in] name the name of the resonance to retrieve
+		    \param [in] resIndex the index of the resonance to retrieve
 		    \return the named resonance
 		*/
 		LauAbsResonance* getResonance(UInt_t& resIndex);

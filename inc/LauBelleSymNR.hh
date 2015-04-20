@@ -62,6 +62,12 @@ class LauBelleSymNR : public LauAbsResonance {
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return model_;}
 
+		//! Is the amplitude pre-symmetrised?
+		/*!
+		    \return kTRUE, indicating that the amplitude is already symmetrised
+		*/
+		virtual Bool_t preSymmetrised() const {return kTRUE;}
+
 		//! Set value of the various parameters
 		/*!
 			\param [in] name the name of the parameter to be changed

@@ -56,6 +56,43 @@ void LauAbsModIndPartWave::floatKnotsSecondStage(const Bool_t secondStage)
 	}
 }
 
+std::set<Double_t> LauAbsModIndPartWave::checkKnots(const std::set<Double_t>& masses)
+{
+	std::set<Double_t> knots = masses;
+
+	const std::set<Double_t>::const_iterator first = knots.begin();
+	const std::set<Double_t>::const_reverse_iterator last = knots.rbegin();
+
+	const Double_t lower_limit = this->getMassDaug1() + this->getMassDaug2();
+	const Double_t upper_limit = this->getMassParent() - this->getMassBachelor();
+
+	// check whether we have been given knots at unphysical masses
+	if ( *first < lower_limit ) {
+		std::cerr << "WARNING in LauAbsModIndPartWave::checkKnots : Knot found at mass " << *first << " is below the lower kinematic limit." << std::endl;
+		std::cerr << "                                            : Lower kinematic limit is at mass " << lower_limit << std::endl;
+		std::cerr << "                                            : Aborting definition of knot positions." << std::endl;
+		knots.clear();
+		return knots;
+	}
+	if ( *last > upper_limit ) {
+		std::cerr << "WARNING in LauAbsModIndPartWave::checkKnots : Knot found at mass " << *last << " is above the upper kinematic limit." << std::endl;
+		std::cerr << "                                            : Upper kinematic limit is at mass " << upper_limit << std::endl;
+		std::cerr << "                                            : Aborting definition of knot positions." << std::endl;
+		knots.clear();
+		return knots;
+	}
+
+	// check if we have knots at each extreme - if not, add them in
+	if ( (*first) != lower_limit ) {
+		knots.insert( lower_limit );
+	}
+	if ( (*last)  != upper_limit ) {
+		knots.insert( upper_limit );
+	}
+
+	return knots;
+}
+
 void LauAbsModIndPartWave::defineKnots(const std::set<Double_t>& masses)
 {
 	if ( ! masses_.empty() ) {
@@ -63,35 +100,11 @@ void LauAbsModIndPartWave::defineKnots(const std::set<Double_t>& masses)
 		return;
 	}
 
-	const std::set<Double_t>::const_iterator first = masses.begin();
-	const std::set<Double_t>::const_reverse_iterator last = masses.rbegin();
+	const std::set<Double_t> knots = this->checkKnots( masses );
 
-	const Double_t lower_limit = this->getMassDaug1() + this->getMassDaug2();
-	const Double_t upper_limit = this->getMassParent() - this->getMassBachelor();
-
-	if ( *first < lower_limit ) {
-		std::cerr << "WARNING in LauAbsModIndPartWave::defineKnots : Knot found at mass " << *first << " is below the lower kinematic limit." << std::endl;
-		std::cerr << "                                             : Lower kinematic limit is at mass " << lower_limit << std::endl;
-		std::cerr << "                                             : Aborting definition of knot positions." << std::endl;
+	nKnots_ = knots.size();
+	if ( nKnots_ == 0 ) {
 		return;
-	}
-
-	if ( *last > upper_limit ) {
-		std::cerr << "WARNING in LauAbsModIndPartWave::defineKnots : Knot found at mass " << *last << " is above the upper kinematic limit." << std::endl;
-		std::cerr << "                                             : Upper kinematic limit is at mass " << upper_limit << std::endl;
-		std::cerr << "                                             : Aborting definition of knot positions." << std::endl;
-		return;
-	}
-
-	Bool_t needLowerLimitKnot = (*first) != lower_limit;
-	Bool_t needUpperLimitKnot = (*last)  != upper_limit;
-
-	nKnots_ = masses.size();
-	if ( needLowerLimitKnot ) {
-		++nKnots_;
-	}
-	if ( needUpperLimitKnot ) {
-		++nKnots_;
 	}
 
 	masses_.reserve(nKnots_);
@@ -101,24 +114,8 @@ void LauAbsModIndPartWave::defineKnots(const std::set<Double_t>& masses)
 	amp2Pars_.reserve(nKnots_);
 
 	UInt_t counter(0);
-	if ( needLowerLimitKnot ) {
-		masses_.push_back( lower_limit );
-		amp1Vals_.push_back(1.0);
-		amp2Vals_.push_back(1.0);
-		this->createAmpParameters(counter);
-		++counter;
-	}
-
-	for ( std::set<Double_t>::const_iterator iter = masses.begin(); iter != masses.end(); ++iter ) {
+	for ( std::set<Double_t>::const_iterator iter = knots.begin(); iter != knots.end(); ++iter ) {
 		masses_.push_back( *iter );
-		amp1Vals_.push_back(1.0);
-		amp2Vals_.push_back(1.0);
-		this->createAmpParameters(counter);
-		++counter;
-	}
-
-	if ( needUpperLimitKnot ) {
-		masses_.push_back( upper_limit );
 		amp1Vals_.push_back(1.0);
 		amp2Vals_.push_back(1.0);
 		this->createAmpParameters(counter);

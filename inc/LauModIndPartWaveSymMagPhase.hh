@@ -62,6 +62,13 @@ class LauModIndPartWaveSymMagPhase : public LauModIndPartWaveMagPhase {
 		*/
 		virtual LauComplex amplitude(const LauKinematics* kinematics);
 
+	protected:
+		//! Method to check that the supplied knot positions are valid
+		/*!
+		    \param [in] masses the mass values at which the knots are placed
+		*/
+		virtual std::set<Double_t> checkKnots(const std::set<Double_t>& masses);
+
 	private:
 		LauKinematics* kinematics_;
 

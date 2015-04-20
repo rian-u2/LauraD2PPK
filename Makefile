@@ -67,7 +67,8 @@ ifeq ($(ARCH),macosx64)
 # This set here should work for MacOSX.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
+#CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
+CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC
 MFLAGS   = -MM
 LDFLAGS  = -dynamiclib -single_module -undefined dynamic_lookup
 endif

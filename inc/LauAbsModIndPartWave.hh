@@ -110,6 +110,12 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		*/
 		virtual void evaluateAmplitude(const Double_t mass) = 0;
 
+		//! Method to check that the supplied knot positions are valid
+		/*!
+		    \param [in] masses the mass values at which the knots are placed
+		*/
+		virtual std::set<Double_t> checkKnots(const std::set<Double_t>& masses);
+
 		//! Method to create the parameter objects for the given knot
 		/*!
 		    \param [in] iKnot the index of the knot

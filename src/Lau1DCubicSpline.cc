@@ -29,7 +29,7 @@
 
   (i)   Clamped :     f'(x) = C at the last knot
   (ii)  Natural :     f''(x) = 0 at the last knot
-  (iii) Not a knot :  f'''(x)=0 at the second last knot
+  (iii) Not a knot :  f'''(x) continuous at the second last knot
 
   The algorithms used in this class can be found on:
   http://en.wikipedia.org/wiki/Spline_interpolation#Algorithm_to_find_the_interpolating_cubic_spline
@@ -124,8 +124,6 @@ void Lau1DCubicSpline::init()
     std::cout << "                                  Found " <<  y_.size() << ", expected " << x_.size() << std::endl;
     gSystem->Exit(EXIT_FAILURE);
   }
-
-  nKnots_ = x_.size();
 
   dydx_.insert(dydx_.begin(),nKnots_,0.);
 
@@ -233,7 +231,7 @@ void Lau1DCubicSpline::calcDerivatives()
   // back substitution - calculate k_i = dy/dx at each knot
   //
   // k_i = d'_i                   for i = n-1
-  //       d'_i - c'_i * k_i-1    otherwise
+  //       d'_i - c'_i * k_i+1    otherwise
 
   dydx_[nKnots_-1] = d_[nKnots_-1];
 

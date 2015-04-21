@@ -26,8 +26,6 @@
 #include "LauComplex.hh"
 #include "LauModIndPartWaveMagPhase.hh"
 
-class TSpline3;
-
 
 class LauModIndPartWaveSymMagPhase : public LauModIndPartWaveMagPhase {
 

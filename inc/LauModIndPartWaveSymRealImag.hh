@@ -26,8 +26,6 @@
 #include "LauComplex.hh"
 #include "LauModIndPartWaveRealImag.hh"
 
-class TSpline3;
-
 
 class LauModIndPartWaveSymRealImag : public LauModIndPartWaveRealImag {
 

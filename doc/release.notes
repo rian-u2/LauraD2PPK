@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+22nd April 2015 Daniel Craik
+
+* Updated MIPW classes to use Lau1DCubicSpline
+
 19th April 2015 Daniel Craik
 
 * Added Lau1DCubicSpline class for 1D spline interpolation

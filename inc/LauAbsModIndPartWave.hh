@@ -28,8 +28,7 @@
 
 #include "LauComplex.hh"
 #include "LauAbsResonance.hh"
-
-class TSpline3;
+#include "Lau1DCubicSpline.hh"
 
 
 class LauAbsModIndPartWave : public LauAbsResonance {
@@ -122,6 +121,24 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		*/
 		virtual void createAmpParameters(const UInt_t iKnot) = 0;
 
+        //! Method to set the boundary conditions of the splines
+		/*!
+		    \param [in] leftBound1 the type of boundary condition for the left edge of the first spline
+			\param [in] rightBound1 the type of boundary condition for the right edge of the first spline
+			\param [in] leftBound2 the type of boundary condition for the left edge of the second spline
+			\param [in] rightBound2 the type of boundary condition for the right edge of the second spline
+			\param [in] leftGrad1 the gradient at the left edge of the first spline if clamped
+			\param [in] rightGrad1 the gradient at the right edge of the first spline if clamped
+			\param [in] leftGrad2 the gradient at the left edge of the second spline if clamped
+			\param [in] rightGrad2 the gradient at the right edge of the second spline if clamped
+		*/
+        void setSplineBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType leftBound1, 
+                                     Lau1DCubicSpline::LauSplineBoundaryType rightBound1,
+                                     Lau1DCubicSpline::LauSplineBoundaryType leftBound2,
+                                     Lau1DCubicSpline::LauSplineBoundaryType rightBound2,
+                                     Double_t leftGrad1=0., Double_t rightGrad1=0.,
+                                     Double_t leftGrad2=0., Double_t rightGrad2=0.);
+
 		//! Helper function to set the current amplitude value
 		/*!
 		    \param [in] realPart the real part of the amplitude
@@ -148,10 +165,10 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		std::vector<LauParameter*>& getAmp2Pars() {return amp2Pars_;}
 
 		//! Helper function to access the 1st spline
-		const TSpline3* getSpline1() const {return spline1_;}
+		const Lau1DCubicSpline* getSpline1() const {return spline1_;}
 
 		//! Helper function to access the 1st spline
-		const TSpline3* getSpline2() const {return spline2_;}
+		const Lau1DCubicSpline* getSpline2() const {return spline2_;}
 
 	private:
 		//! The number of knots
@@ -171,9 +188,27 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		std::vector<LauParameter*> amp2Pars_;
 
 		//! The spline used to interpolate the values of the first real parameter
-		TSpline3* spline1_;
+		Lau1DCubicSpline* spline1_;
 		//! The spline used to interpolate the values of the second real parameter
-		TSpline3* spline2_;
+		Lau1DCubicSpline* spline2_;
+
+    //! The lower boundary condition type for the first spline
+    Lau1DCubicSpline::LauSplineBoundaryType leftBound1_;
+    //! The upper boundary condition type for the first spline
+    Lau1DCubicSpline::LauSplineBoundaryType rightBound1_;
+    //! The lower boundary condition type for the second spline
+    Lau1DCubicSpline::LauSplineBoundaryType leftBound2_;
+    //! The upper boundary condition type for the second spline
+    Lau1DCubicSpline::LauSplineBoundaryType rightBound2_;
+
+    //! The gradient at the left boundary for the first spline if clamped
+    Double_t leftGrad1_;
+    //! The gradient at the right boundary for the first spline if clamped
+    Double_t rightGrad1_;
+    //! The gradient at the left boundary for the second spline if clamped
+    Double_t leftGrad2_;
+    //! The gradient at the right boundary for the second spline if clamped
+    Double_t rightGrad2_;
 
 		//! Flag to determine if the parameters should be floated only in the second stage of the fit
 		Bool_t secondStage_;

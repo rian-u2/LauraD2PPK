@@ -15,8 +15,6 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "TSpline.h"
-
 #include "LauConstants.hh"
 #include "LauDaughters.hh"
 #include "LauKinematics.hh"

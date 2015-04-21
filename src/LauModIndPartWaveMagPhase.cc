@@ -15,8 +15,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "TSpline.h"
-
+#include "Lau1DCubicSpline.hh"
 #include "LauConstants.hh"
 #include "LauKinematics.hh"
 #include "LauModIndPartWaveMagPhase.hh"
@@ -117,11 +116,11 @@ void LauModIndPartWaveMagPhase::setKnotAmp(const UInt_t knot, const Double_t mag
 
 void LauModIndPartWaveMagPhase::evaluateAmplitude(const Double_t mass)
 {
-	const TSpline3* splineMag = this->getSpline1();
-	const TSpline3* splinePhase = this->getSpline2();
+	const Lau1DCubicSpline* splineMag = this->getSpline1();
+	const Lau1DCubicSpline* splinePhase = this->getSpline2();
 
-	const Double_t mag = splineMag->Eval(mass);
-	const Double_t phase = splinePhase->Eval(mass);
+	const Double_t mag = splineMag->evaluate(mass);
+	const Double_t phase = splinePhase->evaluate(mass);
 
 	this->setAmp(mag*TMath::Cos(phase), mag*TMath::Sin(phase));
 }

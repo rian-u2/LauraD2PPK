@@ -33,7 +33,7 @@
 
   (i)   Clamped :     f'(x) = C at the last knot
   (ii)  Natural :     f''(x) = 0 at the last knot
-  (iii) Not a knot :  f'''(x)=0 at the second last knot
+  (iii) Not a knot :  f'''(x) continuous at the second last knot
 
   The algorithms used in this class can be found on:
   http://en.wikipedia.org/wiki/Spline_interpolation#Algorithm_to_find_the_interpolating_cubic_spline
@@ -54,7 +54,7 @@ class Lau1DCubicSpline
   enum LauSplineBoundaryType {
     Clamped, /*!< clamped boundary - f'(x) = C */
     Natural, /*!< natural boundary - f''(x) = 0 */
-    NotAKnot /*!< 'not a knot' boundary - f'''(x) = 0 */
+    NotAKnot /*!< 'not a knot' boundary - f'''(x) continuous at second last knot */
   };
 
   //! Constructor
@@ -67,10 +67,10 @@ class Lau1DCubicSpline
     /param [in] dydxn the gradient at the right-hand boundary of a clamped spline
    */
   Lau1DCubicSpline(const std::vector<Double_t>& xs, const std::vector<Double_t>& ys,
-      LauSplineBoundaryType leftBound=Lau1DCubicSpline::Clamped, 
-      LauSplineBoundaryType rightBound=Lau1DCubicSpline::Clamped,
+      LauSplineBoundaryType leftBound=Lau1DCubicSpline::NotAKnot, 
+      LauSplineBoundaryType rightBound=Lau1DCubicSpline::NotAKnot,
       Double_t dydx0=0., Double_t dydxn=0.)
-    : nKnots_(0), x_(xs), y_(ys), leftBound_(leftBound), rightBound_(rightBound), dydx0_(dydx0), dydxn_(dydxn)
+    : nKnots_(xs.size()), x_(xs), y_(ys), leftBound_(leftBound), rightBound_(rightBound), dydx0_(dydx0), dydxn_(dydxn)
   {
     init();
   }
@@ -116,7 +116,7 @@ class Lau1DCubicSpline
   void calcDerivatives();
 
   //! The number of knots in the spline
-  UInt_t nKnots_;
+  const UInt_t nKnots_;
 
   //! The x-value at each knot
   std::vector<Double_t> x_;

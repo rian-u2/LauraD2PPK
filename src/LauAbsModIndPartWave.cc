@@ -15,8 +15,6 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "TSpline.h"
-
 #include "LauConstants.hh"
 #include "LauKinematics.hh"
 #include "LauAbsModIndPartWave.hh"
@@ -30,6 +28,14 @@ LauAbsModIndPartWave::LauAbsModIndPartWave(LauResonanceInfo* resInfo, Int_t resP
 	nKnots_(0),
 	spline1_(0),
 	spline2_(0),
+  leftBound1_(Lau1DCubicSpline::NotAKnot),
+  rightBound1_(Lau1DCubicSpline::NotAKnot),
+  leftBound2_(Lau1DCubicSpline::NotAKnot),
+  rightBound2_(Lau1DCubicSpline::NotAKnot),
+  leftGrad1_(0.),
+  rightGrad1_(0.),
+  leftGrad2_(0.),
+  rightGrad2_(0.),
 	secondStage_(kFALSE)
 {
 }
@@ -143,144 +149,38 @@ void LauAbsModIndPartWave::initialise()
 		amp2Vals_[i] = amp2Pars_[i]->value();
 	}
 
-	// TODO need to check that this is guaranteed to work by the standard
-	Double_t* massVals = &masses_[0];
-	Double_t* amp1Vals = &amp1Vals_[0];
-	Double_t* amp2Vals = &amp2Vals_[0];
-
-	spline1_ = new TSpline3("", massVals, amp1Vals, nKnots_);
-	spline2_ = new TSpline3("", massVals, amp2Vals, nKnots_);
+	spline1_ = new Lau1DCubicSpline(masses_, amp1Vals_, leftBound1_, rightBound1_, leftGrad1_, rightGrad1_);
+	spline2_ = new Lau1DCubicSpline(masses_, amp2Vals_, leftBound2_, rightBound2_, leftGrad2_, rightGrad2_);
 }
-
-/*
-void LauAbsModIndPartWave::addKnot(Double_t mass, Double_t magVal, Double_t phaseVal, Bool_t fixMag, Bool_t fixPhase)
-{
-	const TString & parNameBase = this->getSanitisedName();
-
-	if(mass < this->getMassDaug1() + this->getMassDaug2()) {
-		std::cerr << "WARNING in LauAbsModIndPartWave::addKnot : Knot at mass " << mass << " is below the lower kinematic limit and will not be added." << std::endl;
-		std::cerr << "                                        Lower kinematic limit is at mass " << this->getMassDaug1() + this->getMassDaug2() << std::endl;
-		return;
-	}
-
-	if(mass > this->getMassParent() - this->getMassBachelor()) {
-		std::cerr << "WARNING in LauAbsModIndPartWave::addKnot : Knot at mass " << mass << " is above the upper kinematic limit and will not be added." << std::endl;
-		std::cerr << "                                        Upper kinematic limit is at mass " << this->getMassParent() - this->getMassBachelor() << std::endl;
-		return;
-	}
-
-	if(!masses_.empty() && masses_[nKnots_-1] >= mass) {
-		std::cerr << "WARNING in LauAbsModIndPartWave::addKnot : Knots must be added in ascending order. Knot at mass " << mass << " has not been added." << std::endl;
-		std::cerr << "                                        Highest existing knot has mass " << masses_[nKnots_-1] << std::endl;
-		return;
-	}
-
-	masses_.push_back(mass);
-	magnitudes_.push_back(magVal);
-	phases_.push_back(phaseVal);
-
-	TString magName(parNameBase);
-	magName+="_A";
-	magName+=nKnots_;
-
-	magnitudePars_.push_back(this->getResInfo()->getExtraParameter( magName ));
-	if( magnitudePars_[nKnots_] == 0) {
-		magnitudePars_[nKnots_] = new LauParameter( magName, magVal, 0.0, 10.0, fixMag);
-		magnitudePars_[nKnots_]->secondStage(kTRUE);
-		this->getResInfo()->addExtraParameter(magnitudePars_[nKnots_]);
-	}
-
-	TString phaseName(parNameBase);
-	phaseName+="_d";
-	phaseName+=nKnots_;
-
-	phasePars_.push_back(this->getResInfo()->getExtraParameter( phaseName ));
-	if( phasePars_[nKnots_] == 0) {
-		phasePars_[nKnots_] = new LauParameter( phaseName, phaseVal, -6.0*LauConstants::pi, 6.0*LauConstants::pi, fixPhase);
-		phasePars_[nKnots_]->secondStage(kTRUE);
-		this->getResInfo()->addExtraParameter(phasePars_[nKnots_]);
-	}
-
-	std::cout << "INFO in LauAbsModIndPartWave::addKnot : Knot added to resonance " << this->getResonanceName() << " at mass " << mass << std::endl;
-	if(fixMag) std::cout << "                                     Magnitude fixed to " << magVal << std::endl;
-	else std::cout << "                                     Magnitude set to " << magVal << std::endl;
-	if(fixPhase) std::cout << "                                     Phase fixed to " << phaseVal << std::endl;
-	else std::cout << "                                     Phase set to " << phaseVal << std::endl;
-
-	++nKnots_;
-}
-
-void LauAbsModIndPartWave::setKnotAmp(Int_t knot, Double_t magVal, Double_t phaseVal, Bool_t fixMag, Bool_t fixPhase)
-{
-
-	//Out of range
-	if(knot > nKnots_ || knot < -1) {
-		std::cerr << "WARNING in LauAbsModIndPartWave::setKnotAmp : Index " << knot << " does not correspond to an existing knot in resonance " << this->getResonanceName() << std::endl;
-		std::cerr << "                                           Index must be in range -1 to " << nKnots_-1 << std::endl;
-		return;
-	}
-
-	//Special value to access upper threshold knot (only added during initialisation)
-	if(knot == -1) {
-		upperThresholdMag_ = magVal;
-		upperThresholdPhase_ = phaseVal;
-		fixUpperThresholdMag_ = fixMag;
-		fixUpperThresholdPhase_ = fixPhase;
-
-		std::cout << "INFO in LauAbsModIndPartWave::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at upper kinematic threshold" << std::endl;
-		if(fixMag) std::cout << "                                        Magnitude fixed to " << magVal << std::endl;
-		else std::cout << "                                        Magnitude set to " << magVal << std::endl;
-		if(fixPhase) std::cout << "                                        Phase fixed to " << phaseVal << std::endl;
-		else std::cout << "                                        Phase set to " << phaseVal << std::endl;
-	}
-
-	//Otherwise edit the values directly
-	else {
-		magnitudes_[knot] = magVal;
-		magnitudePars_[knot]->value(magVal);
-		magnitudePars_[knot]->genValue(magVal);
-		magnitudePars_[knot]->initValue(magVal);
-		magnitudePars_[knot]->fixed(fixMag);
-		phases_[knot] = phaseVal;
-		phasePars_[knot]->value(phaseVal);
-		phasePars_[knot]->genValue(phaseVal);
-		phasePars_[knot]->initValue(phaseVal);
-		phasePars_[knot]->fixed(fixPhase);
-
-		if(knot == 0) std::cout << "INFO in LauAbsModIndPartWave::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at lower kinematic threshold" << std::endl;
-		else std::cout << "INFO in LauAbsModIndPartWave::setKnotAmp : Knot updated in resonance " << this->getResonanceName() << " at mass " << masses_[knot] << std::endl;
-		if(fixMag) std::cout << "                                        Magnitude fixed to " << magVal << std::endl;
-		else std::cout << "                                        Magnitude set to " << magVal << std::endl;
-		if(fixPhase) std::cout << "                                        Phase fixed to " << phaseVal << std::endl;
-		else std::cout << "                                        Phase set to " << phaseVal << std::endl;
-	}
-}
-*/
 
 LauComplex LauAbsModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)
 {
 	amp_.zero();
 
-	Bool_t paramChanged(kFALSE);
+	Bool_t paramChanged1(kFALSE), paramChanged2(kFALSE);
 
 	for ( UInt_t i(0); i < nKnots_; ++i ) {
 		if ( !amp1Pars_[i]->fixed() && amp1Pars_[i]->value() != amp1Vals_[i] ) {
-			paramChanged = kTRUE;
-			break;
+			paramChanged1 = kTRUE;
+		  amp1Vals_[i] = amp1Pars_[i]->value();
 		}
 		if ( !amp2Pars_[i]->fixed() && amp2Pars_[i]->value() != amp2Vals_[i] ) {
-			paramChanged = kTRUE;
-			break;
+			paramChanged2 = kTRUE;
+		  amp2Vals_[i] = amp2Pars_[i]->value();
 		}
-	}
-
-	if ( paramChanged ) {
-		this->initialise();
 	}
 
 	if ( spline1_ == 0 ||  spline2_ == 0) {
 		std::cerr << "ERROR in LauAbsModIndPartWave::resAmp : One of the splines is null" << std::endl;
 		return amp_;
+	}
+
+	if ( paramChanged1 ) {
+		spline1_->updateYValues(amp1Vals_);
+	}
+
+	if ( paramChanged2 ) {
+		spline2_->updateYValues(amp2Vals_);
 	}
 
 	this->evaluateAmplitude( mass );
@@ -289,6 +189,25 @@ LauComplex LauAbsModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)
 
 	return amp_;
 }
+
+void LauAbsModIndPartWave::setSplineBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType leftBound1, 
+                                                       Lau1DCubicSpline::LauSplineBoundaryType rightBound1,
+                                                       Lau1DCubicSpline::LauSplineBoundaryType leftBound2,
+                                                       Lau1DCubicSpline::LauSplineBoundaryType rightBound2,
+                                                       Double_t leftGrad1, Double_t rightGrad1,
+                                                       Double_t leftGrad2, Double_t rightGrad2) {
+
+  leftBound1_  = leftBound1;
+  rightBound1_ = rightBound1;
+  leftBound2_  = leftBound2;
+  rightBound2_ = rightBound2;
+  leftGrad1_   = leftGrad1;
+  rightGrad1_  = rightGrad1;
+  leftGrad2_   = leftGrad2;
+  rightGrad2_  = rightGrad2;
+}
+
+
 
 const std::vector<LauParameter*>& LauAbsModIndPartWave::getFloatingParameters()
 {

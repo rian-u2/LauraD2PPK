@@ -15,8 +15,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "TSpline.h"
-
+#include "Lau1DCubicSpline.hh"
 #include "LauConstants.hh"
 #include "LauKinematics.hh"
 #include "LauModIndPartWaveRealImag.hh"
@@ -117,11 +116,11 @@ void LauModIndPartWaveRealImag::setKnotAmp(const UInt_t knot, const Double_t rea
 
 void LauModIndPartWaveRealImag::evaluateAmplitude(const Double_t mass)
 {
-	const TSpline3* splineReal = this->getSpline1();
-	const TSpline3* splineImag = this->getSpline2();
+	const Lau1DCubicSpline* splineReal = this->getSpline1();
+	const Lau1DCubicSpline* splineImag = this->getSpline2();
 
-	const Double_t re = splineReal->Eval(mass);
-	const Double_t im = splineImag->Eval(mass);
+	const Double_t re = splineReal->evaluate(mass);
+	const Double_t im = splineImag->evaluate(mass);
 
 	this->setAmp(re, im);
 }

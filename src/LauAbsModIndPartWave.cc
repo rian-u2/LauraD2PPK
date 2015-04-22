@@ -28,14 +28,14 @@ LauAbsModIndPartWave::LauAbsModIndPartWave(LauResonanceInfo* resInfo, Int_t resP
 	nKnots_(0),
 	spline1_(0),
 	spline2_(0),
-  leftBound1_(Lau1DCubicSpline::NotAKnot),
-  rightBound1_(Lau1DCubicSpline::NotAKnot),
-  leftBound2_(Lau1DCubicSpline::NotAKnot),
-  rightBound2_(Lau1DCubicSpline::NotAKnot),
-  leftGrad1_(0.),
-  rightGrad1_(0.),
-  leftGrad2_(0.),
-  rightGrad2_(0.),
+	leftBound1_(Lau1DCubicSpline::NotAKnot),
+	rightBound1_(Lau1DCubicSpline::NotAKnot),
+	leftBound2_(Lau1DCubicSpline::NotAKnot),
+	rightBound2_(Lau1DCubicSpline::NotAKnot),
+	leftGrad1_(0.),
+	rightGrad1_(0.),
+	leftGrad2_(0.),
+	rightGrad2_(0.),
 	secondStage_(kFALSE)
 {
 }
@@ -162,11 +162,11 @@ LauComplex LauAbsModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)
 	for ( UInt_t i(0); i < nKnots_; ++i ) {
 		if ( !amp1Pars_[i]->fixed() && amp1Pars_[i]->value() != amp1Vals_[i] ) {
 			paramChanged1 = kTRUE;
-		  amp1Vals_[i] = amp1Pars_[i]->value();
+			amp1Vals_[i] = amp1Pars_[i]->value();
 		}
 		if ( !amp2Pars_[i]->fixed() && amp2Pars_[i]->value() != amp2Vals_[i] ) {
 			paramChanged2 = kTRUE;
-		  amp2Vals_[i] = amp2Pars_[i]->value();
+			amp2Vals_[i] = amp2Pars_[i]->value();
 		}
 	}
 
@@ -194,20 +194,20 @@ void LauAbsModIndPartWave::setSplineBoundaryConditions(Lau1DCubicSpline::LauSpli
                                                        Lau1DCubicSpline::LauSplineBoundaryType rightBound1,
                                                        Lau1DCubicSpline::LauSplineBoundaryType leftBound2,
                                                        Lau1DCubicSpline::LauSplineBoundaryType rightBound2,
-                                                       Double_t leftGrad1, Double_t rightGrad1,
-                                                       Double_t leftGrad2, Double_t rightGrad2) {
-
-  leftBound1_  = leftBound1;
-  rightBound1_ = rightBound1;
-  leftBound2_  = leftBound2;
-  rightBound2_ = rightBound2;
-  leftGrad1_   = leftGrad1;
-  rightGrad1_  = rightGrad1;
-  leftGrad2_   = leftGrad2;
-  rightGrad2_  = rightGrad2;
+                                                       Double_t leftGrad1,
+						       Double_t rightGrad1,
+                                                       Double_t leftGrad2,
+						       Double_t rightGrad2)
+{
+	leftBound1_  = leftBound1;
+	rightBound1_ = rightBound1;
+	leftBound2_  = leftBound2;
+	rightBound2_ = rightBound2;
+	leftGrad1_   = leftGrad1;
+	rightGrad1_  = rightGrad1;
+	leftGrad2_   = leftGrad2;
+	rightGrad2_  = rightGrad2;
 }
-
-
 
 const std::vector<LauParameter*>& LauAbsModIndPartWave::getFloatingParameters()
 {

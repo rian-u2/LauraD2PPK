@@ -121,23 +121,23 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		*/
 		virtual void createAmpParameters(const UInt_t iKnot) = 0;
 
-        //! Method to set the boundary conditions of the splines
+		//! Method to set the boundary conditions of the splines
 		/*!
 		    \param [in] leftBound1 the type of boundary condition for the left edge of the first spline
-			\param [in] rightBound1 the type of boundary condition for the right edge of the first spline
-			\param [in] leftBound2 the type of boundary condition for the left edge of the second spline
-			\param [in] rightBound2 the type of boundary condition for the right edge of the second spline
-			\param [in] leftGrad1 the gradient at the left edge of the first spline if clamped
-			\param [in] rightGrad1 the gradient at the right edge of the first spline if clamped
-			\param [in] leftGrad2 the gradient at the left edge of the second spline if clamped
-			\param [in] rightGrad2 the gradient at the right edge of the second spline if clamped
+		    \param [in] rightBound1 the type of boundary condition for the right edge of the first spline
+		    \param [in] leftBound2 the type of boundary condition for the left edge of the second spline
+		    \param [in] rightBound2 the type of boundary condition for the right edge of the second spline
+		    \param [in] leftGrad1 the gradient at the left edge of the first spline if clamped
+		    \param [in] rightGrad1 the gradient at the right edge of the first spline if clamped
+		    \param [in] leftGrad2 the gradient at the left edge of the second spline if clamped
+		    \param [in] rightGrad2 the gradient at the right edge of the second spline if clamped
 		*/
-        void setSplineBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType leftBound1, 
-                                     Lau1DCubicSpline::LauSplineBoundaryType rightBound1,
-                                     Lau1DCubicSpline::LauSplineBoundaryType leftBound2,
-                                     Lau1DCubicSpline::LauSplineBoundaryType rightBound2,
-                                     Double_t leftGrad1=0., Double_t rightGrad1=0.,
-                                     Double_t leftGrad2=0., Double_t rightGrad2=0.);
+		void setSplineBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType leftBound1, 
+						 Lau1DCubicSpline::LauSplineBoundaryType rightBound1,
+						 Lau1DCubicSpline::LauSplineBoundaryType leftBound2,
+						 Lau1DCubicSpline::LauSplineBoundaryType rightBound2,
+						 Double_t leftGrad1 = 0.0, Double_t rightGrad1 = 0.0,
+						 Double_t leftGrad2 = 0.0, Double_t rightGrad2 = 0.0);
 
 		//! Helper function to set the current amplitude value
 		/*!
@@ -192,23 +192,23 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		//! The spline used to interpolate the values of the second real parameter
 		Lau1DCubicSpline* spline2_;
 
-    //! The lower boundary condition type for the first spline
-    Lau1DCubicSpline::LauSplineBoundaryType leftBound1_;
-    //! The upper boundary condition type for the first spline
-    Lau1DCubicSpline::LauSplineBoundaryType rightBound1_;
-    //! The lower boundary condition type for the second spline
-    Lau1DCubicSpline::LauSplineBoundaryType leftBound2_;
-    //! The upper boundary condition type for the second spline
-    Lau1DCubicSpline::LauSplineBoundaryType rightBound2_;
+		//! The lower boundary condition type for the first spline
+		Lau1DCubicSpline::LauSplineBoundaryType leftBound1_;
+		//! The upper boundary condition type for the first spline
+		Lau1DCubicSpline::LauSplineBoundaryType rightBound1_;
+		//! The lower boundary condition type for the second spline
+		Lau1DCubicSpline::LauSplineBoundaryType leftBound2_;
+		//! The upper boundary condition type for the second spline
+		Lau1DCubicSpline::LauSplineBoundaryType rightBound2_;
 
-    //! The gradient at the left boundary for the first spline if clamped
-    Double_t leftGrad1_;
-    //! The gradient at the right boundary for the first spline if clamped
-    Double_t rightGrad1_;
-    //! The gradient at the left boundary for the second spline if clamped
-    Double_t leftGrad2_;
-    //! The gradient at the right boundary for the second spline if clamped
-    Double_t rightGrad2_;
+		//! The gradient at the left boundary for the first spline if clamped
+		Double_t leftGrad1_;
+		//! The gradient at the right boundary for the first spline if clamped
+		Double_t rightGrad1_;
+		//! The gradient at the left boundary for the second spline if clamped
+		Double_t leftGrad2_;
+		//! The gradient at the right boundary for the second spline if clamped
+		Double_t rightGrad2_;
 
 		//! Flag to determine if the parameters should be floated only in the second stage of the fit
 		Bool_t secondStage_;

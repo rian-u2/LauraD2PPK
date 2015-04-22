@@ -52,25 +52,28 @@ class LauModIndPartWaveRealImag : public LauAbsModIndPartWave {
 		*/
 		virtual void setKnotAmp(const UInt_t knot, const Double_t realVal, const Double_t imagVal, const Bool_t fixRealPart, const Bool_t fixImagPart);
 
-        //! Method to set the boundary conditions of the splines
+		//! Method to set the boundary conditions of the splines
 		/*!
 		    \param [in] realLeftBound the type of boundary condition for the left edge of the real part spline
-			\param [in] realRightBound the type of boundary condition for the right edge of the real part spline
-			\param [in] imagLeftBound the type of boundary condition for the left edge of the imaginary part spline
-			\param [in] imagRightBound the type of boundary condition for the right edge of the imaginary part spline
-			\param [in] realLeftGrad the gradient at the left edge of the real part spline if clamped
-			\param [in] realRightGrad the gradient at the right edge of the real part spline if clamped
-			\param [in] imagLeftGrad the gradient at the left edge of the imaginary part spline if clamped
-			\param [in] imagRightGrad the gradient at the right edge of the imaginary part spline if clamped
+		    \param [in] realRightBound the type of boundary condition for the right edge of the real part spline
+		    \param [in] imagLeftBound the type of boundary condition for the left edge of the imaginary part spline
+		    \param [in] imagRightBound the type of boundary condition for the right edge of the imaginary part spline
+		    \param [in] realLeftGrad the gradient at the left edge of the real part spline if clamped
+		    \param [in] realRightGrad the gradient at the right edge of the real part spline if clamped
+		    \param [in] imagLeftGrad the gradient at the left edge of the imaginary part spline if clamped
+		    \param [in] imagRightGrad the gradient at the right edge of the imaginary part spline if clamped
 		*/
-        void setBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType realLeftBound, 
-                                   Lau1DCubicSpline::LauSplineBoundaryType realRightBound,
-                                   Lau1DCubicSpline::LauSplineBoundaryType imagLeftBound,
-                                   Lau1DCubicSpline::LauSplineBoundaryType imagRightBound,
-                                   Double_t realLeftGrad=0., Double_t realRightGrad=0.,
-                                   Double_t imagLeftGrad=0., Double_t imagRightGrad=0.) {
-      this->setSplineBoundaryConditions(realLeftBound,realRightBound,imagLeftBound,imagRightBound,realLeftGrad,realRightGrad,imagLeftGrad,imagRightGrad);
-    }
+		void setBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType realLeftBound, 
+				           Lau1DCubicSpline::LauSplineBoundaryType realRightBound,
+					   Lau1DCubicSpline::LauSplineBoundaryType imagLeftBound,
+					   Lau1DCubicSpline::LauSplineBoundaryType imagRightBound,
+					   Double_t realLeftGrad = 0.0,
+					   Double_t realRightGrad = 0.0,
+					   Double_t imagLeftGrad = 0.0,
+					   Double_t imagRightGrad = 0.0)
+		{
+			this->setSplineBoundaryConditions(realLeftBound,realRightBound,imagLeftBound,imagRightBound,realLeftGrad,realRightGrad,imagLeftGrad,imagRightGrad);
+		}
 
 		//! Get the resonance model type
 		/*!

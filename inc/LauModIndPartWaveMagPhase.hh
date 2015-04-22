@@ -52,25 +52,28 @@ class LauModIndPartWaveMagPhase : public LauAbsModIndPartWave {
 		*/
 		virtual void setKnotAmp(const UInt_t knot, const Double_t magVal, const Double_t phaseVal, const Bool_t fixMagnitude, const Bool_t fixPhase);
 
-        //! Method to set the boundary conditions of the splines
+		//! Method to set the boundary conditions of the splines
 		/*!
 		    \param [in] magLeftBound the type of boundary condition for the left edge of the magnitude spline
-			\param [in] magRightBound the type of boundary condition for the right edge of the magnitude spline
-			\param [in] phaseLeftBound the type of boundary condition for the left edge of the phase spline
-			\param [in] phaseRightBound the type of boundary condition for the right edge of the phase spline
-			\param [in] magLeftGrad the gradient at the left edge of the magnitude spline if clamped
-			\param [in] magRightGrad the gradient at the right edge of the magnitude spline if clamped
-			\param [in] phaseLeftGrad the gradient at the left edge of the phase spline if clamped
-			\param [in] phaseRightGrad the gradient at the right edge of the phase spline if clamped
+		    \param [in] magRightBound the type of boundary condition for the right edge of the magnitude spline
+		    \param [in] phaseLeftBound the type of boundary condition for the left edge of the phase spline
+		    \param [in] phaseRightBound the type of boundary condition for the right edge of the phase spline
+		    \param [in] magLeftGrad the gradient at the left edge of the magnitude spline if clamped
+		    \param [in] magRightGrad the gradient at the right edge of the magnitude spline if clamped
+		    \param [in] phaseLeftGrad the gradient at the left edge of the phase spline if clamped
+		    \param [in] phaseRightGrad the gradient at the right edge of the phase spline if clamped
 		*/
-        void setBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType magLeftBound, 
-                                   Lau1DCubicSpline::LauSplineBoundaryType magRightBound,
-                                   Lau1DCubicSpline::LauSplineBoundaryType phaseLeftBound,
-                                   Lau1DCubicSpline::LauSplineBoundaryType phaseRightBound,
-                                   Double_t magLeftGrad=0., Double_t magRightGrad=0.,
-                                   Double_t phaseLeftGrad=0., Double_t phaseRightGrad=0.) {
-      this->setSplineBoundaryConditions(magLeftBound,magRightBound,phaseLeftBound,phaseRightBound,magLeftGrad,magRightGrad,phaseLeftGrad,phaseRightGrad);
-    }
+		void setBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType magLeftBound, 
+					   Lau1DCubicSpline::LauSplineBoundaryType magRightBound,
+					   Lau1DCubicSpline::LauSplineBoundaryType phaseLeftBound,
+					   Lau1DCubicSpline::LauSplineBoundaryType phaseRightBound,
+					   Double_t magLeftGrad = 0.0,
+					   Double_t magRightGrad = 0.0,
+					   Double_t phaseLeftGrad = 0.0,
+					   Double_t phaseRightGrad = 0.0)
+		{
+			this->setSplineBoundaryConditions(magLeftBound,magRightBound,phaseLeftBound,phaseRightBound,magLeftGrad,magRightGrad,phaseLeftGrad,phaseRightGrad);
+		}
 
 		//! Get the resonance model type
 		/*!

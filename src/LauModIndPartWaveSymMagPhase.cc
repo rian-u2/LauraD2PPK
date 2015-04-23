@@ -87,14 +87,14 @@ std::set<Double_t> LauModIndPartWaveSymMagPhase::checkKnots(const std::set<Doubl
 	return knots;
 }
 
-LauComplex LauModIndPartWaveSymMagPhase::amplitude(const LauKinematics* kinematics)
+LauComplex LauModIndPartWaveSymMagPhase::amplitude(const LauKinematics* kine)
 {
 	if ( kinematics_ == 0 ) {
-		return this->LauAbsResonance::amplitude(kinematics_);
+		return this->LauAbsResonance::amplitude(kine);
 	}
 
-	const Double_t m13Sq = kinematics->getm13Sq();
-	const Double_t m23Sq = kinematics->getm23Sq();
+	const Double_t m13Sq = kine->getm13Sq();
+	const Double_t m23Sq = kine->getm23Sq();
 
 	if ( m13Sq > m23Sq ) {
 		kinematics_->updateKinematics( m23Sq, m13Sq );

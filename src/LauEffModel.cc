@@ -60,7 +60,7 @@ void LauEffModel::setEffHisto(const TH2* effHisto, Bool_t useInterpolation,
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+	std::cout<<"INFO in LauEffModel::setEffHisto : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -91,7 +91,7 @@ void LauEffModel::setEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+	std::cout<<"INFO in LauEffModel::setEffHisto : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -182,7 +182,7 @@ void LauEffModel::addEffHisto(const TH2* effHisto, Bool_t useInterpolation,
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+	std::cout<<"INFO in LauEffModel::addEffHisto : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -200,7 +200,7 @@ void LauEffModel::addEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+	std::cout<<"INFO in LauEffModel::addEffHisto : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -218,7 +218,7 @@ void LauEffModel::addEffSpline(const TH2* effHisto,
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+	std::cout<<"INFO in LauEffModel::addEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 
@@ -235,7 +235,7 @@ void LauEffModel::addEffSpline(const TH2* effHisto, const TH2* errorHi, const TH
 	// with x = m_13^2, y = m_23^2.
 	Bool_t upperHalf( kFALSE );
 	if ( daughters_->gotSymmetricalDP() && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
-	std::cout<<"INFO in LauEffModel::setEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
+	std::cout<<"INFO in LauEffModel::addEffSpline : Efficiency histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
 
 	squareDP_ = squareDP;
 

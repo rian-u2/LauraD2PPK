@@ -681,33 +681,43 @@ void LauCPFitModel::setFitNEvents()
 	if (this->doEMLFit()) {
 		std::cout << "INFO in LauCPFitModel::setFitNEvents : Initialising number of events for signal and background components..." << std::endl;
 		// add the signal fraction to the list of fit parameters
-		fitVars.push_back(signalEvents_);
-		++nNormPar_;
+		if(!signalEvents_->fixed()) {
+			fitVars.push_back(signalEvents_);
+			++nNormPar_;
+		}
 	} else {
 		std::cout << "INFO in LauCPFitModel::setFitNEvents : Initialising number of events for background components (and hence signal)..." << std::endl;
 	}
 
 	// if not using the DP in the model we need an explicit signal asymmetry parameter
 	if (this->useDP() == kFALSE) {
-		fitVars.push_back(signalAsym_);
-		++nNormPar_;
+		if(!signalAsym_->fixed()) {
+			fitVars.push_back(signalAsym_);
+			++nNormPar_;
+		}
 	}
 
 	if (useSCF_ && !useSCFHist_) {
-		fitVars.push_back(&scfFrac_);
-		++nNormPar_;
+		if(!scfFrac_.fixed()) {
+			fitVars.push_back(&scfFrac_);
+			++nNormPar_;
+		}
 	}
 
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
 			LauParameter* parameter = (*iter);
-			fitVars.push_back(parameter);
-			++nNormPar_;
+			if(!parameter->fixed()) {
+				fitVars.push_back(parameter);
+				++nNormPar_;
+			}
 		}
 		for (LauBkgndYieldList::iterator iter = bkgndAsym_.begin(); iter != bkgndAsym_.end(); ++iter) {
 			LauParameter* parameter = (*iter);
-			fitVars.push_back(parameter);
-			++nNormPar_;
+			if(!parameter->fixed()) {
+				fitVars.push_back(parameter);
+				++nNormPar_;
+			}
 		}
 	}
 }

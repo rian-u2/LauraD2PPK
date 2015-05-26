@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+26th May 2015 Daniel Craik
+
+* Stopped LauCPFitModel passing fixed signal/background yields or 
+  asymmetries to Minuit to avoid hitting limit of 101 fixed parameters
+
 22nd April 2015 Daniel Craik
 
 * Updated MIPW classes to use Lau1DCubicSpline

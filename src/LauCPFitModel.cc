@@ -431,10 +431,6 @@ void LauCPFitModel::initialise()
 	this->updateCoeffs();
 
 	// Initialisation
-	if (this->useDP() == kTRUE) {
-		this->initialiseDPModels();
-	}
-
 	if (!this->useDP() && negSignalPdfs_.empty()) {
 		std::cerr << "ERROR in LauCPFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
@@ -470,6 +466,9 @@ void LauCPFitModel::initialise()
 				}
 			}
 		}
+
+		// If all is well, go ahead and initialise them
+		this->initialiseDPModels();
 	}
 
 	// Next check that, if a given component is being used we've got the

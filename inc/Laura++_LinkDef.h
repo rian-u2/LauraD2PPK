@@ -34,6 +34,7 @@
 #pragma link C++ class LauBifurcatedGaussPdf;
 #pragma link C++ class LauBkgndDPModel;
 #pragma link C++ class LauBlattWeisskopfFactor;
+#pragma link C++ class LauBlind;
 #pragma link C++ class LauBreitWignerRes;
 #pragma link C++ class LauCacheData;
 #pragma link C++ class LauCartesianCPCoeffSet;

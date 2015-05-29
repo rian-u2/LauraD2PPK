@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+29th May 2015 Daniel Craik
+
+* Added LauBlind class for blinding and unblinding a value with an offset based on a blinding string
+
 26th May 2015 Daniel Craik
 
 * Stopped LauCPFitModel passing fixed signal/background yields or 

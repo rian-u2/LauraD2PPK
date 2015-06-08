@@ -33,35 +33,65 @@ class LauBlind {
 		    \param [in] blindingString the blinding string
 		    \param [in] width the width of the Gaussian for sampling the offset
 		*/
-		LauBlind(const TString blindingString, const Int_t width)
-			: offset_(0) {calcOffset(blindingString, width);}
+		LauBlind(const TString& blindingString, const Double_t width);
+
+		//! Copy constructor
+		LauBlind(const LauBlind& rhs);
+
+		//! Destructor
+		virtual ~LauBlind();
 
 		//! Obtain the blinded value
 		/*!
 		    \param [in] val the unblinded value
 		    \return the blinded value
 		*/
-		Double_t blind(const Double_t val) const { return val+offset_; }
+		inline Double_t blind(const Double_t val) const { return val+offset_; }
 
 		//! Obtain the unblinded value
 		/*!
 		    \param [in] val the blinded value
 		    \return the unblinded value
 		*/
-		Double_t unblind(const Double_t val) const { return val-offset_; }
+		inline Double_t unblind(const Double_t val) const { return val-offset_; }
+
+		//! Obtain the blinding string
+		/*!
+		    \return the blinding string
+		*/
+		inline const TString& blindingString() const { return blindingString_; }
+
+		//! Obtain the Gaussian width
+		/*!
+		    \return the Gaussian width
+		*/
+		inline Double_t blindingWidth() const { return blindingWidth_; }
 
 	private:
+		//! Copy assignment operator (not implemented)
+		LauBlind& operator=(const LauBlind& rhs);
 
 		//! Calculate the offset
-		/*!
-		    \param [in] blindingString the blinding string
-		    \param [in] width the width of the Gaussian for sampling the offset
-		*/
-		void calcOffset(const TString blindingString, const Int_t width);
+		void calcOffset();
+
+		//! The blinding string
+		const TString blindingString_;
+
+		//! The Gaussian width
+		const Double_t blindingWidth_;
 
 		//! The offset used to blind the value
 		Double_t offset_;
 
+	public:
+		//! Default constructor
+		/*!
+		    This is purely to allow I/O to succeed, should not generally be used
+		*/
+		LauBlind();
+
+
+		ClassDef(LauBlind, 1)
 };
 
 #endif

@@ -77,8 +77,8 @@ void LauSigmoidPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t a = a_->value();
-	Double_t b = b_->value();
+	Double_t a = a_->unblindValue();
+	Double_t b = b_->unblindValue();
 
 	// Calculate the value of the exponent for the given value of the abscissa.
 
@@ -99,8 +99,8 @@ void LauSigmoidPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 void LauSigmoidPdf::calcNorm() 
 {
 	// Get the up to date parameter values
-	Double_t a = a_->value();
-	Double_t b = b_->value();
+	Double_t a = a_->unblindValue();
+	Double_t b = b_->unblindValue();
 
 	// Calculate the normalisation of the sigmoid and cache it.
 	Double_t norm(0.0);
@@ -125,7 +125,7 @@ void LauSigmoidPdf::calcPDFHeight(const LauKinematics* /*kinematics*/)
 	}
 
 	// Get the up to date parameter values
-	Double_t a = a_->value();
+	Double_t a = a_->unblindValue();
 
 	LauAbscissas maxPoint(1);
 	maxPoint[0] = 0;

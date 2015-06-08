@@ -360,7 +360,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		virtual void setupBkgndVectors();
 
 		//! Determine the number of events to generate for each hypothesis
-		LauGenInfo eventsToGenerate();
+		std::pair<LauGenInfo,Bool_t> eventsToGenerate();
 
 		//! Generate signal event
 		Bool_t generateSignalEvent();

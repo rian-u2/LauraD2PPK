@@ -17,10 +17,41 @@
 #include "TMath.h"
 #include "TRandom3.h"
 
+ClassImp(LauBlind)
 
-void LauBlind::calcOffset(const TString blindingString, const Int_t width) {
-	//hash the blinding string to obtain a seed
-	TRandom3 r(TMath::Hash(blindingString));
-	//offsets are Gaussian distributed with defined width
-	offset_ = width*r.Gaus();
+
+LauBlind::LauBlind() :
+	blindingString_(""),
+	blindingWidth_(0.0),
+	offset_(0.0)
+{
 }
+
+LauBlind::LauBlind(const TString& blindingString, const Double_t width) :
+	blindingString_(blindingString),
+	blindingWidth_(width),
+	offset_(0.0)
+{
+	this->calcOffset();
+}
+
+LauBlind::LauBlind(const LauBlind& rhs) :
+	blindingString_(rhs.blindingString_),
+	blindingWidth_(rhs.blindingWidth_),
+	offset_(rhs.offset_)
+{
+}
+
+LauBlind::~LauBlind()
+{
+}
+
+void LauBlind::calcOffset()
+{
+	//hash the blinding string to obtain a seed
+	TRandom3 r(TMath::Hash(blindingString_));
+
+	//offsets are Gaussian distributed with defined width
+	offset_ = blindingWidth_ * r.Gaus();
+}
+

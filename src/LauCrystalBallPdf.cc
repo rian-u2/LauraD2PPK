@@ -90,10 +90,10 @@ void LauCrystalBallPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigma = sigma_->value();
-	Double_t alpha = alpha_->value();
-	Double_t n = n_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigma = sigma_->unblindValue();
+	Double_t alpha = alpha_->unblindValue();
+	Double_t n = n_->unblindValue();
 
 	Double_t result(0.0);
 	Double_t t = (abscissa - mean)/sigma;
@@ -125,10 +125,10 @@ void LauCrystalBallPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 void LauCrystalBallPdf::calcNorm() 
 {
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigma = sigma_->value();
-	Double_t alpha = alpha_->value();
-	Double_t n = n_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigma = sigma_->unblindValue();
+	Double_t alpha = alpha_->unblindValue();
+	Double_t n = n_->unblindValue();
 
 	Double_t result = 0.0;
 	Bool_t useLog = kFALSE;
@@ -189,7 +189,7 @@ void LauCrystalBallPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 	}
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
+	Double_t mean = mean_->unblindValue();
 
 	// The Crystall Ball function is a Gaussian with an exponentially decaying tail
 	// Therefore, calculate the PDF height for the Gaussian function.

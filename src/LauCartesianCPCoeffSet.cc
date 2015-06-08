@@ -63,12 +63,20 @@ LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs
 		x_ = rhs.x_->createClone(constFactor);
 	} else {
 		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
+		if ( rhs.x_->blind() ) {
+			const LauBlind* blinder = rhs.x_->blinder();
+			x_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieImagPart ) {
 		y_ = rhs.y_->createClone(constFactor);
 	} else {
 		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+		if ( rhs.y_->blind() ) {
+			const LauBlind* blinder = rhs.y_->blinder();
+			y_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
@@ -84,6 +92,14 @@ LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const LauCartesianCPCoeffSet& rhs
 		if ( rhs.deltaY_->secondStage() && !rhs.deltaY_->fixed() ) {
 			deltaY_->secondStage(kTRUE);
 			deltaY_->initValue(0.0);
+		}
+		if ( rhs.deltaX_->blind() ) {
+			const LauBlind* blinder = rhs.deltaX_->blinder();
+			deltaX_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
+		if ( rhs.deltaY_->blind() ) {
+			const LauBlind* blinder = rhs.deltaY_->blinder();
+			deltaY_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
 		}
 	}
 }
@@ -174,13 +190,13 @@ void LauCartesianCPCoeffSet::finaliseValues()
 
 const LauComplex& LauCartesianCPCoeffSet::particleCoeff()
 {
-	particleCoeff_.setRealImagPart( x_->value()+deltaX_->value(), y_->value()+deltaY_->value() );
+	particleCoeff_.setRealImagPart( x_->unblindValue()+deltaX_->unblindValue(), y_->unblindValue()+deltaY_->unblindValue() );
 	return particleCoeff_;
 }
 
 const LauComplex& LauCartesianCPCoeffSet::antiparticleCoeff()
 {
-	antiparticleCoeff_.setRealImagPart( x_->value()-deltaX_->value(), y_->value()-deltaY_->value() );
+	antiparticleCoeff_.setRealImagPart( x_->unblindValue()-deltaX_->unblindValue(), y_->unblindValue()-deltaY_->unblindValue() );
 	return antiparticleCoeff_;
 }
 

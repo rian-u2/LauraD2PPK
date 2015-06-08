@@ -63,24 +63,40 @@ LauCleoCPCoeffSet::LauCleoCPCoeffSet(const LauCleoCPCoeffSet& rhs, CloneOption c
 		a_ = rhs.a_->createClone(constFactor);
 	} else {
 		a_ = new LauParameter("A", rhs.a_->value(), minMagnitude_, maxMagnitude_, rhs.a_->fixed());
+		if ( rhs.a_->blind() ) {
+			const LauBlind* blinder = rhs.a_->blinder();
+			a_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
 		b_ = rhs.b_->createClone(constFactor);
 	} else {
 		b_ = new LauParameter("B", rhs.b_->value(), minMagnitude_, maxMagnitude_, rhs.b_->fixed());
+		if ( rhs.b_->blind() ) {
+			const LauBlind* blinder = rhs.b_->blinder();
+			b_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TiePhase ) {
 		delta_ = rhs.delta_->createClone(constFactor);
 	} else {
 		delta_ = new LauParameter("Delta", rhs.delta_->value(), minPhase_, maxPhase_, rhs.delta_->fixed());
+		if ( rhs.delta_->blind() ) {
+			const LauBlind* blinder = rhs.delta_->blinder();
+			delta_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
 		phi_ = rhs.phi_->createClone(constFactor);
 	} else {
 		phi_ = new LauParameter("Phi", rhs.phi_->value(), minPhase_, maxPhase_, rhs.phi_->fixed());
+		if ( rhs.phi_->blind() ) {
+			const LauBlind* blinder = rhs.phi_->blinder();
+			phi_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 }
 
@@ -231,16 +247,16 @@ void LauCleoCPCoeffSet::finaliseValues()
 
 const LauComplex& LauCleoCPCoeffSet::particleCoeff()
 {
-	Double_t magnitude = a_->value() + b_->value();
-	Double_t phase = delta_->value() + phi_->value();
+	Double_t magnitude = a_->unblindValue() + b_->unblindValue();
+	Double_t phase = delta_->unblindValue() + phi_->unblindValue();
 	particleCoeff_.setRealImagPart(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase));
 	return particleCoeff_;
 }
 
 const LauComplex& LauCleoCPCoeffSet::antiparticleCoeff()
 {
-	Double_t magnitude = a_->value() - b_->value();
-	Double_t phase = delta_->value() - phi_->value();
+	Double_t magnitude = a_->unblindValue() - b_->unblindValue();
+	Double_t phase = delta_->unblindValue() - phi_->unblindValue();
 	antiparticleCoeff_.setRealImagPart(magnitude*TMath::Cos(phase), magnitude*TMath::Sin(phase));
 	return antiparticleCoeff_;
 }

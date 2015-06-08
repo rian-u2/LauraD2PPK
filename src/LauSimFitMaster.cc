@@ -715,7 +715,7 @@ Double_t LauSimFitMaster::getLogLikelihoodPenalty()
 	Double_t penalty(0.0);
 
 	for ( std::vector<LauAbsRValue*>::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
-		Double_t val = (*iter)->value();
+		Double_t val = (*iter)->unblindValue();
 		Double_t mean = (*iter)->constraintMean();
 		Double_t width = (*iter)->constraintWidth();
 

@@ -29,6 +29,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "LauAbsRValue.hh"
+#include "LauBlind.hh"
 
 
 class LauParameter : public TObject, public LauAbsRValue {
@@ -112,7 +113,7 @@ class LauParameter : public TObject, public LauAbsRValue {
 		LauParameter(const TString& parName, Double_t parValue, Double_t parError, Double_t min, Double_t max);
 
 		// Destructor
-		virtual ~LauParameter(){}
+		virtual ~LauParameter();
 
 		//! Copy constructor
 		/*!
@@ -134,11 +135,29 @@ class LauParameter : public TObject, public LauAbsRValue {
 		*/
 		inline const TString& name() const {return name_;}
 
+		//! The blinding state
+		/*!
+		    \return the blinding state: kTRUE means that it is blinded, kFALSE that it is not blinded
+		*/
+		inline Bool_t blind() const {return (blinder_ != 0);}
+
+		//! Access the blinder object
+		/*!
+		    \return the blinder
+		*/
+		inline const LauBlind* blinder() const {return blinder_;}
+
 		//! The value of the parameter
 		/*!
 		    \return the value of the parameter
 		*/
 		inline Double_t value() const {return value_;}
+
+		//! The unblinded value of the parameter
+		/*!
+		    \return the unblinded value of the parameter
+		*/
+		inline Double_t unblindValue() const {return (blinder_==0) ? value_ : blinder_->unblind(value_);}
 
 		//! The error on the parameter
 		/*!
@@ -376,37 +395,14 @@ class LauParameter : public TObject, public LauAbsRValue {
 		//! Remove the Gaussian constraint
 		void removeGaussianConstraint();
 
-		// operators
-
-		//! Basic assignment  
+		//! Blind the parameter
 		/*!
-		   \param [in] val value to be assigned
-		*/
-		LauParameter& operator = (Double_t val);
+		    See LauBlind documentation for details of blinding procedure
 
-		//! Addition assignment operator
-		/*!
-		   \param [in] val the value to be added to this one
+		    \param [in] blindingString the unique blinding string used to seed the random number generator
+		    \param [in] width the width of the Gaussian from which the offset should be sampled
 		*/
-		LauParameter& operator += (Double_t val);
-
-		//! Subtraction assignment operator
-		/*!
-		   \param [in] val the value to be subtracted from this one
-		*/
-		LauParameter& operator -= (Double_t val);
-
-		//! Multiplication assignment operator
-		/*!
-		   \param [in] val the value this one is to be multiplied by
-		*/
-		LauParameter& operator *= (Double_t val);
-
-		//! Division assignment operator
-		/*!
-		   \param [in] val the value this one one is to be divided by
-		*/
-		LauParameter& operator /= (Double_t val);
+		void blindParameter(const TString& blindingString, const Double_t width);
 
 		// functions for the cloning mechanism
 
@@ -541,33 +537,19 @@ class LauParameter : public TObject, public LauAbsRValue {
 
 		//! Flag whether the parameter is a clone
 		Bool_t clone_;
+
 		//! The parent parameter
 		LauParameter* parent_;
 
 		//! The clones of this parameter
 		std::map<LauParameter*, Double_t> clones_;
 
-		ClassDef(LauParameter, 1)
+		//! The blinding engine
+		LauBlind* blinder_;
+
+		ClassDef(LauParameter, 2)
 
 };
-
-// operators to allow mathematical operations with double precision numbers
-Double_t operator + (const LauParameter& lhs, Double_t rhs);
-Double_t operator + (Double_t lhs, const LauParameter& rhs);
-Double_t operator + (const LauParameter& lhs, const LauParameter& rhs);
-Double_t operator - (const LauParameter& lhs, Double_t rhs);
-Double_t operator - (Double_t lhs, const LauParameter& rhs);
-Double_t operator - (const LauParameter& lhs, const LauParameter& rhs);
-Double_t operator * (const LauParameter& lhs, Double_t rhs);
-Double_t operator * (Double_t lhs, const LauParameter& rhs);
-Double_t operator * (const LauParameter& lhs, const LauParameter& rhs);
-Double_t operator / (const LauParameter& lhs, Double_t rhs);
-Double_t operator / (Double_t lhs, const LauParameter& rhs);
-Double_t operator / (const LauParameter& lhs, const LauParameter& rhs);
-Double_t operator += (Double_t& lhs, const LauParameter& rhs);
-Double_t operator -= (Double_t& lhs, const LauParameter& rhs);
-Double_t operator *= (Double_t& lhs, const LauParameter& rhs);
-Double_t operator /= (Double_t& lhs, const LauParameter& rhs);
 
 //! Output stream operator
 std::ostream& operator << (std::ostream& stream, const LauParameter& par);

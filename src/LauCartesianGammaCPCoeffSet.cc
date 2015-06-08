@@ -73,12 +73,20 @@ LauCartesianGammaCPCoeffSet::LauCartesianGammaCPCoeffSet(const LauCartesianGamma
 		x_ = rhs.x_->createClone(constFactor);
 	} else {
 		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
+		if ( rhs.x_->blind() ) {
+			const LauBlind* blinder = rhs.x_->blinder();
+			x_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieImagPart ) {
 		y_ = rhs.y_->createClone(constFactor);
 	} else {
 		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+		if ( rhs.y_->blind() ) {
+			const LauBlind* blinder = rhs.y_->blinder();
+			y_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
@@ -88,7 +96,15 @@ LauCartesianGammaCPCoeffSet::LauCartesianGammaCPCoeffSet(const LauCartesianGamma
 		deltaYCP_ = rhs.deltaYCP_->createClone(constFactor);
 	} else {
 		xCP_ = new LauParameter("XCP", rhs.xCP_->value(), minRealImagPart_, maxRealImagPart_, rhs.xCP_->fixed());
+		if ( rhs.xCP_->blind() ) {
+			const LauBlind* blinder = rhs.xCP_->blinder();
+			xCP_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		yCP_ = new LauParameter("YCP", rhs.yCP_->value(), minRealImagPart_, maxRealImagPart_, rhs.yCP_->fixed());
+		if ( rhs.yCP_->blind() ) {
+			const LauBlind* blinder = rhs.yCP_->blinder();
+			yCP_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		deltaXCP_ = new LauParameter("DeltaXCP", rhs.deltaXCP_->value(), minDelta_, maxDelta_, rhs.deltaXCP_->fixed());
 		deltaYCP_ = new LauParameter("DeltaYCP", rhs.deltaYCP_->value(), minDelta_, maxDelta_, rhs.deltaYCP_->fixed());
 		if ( rhs.deltaXCP_->secondStage() && !rhs.deltaXCP_->fixed() ) {
@@ -98,6 +114,14 @@ LauCartesianGammaCPCoeffSet::LauCartesianGammaCPCoeffSet(const LauCartesianGamma
 		if ( rhs.deltaYCP_->secondStage() && !rhs.deltaYCP_->fixed() ) {
 			deltaYCP_->secondStage(kTRUE);
 			deltaYCP_->initValue(0.0);
+		}
+		if ( rhs.deltaXCP_->blind() ) {
+			const LauBlind* blinder = rhs.deltaXCP_->blinder();
+			deltaXCP_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
+		if ( rhs.deltaYCP_->blind() ) {
+			const LauBlind* blinder = rhs.deltaYCP_->blinder();
+			deltaYCP_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
 		}
 	}
 }
@@ -212,16 +236,16 @@ void LauCartesianGammaCPCoeffSet::finaliseValues()
 
 const LauComplex& LauCartesianGammaCPCoeffSet::particleCoeff()
 {
-	nonCPPart_.setRealImagPart( x_->value(), y_->value() );
-	cpPart_.setRealImagPart( 1+xCP_->value()+deltaXCP_->value(), yCP_->value()+deltaYCP_->value() );
+	nonCPPart_.setRealImagPart( x_->unblindValue(), y_->unblindValue() );
+	cpPart_.setRealImagPart( 1.0+xCP_->unblindValue()+deltaXCP_->unblindValue(), yCP_->unblindValue()+deltaYCP_->unblindValue() );
 	particleCoeff_ = nonCPPart_ * cpPart_;
 	return particleCoeff_;
 }
 
 const LauComplex& LauCartesianGammaCPCoeffSet::antiparticleCoeff()
 {
-	nonCPPart_.setRealImagPart( x_->value(), y_->value() );
-	cpAntiPart_.setRealImagPart( 1+xCP_->value()-deltaXCP_->value(), yCP_->value()-deltaYCP_->value() );
+	nonCPPart_.setRealImagPart( x_->unblindValue(), y_->unblindValue() );
+	cpAntiPart_.setRealImagPart( 1.0+xCP_->unblindValue()-deltaXCP_->unblindValue(), yCP_->unblindValue()-deltaYCP_->unblindValue() );
 	antiparticleCoeff_ = nonCPPart_ * cpAntiPart_;
 	return antiparticleCoeff_;
 }
@@ -238,17 +262,22 @@ LauParameter LauCartesianGammaCPCoeffSet::acp()
 	acp_.name(parName);
 
 	// work out the ACP value
-	// particle and antiparticle coeffs will have already been calculated by calls to particleCoeff() and antiparticleCoeff()
-	Double_t numer = antiparticleCoeff_.abs2()-particleCoeff_.abs2();
-	Double_t denom = antiparticleCoeff_.abs2()+particleCoeff_.abs2();
-	Double_t value = numer/denom;
+	const LauComplex nonCPPart( x_->value(), y_->value() );
+	const LauComplex cpPart( 1.0+xCP_->value()+deltaXCP_->value(), yCP_->value()+deltaYCP_->value() );
+	const LauComplex cpAntiPart( 1.0+xCP_->value()-deltaXCP_->value(), yCP_->value()-deltaYCP_->value() );
+	const LauComplex partCoeff = nonCPPart * cpPart;
+	const LauComplex antiCoeff = nonCPPart * cpAntiPart;
+
+	const Double_t numer = antiCoeff.abs2() - partCoeff.abs2();
+	const Double_t denom = antiCoeff.abs2() + partCoeff.abs2();
+	const Double_t value = numer/denom;
 
 	// is it fixed?
-	Bool_t fixed = deltaXCP_->fixed() && deltaYCP_->fixed();
+	const Bool_t fixed = deltaXCP_->fixed() && deltaYCP_->fixed();
 	acp_.fixed(fixed);
 
 	// we can't work out the error without the covariance matrix
-	Double_t error(0.0);
+	const Double_t error(0.0);
 
 	// set the value and error
 	acp_.valueAndErrors(value,error);

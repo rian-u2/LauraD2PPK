@@ -56,7 +56,15 @@ LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, C
 		xbar_ = rhs.xbar_->createClone(constFactor);
 	} else {
 		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
+		if ( rhs.x_->blind() ) {
+			const LauBlind* blinder = rhs.x_->blinder();
+			x_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		xbar_ = new LauParameter("Xbar", rhs.xbar_->value(), minRealImagPart_, maxRealImagPart_, rhs.xbar_->fixed());
+		if ( rhs.xbar_->blind() ) {
+			const LauBlind* blinder = rhs.xbar_->blinder();
+			xbar_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieImagPart ) {
@@ -64,7 +72,15 @@ LauRealImagCPCoeffSet::LauRealImagCPCoeffSet(const LauRealImagCPCoeffSet& rhs, C
 		ybar_ = rhs.ybar_->createClone(constFactor);
 	} else {
 		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+		if ( rhs.y_->blind() ) {
+			const LauBlind* blinder = rhs.y_->blinder();
+			y_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		ybar_ = new LauParameter("Ybar", rhs.ybar_->value(), minRealImagPart_, maxRealImagPart_, rhs.ybar_->fixed());
+		if ( rhs.ybar_->blind() ) {
+			const LauBlind* blinder = rhs.ybar_->blinder();
+			ybar_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 }
 
@@ -154,13 +170,13 @@ void LauRealImagCPCoeffSet::finaliseValues()
 
 const LauComplex& LauRealImagCPCoeffSet::particleCoeff()
 {
-	particleCoeff_.setRealImagPart( x_->value(), y_->value() );
+	particleCoeff_.setRealImagPart( x_->unblindValue(), y_->unblindValue() );
 	return particleCoeff_;
 }
 
 const LauComplex& LauRealImagCPCoeffSet::antiparticleCoeff()
 {
-	antiparticleCoeff_.setRealImagPart( xbar_->value(), ybar_->value() );
+	antiparticleCoeff_.setRealImagPart( xbar_->unblindValue(), ybar_->unblindValue() );
 	return antiparticleCoeff_;
 }
 

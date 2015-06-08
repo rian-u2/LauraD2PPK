@@ -8,6 +8,7 @@
 #include "TString.h"
 
 #include "LauSimpleFitModel.hh"
+#include "LauCrystalBallPdf.hh"
 #include "LauDaughters.hh"
 #include "LauEffModel.hh"
 #include "LauExponentialPdf.hh"
@@ -103,11 +104,16 @@ int main( int argc, char** argv )
 	Bool_t fixNCombBgEvents = kFALSE;
 	Double_t nPartRecoBgEvents = 3000.0;
 	Bool_t fixNPartRecoBgEvents = kFALSE;
+	Double_t nTotEvents = nSigEvents + nCombBgEvents + nPartRecoBgEvents;
 
 	// Set the number of signal and background events and the number of experiments
-	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
-	LauParameter* nCombBkg = new LauParameter("Combinatorial",nCombBgEvents,-2.0*nCombBgEvents,2.0*nCombBgEvents,fixNCombBgEvents);
-	LauParameter* nPartBkg = new LauParameter("PartialReco",nPartRecoBgEvents,-2.0*nPartRecoBgEvents,2.0*nPartRecoBgEvents,fixNPartRecoBgEvents);
+	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nTotEvents,2.0*nTotEvents,fixNSigEvents);
+	LauParameter* nCombBkg = new LauParameter("Combinatorial",nCombBgEvents,-2.0*nTotEvents,2.0*nTotEvents,fixNCombBgEvents);
+	LauParameter* nPartBkg = new LauParameter("PartialReco",nPartRecoBgEvents,-2.0*nTotEvents,2.0*nTotEvents,fixNPartRecoBgEvents);
+	// Optionally blind the yield parameters
+	//nSig->blindParameter("something1",2000.0);
+	//nCombBkg->blindParameter("something2",2000.0);
+	//nPartBkg->blindParameter("something3",2000.0);
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNBkgndEvents( nCombBkg );
 	fitModel->setNBkgndEvents( nPartBkg );
@@ -121,7 +127,7 @@ int main( int argc, char** argv )
 
 	// m_B PDFs
 	Double_t mbMin = 5.150;
-	Double_t mbMax = 5.400;
+	Double_t mbMax = 5.600;
 	std::vector<LauAbsRValue*> mbPars; mbPars.reserve(2);
 
 	// Signal PDF is a double Gaussian with the means constrained to be the same
@@ -153,18 +159,24 @@ int main( int argc, char** argv )
 
 	fitModel->setBkgndPdf( bkgndNames[0], combMBPdf );
 
-	// Partially reconstructed background PDF is an exponential function
-	LauParameter* pr_mb_slope = new LauParameter("pr_mb_slope", -0.05, -10.0, 10.0, kTRUE);
+	// Partially reconstructed background PDF is a crystal ball function
+	LauParameter* pr_mb_mean  = new LauParameter("pr_mb_mean",  5.200,  5.1, 5.3, kTRUE);
+	LauParameter* pr_mb_sigma = new LauParameter("pr_mb_sigma", 0.050,  0.0, 0.2, kTRUE);
+	LauParameter* pr_mb_alpha = new LauParameter("pr_mb_alpha", 0.100, -5.0, 5.0, kTRUE);
+	LauParameter* pr_mb_order = new LauParameter("pr_mb_order", 4.000,  0.0, 5.0, kTRUE);
 
 	mbPars.clear();
-	mbPars.push_back(pr_mb_slope);
-	LauAbsPdf* prbgMBPdf = new LauExponentialPdf("mB", mbPars, mbMin, mbMax);
+	mbPars.push_back(pr_mb_mean);
+	mbPars.push_back(pr_mb_sigma);
+	mbPars.push_back(pr_mb_alpha);
+	mbPars.push_back(pr_mb_order);
+	LauAbsPdf* prbgMBPdf = new LauCrystalBallPdf("mB", mbPars, mbMin, mbMax);
 
 	fitModel->setBkgndPdf( bkgndNames[1], prbgMBPdf );
 
 
 	// Do not calculate asymmetric errors.
-	fitModel->useAsymmFitErrors(kFALSE);
+	fitModel->useAsymmFitErrors(kTRUE);
 
 	// Randomise initial fit values for the signal isobar parameters
 	fitModel->useRandomInitFitPars(kTRUE);

@@ -90,8 +90,8 @@ void LauDPDepGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	meanVal_ = mean_->value();
-	sigmaVal_ = sigma_->value();
+	meanVal_ = mean_->unblindValue();
+	sigmaVal_ = sigma_->unblindValue();
 
 	// Find out the DP position
 	Double_t dpPos(0.0);
@@ -159,7 +159,7 @@ void LauDPDepGaussPdf::scalePars(Double_t dpPos)
 void LauDPDepGaussPdf::calcPDFHeight(const LauKinematics* kinematics)
 {
 	// Get the up to date parameter values
-	meanVal_ = mean_->value();
+	meanVal_ = mean_->unblindValue();
 
 	// Find out the DP position
 	Double_t dpPos(0.0);

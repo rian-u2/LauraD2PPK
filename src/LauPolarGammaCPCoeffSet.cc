@@ -94,12 +94,20 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const LauPolarGammaCPCoeffSet& 
 		x_ = rhs.x_->createClone(constFactor);
 	} else {
 		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
+		if ( rhs.x_->blind() ) {
+			const LauBlind* blinder = rhs.x_->blinder();
+			x_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieImagPart ) {
 		y_ = rhs.y_->createClone(constFactor);
 	} else {
 		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+		if ( rhs.y_->blind() ) {
+			const LauBlind* blinder = rhs.y_->blinder();
+			y_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
@@ -108,9 +116,28 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const LauPolarGammaCPCoeffSet& 
 		gamma_ = rhs.gamma_->createClone(constFactor);
 	} else {
 		r_ = new LauParameter("r", rhs.r_->value(), minMagnitude_, maxMagnitude_, rhs.r_->fixed());
+		if ( rhs.r_->blind() ) {
+			const LauBlind* blinder = rhs.r_->blinder();
+			r_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		delta_ = new LauParameter("delta", rhs.delta_->value(), minPhase_, maxPhase_, rhs.delta_->fixed());
-		if(useGlobalGamma_) gamma_ = gammaGlobal_->createClone();
-		else gamma_ = new LauParameter("gamma", rhs.gamma_->value(), minPhase_, maxPhase_, rhs.gamma_->fixed());
+		if ( rhs.delta_->blind() ) {
+			const LauBlind* blinder = rhs.delta_->blinder();
+			delta_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
+		if (useGlobalGamma_) {
+			gamma_ = gammaGlobal_->createClone();
+		} else {
+			gamma_ = new LauParameter("gamma", rhs.gamma_->value(), minPhase_, maxPhase_, rhs.gamma_->fixed());
+			if ( rhs.gamma_->blind() ) {
+				const LauBlind* blinder = rhs.gamma_->blinder();
+				gamma_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+			}
+		}
+		if ( rhs.delta_->blind() ) {
+			const LauBlind* blinder = rhs.delta_->blinder();
+			delta_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		if ( rhs.r_->secondStage() && !rhs.r_->fixed() ) {
 			r_->secondStage(kTRUE);
 			r_->initValue(0.0);
@@ -289,16 +316,16 @@ void LauPolarGammaCPCoeffSet::finaliseValues()
 
 const LauComplex& LauPolarGammaCPCoeffSet::particleCoeff()
 {
-	nonCPPart_.setRealImagPart( x_->value(), y_->value() );
-	cpPart_.setRealImagPart( 1 + r_->value()*TMath::Cos(delta_->value()+gamma_->value()), r_->value()*TMath::Sin(delta_->value()+gamma_->value()) );
+	nonCPPart_.setRealImagPart( x_->unblindValue(), y_->unblindValue() );
+	cpPart_.setRealImagPart( 1.0 + r_->unblindValue()*TMath::Cos(delta_->unblindValue()+gamma_->unblindValue()), r_->unblindValue()*TMath::Sin(delta_->unblindValue()+gamma_->unblindValue()) );
 	particleCoeff_ = nonCPPart_ * cpPart_;
 	return particleCoeff_;
 }
 
 const LauComplex& LauPolarGammaCPCoeffSet::antiparticleCoeff()
 {
-	nonCPPart_.setRealImagPart( x_->value(), y_->value() );
-	cpAntiPart_.setRealImagPart( 1 + r_->value()*TMath::Cos(delta_->value()-gamma_->value()), r_->value()*TMath::Sin(delta_->value()-gamma_->value()) );
+	nonCPPart_.setRealImagPart( x_->unblindValue(), y_->unblindValue() );
+	cpAntiPart_.setRealImagPart( 1.0 + r_->unblindValue()*TMath::Cos(delta_->unblindValue()-gamma_->unblindValue()), r_->unblindValue()*TMath::Sin(delta_->unblindValue()-gamma_->unblindValue()) );
 	antiparticleCoeff_ = nonCPPart_ * cpAntiPart_;
 	return antiparticleCoeff_;
 }
@@ -315,17 +342,22 @@ LauParameter LauPolarGammaCPCoeffSet::acp()
 	acp_.name(parName);
 
 	// work out the ACP value
-	// particle and antiparticle coeffs will have already been calculated by calls to particleCoeff() and antiparticleCoeff()
-	Double_t numer = antiparticleCoeff_.abs2()-particleCoeff_.abs2();
-	Double_t denom = antiparticleCoeff_.abs2()+particleCoeff_.abs2();
-	Double_t value = numer/denom;
+	const LauComplex nonCPPart( x_->value(), y_->value() );
+	const LauComplex cpPart( 1.0 + r_->value()*TMath::Cos(delta_->value()+gamma_->value()), r_->value()*TMath::Sin(delta_->value()+gamma_->value()) );
+	const LauComplex cpAntiPart( 1.0 + r_->value()*TMath::Cos(delta_->value()-gamma_->value()), r_->value()*TMath::Sin(delta_->value()-gamma_->value()) );
+	const LauComplex partCoeff = nonCPPart * cpPart;
+	const LauComplex antiCoeff = nonCPPart * cpAntiPart;
+
+	const Double_t numer = antiCoeff.abs2() - partCoeff.abs2();
+	const Double_t denom = antiCoeff.abs2() + partCoeff.abs2();
+	const Double_t value = numer/denom;
 
 	// is it fixed?
-	Bool_t fixed = r_->fixed() && delta_->fixed() && gamma_->fixed();
+	const Bool_t fixed = r_->fixed() && delta_->fixed() && gamma_->fixed();
 	acp_.fixed(fixed);
 
 	// we can't work out the error without the covariance matrix
-	Double_t error(0.0);
+	const Double_t error(0.0);
 
 	// set the value and error
 	acp_.valueAndErrors(value,error);

@@ -105,11 +105,11 @@ void LauDPDepCruijffPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	meanVal_ = mean_->value();
-	sigmaLVal_ = sigmaL_->value();
-	sigmaRVal_ = sigmaR_->value();
-	alphaLVal_ = alphaL_->value();
-	alphaRVal_ = alphaR_->value();
+	meanVal_ = mean_->unblindValue();
+	sigmaLVal_ = sigmaL_->unblindValue();
+	sigmaRVal_ = sigmaR_->unblindValue();
+	alphaLVal_ = alphaL_->unblindValue();
+	alphaRVal_ = alphaR_->unblindValue();
 
 	// Find out the DP position
 	Double_t dpPos(0.0);
@@ -262,11 +262,11 @@ void LauDPDepCruijffPdf::scalePars(Double_t dpPos)
 void LauDPDepCruijffPdf::calcPDFHeight( const LauKinematics* kinematics )
 {
 	// Get the up to date parameter values
-	meanVal_ = mean_->value();
-	sigmaLVal_ = sigmaL_->value();
-	sigmaRVal_ = sigmaR_->value();
-	alphaLVal_ = alphaL_->value();
-	alphaRVal_ = alphaR_->value();
+	meanVal_ = mean_->unblindValue();
+	sigmaLVal_ = sigmaL_->unblindValue();
+	sigmaRVal_ = sigmaR_->unblindValue();
+	alphaLVal_ = alphaL_->unblindValue();
+	alphaRVal_ = alphaR_->unblindValue();
 
 	// Find out the DP position
 	Double_t dpPos(0.0);

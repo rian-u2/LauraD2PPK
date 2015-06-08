@@ -133,31 +133,31 @@ class LauNRAmplitude : public LauAbsResonance {
 		/*!
 			\return the new d parameter value
 		*/
-		Double_t getdParameter() const {return (d_!=0) ? d_->value() : 0.0;}
+		Double_t getdParameter() const {return (d_!=0) ? d_->unblindValue() : 0.0;}
 
 		//! Get the c1 parameter value
 		/*!
 			\return the new c1 parameter value
 		*/
-		Double_t getc1Parameter() const {return (c1_!=0) ? c1_->value() : 0.0;}
+		Double_t getc1Parameter() const {return (c1_!=0) ? c1_->unblindValue() : 0.0;}
 
 		//! Get the c2 parameter value
 		/*!
 			\return the new c2 parameter value
 		*/
-		Double_t getc2Parameter() const {return (c2_!=0) ? c2_->value() : 0.0;}
+		Double_t getc2Parameter() const {return (c2_!=0) ? c2_->unblindValue() : 0.0;}
 
 		//! Get the p1 parameter value
 		/*!
 			\return the new p1 parameter value
 		*/
-		Double_t getp1Parameter() const {return (p1_!=0) ? p1_->value() : 0.0;}
+		Double_t getp1Parameter() const {return (p1_!=0) ? p1_->unblindValue() : 0.0;}
 
 		//! Get the p2 parameter value
 		/*!
 			\return the new p2 parameter value
 		*/
-		Double_t getp2Parameter() const {return (p2_!=0) ? p2_->value() : 0.0;}
+		Double_t getp2Parameter() const {return (p2_!=0) ? p2_->unblindValue() : 0.0;}
 
 		//! See if the d parameter is fixed or floating
 		/*!

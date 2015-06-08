@@ -337,7 +337,7 @@ Double_t LauAbsResonance::getResRadius() const
 	}
 
 	LauParameter* bwRadius = resBWFactor_->getRadiusParameter();
-	return bwRadius->value();
+	return bwRadius->unblindValue();
 }
 
 Double_t LauAbsResonance::getParRadius() const
@@ -348,7 +348,7 @@ Double_t LauAbsResonance::getParRadius() const
 	}
 
 	LauParameter* bwRadius = parBWFactor_->getRadiusParameter();
-	return bwRadius->value();
+	return bwRadius->unblindValue();
 }
 
 Double_t LauAbsResonance::getMassParent() const

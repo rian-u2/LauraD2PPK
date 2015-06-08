@@ -63,24 +63,40 @@ LauBelleCPCoeffSet::LauBelleCPCoeffSet(const LauBelleCPCoeffSet& rhs, CloneOptio
 		a_ = rhs.a_->createClone(constFactor);
 	} else {
 		a_ = new LauParameter("A", rhs.a_->value(), minMagnitude_, maxMagnitude_, rhs.a_->fixed());
+		if ( rhs.a_->blind() ) {
+			const LauBlind* blinder = rhs.a_->blinder();
+			a_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
 		b_ = rhs.b_->createClone(constFactor);
 	} else {
 		b_ = new LauParameter("B", rhs.b_->value(), minMagnitude_, maxMagnitude_, rhs.b_->fixed());
+		if ( rhs.b_->blind() ) {
+			const LauBlind* blinder = rhs.b_->blinder();
+			b_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TiePhase ) {
 		delta_ = rhs.delta_->createClone(constFactor);
 	} else {
 		delta_ = new LauParameter("Delta", rhs.delta_->value(), minPhase_, maxPhase_, rhs.delta_->fixed());
+		if ( rhs.delta_->blind() ) {
+			const LauBlind* blinder = rhs.delta_->blinder();
+			delta_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieCPPars ) {
 		phi_ = rhs.phi_->createClone(constFactor);
 	} else {
 		phi_ = new LauParameter("Phi", rhs.phi_->value(), minPhase_, maxPhase_, rhs.phi_->fixed());
+		if ( rhs.phi_->blind() ) {
+			const LauBlind* blinder = rhs.phi_->blinder();
+			phi_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 }
 
@@ -237,8 +253,8 @@ void LauBelleCPCoeffSet::finaliseValues()
 
 const LauComplex& LauBelleCPCoeffSet::particleCoeff()
 {
-	LauComplex aTerm(a_->value()*TMath::Cos(delta_->value()), a_->value()*TMath::Sin(delta_->value()));
-	LauComplex bTerm(b_->value()*TMath::Cos(phi_->value()), b_->value()*TMath::Sin(phi_->value()));
+	LauComplex aTerm(a_->unblindValue()*TMath::Cos(delta_->unblindValue()), a_->unblindValue()*TMath::Sin(delta_->unblindValue()));
+	LauComplex bTerm(b_->unblindValue()*TMath::Cos(phi_->unblindValue()), b_->unblindValue()*TMath::Sin(phi_->unblindValue()));
 	particleCoeff_.setRealImagPart(1.0,0.0);
 	particleCoeff_ += bTerm;
 	particleCoeff_ *= aTerm;
@@ -247,8 +263,8 @@ const LauComplex& LauBelleCPCoeffSet::particleCoeff()
 
 const LauComplex& LauBelleCPCoeffSet::antiparticleCoeff()
 {
-	LauComplex aTerm(a_->value()*TMath::Cos(delta_->value()), a_->value()*TMath::Sin(delta_->value()));
-	LauComplex bTerm(b_->value()*TMath::Cos(phi_->value()), b_->value()*TMath::Sin(phi_->value()));
+	LauComplex aTerm(a_->unblindValue()*TMath::Cos(delta_->unblindValue()), a_->unblindValue()*TMath::Sin(delta_->unblindValue()));
+	LauComplex bTerm(b_->unblindValue()*TMath::Cos(phi_->unblindValue()), b_->unblindValue()*TMath::Sin(phi_->unblindValue()));
 	antiparticleCoeff_.setRealImagPart(1.0,0.0);
 	antiparticleCoeff_ -= bTerm;
 	antiparticleCoeff_ *= aTerm;

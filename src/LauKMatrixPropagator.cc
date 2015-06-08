@@ -461,8 +461,8 @@ void LauKMatrixPropagator::calcScattKMatrix(Double_t s)
 
 				std::vector<LauParameter> couplingVect = couplingIter->second;
 
-				Double_t g_i = couplingVect[iChannel].value();
-				Double_t g_j = couplingVect[jChannel].value();
+				Double_t g_i = couplingVect[iChannel].unblindValue();
+				Double_t g_j = couplingVect[jChannel].unblindValue();
 
 				Kij += poleDenomVect_[iPole]*g_i*g_j;
 				if (verbose_) {cout<<"1: Kij for i = "<<iChannel<<", j = "<<jChannel<<" = "<<Kij<<endl;}
@@ -470,7 +470,7 @@ void LauKMatrixPropagator::calcScattKMatrix(Double_t s)
 			}
 
 			if (SVPVectSize != 0 && jChannel < SVPVectSize) {
-				Double_t fij = SVPVect[jChannel].value();
+				Double_t fij = SVPVect[jChannel].unblindValue();
 				Kij += fij*scattSVP_;
 			}
 
@@ -495,7 +495,7 @@ void LauKMatrixPropagator::calcPoleDenomVect(Double_t s)
 	Int_t iPole(0);
 	for (iPole = 0; iPole < nPoles_; iPole++) {
 
-		Double_t poleTerm = mSqPoles_[iPole] - s;
+		Double_t poleTerm = mSqPoles_[iPole].unblindValue() - s;
 		Double_t invPoleTerm(0.0);
 		if (TMath::Abs(poleTerm) > 1.0e-6) {invPoleTerm = 1.0/poleTerm;}
 
@@ -524,7 +524,7 @@ Double_t LauKMatrixPropagator::getCouplingConstant(Int_t poleIndex, Int_t channe
 	Double_t couplingConst(0.0);
 	KMatrixParamMap::const_iterator couplingIter = gCouplings_.find(poleIndex);
 	std::vector<LauParameter> couplingVect = couplingIter->second;
-	couplingConst = couplingVect[channelIndex].value();
+	couplingConst = couplingVect[channelIndex].unblindValue();
 
 	return couplingConst;
 
@@ -539,7 +539,7 @@ Double_t LauKMatrixPropagator::calcSVPTerm(Double_t s, Double_t s0) const
 	Double_t result(0.0);
 	Double_t deltaS = s - s0;
 	if (TMath::Abs(deltaS) > 1.0e-6) {
-		result = (mSq0_.value() - s0)/deltaS;
+		result = (mSq0_.unblindValue() - s0)/deltaS;
 	}  
 
 	return result;
@@ -549,14 +549,14 @@ Double_t LauKMatrixPropagator::calcSVPTerm(Double_t s, Double_t s0) const
 void LauKMatrixPropagator::updateScattSVPTerm(Double_t s)
 {
 	// Update the scattering "slowly-varying part" (SVP)
-	Double_t s0Scatt = s0Scatt_.value();
+	Double_t s0Scatt = s0Scatt_.unblindValue();
 	scattSVP_ = this->calcSVPTerm(s, s0Scatt);
 }
 
 void LauKMatrixPropagator::updateProdSVPTerm(Double_t s)
 {
 	// Update the production "slowly-varying part" (SVP)
-	Double_t s0Prod = s0Prod_.value();
+	Double_t s0Prod = s0Prod_.unblindValue();
 	prodSVP_ = this->calcSVPTerm(s, s0Prod);
 }
 
@@ -567,7 +567,7 @@ void LauKMatrixPropagator::updateAdlerZeroFactor(Double_t s)
 	// constants.
 	adlerZeroFactor_ = 0.0;
 
-	Double_t sA0Val = sA0_.value();
+	Double_t sA0Val = sA0_.unblindValue();
 	Double_t deltaS = s - sA0Val;
 	if (TMath::Abs(deltaS) > 1e-6) {
 		adlerZeroFactor_ = (s - sAConst_)*(1.0 - sA0Val)/deltaS;

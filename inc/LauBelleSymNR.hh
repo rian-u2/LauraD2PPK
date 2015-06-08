@@ -105,7 +105,7 @@ class LauBelleSymNR : public LauAbsResonance {
 		/*!
 			\return the effective range parameter
 		*/
-		Double_t getAlpha() const {return (alpha_!=0) ? alpha_->value() : 0.0;}
+		Double_t getAlpha() const {return (alpha_!=0) ? alpha_->unblindValue() : 0.0;}
 
 		//! See if the alpha parameter is fixed or floating
 		Bool_t fixAlpha() const {return (alpha_!=0) ? alpha_->fixed() : kTRUE;}

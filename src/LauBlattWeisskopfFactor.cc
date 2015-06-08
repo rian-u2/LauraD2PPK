@@ -129,7 +129,7 @@ Double_t LauBlattWeisskopfFactor::calcFormFactor( const Double_t p ) const
 		return fFactor;
 	}
 
-	const Double_t radius = radius_->value();
+	const Double_t radius = radius_->unblindValue();
 	const Double_t z = radius*radius*p*p;
 
 	if ( barrierType_ == BWBarrier ) {

@@ -67,9 +67,9 @@ void LauNovosibirskPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigma = sigma_->value();
-	Double_t tail = tail_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigma = sigma_->unblindValue();
+	Double_t tail = tail_->unblindValue();
 
 	// Evaluate the Novosibirsk PDF value
 
@@ -113,7 +113,7 @@ void LauNovosibirskPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 	}
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
+	Double_t mean = mean_->unblindValue();
 
 	LauAbscissas maxPoint(1);
 	maxPoint[0] = mean;

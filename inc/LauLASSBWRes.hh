@@ -94,13 +94,13 @@ class LauLASSBWRes : public LauAbsResonance {
 		/*!
 			\return the effective range parameter
 		*/
-		Double_t getEffectiveRange() const {return (r_!=0) ? r_->value() : 0.0;}
+		Double_t getEffectiveRange() const {return (r_!=0) ? r_->unblindValue() : 0.0;}
 
 		//! Get the scattering length range parameter
 		/*!
 			\return the scattering length parameter
 		*/
-		Double_t getScatteringLength() const {return (a_!=0) ? a_->value() : 0.0;}
+		Double_t getScatteringLength() const {return (a_!=0) ? a_->unblindValue() : 0.0;}
 
 		//! See if the effective range parameter is fixed or floating
 		/*!

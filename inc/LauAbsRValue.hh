@@ -53,6 +53,12 @@ class LauAbsRValue {
 		*/    
 		virtual Double_t value() const =0;
 
+		//! The unblinded value of the parameter
+		/*!
+		  \return the unblinded value of the parameter
+		*/
+		virtual Double_t unblindValue() const =0;
+
 		//! Check whether a Gaussian constraints is applied
 		/*!
 		  \return the boolean flag true/false whether a Gaussian constraint is applied

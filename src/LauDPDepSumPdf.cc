@@ -113,7 +113,7 @@ LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 	pdf1_(pdf1),
 	pdf2_(pdf2),
 	frac_(frac),
-	fracVal_( frac ? frac->value() : 0.0 ),
+	fracVal_( frac ? frac->unblindValue() : 0.0 ),
 	dpDependence_( 0 ),
 	fracCoeffs_( fracCoeffs ),
 	dpAxis_( dpAxis )
@@ -228,7 +228,7 @@ void LauDPDepSumPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 			kinematics->updateKinematics( m13Sq, m23Sq );
 			fracVal_ = dpDependence_->calcEfficiency( kinematics );
 		} else {
-			fracVal_ = frac_->value();
+			fracVal_ = frac_->unblindValue();
 			Double_t dpPos(0.0);
 			if ( dpAxis_ == M12 ) {
 				dpPos = kinematics->calcThirdMassSq(m13Sq,m23Sq);
@@ -283,7 +283,7 @@ void LauDPDepSumPdf::calcPDFHeight( const LauKinematics* kinematics )
 	if ( dpDependence_ ) {
 		fracVal_ = dpDependence_->calcEfficiency( kinematics );
 	} else {
-		fracVal_ = frac_->value();
+		fracVal_ = frac_->unblindValue();
 		Double_t dpPos(0.0);
 		if ( dpAxis_ == M12 ) {
 			dpPos = kinematics->getm12Sq();
@@ -372,7 +372,7 @@ void LauDPDepSumPdf::cacheInfo(const LauFitDataTree& inputData)
 			// if we're scaling the fraction parameter then we
 			// just store the scaling info since the parameter
 			// might be floating
-			fracVal_ = frac_->value();
+			fracVal_ = frac_->unblindValue();
 			Double_t dpPos(0.0);
 			if ( dpAxis_ == M12 ) {
 				dpPos = kinematics->calcThirdMassSq(m13Sq,m23Sq);
@@ -388,7 +388,7 @@ void LauDPDepSumPdf::cacheInfo(const LauFitDataTree& inputData)
 				dpPos = kinematics->distanceFromDPCentre(m13Sq,m23Sq);
 			}
 			this->scaleFrac( dpPos );
-			fracVal_ -= frac_->value();
+			fracVal_ -= frac_->unblindValue();
 		}
 
 		fractions_.push_back( fracVal_ );
@@ -402,7 +402,7 @@ void LauDPDepSumPdf::calcLikelihoodInfo(UInt_t iEvt)
 	if ( frac_ ) {
 		// if we're scaling the parameter then need to add the
 		// current value of the parameter
-		fracVal_ += frac_->value();
+		fracVal_ += frac_->unblindValue();
 	}
 
 	// Evaluate the normalised PDF values

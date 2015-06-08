@@ -106,9 +106,9 @@ LauComplex LauNRAmplitude::amplitude(const LauKinematics* kinematics)
 
 	// Calculate the magnitude
 	Double_t magnitude = TMath::Sqrt( m13 * m23 *
-			                  this->f(m23Sq, c1_->value(), p1_->value()) * 
-					  this->f(m13Sq, c2_->value(), p2_->value()) * 
-					  TMath::Exp( -1.0 * d_->value() * m13Sq*m13Sq * m23Sq*m23Sq )
+			                  this->f(m23Sq, c1_->unblindValue(), p1_->unblindValue()) * 
+					  this->f(m13Sq, c2_->unblindValue(), p2_->unblindValue()) * 
+					  TMath::Exp( -1.0 * d_->unblindValue() * m13Sq*m13Sq * m23Sq*m23Sq )
 				        );
 
 	// return the amplitude
@@ -128,7 +128,6 @@ Double_t LauNRAmplitude::f(const Double_t s, const Double_t c, const Double_t p)
 	return 1.0 / (1.0 + TMath::Exp( c * (s-p) ));
 }
 
-// TODO up to here!
 const std::vector<LauParameter*>& LauNRAmplitude::getFloatingParameters()
 {
 	this->clearFloatingParameters();

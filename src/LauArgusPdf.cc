@@ -63,8 +63,8 @@ void LauArgusPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t xi = xi_->value();
-	Double_t m0 = m0_->value();
+	Double_t xi = xi_->unblindValue();
+	Double_t m0 = m0_->unblindValue();
 
 	// Calculate the value of the ARGUS function for the given value of the abscissa.
 	Double_t x = abscissa/m0;
@@ -87,8 +87,8 @@ void LauArgusPdf::calcNorm()
 	// Calculate the PDF normalisation and cache it
 
 	// Get the up to date parameter values
-	Double_t xi = xi_->value();
-	Double_t m0 = m0_->value();
+	Double_t xi = xi_->unblindValue();
+	Double_t m0 = m0_->unblindValue();
 
 	// Since the PDF is 0 above m0 by definition need to check whether m0 is within the range, above it or below it
 	Double_t min = (this->getMinAbscissa() < m0) ? this->getMinAbscissa() : m0;
@@ -116,8 +116,8 @@ void LauArgusPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 
 	// Calculate the PDF height of the ARGUS function.
 	// Get the up to date parameter values
-	Double_t xi = xi_->value();
-	Double_t m0 = m0_->value();
+	Double_t xi = xi_->unblindValue();
+	Double_t m0 = m0_->unblindValue();
 
 	// First make sure that the limits are not larger than the end-point.
 	// (Btw, use the logarithmic derivative to derive this formula) 

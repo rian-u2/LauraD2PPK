@@ -95,7 +95,7 @@ void LauParametricStepFuncPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 				// in bin i-1 (starting with bin 0)
 				if ( i < numBins ) {
 					// not in last bin
-					value = pars[i-1]->value();
+					value = pars[i-1]->unblindValue();
 					break;
 				} else {
 					// in last bin
@@ -103,7 +103,7 @@ void LauParametricStepFuncPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 					Double_t binSize(0.0);
 					for ( UInt_t j(1); j<numBins; ++j ) {
 						binSize = limits_[j] - limits_[j-1];
-						sum += ( pars[j-1]->value() * binSize );
+						sum += ( pars[j-1]->unblindValue() * binSize );
 					}
 					binSize = limits_[numBins] - limits_[numBins-1];
 					value = ( 1.0 - sum ) / binSize;
@@ -118,7 +118,7 @@ void LauParametricStepFuncPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 				// in bin i-1 (starting with bin 0)
 				if ( i > 1 ) {
 					// not in first bin
-					value = pars[i-2]->value();
+					value = pars[i-2]->unblindValue();
 					break;
 				} else {
 					// in first bin
@@ -126,7 +126,7 @@ void LauParametricStepFuncPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 					Double_t binSize(0.0);
 					for ( UInt_t j(2); j<=numBins; ++j ) {
 						binSize = limits_[j] - limits_[j-1];
-						sum += ( pars[j-2]->value() * binSize );
+						sum += ( pars[j-2]->unblindValue() * binSize );
 					}
 					binSize = limits_[1] - limits_[0];
 					value = ( 1.0 - sum ) / binSize;
@@ -169,7 +169,7 @@ void LauParametricStepFuncPdf::calcPDFHeight( const LauKinematics* /*kinematics*
 
 		// Check through all the parameterised bins
 		for ( UInt_t i(0); i<numBins-1; ++i ) {
-			value = pars[i]->value();
+			value = pars[i]->unblindValue();
 			if ( height < value ) {
 				height = value;
 			}
@@ -180,7 +180,7 @@ void LauParametricStepFuncPdf::calcPDFHeight( const LauKinematics* /*kinematics*
 		Double_t binSize(0.0);
 		for ( UInt_t j(1); j<numBins; ++j ) {
 			binSize = limits_[j] - limits_[j-1];
-			sum += ( pars[j-1]->value() * binSize );
+			sum += ( pars[j-1]->unblindValue() * binSize );
 		}
 		binSize = limits_[numBins] - limits_[numBins-1];
 		value = ( 1.0 - sum ) / binSize;
@@ -192,7 +192,7 @@ void LauParametricStepFuncPdf::calcPDFHeight( const LauKinematics* /*kinematics*
 
 		// Check through all the parameterised bins
 		for ( UInt_t i(1); i<numBins; ++i ) {
-			value = pars[i-1]->value();
+			value = pars[i-1]->unblindValue();
 			if ( height < value ) {
 				height = value;
 			}
@@ -203,7 +203,7 @@ void LauParametricStepFuncPdf::calcPDFHeight( const LauKinematics* /*kinematics*
 		Double_t binSize(0.0);
 		for ( UInt_t j(2); j<=numBins; ++j ) {
 			binSize = limits_[j] - limits_[j-1];
-			sum += ( pars[j-2]->value() * binSize );
+			sum += ( pars[j-2]->unblindValue() * binSize );
 		}
 		binSize = limits_[1] - limits_[0];
 		value = ( 1.0 - sum ) / binSize;

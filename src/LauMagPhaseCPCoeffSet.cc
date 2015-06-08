@@ -56,7 +56,15 @@ LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const LauMagPhaseCPCoeffSet& rhs, C
 		magBar_ = rhs.magBar_->createClone(constFactor);
 	} else {
 		mag_ = new LauParameter("Mag", rhs.mag_->value(), minMagnitude_, maxMagnitude_, rhs.mag_->fixed());
+		if ( rhs.mag_->blind() ) {
+			const LauBlind* blinder = rhs.mag_->blinder();
+			mag_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		magBar_ = new LauParameter("MagBar", rhs.magBar_->value(), minMagnitude_, maxMagnitude_, rhs.magBar_->fixed());
+		if ( rhs.magBar_->blind() ) {
+			const LauBlind* blinder = rhs.magBar_->blinder();
+			magBar_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TiePhase ) {
@@ -64,7 +72,15 @@ LauMagPhaseCPCoeffSet::LauMagPhaseCPCoeffSet(const LauMagPhaseCPCoeffSet& rhs, C
 		phaseBar_ = rhs.phaseBar_->createClone(constFactor);
 	} else {
 		phase_ = new LauParameter("Phase", rhs.phase_->value(), minPhase_, maxPhase_, rhs.phase_->fixed());
+		if ( rhs.phase_->blind() ) {
+			const LauBlind* blinder = rhs.phase_->blinder();
+			phase_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 		phaseBar_ = new LauParameter("PhaseBar", rhs.phaseBar_->value(), minPhase_, maxPhase_, rhs.phaseBar_->fixed());
+		if ( rhs.phaseBar_->blind() ) {
+			const LauBlind* blinder = rhs.phaseBar_->blinder();
+			phaseBar_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 }
 
@@ -220,13 +236,13 @@ void LauMagPhaseCPCoeffSet::finaliseValues()
 
 const LauComplex& LauMagPhaseCPCoeffSet::particleCoeff()
 {
-	particleCoeff_.setRealImagPart( mag_->value()*TMath::Cos(phase_->value()), mag_->value()*TMath::Sin(phase_->value()) );
+	particleCoeff_.setRealImagPart( mag_->unblindValue()*TMath::Cos(phase_->unblindValue()), mag_->unblindValue()*TMath::Sin(phase_->unblindValue()) );
 	return particleCoeff_;
 }
 
 const LauComplex& LauMagPhaseCPCoeffSet::antiparticleCoeff()
 {
-	antiparticleCoeff_.setRealImagPart( magBar_->value()*TMath::Cos(phaseBar_->value()), magBar_->value()*TMath::Sin(phaseBar_->value()) );
+	antiparticleCoeff_.setRealImagPart( magBar_->unblindValue()*TMath::Cos(phaseBar_->unblindValue()), magBar_->unblindValue()*TMath::Sin(phaseBar_->unblindValue()) );
 	return antiparticleCoeff_;
 }
 

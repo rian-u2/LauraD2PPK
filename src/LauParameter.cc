@@ -47,7 +47,8 @@ LauParameter::LauParameter() :
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 }
 
@@ -71,7 +72,8 @@ LauParameter::LauParameter(const TString& parName) :
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 }
 
@@ -95,7 +97,8 @@ LauParameter::LauParameter(Double_t parValue) :
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 }
 
@@ -119,7 +122,8 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue) :
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 }
 
@@ -143,7 +147,8 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max) :
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 	this->checkRange();
 }
@@ -168,7 +173,8 @@ LauParameter::LauParameter(Double_t parValue, Double_t parError, Double_t min, D
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 	this->checkRange();
 }
@@ -193,7 +199,8 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max, Bool_t
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 	this->checkRange();
 }
@@ -218,7 +225,8 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 	this->checkRange();
 }
@@ -243,7 +251,8 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 	this->checkRange();
 }
@@ -268,7 +277,8 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	bias_(0.0),
 	pull_(0.0),
 	clone_(kFALSE),
-	parent_(0)
+	parent_(0),
+	blinder_(0)
 {
 	this->checkRange();
 }
@@ -294,7 +304,8 @@ LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs), LauAbsRValue
 	pull_(rhs.pull_),
 	clone_(rhs.clone_),
 	parent_(rhs.parent_),
-	clones_(rhs.clones_)
+	clones_(rhs.clones_),
+	blinder_((rhs.blinder_==0) ? 0 : new LauBlind(*(rhs.blinder_)))
 {
 }
 
@@ -324,8 +335,15 @@ LauParameter& LauParameter::operator=(const LauParameter& rhs)
 		clone_ = rhs.clone_;
 		parent_ = rhs.parent_;
 		clones_ = rhs.clones_;
+		delete blinder_;
+		blinder_ = (rhs.blinder_==0) ? 0 : new LauBlind(*(rhs.blinder_));
 	}
 	return *this;
+}
+
+LauParameter::~LauParameter()
+{
+	delete blinder_;
 }
 
 std::vector<LauParameter*> LauParameter::getPars() 
@@ -529,59 +547,29 @@ void LauParameter::removeGaussianConstraint()
 	}
 }
 
-LauParameter& LauParameter::operator = (Double_t val)
+void LauParameter::blindParameter(const TString& blindingString, const Double_t width)
 {
 	if (this->clone()) {
-		(*parent_) = val;
-	} else {
-		this->checkRange(val,this->minValue(),this->maxValue());
-		this->updateClones(kTRUE);
+		parent_->blindParameter(blindingString,width);
+		return;
 	}
-	return *this;
-}
 
-LauParameter& LauParameter::operator += (Double_t val)
-{
-	if (this->clone()) {
-		(*parent_) += val;
-	} else {
-		this->checkRange(this->value()+val,this->minValue(),this->maxValue());
-		this->updateClones(kTRUE);
+	if ( blinder_ != 0 ) {
+		std::cerr << "WARNING in LauParameter::blindParameter : blinding has already been set up for this parameter" << std::endl;
+		return;
 	}
-	return *this;
-}
 
-LauParameter& LauParameter::operator -= (Double_t val)
-{
-	if (this->clone()) {
-		(*parent_) -= val;
-	} else {
-		this->checkRange(this->value()-val,this->minValue(),this->maxValue());
-		this->updateClones(kTRUE);
-	}
-	return *this;
-}
+	blinder_ = new LauBlind(blindingString,width);
 
-LauParameter& LauParameter::operator *= (Double_t val)
-{
-	if (this->clone()) {
-		(*parent_) *= val;
-	} else {
-		this->checkRange(this->value()*val,this->minValue(),this->maxValue());
-		this->updateClones(kTRUE);
+	for (map<LauParameter*,Double_t>::iterator iter = clones_.begin(); iter != clones_.end(); ++iter) {
+			LauParameter* clonePar = iter->first;
+			if ( clonePar->blinder_ != 0 ) {
+				std::cerr << "WARNING in LauParameter::blindParameter : blinding has already been set up for a clone of this parameter - it will be replaced!" << std::endl;
+				delete clonePar->blinder_;
+				clonePar->blinder_ = 0;
+			}
+			clonePar->blinder_ = new LauBlind(*blinder_);
 	}
-	return *this;
-}
-
-LauParameter& LauParameter::operator /= (Double_t val)
-{
-	if (this->clone()) {
-		(*parent_) /= val;
-	} else {
-		this->checkRange(this->value()/val,this->minValue(),this->maxValue());
-		this->updateClones(kTRUE);
-	}
-	return *this;
 }
 
 void LauParameter::updatePull()
@@ -657,7 +645,8 @@ LauParameter* LauParameter::createClone(Double_t constFactor)
 
 	// clone ourselves using the copy-constructor
 	LauParameter* clonePar = new LauParameter(*this);
-	(*clonePar) *= constFactor;
+	Double_t newValue = clonePar->value() * constFactor;
+	clonePar->value( newValue );
 	clonePar->wipeClones();
 	clonePar->clone(this);
 	clones_.insert( std::make_pair( clonePar, constFactor ) );
@@ -742,76 +731,6 @@ void LauParameter::randomiseValue(Double_t minVal, Double_t maxVal)
 	Double_t randNo = LauRandom::zeroSeedRandom()->Rndm();
 	Double_t val = randNo*(maxVal - minVal) + minVal;
 	this->initValue(val);
-}
-
-// various mathematical operators (non-member functions)
-Double_t operator + (const LauParameter& lhs, Double_t rhs)
-{
-	return (lhs.value() + rhs);
-}
-Double_t operator + (Double_t lhs, const LauParameter& rhs)
-{
-	return (lhs + rhs.value());
-}
-Double_t operator + (const LauParameter& lhs, const LauParameter& rhs)
-{
-	return (lhs.value() + rhs.value());
-}
-Double_t operator - (const LauParameter& lhs, Double_t rhs)
-{
-	return (lhs.value() - rhs);
-}
-Double_t operator - (Double_t lhs, const LauParameter& rhs)
-{
-	return (lhs - rhs.value());
-}
-Double_t operator - (const LauParameter& lhs, const LauParameter& rhs)
-{
-	return (lhs.value() - rhs.value());
-}
-Double_t operator * (const LauParameter& lhs, Double_t rhs)
-{
-	return (lhs.value() * rhs);
-}
-Double_t operator * (Double_t lhs, const LauParameter& rhs)
-{
-	return (lhs * rhs.value());
-}
-Double_t operator * (const LauParameter& lhs, const LauParameter& rhs)
-{
-	return (lhs.value() * rhs.value());
-}
-Double_t operator / (const LauParameter& lhs, Double_t rhs)
-{
-	return (lhs.value() / rhs);
-}
-Double_t operator / (Double_t lhs, const LauParameter& rhs)
-{
-	return (lhs / rhs.value());
-}
-Double_t operator / (const LauParameter& lhs, const LauParameter& rhs)
-{
-	return (lhs.value() / rhs.value());
-}
-Double_t operator += (Double_t& lhs, const LauParameter& rhs)
-{
-	lhs += rhs.value();
-	return lhs;
-}
-Double_t operator -= (Double_t& lhs, const LauParameter& rhs)
-{
-	lhs -= rhs.value();
-	return lhs;
-}
-Double_t operator *= (Double_t& lhs, const LauParameter& rhs)
-{
-	lhs *= rhs.value();
-	return lhs;
-}
-Double_t operator /= (Double_t& lhs, const LauParameter& rhs)
-{
-	lhs /= rhs.value();
-	return lhs;
 }
 
 // ostream operator

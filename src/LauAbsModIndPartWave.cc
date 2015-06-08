@@ -145,8 +145,8 @@ void LauAbsModIndPartWave::initialise()
 	}
 
 	for ( UInt_t i(0); i < nKnots_; ++i ) {
-		amp1Vals_[i] = amp1Pars_[i]->value();
-		amp2Vals_[i] = amp2Pars_[i]->value();
+		amp1Vals_[i] = amp1Pars_[i]->unblindValue();
+		amp2Vals_[i] = amp2Pars_[i]->unblindValue();
 	}
 
 	spline1_ = new Lau1DCubicSpline(masses_, amp1Vals_, leftBound1_, rightBound1_, leftGrad1_, rightGrad1_);
@@ -160,13 +160,13 @@ LauComplex LauAbsModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)
 	Bool_t paramChanged1(kFALSE), paramChanged2(kFALSE);
 
 	for ( UInt_t i(0); i < nKnots_; ++i ) {
-		if ( !amp1Pars_[i]->fixed() && amp1Pars_[i]->value() != amp1Vals_[i] ) {
+		if ( !amp1Pars_[i]->fixed() && amp1Pars_[i]->unblindValue() != amp1Vals_[i] ) {
 			paramChanged1 = kTRUE;
-			amp1Vals_[i] = amp1Pars_[i]->value();
+			amp1Vals_[i] = amp1Pars_[i]->unblindValue();
 		}
-		if ( !amp2Pars_[i]->fixed() && amp2Pars_[i]->value() != amp2Vals_[i] ) {
+		if ( !amp2Pars_[i]->fixed() && amp2Pars_[i]->unblindValue() != amp2Vals_[i] ) {
 			paramChanged2 = kTRUE;
-			amp2Vals_[i] = amp2Pars_[i]->value();
+			amp2Vals_[i] = amp2Pars_[i]->unblindValue();
 		}
 	}
 

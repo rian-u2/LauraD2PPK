@@ -99,9 +99,9 @@ void LauDPDepBifurGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	meanVal_ = mean_->value();
-	sigmaLVal_ = sigmaL_->value();
-	sigmaRVal_ = sigmaR_->value();
+	meanVal_ = mean_->unblindValue();
+	sigmaLVal_ = sigmaL_->unblindValue();
+	sigmaRVal_ = sigmaR_->unblindValue();
 	
 	// Find out the DP position
 	Double_t dpPos(0.0);
@@ -232,9 +232,9 @@ void LauDPDepBifurGaussPdf::calcNorm()
 void LauDPDepBifurGaussPdf::calcPDFHeight( const LauKinematics* kinematics )
 {
 	// Get the up to date parameter values
-	meanVal_ = mean_->value();
-	sigmaLVal_ = sigmaL_->value();
-	sigmaRVal_ = sigmaR_->value();
+	meanVal_ = mean_->unblindValue();
+	sigmaLVal_ = sigmaL_->unblindValue();
+	sigmaRVal_ = sigmaR_->unblindValue();
 
 	// Scale the gaussian parameters by the dpCentreDist (if appropriate)
 	Double_t dpCentreDist = kinematics->distanceFromDPCentre();

@@ -810,12 +810,15 @@ void LauSimpleFitModel::randomiseInitFitPars()
 	}
 }
 
-LauSimpleFitModel::LauGenInfo LauSimpleFitModel::eventsToGenerate()
+std::pair<LauSimpleFitModel::LauGenInfo,Bool_t> LauSimpleFitModel::eventsToGenerate()
 {
 	// Determine the number of events to generate for each hypothesis
 	// If we're smearing then smear each one individually
 
 	LauGenInfo nEvtsGen;
+
+	// Keep track of whether any yield or asymmetry parameters are blinded
+	Bool_t blind = kFALSE;
 
 	// Signal
 	Double_t evtWeight(1.0);
@@ -828,6 +831,9 @@ LauSimpleFitModel::LauGenInfo LauSimpleFitModel::eventsToGenerate()
 		nEvts = LauRandom::randomFun()->Poisson(nEvts);
 	}
 	nEvtsGen["signal"] = std::make_pair( nEvts, evtWeight );
+	if ( signalEvents_->blind() ) {
+		blind = kTRUE;
+	}
 
 	// Backgrounds
 	const UInt_t nBkgnds = this->nBkgndClasses();
@@ -844,9 +850,12 @@ LauSimpleFitModel::LauGenInfo LauSimpleFitModel::eventsToGenerate()
 			nEvts = LauRandom::randomFun()->Poisson(nEvts);
 		}
 		nEvtsGen[bkgndClass] = std::make_pair( nEvts, evtWeight );
+		if ( evtsPar->blind() ) {
+			blind = kTRUE;
+		}
 	}
 
-	return nEvtsGen;
+	return std::make_pair( nEvtsGen, blind );
 }
 
 Bool_t LauSimpleFitModel::genExpt()
@@ -854,7 +863,9 @@ Bool_t LauSimpleFitModel::genExpt()
 	// Routine to generate toy Monte Carlo events according to the various models we have defined.
 
 	// Determine the number of events to generate for each hypothesis
-	LauGenInfo nEvts = this->eventsToGenerate();
+	std::pair<LauGenInfo,Bool_t> info = this->eventsToGenerate();
+	LauGenInfo nEvts = info.first;
+	const Bool_t blind = info.second;
 
 	Bool_t genOK(kTRUE);
 	Int_t evtNum(0);
@@ -924,7 +935,7 @@ Bool_t LauSimpleFitModel::genExpt()
 			++evtNum;
 
 			this->fillGenNtupleBranches();
-			if (iEvt%500 == 0) {
+			if ( !blind && (iEvt%500 == 0) ) {
 				std::cout << "INFO in LauSimpleFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << std::endl;
 			}
 		}
@@ -1381,7 +1392,7 @@ Double_t LauSimpleFitModel::getTotEvtLikelihood(UInt_t iEvt)
 		if (useSCFHist_) {
 			scfFrac = recoSCFFracs_[iEvt];
 		} else {
-			scfFrac = scfFrac_.value();
+			scfFrac = scfFrac_.unblindValue();
 		}
 		sigLike *= (1.0 - scfFrac);
 		if ( (scfMap_ != 0) && (this->useDP() == kTRUE) ) {
@@ -1394,10 +1405,10 @@ Double_t LauSimpleFitModel::getTotEvtLikelihood(UInt_t iEvt)
 	}
 
 	// Construct the total event likelihood
-	Double_t likelihood = signalEvents_->value() * sigLike;
+	Double_t likelihood = signalEvents_->unblindValue() * sigLike;
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-		likelihood += (bkgndEvents_[bkgndID]->value() * bkgndDPLike_[bkgndID] * bkgndExtraLike_[bkgndID]);
+		likelihood += (bkgndEvents_[bkgndID]->unblindValue() * bkgndDPLike_[bkgndID] * bkgndExtraLike_[bkgndID]);
 	}
 
 	return likelihood;
@@ -1406,9 +1417,9 @@ Double_t LauSimpleFitModel::getTotEvtLikelihood(UInt_t iEvt)
 Double_t LauSimpleFitModel::getEventSum() const
 {
 	Double_t eventSum(0.0);
-	eventSum += signalEvents_->value();
+	eventSum += signalEvents_->unblindValue();
 	for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		eventSum += (*iter)->value();
+		eventSum += (*iter)->unblindValue();
 	}
 	return eventSum;
 }
@@ -1934,7 +1945,7 @@ void LauSimpleFitModel::storePerEvtLlhds()
 			if ( useSCFHist_ ) {
 				scfFrac = recoSCFFracs_[iEvt];
 			} else {
-				scfFrac = scfFrac_.value();
+				scfFrac = scfFrac_.unblindValue();
 			}
 			this->setSPlotNtupleDoubleBranchValue("sigSCFFrac",scfFrac);
 			sigTotalLike_ *= ( 1.0 - scfFrac );

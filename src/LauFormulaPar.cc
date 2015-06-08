@@ -118,12 +118,23 @@ LauFormulaPar& LauFormulaPar::operator=(const LauFormulaPar& rhs)
 
 Double_t LauFormulaPar::value() const
 {
-
 	//Assign vector values to array
 	Int_t nPars = paramVec_.size();
 
 	for(Int_t i=0; i<nPars; ++i){
 		paramArray_[i] = paramVec_[i]->value();
+	}
+
+	return formula_.EvalPar(dummy_,paramArray_);
+}
+
+Double_t LauFormulaPar::unblindValue() const
+{
+	//Assign vector values to array
+	Int_t nPars = paramVec_.size();
+
+	for(Int_t i=0; i<nPars; ++i){
+		paramArray_[i] = paramVec_[i]->unblindValue();
 	}
 
 	return formula_.EvalPar(dummy_,paramArray_);

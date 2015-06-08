@@ -58,6 +58,12 @@ class LauFormulaPar : public LauAbsRValue {
 		*/
 		Double_t value() const;
 
+		//! The unblinded value of the parameter
+		/*!
+		  \return the unblinded value of the parameter
+		*/
+		Double_t unblindValue() const;
+
 		//! The parameter name
 		/*!
 		  \return the name of the parameter

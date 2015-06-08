@@ -963,9 +963,16 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	// Set the genValue of each parameter to its current (fitted) value
 	// but first store the original genValues for restoring later
 	std::vector<Double_t> origGenValues;  origGenValues.reserve(nParams_);
+	Bool_t blind(kFALSE);
 	for (LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter) {
 		origGenValues.push_back((*iter)->genValue());
-		(*iter)->genValue((*iter)->value());
+		(*iter)->genValue((*iter)->unblindValue());
+		if ( (*iter)->blind() ) {
+			blind = kTRUE;
+		}
+	}
+	if ( blind ) {
+		std::cerr << "WARNING in LauAbsFitModel::createFitToyMC : One or more parameters are blind but the toy will be created using the unblind values - use with caution!!" << std::endl;
 	}
 
 	// If we're asked to generate more than 100 experiments then split it
@@ -1048,7 +1055,7 @@ Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 	Double_t penalty(0.0);
 
 	for ( LauAbsRValuePList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
-		Double_t val = (*iter)->value();
+		Double_t val = (*iter)->unblindValue();
 		Double_t mean = (*iter)->constraintMean();
 		Double_t width = (*iter)->constraintWidth();
 

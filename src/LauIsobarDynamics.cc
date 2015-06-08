@@ -1907,8 +1907,14 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 	for (i = 0; i < nAmp_+nIncohAmp_; i++) {
 		for (j = i; j < nAmp_+nIncohAmp_; j++) {
 			// Get the actual fractions by dividing by the total DP rate
-			fitFrac_[i][j] /= fifjTot;
-			fitFracEffUnCorr_[i][j] /= fifjEffTot;
+			Double_t fitFracVal = fitFrac_[i][j].value();
+			fitFracVal /= fifjTot;
+			fitFrac_[i][j].value( fitFracVal );
+
+			Double_t fitFracEffUnCorrVal = fitFracEffUnCorr_[i][j].value();
+			fitFracEffUnCorrVal /= fifjEffTot;
+			fitFracEffUnCorr_[i][j].value( fitFracEffUnCorrVal );
+
 			if (init) {
 				fitFrac_[i][j].genValue( fitFrac_[i][j].value() );
 				fitFrac_[i][j].initValue( fitFrac_[i][j].value() );

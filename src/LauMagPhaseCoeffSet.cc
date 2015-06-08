@@ -46,12 +46,20 @@ LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const LauMagPhaseCoeffSet& rhs, CloneOp
 		magnitude_ = rhs.magnitude_->createClone(constFactor);
 	} else {
 		magnitude_ = new LauParameter("A", rhs.magnitude_->value(), minMagnitude_, maxMagnitude_, rhs.magnitude_->fixed());
+		if ( rhs.magnitude_->blind() ) {
+			const LauBlind* blinder = rhs.magnitude_->blinder();
+			magnitude_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TiePhase ) {
 		phase_ = rhs.phase_->createClone(constFactor);
 	} else {
 		phase_ = new LauParameter("Delta", rhs.phase_->value(), minPhase_, maxPhase_, rhs.phase_->fixed());
+		if ( rhs.phase_->blind() ) {
+			const LauBlind* blinder = rhs.phase_->blinder();
+			phase_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 }
 
@@ -153,7 +161,7 @@ void LauMagPhaseCoeffSet::finaliseValues()
 
 const LauComplex& LauMagPhaseCoeffSet::particleCoeff()
 {
-	coeff_.setRealImagPart(magnitude_->value()*TMath::Cos(phase_->value()), magnitude_->value()*TMath::Sin(phase_->value()));
+	coeff_.setRealImagPart(magnitude_->unblindValue()*TMath::Cos(phase_->unblindValue()), magnitude_->unblindValue()*TMath::Sin(phase_->unblindValue()));
 	return coeff_;
 }
 

@@ -94,13 +94,13 @@ class LauFlatteRes : public LauAbsResonance {
 		/*! 
 			\return constant factor g1
 		*/	
-		Double_t getg1Parameter() const {return (g1_!=0) ? g1_->value() : 0.0;}
+		Double_t getg1Parameter() const {return (g1_!=0) ? g1_->unblindValue() : 0.0;}
 
 		//! Get the g2 parameter
 		/*! 
 			\return constant factor g2
 		*/	
-		Double_t getg2Parameter() const {return (g2_!=0) ? g2_->value() : 0.0;}
+		Double_t getg2Parameter() const {return (g2_!=0) ? g2_->unblindValue() : 0.0;}
 
 		//! See if the g1 parameter is fixed or floating
 		/*! 

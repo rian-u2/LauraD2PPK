@@ -108,7 +108,7 @@ void LauSumPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	}
 
 	// Get the up to date parameter values
-	Double_t frac = frac_->value();
+	Double_t frac = frac_->unblindValue();
 
 	// Evaluate the normalised PDF values
 	pdf1_->calcLikelihoodInfo(abscissas);
@@ -143,7 +143,7 @@ void LauSumPdf::calcPDFHeight( const LauKinematics* kinematics )
 	pdf2_->calcPDFHeight( kinematics );
 
 	// Get the up to date parameter values
-	Double_t frac = frac_->value();
+	Double_t frac = frac_->unblindValue();
 
 	// Find the (un-normalised) individual PDF maxima
 	Double_t height1 = pdf1_->getMaxHeight();
@@ -182,7 +182,7 @@ void LauSumPdf::cacheInfo(const LauFitDataTree& inputData)
 void LauSumPdf::calcLikelihoodInfo(UInt_t iEvt)
 {
 	// Get the up to date parameter values
-	Double_t frac = frac_->value();
+	Double_t frac = frac_->unblindValue();
 
 	// Evaluate the normalised PDF values
 	pdf1_->calcLikelihoodInfo(iEvt);

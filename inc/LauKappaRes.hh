@@ -107,25 +107,25 @@ class LauKappaRes : public LauAbsResonance {
 		/*!
 			\return value of the b1 parameter
 		*/
-		Double_t getB1Value() const { return (b1_!=0) ? b1_->value() : 0.0; }
+		Double_t getB1Value() const { return (b1_!=0) ? b1_->unblindValue() : 0.0; }
 
 		//! Get the b2 parameter value
 		/*!
 			\return value of the b2 parameter
 		*/
-		Double_t getB2Value() const { return (b2_!=0) ? b2_->value() : 0.0; }
+		Double_t getB2Value() const { return (b2_!=0) ? b2_->unblindValue() : 0.0; }
 
 		//! Get the A parameter value
 		/*!
 			\return value of the A parameter
 		*/
-		Double_t getAValue() const { return (a_!=0) ? a_->value() : 0.0; }
+		Double_t getAValue() const { return (a_!=0) ? a_->unblindValue() : 0.0; }
 
 		//! Get the m0 parameter value
 		/*!
 			\return value of the m0 parameter
 		*/
-		Double_t getM0Value() const { return (m0_!=0) ? m0_->value() : 0.0; }
+		Double_t getM0Value() const { return (m0_!=0) ? m0_->unblindValue() : 0.0; }
 
 		//! Fix the b1 parameter value
 		/*!

@@ -67,8 +67,8 @@ void LauGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigma = sigma_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigma = sigma_->unblindValue();
 
 	// Calculate the value of the Gaussian for the given value of the abscissa.
 	Double_t arg = abscissa - mean;
@@ -92,8 +92,8 @@ void LauGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 void LauGaussPdf::calcNorm() 
 {
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigma = sigma_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigma = sigma_->unblindValue();
 
 	// Calculate the normalisation of the gaussian and cache it.
 	Double_t scale = LauConstants::root2*sigma;
@@ -113,7 +113,7 @@ void LauGaussPdf::calcPDFHeight(const LauKinematics* /*kinematics*/)
 	}
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
+	Double_t mean = mean_->unblindValue();
 
 	LauAbscissas maxPoint(1);
 	maxPoint[0] = mean;

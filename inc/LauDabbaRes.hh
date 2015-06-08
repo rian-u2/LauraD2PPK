@@ -100,19 +100,19 @@ class LauDabbaRes : public LauAbsResonance {
 		/*!
 			\return value of the b parameter
 		*/
-		Double_t getBValue() const { return (b_!=0) ? b_->value() : 0.0; }
+		Double_t getBValue() const { return (b_!=0) ? b_->unblindValue() : 0.0; }
 
 		//! Get the alpha parameter value
 		/*!
 			\return value of the alpha parameter
 		*/
-		Double_t getAlphaValue() const { return (alpha_!=0) ? alpha_->value() : 0.0; }
+		Double_t getAlphaValue() const { return (alpha_!=0) ? alpha_->unblindValue() : 0.0; }
 
 		//! Get the beta parameter value
 		/*!
 			\return value of the beta parameter
 		*/
-		Double_t getBetaValue() const { return (beta_!=0) ? beta_->value() : 0.0; }
+		Double_t getBetaValue() const { return (beta_!=0) ? beta_->unblindValue() : 0.0; }
 
 		//! Fix the b parameter value
 		/*!

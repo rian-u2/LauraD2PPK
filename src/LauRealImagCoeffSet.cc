@@ -46,12 +46,20 @@ LauRealImagCoeffSet::LauRealImagCoeffSet(const LauRealImagCoeffSet& rhs, CloneOp
 		x_ = rhs.x_->createClone(constFactor);
 	} else {
 		x_ = new LauParameter("X", rhs.x_->value(), minRealImagPart_, maxRealImagPart_, rhs.x_->fixed());
+		if ( rhs.x_->blind() ) {
+			const LauBlind* blinder = rhs.x_->blinder();
+			x_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 
 	if ( cloneOption == All || cloneOption == TieImagPart ) {
 		y_ = rhs.y_->createClone(constFactor);
 	} else {
 		y_ = new LauParameter("Y", rhs.y_->value(), minRealImagPart_, maxRealImagPart_, rhs.y_->fixed());
+		if ( rhs.y_->blind() ) {
+			const LauBlind* blinder = rhs.y_->blinder();
+			y_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+		}
 	}
 }
 
@@ -114,7 +122,7 @@ void LauRealImagCoeffSet::finaliseValues()
 
 const LauComplex& LauRealImagCoeffSet::particleCoeff()
 {
-	coeff_.setRealImagPart(x_->value(), y_->value());
+	coeff_.setRealImagPart(x_->unblindValue(), y_->unblindValue());
 	return coeff_;
 }
 

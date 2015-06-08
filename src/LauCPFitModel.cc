@@ -905,19 +905,19 @@ void LauCPFitModel::calcExtraFractions(Bool_t initValues)
 		}
 	}
 
-	Double_t denom = negDPRate_ + posDPRate_;
+	Double_t denom = negDPRate_.value() + posDPRate_.value();
 
 	for (UInt_t i(0); i<nSigComp_; ++i) {
 		for (UInt_t j(i); j<nSigComp_; ++j) {
 
-			Double_t negTerm = negFitFrac_[i][j]*negDPRate_;
-			Double_t posTerm = posFitFrac_[i][j]*posDPRate_;
+			Double_t negTerm = negFitFrac_[i][j].value()*negDPRate_.value();
+			Double_t posTerm = posFitFrac_[i][j].value()*posDPRate_.value();
 
 			Double_t cpcFitFrac = (negTerm + posTerm)/denom;
 			Double_t cpvFitFrac = (negTerm - posTerm)/denom;
 
-			CPCFitFrac_[i][j] = cpcFitFrac;
-			CPVFitFrac_[i][j] = cpvFitFrac;
+			CPCFitFrac_[i][j].value(cpcFitFrac);
+			CPVFitFrac_[i][j].value(cpvFitFrac);
 
 			if (initValues) {
 				CPCFitFrac_[i][j].genValue(cpcFitFrac);
@@ -1324,12 +1324,15 @@ void LauCPFitModel::randomiseInitFitPars()
 	}
 }
 
-LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
+std::pair<LauCPFitModel::LauGenInfo,Bool_t> LauCPFitModel::eventsToGenerate()
 {
 	// Determine the number of events to generate for each hypothesis
 	// If we're smearing then smear each one individually
 
 	LauGenInfo nEvtsGen;
+
+	// Keep track of whether any yield or asymmetry parameters are blinded
+	Bool_t blind = kFALSE;
 
 	// Signal
 	Double_t evtWeight(1.0);
@@ -1338,11 +1341,17 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 		evtWeight = -1.0;
 		nEvts = TMath::Abs( nEvts );
 	}
+	if ( signalEvents_->blind() ) {
+		blind = kTRUE;
+	}
 	Double_t asym(0.0);
 	Double_t sigAsym(0.0);
 	// need to include this as an alternative in case the DP isn't in the model
 	if ( !this->useDP() || forceAsym_ ) {
 		sigAsym = signalAsym_->genValue();
+		if ( signalAsym_->blind() ) {
+			blind = kTRUE;
+		}
 	} else {
 		Double_t negRate = negSigModel_->getDPNorm();
 		Double_t posRate = posSigModel_->getDPNorm();
@@ -1366,6 +1375,9 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
 		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
 		const LauParameter* asymPar = bkgndAsym_[bkgndID];
+		if ( evtsPar->blind() || asymPar->blind() ) {
+			blind = kTRUE;
+		}
 		evtWeight = 1.0;
 		nEvts = TMath::FloorNint( evtsPar->genValue() );
 		if ( nEvts < 0 ) {
@@ -1383,16 +1395,19 @@ LauCPFitModel::LauGenInfo LauCPFitModel::eventsToGenerate()
 		nEvtsGen[std::make_pair(bkgndClass,+1)] = std::make_pair(nPosEvts,evtWeight);
 	}
 
-	std::cout << "INFO in LauCPFitModel::eventsToGenerate : Generating toy MC with:" << std::endl;
-	std::cout << "                                        : Signal asymmetry  = " << sigAsym << " and number of signal events = " << signalEvents_->genValue() << std::endl;
-	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
-		const LauParameter* asymPar = bkgndAsym_[bkgndID];
-		std::cout << "                                        : " << bkgndClass << " asymmetry  = " << asymPar->genValue() << " and number of " << bkgndClass << " events = " << evtsPar->genValue() << std::endl;
+	// Print out the information on what we're generating, but only if none of the parameters are blind (otherwise we risk unblinding them!)
+	if ( !blind ) {
+		std::cout << "INFO in LauCPFitModel::eventsToGenerate : Generating toy MC with:" << std::endl;
+		std::cout << "                                        : Signal asymmetry  = " << sigAsym << " and number of signal events = " << signalEvents_->genValue() << std::endl;
+		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
+			const TString& bkgndClass = this->bkgndClassName(bkgndID);
+			const LauParameter* evtsPar = bkgndEvents_[bkgndID];
+			const LauParameter* asymPar = bkgndAsym_[bkgndID];
+			std::cout << "                                        : " << bkgndClass << " asymmetry  = " << asymPar->genValue() << " and number of " << bkgndClass << " events = " << evtsPar->genValue() << std::endl;
+		}
 	}
 
-	return nEvtsGen;
+	return std::make_pair( nEvtsGen, blind );
 }
 
 Bool_t LauCPFitModel::genExpt()
@@ -1400,7 +1415,9 @@ Bool_t LauCPFitModel::genExpt()
 	// Routine to generate toy Monte Carlo events according to the various models we have defined.
 
 	// Determine the number of events to generate for each hypothesis
-	LauGenInfo nEvts = this->eventsToGenerate();
+	std::pair<LauGenInfo,Bool_t> info = this->eventsToGenerate();
+	LauGenInfo nEvts = info.first;
+	const Bool_t blind = info.second;
 
 	Bool_t genOK(kTRUE);
 	Int_t evtNum(0);
@@ -1478,7 +1495,9 @@ Bool_t LauCPFitModel::genExpt()
 			++evtNum;
 
 			this->fillGenNtupleBranches();
-			if (iEvt%500 == 0) {std::cout << "INFO in LauCPFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << std::endl;}
+			if ( !blind && (iEvt%500 == 0) ) {
+				std::cout << "INFO in LauCPFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << std::endl;
+			}
 		}
 
 		if (!genOK) {
@@ -2095,7 +2114,7 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 		if (useSCFHist_) {
 			scfFrac = recoSCFFracs_[iEvt];
 		} else {
-			scfFrac = scfFrac_.value();
+			scfFrac = scfFrac_.unblindValue();
 		}
 		sigLike *= (1.0 - scfFrac);
 		if ( (scfMap_ != 0) && (this->useDP() == kTRUE) ) {
@@ -2110,9 +2129,9 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 	// Get the correct event fractions depending on the charge
 	// Signal asymmetry is built into the DP model... but when the DP
 	// isn't in the fit we need an explicit parameter
-	Double_t signalEvents = signalEvents_->value() * 0.5;
+	Double_t signalEvents = signalEvents_->unblindValue() * 0.5;
 	if (this->useDP() == kFALSE) {
-		signalEvents *= (1.0 - curEvtCharge_ * signalAsym_->value());
+		signalEvents *= (1.0 - curEvtCharge_ * signalAsym_->unblindValue());
 	}
 
 	// Construct the total event likelihood
@@ -2121,7 +2140,7 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 		likelihood = sigLike*signalEvents;
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-			Double_t bkgndEvents  = bkgndEvents_[bkgndID]->value() * 0.5 * (1.0 - curEvtCharge_ * bkgndAsym_[bkgndID]->value());
+			Double_t bkgndEvents  = bkgndEvents_[bkgndID]->unblindValue() * 0.5 * (1.0 - curEvtCharge_ * bkgndAsym_[bkgndID]->unblindValue());
 			likelihood += bkgndEvents*bkgndDPLike_[bkgndID]*bkgndExtraLike_[bkgndID];
 		}
 	} else {
@@ -2133,10 +2152,10 @@ Double_t LauCPFitModel::getTotEvtLikelihood(UInt_t iEvt)
 Double_t LauCPFitModel::getEventSum() const
 {
 	Double_t eventSum(0.0);
-	eventSum += signalEvents_->value();
+	eventSum += signalEvents_->unblindValue();
 	if (usingBkgnd_) {
 		for (LauBkgndYieldList::const_iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			eventSum += (*iter)->value();
+			eventSum += (*iter)->unblindValue();
 		}
 	}
 	return eventSum;
@@ -2770,7 +2789,7 @@ void LauCPFitModel::storePerEvtLlhds()
 			if ( useSCFHist_ ) {
 				scfFrac = recoSCFFracs_[iEvt];
 			} else {
-				scfFrac = scfFrac_.value();
+				scfFrac = scfFrac_.unblindValue();
 			}
 			this->setSPlotNtupleDoubleBranchValue("sigSCFFrac",scfFrac);
 			sigTotalLike_ *= ( 1.0 - scfFrac );

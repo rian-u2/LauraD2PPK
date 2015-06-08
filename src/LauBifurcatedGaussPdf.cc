@@ -70,9 +70,9 @@ void LauBifurcatedGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigmaL = sigmaL_->value();
-	Double_t sigmaR = sigmaR_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigmaL = sigmaL_->unblindValue();
+	Double_t sigmaR = sigmaR_->unblindValue();
 	
 	// Evaluate the Birfucated Gaussian PDF value
 	Double_t arg = abscissa - mean;
@@ -129,7 +129,7 @@ void LauBifurcatedGaussPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 	}
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
+	Double_t mean = mean_->unblindValue();
 
 	LauAbscissas maxPoint(1);
 	maxPoint[0] = mean;

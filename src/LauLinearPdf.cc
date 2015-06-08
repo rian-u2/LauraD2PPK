@@ -65,7 +65,7 @@ void LauLinearPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t slope = slope_->value();
+	Double_t slope = slope_->unblindValue();
 
 	// Calculate the value of the straight line for the given value of the abscissa.
 	Double_t constVal = 1.0/(this->getMaxAbscissa() - this->getMinAbscissa());
@@ -98,7 +98,7 @@ void LauLinearPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 	}
 
 	// Get the up to date parameter values
-	Double_t slope = slope_->value();
+	Double_t slope = slope_->unblindValue();
 
 	// Calculate the PDF height for the straight line
 	LauAbscissas maxPoint(1);

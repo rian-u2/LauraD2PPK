@@ -133,13 +133,13 @@ class LauAbsResonance {
 		/*! 
 			\return the resonance mass
 		*/
-		Double_t getMass() const {return (resMass_!=0) ? resMass_->value() : -1.0;}
+		Double_t getMass() const {return (resMass_!=0) ? resMass_->unblindValue() : -1.0;}
 
 		//! Get the width of the resonance
 		/*! 
 			\return the resonance width
 		*/
-		Double_t getWidth() const {return (resWidth_!=0) ? resWidth_->value() : -1.0;}
+		Double_t getWidth() const {return (resWidth_!=0) ? resWidth_->unblindValue() : -1.0;}
 
 		//! Get the mass parameter of the resonance
 		/*! 

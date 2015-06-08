@@ -90,11 +90,11 @@ void LauCruijffPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t abscissa = abscissas[0];
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
-	Double_t sigmaL = sigmaL_->value();
-	Double_t sigmaR = sigmaR_->value();
-	Double_t alphaL = alphaL_->value();
-	Double_t alphaR = alphaR_->value();
+	Double_t mean = mean_->unblindValue();
+	Double_t sigmaL = sigmaL_->unblindValue();
+	Double_t sigmaR = sigmaR_->unblindValue();
+	Double_t alphaL = alphaL_->unblindValue();
+	Double_t alphaR = alphaR_->unblindValue();
 	
 	// Evaluate the LauCruijff PDF value
 	
@@ -131,7 +131,7 @@ void LauCruijffPdf::calcPDFHeight( const LauKinematics* /*kinematics*/ )
 	}
 
 	// Get the up to date parameter values
-	Double_t mean = mean_->value();
+	Double_t mean = mean_->unblindValue();
 
 	LauAbscissas maxPoint(1);
 	maxPoint[0] = mean;

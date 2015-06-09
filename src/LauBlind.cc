@@ -27,8 +27,8 @@ LauBlind::LauBlind() :
 {
 }
 
-LauBlind::LauBlind(const TString& blindingString, const Double_t width) :
-	blindingString_(blindingString),
+LauBlind::LauBlind(const TString& blindingStr, const Double_t width) :
+	blindingString_(blindingStr),
 	blindingWidth_(width),
 	offset_(0.0)
 {

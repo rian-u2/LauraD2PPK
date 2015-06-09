@@ -30,10 +30,10 @@ class LauBlind {
 	public:
 		//! Constructor
 		/*!
-		    \param [in] blindingString the blinding string
+		    \param [in] blindingStr the blinding string
 		    \param [in] width the width of the Gaussian for sampling the offset
 		*/
-		LauBlind(const TString& blindingString, const Double_t width);
+		LauBlind(const TString& blindingStr, const Double_t width);
 
 		//! Copy constructor
 		LauBlind(const LauBlind& rhs);

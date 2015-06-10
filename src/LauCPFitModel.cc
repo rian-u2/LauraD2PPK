@@ -941,7 +941,7 @@ void LauCPFitModel::calcAsymmetries(Bool_t initValues)
 
 		LauAsymmCalc asymmCalc(negFitFrac_[i][i].value(), posFitFrac_[i][i].value());
 		Double_t asym = asymmCalc.getAsymmetry();
-		fitFracAsymm_[i] = asym;
+		fitFracAsymm_[i].value(asym);
 		if (initValues) {
 			fitFracAsymm_[i].genValue(asym);
 			fitFracAsymm_[i].initValue(asym);

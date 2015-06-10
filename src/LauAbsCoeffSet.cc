@@ -118,6 +118,17 @@ void LauAbsCoeffSet::floatParameter(const TString& parName)
 	par->fixed( kFALSE );
 }
 
+void LauAbsCoeffSet::blindParameter(const TString& parName, const TString& blindingString, const Double_t width)
+{
+	LauParameter* par = this->findParameter( parName );
+	if ( par == 0 ) {
+		std::cerr << "ERROR in LauAbsCoeffSet::blindParameter : Unable to find parameter \"" << parName << "\"" << std::endl;
+		return;
+	}
+
+	par->blindParameter( blindingString, width );
+}
+
 LauParameter* LauAbsCoeffSet::findParameter(const TString& parName)
 {
 	std::vector<LauParameter*> pars = this->getParameters();

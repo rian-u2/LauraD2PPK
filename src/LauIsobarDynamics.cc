@@ -1823,8 +1823,8 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 		Double_t sumEffTerm = Amp_[i].abs2()*fifjEffSumReal*fNorm_[i]*fNorm_[i];
 		fifjEffTot += sumEffTerm;
 
-		fitFrac_[i][i] = sumTerm;
-		fitFracEffUnCorr_[i][i] = sumEffTerm;
+		fitFrac_[i][i].value(sumTerm);
+		fitFracEffUnCorr_[i][i].value(sumEffTerm);
 	}
 
 	for (i = 0; i < nAmp_; i++) {
@@ -1838,8 +1838,8 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 
 			if(j >= nAmp_) {
 				//Set off-diagonal incoherent terms to zero
-				fitFrac_[i][j] = 0.;
-				fitFracEffUnCorr_[i][j] = 0.;
+				fitFrac_[i][j].value(0.);
+				fitFracEffUnCorr_[i][j].value(0.);
 				continue;
 			}
 
@@ -1852,8 +1852,8 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 			Double_t crossEffTerm = 2.0*(AmpTerm*fifjEffSum_[i][j]).re()*fNorm_[i]*fNorm_[j];
 			fifjEffTot += crossEffTerm;
 
-			fitFrac_[i][j] = crossTerm;
-			fitFracEffUnCorr_[i][j] = crossEffTerm;
+			fitFrac_[i][j].value(crossTerm);
+			fitFracEffUnCorr_[i][j].value(crossEffTerm);
 		}
 	}
 
@@ -1872,8 +1872,8 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 		Double_t sumEffTerm = Amp_[i].abs2()*fSqEffSum_[i]*fNorm_[i]*fNorm_[i];
 		fifjEffTot += sumEffTerm;
 
-		fitFrac_[i][i] = sumTerm;
-		fitFracEffUnCorr_[i][i] = sumEffTerm;
+		fitFrac_[i][i].value(sumTerm);
+		fitFracEffUnCorr_[i][i].value(sumEffTerm);
 	}
 
 	for (i = nAmp_; i < nAmp_+nIncohAmp_; i++) {
@@ -1885,19 +1885,19 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 			name += "EffUnCorr";
 			fitFracEffUnCorr_[i][j].name(name);
 
-			fitFrac_[i][j] = 0.;
-			fitFracEffUnCorr_[i][j] = 0.;
+			fitFrac_[i][j].value(0.);
+			fitFracEffUnCorr_[i][j].value(0.);
 		}
 	}
 
 	if (TMath::Abs(fifjTot) > 1e-10) {
-		meanDPEff_ = fifjEffTot/fifjTot;
+		meanDPEff_.value(fifjEffTot/fifjTot);
 		if (init) {
 			meanDPEff_.genValue( meanDPEff_.value() );
 			meanDPEff_.initValue( meanDPEff_.value() );
 		}
 	}
-	DPRate_ = fifjTot;
+	DPRate_.value(fifjTot);
 	if (init) {
 		DPRate_.genValue( DPRate_.value() );
 		DPRate_.initValue( DPRate_.value() );
@@ -1971,7 +1971,7 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 
 		TString parName("KMatrixTotFF_"); parName += propInt;
 		extraParameters_[propInt].name( parName );
-		extraParameters_[propInt] =  kMatrixTotFitFrac;
+		extraParameters_[propInt].value(kMatrixTotFitFrac);
 		if (init) {
 			extraParameters_[propInt].genValue(kMatrixTotFitFrac);
 			extraParameters_[propInt].initValue(kMatrixTotFitFrac);

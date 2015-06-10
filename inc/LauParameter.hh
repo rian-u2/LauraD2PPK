@@ -42,13 +42,13 @@ class LauParameter : public TObject, public LauAbsRValue {
 		/*!
 		    \param [in] parName the parameter name 
 		*/
-		LauParameter(const TString& parName);
+		explicit LauParameter(const TString& parName);
 
 		//! Constructor for parameter value
 		/*!
 		    \param [in] parValue the parameter value
 		*/
-		LauParameter(Double_t parValue);
+		explicit LauParameter(Double_t parValue);
 
 		//! Constructor double limit parameter
 		/*!

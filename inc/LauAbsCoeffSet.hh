@@ -171,6 +171,16 @@ class LauAbsCoeffSet {
 		*/
 		virtual void floatParameter(const TString& parName);
 
+		//! Blind the named parameter
+		/*!
+		    See LauBlind documentation for details of blinding procedure
+
+		    \param [in] parName the name of the parameter to adjust
+		    \param [in] blindingString the unique blinding string used to seed the random number generator
+		    \param [in] width the width of the Gaussian from which the offset should be sampled
+		*/
+		void blindParameter(const TString& parName, const TString& blindingString, const Double_t width);
+
 		//! Set the allowed range for magnitude parameters
 		/*!
 		    \param [in] minMag the lower edge of the range

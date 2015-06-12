@@ -42,7 +42,6 @@ LauBelleNR::LauBelleNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauReso
 
 LauBelleNR::~LauBelleNR()
 {
-	delete alpha_;
 }
 
 void LauBelleNR::initialise()

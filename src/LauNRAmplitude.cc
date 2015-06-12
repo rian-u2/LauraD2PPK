@@ -85,11 +85,6 @@ LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmp
 
 LauNRAmplitude::~LauNRAmplitude()
 {
-	delete d_;
-	delete c1_;
-	delete c2_;
-	delete p1_;
-	delete p2_;
 }
 
 void LauNRAmplitude::initialise()

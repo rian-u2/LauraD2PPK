@@ -120,8 +120,6 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 
 LauFlatteRes::~LauFlatteRes()
 {
-	delete g1_;
-	delete g2_;
 }
 
 void LauFlatteRes::initialise()

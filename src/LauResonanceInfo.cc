@@ -43,6 +43,11 @@ LauResonanceInfo::~LauResonanceInfo()
 {
 	delete mass_; mass_ = 0;
 	delete width_; width_ = 0;
+
+	for ( std::set<LauParameter*>::iterator iter = extraPars_.begin(); iter != extraPars_.end(); ++iter ) {
+		delete (*iter);
+	}
+	extraPars_.clear();
 }
 
 LauResonanceInfo::LauResonanceInfo( const LauResonanceInfo& other, const TString& newName, const Int_t newCharge ) :

@@ -55,8 +55,6 @@ LauLASSNRRes::LauLASSNRRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 
 LauLASSNRRes::~LauLASSNRRes()
 {
-	delete r_;
-	delete a_;
 }
 
 void LauLASSNRRes::initialise()

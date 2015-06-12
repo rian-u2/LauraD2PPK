@@ -61,8 +61,6 @@ LauLASSRes::LauLASSRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, con
 
 LauLASSRes::~LauLASSRes()
 {
-	delete r_;
-	delete a_;
 }
 
 void LauLASSRes::initialise()

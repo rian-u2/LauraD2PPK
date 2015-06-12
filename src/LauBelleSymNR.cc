@@ -47,17 +47,22 @@ LauBelleSymNR::~LauBelleSymNR()
 void LauBelleSymNR::initialise()
 {
 	const LauDaughters* daughters = this->getDaughters();
-	Int_t resPairAmpInt = this->getPairInt();
 	if ( ! daughters->gotSymmetricalDP() ) {
 		std::cerr << "WARNING in LauBelleSymNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
 	}
+
+	Int_t resPairAmpInt = this->getPairInt();
 	if ( resPairAmpInt == 3 ) {
 		std::cerr << "WARNING in LauBelleSymNR::initialise : This lineshape is intended to be on the symmetrised axes of the DP." << std::endl;
 	}
 
-	if ( model_ != LauAbsResonance::BelleSymNR && model_ != LauAbsResonance::TaylorNR ) {
+	if ( (model_ != LauAbsResonance::BelleSymNR) && (model_ != LauAbsResonance::BelleSymNRNoInter) && (model_ != LauAbsResonance::TaylorNR) ) {
 		std::cerr << "WARNING in LauBelleSymNR::initialise : Unknown model requested, defaulting to exponential." << std::endl;
 		model_ = LauAbsResonance::BelleSymNR;
+	}
+
+	if ( (model_ != LauAbsResonance::BelleSymNRNoInter) && (this->getSpin() != 0) ) {
+		std::cerr << "WARNING in LauBelleSymNR::initialise : Non-zero spin will be ignored for this model - perhaps you should use LauAbsResonance::BelleSymNRNoInter instead" << std::endl;
 	}
 }
 
@@ -73,20 +78,30 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 	// individual amplitudes (with the same value of alpha).
 
 	// Calculate Mandelstam variables.
-	// s = m_13^2, t = m_23^2, u = m_12^2. 
-	Double_t s = kinematics->getm13Sq();
-	Double_t t = kinematics->getm23Sq();
-	//Double_t u = kinematics->getm12Sq();
+	// s = m_13^2, t = m_23^2
+	const Double_t s = kinematics->getm13Sq();
+	const Double_t t = kinematics->getm23Sq();
 
 	Double_t magnitude(1.0);
 
-	Double_t alpha = this->getAlpha();
+	const Double_t alpha = this->getAlpha();
 
 	if ( model_ == LauAbsResonance::BelleSymNR ) {
+
 		magnitude = TMath::Exp(-alpha*s) + TMath::Exp(-alpha*t);
+
+	} else if ( model_ == LauAbsResonance::BelleSymNRNoInter ) {
+
+		magnitude = (s <= t) ? TMath::Exp(-alpha*s) : TMath::Exp(-alpha*t);
+
+		const Double_t cosHel = (s <= t) ? kinematics->getc13() : kinematics->getc23();
+		magnitude *= this->calcSpinTerm( cosHel, 1.0 );
+
 	} else if ( model_ == LauAbsResonance::TaylorNR ) {
-		Double_t mParentSq = kinematics->getmParentSq();
+
+		const Double_t mParentSq = kinematics->getmParentSq();
 		magnitude = alpha*(s + t)/mParentSq + 1.0;
+
 	}
 
 	LauComplex resAmplitude(magnitude, 0.0);

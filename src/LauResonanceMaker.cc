@@ -625,7 +625,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		theResonance =
 			new LauNRAmplitude(resInfo, 0, daughters);
 
-	} else if ( resType == LauAbsResonance::BelleSymNR || resType == LauAbsResonance::TaylorNR ) {
+	} else if ( resType == LauAbsResonance::BelleSymNR || resType == LauAbsResonance::BelleSymNRNoInter || resType == LauAbsResonance::TaylorNR ) {
 
 		// Belle NR amplitude model - arguments are there to preserve the interface
 		std::cout<<"                                        : Using Belle symmetric NR lineshape. "<<std::endl;

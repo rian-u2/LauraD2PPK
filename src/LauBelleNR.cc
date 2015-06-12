@@ -57,7 +57,8 @@ void LauBelleNR::initialise()
 		model_ = LauAbsResonance::BelleNR;
 	}
 
-	// TODO - should the BelleNR ignore the momenta in the spin term?
+	// Make the spin term purely the Legendre polynomial of the cos(helicity angle), do not include the p and q factors
+	this->ignoreMomenta(kTRUE);
 }
 
 LauComplex LauBelleNR::resAmp(Double_t mass, Double_t spinTerm)

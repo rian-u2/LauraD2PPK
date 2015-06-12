@@ -55,6 +55,7 @@ class LauAbsResonance {
 			BelleNR,		/*!< an empirical exponential nonresonant amplitude */
 			PowerLawNR,		/*!< an empirical power law nonresonant amplitude */
 			BelleSymNR,		/*!< an empirical exponential nonresonant amplitude for symmetrised DPs */
+			BelleSymNRNoInter,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs without interference */
 			TaylorNR,		/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR,			/*!< an empirical polynomial nonresonant amplitude */
 			MIPW_MagPhase, 		/*!< a model independent partial wave - magnitude and phase representation */
@@ -329,6 +330,13 @@ class LauAbsResonance {
 
 		//! Access the daughters object
 		const LauDaughters* getDaughters() const {return daughters_;}
+
+		//! Calculate the amplitude spin term
+		/*!
+			\param [in] cosHel the cosine of the helicity angle
+			\param [in] pProd the momentum factor (typically q * p)
+		*/
+		Double_t calcSpinTerm( const Double_t cosHel, const Double_t pProd ) const;
 
 		//! Complex resonant amplitude
 		/*!

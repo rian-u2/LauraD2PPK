@@ -4,6 +4,20 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+12th June 2015 Thomas Latham
+
+* Modifications to Belle-style nonresonant models
+  - LauBelleNR modified to use pure Legendre polynomials of cos(theta) in the spin term (i.e. to remove the q*p factors)
+  - New form added to LauBelleSymNR (LauAbsResonance::BelleSymNRNoInter) that removes the interference term between the two DP halves
+  - The new form also works with non-zero spin (warning added if non-zero spin specified for BelleSymNR and TaylorNR)
+
+8th June 2015 Thomas Latham
+
+* Further work on the blinding mechanism:
+  - New method added LauParameter::blindParameter that activates the blinding.
+  - The rest of the framework updated to use another new method LauParameter::unblindedValue in all likelihood calculations etc.
+  - Example GenFitNoDP updated to include lines to optionally blind the yield parameters.
+
 29th May 2015 Daniel Craik
 
 * Added LauBlind class for blinding and unblinding a value with an offset based on a blinding string

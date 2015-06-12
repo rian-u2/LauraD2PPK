@@ -128,7 +128,9 @@ int main( int argc, char** argv )
 	reson->setResonanceParameter("g1",0.2);
 	reson->setResonanceParameter("g2",1.0);
 	reson = sigModel->addResonance("f_2(1270)",  1, LauAbsResonance::RelBW);
-	reson = sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
+	const TString nrName = "BelleNR_Swave";
+	reson = sigModel->addResonance(nrName,   0, LauAbsResonance::BelleSymNRNoInter);
+	reson->setResonanceParameter("alpha", 0.2);
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
@@ -148,13 +150,14 @@ int main( int argc, char** argv )
 	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)", 0.37,  1.99, kFALSE, kFALSE) );
 	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",   0.27, -1.59, kFALSE, kFALSE) );
 	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)",  0.53,  1.39, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",   0.54, -0.84, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet(nrName,       0.54, -0.84, kFALSE, kFALSE) );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	LauParameter * nSigEvents = new LauParameter("nSigEvents",500.0,-1000.0,1000.0,kFALSE);
+	const Double_t nSig = 500.0;
+	LauParameter * nSigEvents = new LauParameter("nSigEvents",nSig,-2.0*nSig,2.0*nSig,kFALSE);
 	fitModel->setNSigEvents(nSigEvents);
 
 	// Set the number of experiments to generate or fit and which
@@ -166,7 +169,8 @@ int main( int argc, char** argv )
 	std::vector<TString> bkgndNames(1);
 	bkgndNames[0] = "qqbar";
 	fitModel->setBkgndClassNames( bkgndNames );
-	LauParameter* nBkgndEvents = new LauParameter("qqbar",1200.0,-2400.0,2400.0,kFALSE);
+	const Double_t nBkg = 1200.0;
+	LauParameter* nBkgndEvents = new LauParameter("qqbar",nBkg,-2.0*nBkg,2.0*nBkg,kFALSE);
 	fitModel->setNBkgndEvents( nBkgndEvents );
 	//TString qqFileName("histoFiles/offResDP.root");
 	//TFile* qqFile = TFile::Open(qqFileName.Data(), "read");

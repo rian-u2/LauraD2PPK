@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "TMatrixD.h"
 #include "TMessage.h"
 #include "TMonitor.h"
 #include "TObjArray.h"
@@ -22,7 +23,6 @@
 #include "TServerSocket.h"
 #include "TSocket.h"
 #include "TSystem.h"
-#include "TVectorD.h"
 
 #include "LauAbsFitter.hh"
 #include "LauFitNtuple.hh"
@@ -293,6 +293,7 @@ void LauSimFitMaster::updateParametersFromSlaves()
 void LauSimFitMaster::getParametersFromSlavesFirstTime()
 {
 	slaveIndices_.resize( nSlaves_ );
+	slaveFreeIndices_.resize( nSlaves_ );
 	vectorPar_.resize( nSlaves_ );
 	vectorRes_.resize( nSlaves_ );
 
@@ -335,17 +336,24 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 
 			TString parname = parameter->name();
 			Double_t parvalue = parameter->initValue();
+			Bool_t parfixed = parameter->fixed();
 
 			std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
 			if ( iter != parIndices_.end() ) {
 				UInt_t index = iter->second;
 				slaveIndices_[iSlave].push_back( index );
+				if ( ! parfixed ) {
+					slaveFreeIndices_[iSlave].push_back( index );
+				}
 				this->checkParameter( parameter, index );
 			} else {
 				UInt_t index = parIndices_.size();
 				parIndices_.insert( std::make_pair( parname, index ) );
 				parNames_.insert( std::make_pair( index, parname ) );
 				slaveIndices_[iSlave].push_back( index );
+				if ( ! parfixed ) {
+					slaveFreeIndices_[iSlave].push_back( index );
+				}
 				params_.push_back( parameter );
 				parValues_.push_back( parvalue );
 			}
@@ -674,7 +682,9 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
 
 		std::vector<UInt_t>& indices = slaveIndices_[iSlave];
+		std::vector<UInt_t>& freeIndices = slaveFreeIndices_[iSlave];
 		UInt_t nPars = indices.size();
+		UInt_t nFreePars = freeIndices.size();
 		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 			vectorPar_[iSlave][iPar] = parValues_[ indices[iPar] ];
 		}
@@ -682,6 +692,7 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 		TMessage* message = messagesToSlaves_[iSlave];
 		message->Reset( kMESS_ANY );
 		message->WriteUInt( nPars );
+		message->WriteUInt( nFreePars );
 		message->WriteFastArray( vectorPar_[iSlave], nPars );
 
 		sSlaves_[iSlave]->Send(*message);

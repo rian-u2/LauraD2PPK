@@ -5,6 +5,18 @@
 ///////////////////////////////////////////////////////////////
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v3r0p1
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+19th June 2015 Thomas Latham
+
+* Factor out the JFit slave code from LauAbsFitModel into a new base class LauSimFitSlave
+
+19th June 2015 Thomas Latham
+
+* Fix check in LauIsobarDynamics::calcDPNormalisationScheme to avoid using hardcoded number
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r0
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 

@@ -103,10 +103,12 @@ int main( int argc, char** argv )
 
 	// Create the isobar model
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-	sigModel->addResonance("f_0(980)",    3, LauAbsResonance::Flatte); // resPairAmpInt = 3 => resonance mass is m12.
-	sigModel->addResonance("f_2(1270)",   3, LauAbsResonance::RelBW);
-	sigModel->addResonance("K*0(892)",    1, LauAbsResonance::RelBW);
-	sigModel->addResonance("K*0_0(1430)", 1, LauAbsResonance::LASS);
+	LauAbsResonance* res(0);
+	res = sigModel->addResonance("f_0(980)",    3, LauAbsResonance::Flatte); // resPairAmpInt = 3 => resonance mass is m12.
+	res = sigModel->addResonance("f_2(1270)",   3, LauAbsResonance::RelBW);
+	res = sigModel->addResonance("K*0(892)",    1, LauAbsResonance::RelBW);
+	res->fixMass(kFALSE);
+	res = sigModel->addResonance("K*0_0(1430)", 1, LauAbsResonance::LASS);
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
@@ -178,6 +180,9 @@ int main( int argc, char** argv )
 	// Switch on/off Extended ML Fit option
 	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
 	fitModel->doEMLFit(emlFit);
+
+	// Activate two-stage fit
+	fitModel->twoStageFit(kTRUE);
 
 	// Set the names of the files to read/write
 	TString dataFile("gen-"); dataFile += category; dataFile += ".root";

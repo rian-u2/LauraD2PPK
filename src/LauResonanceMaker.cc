@@ -138,6 +138,8 @@ void LauResonanceMaker::createResonanceVector()
 	positve = positve->createSharedParameterRecord("LASSNR+");
 	negatve = negatve->createSharedParameterRecord("LASSNR-");
 	resInfo_.push_back( neutral );
+	resInfo_.push_back( positve );
+	resInfo_.push_back( negatve );
 	// K*_2(1430)
 	neutral = new LauResonanceInfo("K*0_2(1430)",   1.4324,   0.109,    2,     0,       LauBlattWeisskopfFactor::Kstar   );
 	positve = new LauResonanceInfo("K*+_2(1430)",   1.4256,   0.0985,   2,     1,       LauBlattWeisskopfFactor::Kstar   );

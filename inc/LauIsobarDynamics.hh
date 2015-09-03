@@ -291,9 +291,16 @@ class LauIsobarDynamics {
 		*/
 		inline Double_t getEvtJacobian() const {return jacobian_;}
 
+		//! Retrieve the total intensity multiplied by the efficiency for the current event
+		/*!
+		    \return the total intensity multiplied by the efficiency for the current event
+		*/
+		inline Double_t getEvtIntensity() const {return ASq_;}
+
 		//! Retrieve the likelihood for the current event
 		/*!
-		    evtLike_ = totAmp_.abs2()*eff_/DPNorm_
+		    The likelihood is the normalised total intensity:
+		    evtLike_ = ASq_/DPNorm_
 
 		    \return the likelihood for the current event
 		*/

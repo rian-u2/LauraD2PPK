@@ -2188,8 +2188,7 @@ void LauCPFitModel::getEvtDPLikelihood(UInt_t iEvt)
 	if ( tagged_ ) {
 		if (curEvtCharge_==+1) {
 			posSigModel_->calcLikelihoodInfo(iEvt);
-			sigDPLike_ = posSigModel_->getEvtDPAmp().abs2();
-			sigDPLike_ *= posSigModel_->getEvtEff();
+			sigDPLike_ = posSigModel_->getEvtIntensity();
 
 			for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 				if (usingBkgnd_ == kTRUE) {
@@ -2200,8 +2199,7 @@ void LauCPFitModel::getEvtDPLikelihood(UInt_t iEvt)
 			}
 		} else {
 			negSigModel_->calcLikelihoodInfo(iEvt);
-			sigDPLike_ = negSigModel_->getEvtDPAmp().abs2();
-			sigDPLike_ *= negSigModel_->getEvtEff();
+			sigDPLike_ = negSigModel_->getEvtIntensity();
 
 			for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 				if (usingBkgnd_ == kTRUE) {
@@ -2215,8 +2213,7 @@ void LauCPFitModel::getEvtDPLikelihood(UInt_t iEvt)
 		posSigModel_->calcLikelihoodInfo(iEvt);
 		negSigModel_->calcLikelihoodInfo(iEvt);
 
-		sigDPLike_ = 0.5 * ( posSigModel_->getEvtDPAmp().abs2() * posSigModel_->getEvtEff() +
-				negSigModel_->getEvtDPAmp().abs2() * negSigModel_->getEvtEff() );
+		sigDPLike_ = 0.5 * ( posSigModel_->getEvtIntensity() + negSigModel_->getEvtIntensity() );
 
 		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 			if (usingBkgnd_ == kTRUE) {
@@ -2295,13 +2292,12 @@ Double_t LauCPFitModel::getEvtSCFDPLikelihood(UInt_t iEvt)
 
 			sigModel->calcLikelihoodInfo( nDataEvents + trueBin );
 
-			pTrue = sigModel->getEvtDPAmp().abs2() * sigModel->getEvtEff();
+			pTrue = sigModel->getEvtIntensity();
 		} else {
 			posSigModel_->calcLikelihoodInfo( nDataEvents + trueBin );
 			negSigModel_->calcLikelihoodInfo( nDataEvents + trueBin );
 
-			pTrue = 0.5 * ( posSigModel_->getEvtDPAmp().abs2() * posSigModel_->getEvtEff() +
-					negSigModel_->getEvtDPAmp().abs2() * negSigModel_->getEvtEff() );
+			pTrue = 0.5 * ( posSigModel_->getEvtIntensity() + negSigModel_->getEvtIntensity() );
 		}
 
 		// Get the cached SCF fraction (and jacobian if we're using the square DP)

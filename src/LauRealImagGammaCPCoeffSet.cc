@@ -272,7 +272,7 @@ LauParameter LauRealImagGammaCPCoeffSet::acp()
 LauAbsCoeffSet* LauRealImagGammaCPCoeffSet::createClone(const TString& newName, CloneOption cloneOption, Double_t constFactor)
 {
 	LauAbsCoeffSet* clone(0);
-	if ( cloneOption == All || cloneOption == TieRealPart || cloneOption == TieImagPart ) {
+	if ( cloneOption == All || cloneOption == TieRealPart || cloneOption == TieImagPart || cloneOption == TieCPPars ) {
 		clone = new LauRealImagGammaCPCoeffSet( *this, cloneOption, constFactor );
 		clone->name( newName );
 	} else {

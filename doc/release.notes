@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+7th September 2015 Mark Whitehead
+
+* Add the ability to Gaussian constrain parameters via the CoeffSet
+  - addGaussianConstraint added to LauAbsCoeffSet
+
 12th June 2015 Thomas Latham
 
 * Modifications to Belle-style nonresonant models

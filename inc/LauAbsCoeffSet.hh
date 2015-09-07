@@ -181,6 +181,14 @@ class LauAbsCoeffSet {
 		*/
 		void blindParameter(const TString& parName, const TString& blindingString, const Double_t width);
 
+		//! Add Gaussian constraint to the named parameter
+		/*!
+		    \param [in] parName the name of the parameter to adjust
+		    \param [in] mean the mean of the Gaussian constraint
+		    \param [in] width the width of the Gaussian constraint
+		*/
+		void addGaussianConstraint(const TString& parName, const Double_t mean, const Double_t width);
+
 		//! Set the allowed range for magnitude parameters
 		/*!
 		    \param [in] minMag the lower edge of the range

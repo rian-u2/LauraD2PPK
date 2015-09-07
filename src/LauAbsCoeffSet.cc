@@ -129,6 +129,17 @@ void LauAbsCoeffSet::blindParameter(const TString& parName, const TString& blind
 	par->blindParameter( blindingString, width );
 }
 
+void LauAbsCoeffSet::addGaussianConstraint(const TString& parName, const Double_t mean, const Double_t width)
+{
+	LauParameter* par = this->findParameter( parName );
+	if ( par == 0 ) {
+		std::cerr << "ERROR in LauAbsCoeffSet::addGaussianConstraint : Unable to find parameter \"" << parName << "\"" << std::endl;
+		return;
+	}
+
+	par->addGaussianConstraint( mean, width );
+}
+
 LauParameter* LauAbsCoeffSet::findParameter(const TString& parName)
 {
 	std::vector<LauParameter*> pars = this->getParameters();

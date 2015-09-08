@@ -159,6 +159,14 @@ class LauAbsCoeffSet {
 		*/
 		virtual void setParameterValue(const TString& parName, Double_t value, Bool_t init);
 
+		//! Set the error of the named parameter
+		/*!
+		    This is particularly useful for tuning the step size used by MINUIT
+		    \param [in] parName the name of the parameter to adjust
+		    \param [in] error the new error value for the parameter to take
+		*/
+		virtual void setParameterError(const TString& parName, Double_t error);
+
 		//! Set the named parameter to be fixed in the fit
 		/*!
 		    \param [in] parName the name of the parameter to adjust

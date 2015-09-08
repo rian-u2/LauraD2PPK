@@ -83,10 +83,13 @@ void LauMinuit::initialise( LauFitObject* fitObj, const std::vector<LauParameter
 		TString name = params_[i]->name();
 		Double_t initVal = params_[i]->initValue();
 		Double_t initErr = params_[i]->error();
-		if ( initVal == 0.0 ) {
-			initErr = defaultError;
-		} else if ( TMath::Abs(initErr/initVal) < 1e-6 ) {
-			initErr = TMath::Abs(defaultError * initVal);
+		// If we do not have a supplied estimate of the error, we should make a reasonable guess
+		if ( initErr == 0.0 ) {
+			if ( initVal == 0.0 ) {
+				initErr = defaultError;
+			} else if ( TMath::Abs(initErr/initVal) < 1e-6 ) {
+				initErr = TMath::Abs(defaultError * initVal);
+			}
 		}
 		Double_t minVal = params_[i]->minValue();
 		Double_t maxVal = params_[i]->maxValue();

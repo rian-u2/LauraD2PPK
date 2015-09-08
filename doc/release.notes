@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+8th September 2015 Mark Whitehead
+
+* Add the ability to modify the error of parameters via the CoeffSet
+  - setParameterError added to LauAbsCoeffSet
+* Tweak the handling of initial error values passed to MINUIT (to determine initial step size) in LauMinuit
+
+
 7th September 2015 Mark Whitehead
 
 * Add the ability to Gaussian constrain parameters via the CoeffSet

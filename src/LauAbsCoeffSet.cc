@@ -95,6 +95,16 @@ void LauAbsCoeffSet::setParameterValue(const TString& parName, Double_t value, B
 		par->initValue( value );
 	}
 }
+void LauAbsCoeffSet::setParameterError(const TString& parName, Double_t error)
+{
+	LauParameter* par = this->findParameter( parName );
+	if ( par == 0 ) {
+		std::cerr << "ERROR in LauAbsCoeffSet::setParameterError : Unable to find parameter \"" << parName << "\"" << std::endl;
+		return;
+	}
+
+	par->error( error );
+}
 
 void LauAbsCoeffSet::fixParameter(const TString& parName)
 {

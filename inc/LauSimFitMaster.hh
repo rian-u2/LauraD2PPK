@@ -15,7 +15,9 @@
 /*! \class LauSimFitMaster
     \brief The master process for simultaneous/combined fits
 
-    The interface between the slave processes and the minimiser.
+    Implementation of the JFit method described in arXiv:1409.5080 [physics.data-an].
+
+    This class acts as the interface between the slave processes and the minimiser.
 */
 
 #ifndef LAU_SIM_FIT_MASTER
@@ -25,10 +27,8 @@
 #include <vector>
 
 #include "TMatrixD.h"
-#include "TMessage.h"
 #include "TStopwatch.h"
 #include "TString.h"
-#include "TVectorDfwd.h"
 
 #include "LauFitObject.hh"
 
@@ -244,6 +244,9 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! Lists of indices for each slave
 		std::vector< std::vector<UInt_t> > slaveIndices_;
+
+		//! Lists of indices of free parameters for each slave
+		std::vector< std::vector<UInt_t> > slaveFreeIndices_;
 
 		//! Parameter values to send to the slaves
 		std::vector<Double_t*> vectorPar_;

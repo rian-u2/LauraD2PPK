@@ -60,6 +60,7 @@
 
 #include "LauFitObject.hh"
 #include "LauFormulaPar.hh"
+#include "LauSimFitSlave.hh"
 // LauSPlot included to get LauSPlot::NameSet typedef
 #include "LauSPlot.hh"
 
@@ -76,7 +77,7 @@ class LauGenNtuple;
 class LauAbsRValue;
 class LauParameter;
 
-class LauAbsFitModel : public LauFitObject {
+class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 	public:
 		//! Constructor
@@ -314,7 +315,7 @@ class LauAbsFitModel : public LauFitObject {
 			This function has to be public since it is called from the global FCN.
 			It should not be called otherwise!
 		*/
-		Double_t getTotNegLogLikelihood();
+		virtual Double_t getTotNegLogLikelihood();
 
 		//! Store constraint information for fit parameters
 		/*!
@@ -341,9 +342,6 @@ class LauAbsFitModel : public LauFitObject {
 		typedef std::vector<LauParameter> LauParameterList;
 		//! A type to store background classes 
 		typedef std::map<UInt_t,TString> LauBkgndClassMap;
-
-		//! Initialise socket connections for the slaves 
-		void initSockets();
 
 		//! Clear the vectors containing fit parameters
 		void clearFitParVectors();
@@ -399,6 +397,13 @@ class LauAbsFitModel : public LauFitObject {
 			\param [in] tableFileName name of the output tex file
 		*/	
 		void createFitToyMC(const TString& mcFileName, const TString& tableFileName);
+
+		//! Read in the data for the specified experiment
+		/*!
+			\param [in] exptIndex the experiment number to be read
+			\return the number of events read in
+		*/	
+		virtual UInt_t readExperimentData( const UInt_t exptIndex );
 
 		//! Store variables from the input file into the internal data storage
 		/*!
@@ -470,6 +475,26 @@ class LauAbsFitModel : public LauFitObject {
 
 		//! Update initial fit parameters if required
 		virtual void checkInitFitParams() = 0;
+
+		//! Package the initial fit parameters for transmission to the master
+		/*!
+			\param [out] array the array to be filled with the LauParameter objects
+		*/	
+		virtual void prepareInitialParArray( TObjArray& array );
+
+		//! Perform all finalisation actions
+		/*!
+			- Receive the results of the fit from the master
+			- Perform any finalisation routines
+		  	- Package the finalised fit parameters for transmission back to the master
+
+			\param [in] fitStat the convergence/error matrix status of the fit
+			\param [in] NLL the minimised negative log likelihood
+			\param [in] parsFromMaster the parameters at the fit minimum
+			\param [in] covMat the fit covariance matrix
+			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
+		*/	
+		virtual void finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
 
 		//! Write the results of the fit into the ntuple
 		/*!
@@ -855,6 +880,9 @@ class LauAbsFitModel : public LauFitObject {
 		//! The total fit timer
 		TStopwatch cumulTimer_;
 
+		//! The output table name
+		TString outputTableName_;
+
 		// Comparison toy MC related variables
 
 		//! The output file name for Toy MC 
@@ -874,19 +902,6 @@ class LauAbsFitModel : public LauFitObject {
 		TString sPlotTreeName_; 
 		//! Control the verbosity of the sFit
 		TString sPlotVerbosity_;
-
-		// Parallel fitting variables
-
-		//! A socket to enable parallel setup 
-		TSocket* sMaster_;
-		//! Message from master to the slaves
-		TMessage* messageFromMaster_;
-		//! Slave id number
-		UInt_t slaveId_;
-		//! The total number of slaves
-		UInt_t nSlaves_;
-		//! Parameter values array (for reading from the master)
-		Double_t* parValues_;
 
 		ClassDef(LauAbsFitModel,0) // Abstract interface to fit/toyMC model
 };

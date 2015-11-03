@@ -47,7 +47,7 @@ int main(const int argc, const  char ** argv)
 	ntupleName += ".root";
 
 	LauSimFitMaster master( nSlaves, port );
-	master.runSimFit( ntupleName, nExpt, firstExpt );
+	master.runSimFit( ntupleName, nExpt, firstExpt, kFALSE, kTRUE );
 
 	return EXIT_SUCCESS;
 }

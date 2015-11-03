@@ -74,18 +74,14 @@ LauAbsFitModel::LauAbsFitModel() :
 	doSFit_(kFALSE),
 	sWeightBranchName_(""),
 	sWeightScaleFactor_(1.0),
+	outputTableName_(""),
 	fitToyMCFileName_("fitToyMC.root"),
 	fitToyMCTableName_("fitToyMCTable"),
 	fitToyMCScale_(10),
 	fitToyMCPoissonSmear_(kFALSE),
 	sPlotFileName_(""),
 	sPlotTreeName_(""),
-	sPlotVerbosity_(""),
-	sMaster_(0),
-	messageFromMaster_(0),
-	slaveId_(-1),
-	nSlaves_(0),
-	parValues_(0)
+	sPlotVerbosity_("")
 {
 }
 
@@ -96,8 +92,6 @@ LauAbsFitModel::~LauAbsFitModel()
 	delete fitNtuple_; fitNtuple_ = 0;
 	delete genNtuple_; genNtuple_ = 0;
 	delete sPlotNtuple_; sPlotNtuple_ = 0;
-	delete sMaster_; sMaster_ = 0;
-	delete[] parValues_; parValues_ = 0;
 
 	// Remove the components created to apply constraints to fit parameters
 	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
@@ -163,22 +157,8 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 		const TString& histFileName, const TString& tableFileName,
 		const TString& addressMaster, const UInt_t portMaster)
 {
-	if ( sMaster_ != 0 ) {
-		std::cerr << "ERROR in LauAbsFitModel::runSlave : master socket already present" << std::endl;
-		return;
-	}
-
-	// Open connection to master
-	sMaster_ = new TSocket(addressMaster, portMaster);
-	sMaster_->Recv( messageFromMaster_ );
-	messageFromMaster_->ReadUInt( slaveId_ );
-	messageFromMaster_->ReadUInt( nSlaves_ );
-
-	delete messageFromMaster_;
-	messageFromMaster_ = 0;
-
-	std::cout << "INFO in LauAbsFitModel::runSlave : Established connection to master on port " << portMaster << std::endl;
-	std::cout << "                                 : We are slave " << slaveId_ << " of " << nSlaves_ << std::endl;
+	// Establish the connection to the master process
+	this->connectToMaster( addressMaster, portMaster );
 
 	// Initialise the fit par vectors. Each class that inherits from this one
 	// must implement this sensibly for all vectors specified in clearFitParVectors,
@@ -188,13 +168,6 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 	// NB call to addConParameters() is intentionally not included here cf.
 	// run() since this has to be dealt with by the master to avoid
 	// multiple inclusions of each penalty term
-
-	// Create array to efficiently exchange parameter values with master
-	nParams_ = fitVars_.size();
-	parValues_ = new Double_t[nParams_];
-	for ( UInt_t iPar(0); iPar < nParams_; ++iPar ) {
-		parValues_[iPar] = fitVars_[iPar]->initValue();
-	}
 
 	TString dataFileNameCopy(dataFileName);
 	TString dataTreeNameCopy(dataTreeName);
@@ -208,7 +181,7 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 
 	this->fitSlave(dataFileNameCopy, dataTreeNameCopy, histFileNameCopy, tableFileNameCopy);
 
-	std::cout << "INFO in LauAbsFitModel::runSlave : Fit slave " << slaveId_ << " has finished successfully" << std::endl;
+	std::cout << "INFO in LauAbsFitModel::runSlave : Fit slave " << this->slaveId() << " has finished successfully" << std::endl;
 }
 
 void LauAbsFitModel::doSFit( const TString& sWeightBranchName, Double_t scaleFactor )
@@ -504,10 +477,8 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 		// Start the timer to see how long each fit takes
 		timer_.Start();
 
-		inputFitData_->readExperimentData(iExpt_);
-		this->eventsPerExpt(inputFitData_->nEvents());
-
-		if (this->eventsPerExpt() < 1) {
+		UInt_t nEvents = this->readExperimentData( iExpt_ );
+		if (nEvents < 1) {
 			std::cerr << "WARNING in LauAbsFitModel::fit : Zero events in experiment " << iExpt_ << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
@@ -581,6 +552,8 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 
 void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTreeName, const TString& histFileName, const TString& tableFileNameBase)
 {
+	outputTableName_ = tableFileNameBase;
+
 	// Create and setup the fit results ntuple
 	std::cout << "INFO in LauAbsFitModel::fitSlave : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
@@ -595,205 +568,7 @@ void LauAbsFitModel::fitSlave(const TString& dataFileName, const TString& dataTr
 	}
 
 	// Now process the various requests from the master
-
-	TMessage messageToMaster(kMESS_ANY);
-
-	while ( kTRUE ) {
-
-		sMaster_->Recv( messageFromMaster_ );
-
-		if ( messageFromMaster_->What() == kMESS_STRING ) {
-
-			TString msgStr;
-			messageFromMaster_->ReadTString( msgStr );
-
-			std::cout << "INFO in LauAbsFitModel::fitSlave : Received message from master: " << msgStr << std::endl;
-
-			if ( msgStr == "Send Parameters" ) {
-
-				// Update initial fit parameters if required (e.g. if using random numbers).
-				this->checkInitFitParams();
-
-				// Send the fit parameters
-				TObjArray array;
-				for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
-					array.Add( *iter );
-				}
-
-				messageToMaster.Reset( kMESS_OBJECT );
-				messageToMaster.WriteObject( &array );
-				sMaster_->Send( messageToMaster );
-
-			} else if ( msgStr == "Read Expt" ) {
-
-				// Read the data for this experiment
-				messageFromMaster_->ReadUInt( iExpt_ );
-
-				inputFitData_->readExperimentData( iExpt_ );
-				UInt_t nEvent = inputFitData_->nEvents();
-				this->eventsPerExpt( nEvent );
-
-				if ( nEvent < 1 ) {
-					std::cerr << "WARNING in LauAbsFitModel::fitSlave : Zero events in experiment " << firstExpt_ << ", the master should skip this experiment..." << std::endl;
-				}
-
-				messageToMaster.Reset( kMESS_ANY );
-				messageToMaster.WriteUInt( slaveId_ );
-				messageToMaster.WriteUInt( nEvent );
-				sMaster_->Send( messageToMaster );
-
-			} else if ( msgStr == "Cache" ) {
-
-				// Perform the caching
-
-				this->cacheInputFitVars();
-
-				messageToMaster.Reset( kMESS_ANY );
-				messageToMaster.WriteUInt( slaveId_ );
-				messageToMaster.WriteBool( kTRUE );
-				sMaster_->Send( messageToMaster );
-
-			} else if ( msgStr == "Write Results" ) {
-
-				this->writeOutAllFitResults();
-
-				messageToMaster.Reset( kMESS_ANY );
-				messageToMaster.WriteUInt( slaveId_ );
-				messageToMaster.WriteBool( kTRUE );
-				sMaster_->Send( messageToMaster );
-
-			} else if ( msgStr == "Finish" ) {
-
-				std::cout << "INFO in LauAbsFitModel::fitSlave : Message from master to finish" << std::endl;
-				break;
-			} else {
-				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Unexpected message from master" << std::endl;
-				gSystem->Exit( EXIT_FAILURE );
-			}
-
-		} else if ( messageFromMaster_->What() == kMESS_OBJECT ) {
-
-			std::cout << "INFO in LauAbsFitModel::fitSlave : Received message from master: Finalise" << std::endl;
-
-			messageFromMaster_->ReadInt( fitStatus_ );
-			messageFromMaster_->ReadDouble( NLL_ );
-
-			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
-			if ( ! objarray ) {
-				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Error reading parameters from master" << std::endl;
-				gSystem->Exit( EXIT_FAILURE );
-			}
-
-			TMatrixD * covMat = dynamic_cast<TMatrixD*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
-			if ( ! covMat ) {
-				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Error reading covariance matrix from master" << std::endl;
-				gSystem->Exit( EXIT_FAILURE );
-			}
-			covMatrix_.Clear();
-			covMatrix_.ResizeTo( covMat->GetNrows(), covMat->GetNcols() );
-			covMatrix_.SetMatrixArray( covMat->GetMatrixArray() );
-			delete covMat; covMat = 0;
-
-
-			UInt_t nPars = objarray->GetEntries();
-
-			if ( nPars != nParams_ ) {
-				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Unexpected number of parameters received from master" << std::endl;
-				std::cerr << "                       ::fitSlave : Received " << nPars << " when expecting " << nParams_ << std::endl;
-				gSystem->Exit( EXIT_FAILURE );
-			}
-
-			for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
-				LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
-				if ( ! parameter ) {
-					std::cerr << "ERROR in LauAbsFitModel::fitSlave : Error reading parameter from master" << std::endl;
-					gSystem->Exit( EXIT_FAILURE );
-				}
-
-				if ( parameter->name() != fitVars_[iPar]->name() ) {
-					std::cerr << "ERROR in LauAbsFitModel::fitSlave : Error reading parameter from master" << std::endl;
-					gSystem->Exit( EXIT_FAILURE );
-				}
-
-				*(fitVars_[iPar]) = *parameter;
-			}
-
-			// Write the results into the ntuple
-			this->finaliseFitResults( tableFileNameBase );
-
-			// Store the per-event likelihood values
-			if ( this->writeSPlotData() ) {
-			  this->storePerEvtLlhds();
-			}
-
-			// Create a toy MC sample using the fitted parameters so that
-			// the user can compare the fit to the data.
-			if (compareFitData_ == kTRUE && fitStatus_ == 3) {
-			  this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
-			}
-
-			// Send the finalised parameters
-			TObjArray array;
-			for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
-				array.Add( *iter );
-			}
-
-			messageToMaster.Reset( kMESS_ANY );
-			messageToMaster.WriteUInt( slaveId_ );
-			messageToMaster.WriteBool( kTRUE );
-			messageToMaster.WriteObject( &array );
-			sMaster_->Send( messageToMaster );
-
-		} else if ( messageFromMaster_->What() == kMESS_ANY ) {
-
-			UInt_t nPars(0);
-			messageFromMaster_->ReadUInt( nPars );
-
-			if ( nPars != nParams_ ) {
-				std::cerr << "ERROR in LauAbsFitModel::fitSlave : Unexpected number of parameters received from master" << std::endl;
-				std::cerr << "                       ::fitSlave : Received " << nPars << " when expecting " << nParams_ << std::endl;
-				gSystem->Exit( EXIT_FAILURE );
-			}
-
-			messageFromMaster_->ReadFastArray( parValues_, nPars );
-
-			// Update all the floating parameters with their new values
-			// Also check if we have any parameters on which the DP integrals depend
-			// and whether they have changed since the last iteration
-			Bool_t recalcNorm(kFALSE);
-			const LauParameterPSet::const_iterator resVarsEnd = resVars_.end();
-			for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
-				if ( ! fitVars_[iPar]->fixed() ) {
-					if ( resVars_.find( fitVars_[iPar] ) != resVarsEnd ) {
-						if ( fitVars_[iPar]->value() != parValues_[iPar] ) {
-							recalcNorm = kTRUE;
-						}
-					}
-					fitVars_[iPar]->value( parValues_[iPar] );
-				}
-			}
-
-			// If so, then recalculate the normalisation
-			if (recalcNorm) {
-				this->recalculateNormalisation();
-			}
-
-			this->propagateParUpdates();
-
-			Double_t negLogLike = this->getTotNegLogLikelihood();
-
-			messageToMaster.Reset( kMESS_ANY );
-			messageToMaster.WriteDouble( negLogLike );   
-			sMaster_->Send( messageToMaster );         
-
-		} else {
-			std::cerr << "ERROR in LauAbsFitModel::fitSlave : Unexpected message type" << std::endl;
-			gSystem->Exit( EXIT_FAILURE );
-		}
-
-		delete messageFromMaster_;
-		messageFromMaster_ = 0;
-	}
+	this->processMasterRequests();
 }
 
 Bool_t LauAbsFitModel::cacheFitData(const TString& dataFileName, const TString& dataTreeName)
@@ -1285,5 +1060,90 @@ void LauAbsFitModel::printVarsInfo() const
 	for (UInt_t i(0); i<nParams_; ++i) {
 		std::cerr << " " << (fitVars_[i]->name()).Data() << " = " << fitVars_[i]->value() << std::endl;
 	}
+}
+
+void LauAbsFitModel::prepareInitialParArray( TObjArray& array )
+{
+	// Update initial fit parameters if required (e.g. if using random numbers).
+	this->checkInitFitParams();
+
+	// Store the total number of parameters and the number of free parameters
+	nParams_ = fitVars_.size();
+	nFreeParams_ = 0;
+
+	// Send the fit parameters
+	for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
+		if ( ! (*iter)->fixed() ) {
+			++nFreeParams_;
+		}
+		array.Add( *iter );
+	}
+}
+
+void LauAbsFitModel::finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
+{
+	// Copy the fit status information
+	fitStatus_ = fitStat;
+	NLL_ = NLL;
+
+	// Copy the contents of the covariance matrix
+	covMatrix_.Clear();
+	covMatrix_.ResizeTo( covMat->GetNrows(), covMat->GetNcols() );
+	covMatrix_.SetMatrixArray( covMat->GetMatrixArray() );
+
+	// Now process the parameters
+	UInt_t nPars = parsFromMaster->GetEntries();
+	if ( nPars != nParams_ ) {
+		std::cerr << "ERROR in LauAbsFitModel::finaliseResults : Unexpected number of parameters received from master" << std::endl;
+		std::cerr << "                                         : Received " << nPars << " when expecting " << nParams_ << std::endl;
+		gSystem->Exit( EXIT_FAILURE );
+	}
+
+	for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
+		LauParameter* parameter = dynamic_cast<LauParameter*>( (*parsFromMaster)[iPar] );
+		if ( ! parameter ) {
+			std::cerr << "ERROR in LauAbsFitModel::finaliseResults : Error reading parameter from master" << std::endl;
+			gSystem->Exit( EXIT_FAILURE );
+		}
+
+		if ( parameter->name() != fitVars_[iPar]->name() ) {
+			std::cerr << "ERROR in LauAbsFitModel::finaliseResults : Error reading parameter from master" << std::endl;
+			gSystem->Exit( EXIT_FAILURE );
+		}
+
+		*(fitVars_[iPar]) = *parameter;
+	}
+
+	// Write the results into the ntuple
+	this->finaliseFitResults( outputTableName_ );
+
+	// Store the per-event likelihood values
+	if ( this->writeSPlotData() ) {
+		this->storePerEvtLlhds();
+	}
+
+	// Create a toy MC sample using the fitted parameters so that
+	// the user can compare the fit to the data.
+	if (compareFitData_ == kTRUE && fitStatus_ == 3) {
+		this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
+	}
+
+	// Send the finalised fit parameters
+	for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
+		parsToMaster.Add( *iter );
+	}
+}
+
+UInt_t LauAbsFitModel::readExperimentData( const UInt_t exptIndex )
+{
+	// set our record of which experiment we're examining
+	iExpt_ = exptIndex;
+
+	// retrieve the data and find out how many events have been read
+	inputFitData_->readExperimentData( iExpt_ );
+	UInt_t nEvent = inputFitData_->nEvents();
+	this->eventsPerExpt( nEvent );
+
+	return nEvent;
 }
 

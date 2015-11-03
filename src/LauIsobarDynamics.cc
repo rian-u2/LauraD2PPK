@@ -987,7 +987,7 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	std::multimap<Double_t,Double_t> m12NarrowRes;
 	for ( std::vector<LauAbsResonance*>::const_iterator iter = sigResonances_.begin(); iter != sigResonances_.end(); ++iter ) {
 		Double_t width = (*iter)->getWidth();
-		if ( width > 0.020 || width == 0.0 ) { continue; }
+		if ( width > narrowWidth_ || width == 0.0 ) { continue; }
 		Double_t mass = (*iter)->getMass();
 		Int_t pair = (*iter)->getPairInt();
 		TString name = (*iter)->getResonanceName();

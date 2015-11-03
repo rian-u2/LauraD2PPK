@@ -64,6 +64,8 @@ void LauBelleSymNR::initialise()
 	if ( (model_ != LauAbsResonance::BelleSymNRNoInter) && (this->getSpin() != 0) ) {
 		std::cerr << "WARNING in LauBelleSymNR::initialise : Non-zero spin will be ignored for this model - perhaps you should use LauAbsResonance::BelleSymNRNoInter instead" << std::endl;
 	}
+
+	// NB we do not need to call ignoreMomenta(kTRUE) here since we use 1.0 for pProd in calcSpinTerm in the amplitude method
 }
 
 LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)

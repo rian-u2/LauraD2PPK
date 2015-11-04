@@ -340,11 +340,6 @@ void LauKinematics::genFlatSqDP(Double_t& mPrime, Double_t& thetaPrime) const
 	thetaPrime = LauRandom::randomFun()->Rndm();
 }
 
-Bool_t LauKinematics::withinDPLimits() const
-{
-	return this->withinDPLimits(m13Sq_,m23Sq_);
-}
-
 Bool_t LauKinematics::withinDPLimits(Double_t m13Sq, Double_t m23Sq) const
 {
 	// Find out whether the point (m13Sq,m23Sq) is within the limits of the

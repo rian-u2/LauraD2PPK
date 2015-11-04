@@ -55,6 +55,8 @@ class LauKinematics {
 
 		//! Update all kinematic quantities based on the DP co-ordinates m13Sq and m23Sq
 		/*!
+		    It can be useful to first check that the point is within the kinematic boundary (using LauKinematics::withinDPLimits) before calling this method.
+
 		    \param [in] m13Sq the invariant mass squared of daughters 1 and 3
 		    \param [in] m23Sq the invariant mass squared of daughters 2 and 3
 		*/
@@ -62,6 +64,8 @@ class LauKinematics {
 
 		//! Update all kinematic quantities based on the square DP co-ordinates m' and theta'
 		/*!
+		    It can be useful to first check that the point is within the kinematic boundary (using LauKinematics::withinSqDPLimits) before calling this method.
+
 		    \param [in] mPrime the m' co-ordinate
 		    \param [in] thetaPrime the theta' co-ordinate
 		*/
@@ -112,12 +116,6 @@ class LauKinematics {
 		    \return kTRUE if the event is inside the kinematic limit, kFALSE otherwise
 		*/
 		Bool_t withinDPLimits2(Double_t m13Sq, Double_t m23Sq) const;
-
-		//! Check whether the currently set (m13Sq,m23Sq) point is within the kinematic limits of the Dalitz plot
-		/*!
-		    \return kTRUE if the event is inside the kinematic limit, kFALSE otherwise
-		*/
-		Bool_t withinDPLimits() const;
 
 		//! Check whether a given (m',theta') point is within the kinematic limits of the Dalitz plot
 		/*!

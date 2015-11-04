@@ -65,6 +65,13 @@ class LauAbsResonance {
 			GaussIncoh		/*!< an incoherent Gaussian shape */
 		};
 
+		//! Is the resonance model incoherent?
+		/*!
+			\param [in] model the resonance model
+			\return true if the model is incoherent
+		*/
+		static bool isIncoherentModel(LauResonanceModel model);
+
 		//! Constructor (for use by standard resonances)
 		/*!
 			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.

@@ -667,6 +667,11 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	// (1 => m_23, 2 => m_13, 3 => m_12), i.e. the bachelor track number.
 	// The third argument resType specifies whether the resonance is a Breit-Wigner (BW)
 	// Relativistic Breit-Wigner (RelBW) or Flatte distribution (Flatte), for example.
+	
+	if( LauAbsResonance::isIncoherentModel(resType) == true ) {
+		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Resonance type \""<<resType<<"\" not allowed for a coherent resonance"<<std::endl;
+		return 0;
+	}
 
 	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
 	LauAbsResonance *theResonance = resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType, bwCategory, bwType);
@@ -726,6 +731,11 @@ LauAbsResonance* LauIsobarDynamics::addIncoherentResonance(const TString& resNam
 	// (1 => m_23, 2 => m_13, 3 => m_12), i.e. the bachelor track number.
 	// The third argument resType specifies the shape of the resonance 
 	// Gaussian (GaussIncoh), for example.
+	
+	if( LauAbsResonance::isIncoherentModel(resType) == false ) {
+		std::cerr<<"ERROR in LauIsobarDynamics::addIncohResonance : Resonance type \""<<resType<<"\" not allowed for an incoherent resonance"<<std::endl;
+		return 0;
+	}
 
 	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
 	LauAbsIncohRes *theResonance = dynamic_cast<LauAbsIncohRes*>( resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType) );

@@ -25,6 +25,37 @@
 
 ClassImp(LauAbsResonance)
 
+bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
+	switch(model) {
+		case BW:
+		case RelBW:
+		case GS:
+		case Flatte:
+		case Sigma:
+		case Kappa:
+		case Dabba:
+		case LASS:
+		case LASS_BW:
+		case LASS_NR:
+		case KMatrix:
+		case FlatNR:
+		case NRModel:
+		case BelleNR:
+		case PowerLawNR:
+		case BelleSymNR:
+		case BelleSymNRNoInter:
+		case TaylorNR:
+		case PolNR:
+		case MIPW_MagPhase: 
+		case MIPW_RealImag: 
+		case MIPW_Sym_MagPhase:
+		case MIPW_Sym_RealImag:
+			break;
+		case GaussIncoh:
+			return true;
+	}
+	return false;
+}
 
 // Constructor
 LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

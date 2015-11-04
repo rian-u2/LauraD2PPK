@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+4th November 2015 Daniel Craik
+
+* Add checks to LauIsobarDynamics::addResonance and LauIsobarDynamics::addIncohResonance to stop the wrong type of LauResonanceModel being used
+  - LauAbsResonance::isIncoherentModel method added to identify incoherent models
+
 8th September 2015 Mark Whitehead
 
 * Add the ability to modify the error of parameters via the CoeffSet

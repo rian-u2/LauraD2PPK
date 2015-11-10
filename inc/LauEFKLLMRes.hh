@@ -92,21 +92,21 @@ class LauEFKLLMRes : public LauAbsResonance {
 		virtual const std::vector<LauParameter*>& getFloatingParameters();
 
 	protected:
-		//! Set the effective range parameter value
+		//! Set the power of the mass dependence
 		/*!
-			\param [in] r the new effective range parameter value
+			\param [in] massFactor the new power of the mass dependence
 		*/
 		void setMassFactor(const Double_t massFactor);
 
-		//! Get the scattering length range parameter
+		//! Get the power of the mass dependence
 		/*!
-			\return the scattering length parameter
+			\return the power of the mass dependence
 		*/
 		Double_t getMassFactor() const {return (massFactor_!=0) ? massFactor_->unblindValue() : 0.0;}
 
-		//! See if the effective range parameter is fixed or floating
+		//! See if the mass factor parameter is fixed or floating
 		/*!
-			\return kTRUE if the effective range parameter is fixed, kFALSE otherwise
+			\return kTRUE if the mass factor parameter is fixed, kFALSE otherwise
 		*/
 		Bool_t fixMassFactor() const {return (massFactor_!=0) ? massFactor_->fixed() : kTRUE;}
 
@@ -118,12 +118,15 @@ class LauEFKLLMRes : public LauAbsResonance {
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
 	private:
+		//! Spline describing the magnitude variation of the form-factor
 		static Lau1DCubicSpline* magSpline_;
+		//! Spline describing the phase variation of the form-factor
 		static Lau1DCubicSpline* phaseSpline_;
 
+		//! The power of the mass dependence
 		LauParameter* massFactor_;
 
-		ClassDef(LauEFKLLMRes,0) // Breit-Wigner resonance model
+		ClassDef(LauEFKLLMRes,0) // EFKLLM resonance model
 
 };
 

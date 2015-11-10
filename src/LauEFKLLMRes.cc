@@ -21,7 +21,7 @@
 #include "LauTextFileParser.hh"
 
 
-ClassImp(LauEFKLLMRes)
+ClassImp(LauEFKLLMRes);
 
 
 Lau1DCubicSpline* LauEFKLLMRes::magSpline_   = 0;

@@ -54,6 +54,7 @@
 #pragma link C++ class LauDPDepMapPdf;
 #pragma link C++ class LauDPDepSumPdf;
 #pragma link C++ class LauEffModel;
+#pragma link C++ class LauEFKLLMRes;
 #pragma link C++ class LauEmbeddedData;
 #pragma link C++ class LauExponentialPdf;
 #pragma link C++ class LauFitDataTree;

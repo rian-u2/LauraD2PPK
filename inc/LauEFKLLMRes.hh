@@ -1,0 +1,130 @@
+
+// Copyright University of Warwick 2004 - 2015.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+// Authors:
+// Thomas Latham
+// John Back
+// Paul Harrison
+
+/*! \file LauEFKLLMRes.hh
+    \brief File containing declaration of LauEFKLLMRes class.
+*/
+
+/*! \class LauEFKLLMRes
+    \brief Class for defining the EFKLLM K-pi S-wave model
+
+    Class for defining the EFKLLM form-factor model for the K-pi S-wave.
+    The model consists of a tabulated form-factor, which is interpolated using cubic splines (one for magnitude values and one for phase values), multiplied by a mass-dependence (e.g. constant, 1/m^2, etc.).
+    The massFactor resonance parameter is the power of the mass dependence - defaults to zero, i.e. constant.
+    For more details see B. El-Bennich et al. Phys. Rev. D 79, 094005 (2009), arXiv:0902.3645 [hep-ph].
+    (The acronym EFKLLM is constructed from the surnames of the authors of the above paper.)
+*/
+
+#ifndef LAU_EFKLLM_RES
+#define LAU_EFKLLM_RES
+
+#include "TString.h"
+
+#include "LauComplex.hh"
+#include "LauAbsResonance.hh"
+
+class Lau1DCubicSpline;
+
+
+class LauEFKLLMRes : public LauAbsResonance {
+
+	public:
+		//! Constructor
+		/*!
+			\param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
+			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
+			\param [in] daughters the daughter particles
+		*/
+		LauEFKLLMRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
+
+		//! Destructor
+		virtual ~LauEFKLLMRes();
+
+		//! Read the form factor information from text file
+		/*!
+		    Creates the splines from the tabulated form factor data.
+		    These are shared between all instances of this class.
+
+		    \param [in] inputFile the name of the file to be read
+		*/
+		static void setupFormFactor(const TString& inputFile);
+
+		//! Initialise the model
+		virtual void initialise();
+
+		//! Get the resonance model type
+                /*!
+                        \return the resonance model type
+                */
+		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::EFKLLM;}
+		
+		//! Set value of a resonance parameter
+		/*!
+			\param [in] name the name of the parameter to be changed
+			\param [in] value the new parameter value
+		*/
+		virtual void setResonanceParameter(const TString& name, const Double_t value);
+
+		//! Allow the various parameters to float in the fit
+		/*!
+			\param [in] name the name of the parameter to be floated
+		*/
+		virtual void floatResonanceParameter(const TString& name);
+
+		//! Access the given resonance parameter
+		/*!
+			\param [in] name the name of the parameter
+			\return the corresponding parameter
+		 */
+		virtual LauParameter* getResonanceParameter(const TString& name);
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
+
+	protected:
+		//! Set the effective range parameter value
+		/*!
+			\param [in] r the new effective range parameter value
+		*/
+		void setMassFactor(const Double_t massFactor);
+
+		//! Get the scattering length range parameter
+		/*!
+			\return the scattering length parameter
+		*/
+		Double_t getMassFactor() const {return (massFactor_!=0) ? massFactor_->unblindValue() : 0.0;}
+
+		//! See if the effective range parameter is fixed or floating
+		/*!
+			\return kTRUE if the effective range parameter is fixed, kFALSE otherwise
+		*/
+		Bool_t fixMassFactor() const {return (massFactor_!=0) ? massFactor_->fixed() : kTRUE;}
+
+		//! Complex resonant amplitude
+		/*!
+			\param [in] mass appropriate invariant mass for the resonance
+			\param [in] spinTerm Zemach spin term
+		*/
+		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
+
+	private:
+		static Lau1DCubicSpline* magSpline_;
+		static Lau1DCubicSpline* phaseSpline_;
+
+		LauParameter* massFactor_;
+
+		ClassDef(LauEFKLLMRes,0) // Breit-Wigner resonance model
+
+};
+
+#endif

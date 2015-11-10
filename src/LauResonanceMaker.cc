@@ -20,6 +20,7 @@
 #include "LauBreitWignerRes.hh"
 #include "LauDabbaRes.hh"
 #include "LauDaughters.hh"
+#include "LauEFKLLMRes.hh"
 #include "LauFlatteRes.hh"
 #include "LauFlatNR.hh"
 #include "LauGaussIncohRes.hh"
@@ -530,169 +531,162 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 	// Now construct the resonnace using the right type.
 	// If we don't recognise the resonance model name, just use a simple Breit-Wigner.
 
-	if ( resType == LauAbsResonance::Flatte ) {
+	switch ( resType ) {
 
-		// Flatte distribution - coupled channel Breit-Wigner
-		std::cout<<"                                        : Using Flatte lineshape. "<<std::endl;
-		theResonance = 
-			new LauFlatteRes(resInfo, resPairAmpInt, daughters);
+		case LauAbsResonance::BW :
+			// Simple non-relativistic Breit-Wigner
+			std::cout<<"                                        : Using simple Breit-Wigner lineshape. "<<std::endl;
+			theResonance = new LauBreitWignerRes(resInfo, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::RelBW ) {
+		case LauAbsResonance::RelBW :
+			{
+			// Relativistic Breit-Wigner with Blatt-Weisskopf factors.
+			std::cout<<"                                        : Using relativistic Breit-Wigner lineshape. "<<std::endl;
+			theResonance = new LauRelBreitWignerRes(resInfo, resPairAmpInt, daughters);
+			LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
+			LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
+			if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
+				resCategory = resInfo->getBWCategory();
+			}
+			LauBlattWeisskopfFactor* resBWFactor = this->getBWFactor( resCategory, resInfo, bwType );
+			LauBlattWeisskopfFactor* parBWFactor = this->getBWFactor( parCategory, resInfo, bwType );
+			theResonance->setBarrierRadii( resBWFactor, parBWFactor );
+			break;
+			}
 
-		// Relativistic Breit-Wigner with Blatt-Weisskopf factors.
-		std::cout<<"                                        : Using relativistic Breit-Wigner lineshape. "<<std::endl;
-		theResonance = 
-			new LauRelBreitWignerRes(resInfo, resPairAmpInt, daughters);
+		case LauAbsResonance::GS :
+			{
+			// Gounaris-Sakurai function to try and model the rho(770) better
+			std::cout<<"                                        : Using Gounaris-Sakurai lineshape. "<<std::endl;
+			theResonance = new LauGounarisSakuraiRes(resInfo, resPairAmpInt, daughters);		  
+			LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
+			LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
+			if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
+				resCategory = resInfo->getBWCategory();
+			}
+			LauBlattWeisskopfFactor* resBWFactor = this->getBWFactor( resCategory, resInfo, bwType );
+			LauBlattWeisskopfFactor* parBWFactor = this->getBWFactor( parCategory, resInfo, bwType );
+			theResonance->setBarrierRadii( resBWFactor, parBWFactor );
+			break;
+			}
 
-		LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
-		LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
-		if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
-			resCategory = resInfo->getBWCategory();
-		}
-		LauBlattWeisskopfFactor* resBWFactor = this->getBWFactor( resCategory, resInfo, bwType );
-		LauBlattWeisskopfFactor* parBWFactor = this->getBWFactor( parCategory, resInfo, bwType );
-		theResonance->setBarrierRadii( resBWFactor, parBWFactor );
+		case LauAbsResonance::Flatte :
+			// Flatte distribution - coupled channel Breit-Wigner
+			std::cout<<"                                        : Using Flatte lineshape. "<<std::endl;
+			theResonance = new LauFlatteRes(resInfo, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::Dabba ) {
+		case LauAbsResonance::Sigma :
+			// Sigma model - should only be used for the pi-pi system
+			std::cout<<"                                        : Using Sigma lineshape. "<<std::endl;
+			theResonance = new LauSigmaRes(resInfo, resPairAmpInt, daughters);
+			break;
 
-		// Dabba model - should only be used for the D-pi system
-		std::cout<<"                                        : Using Dabba lineshape. "<<std::endl;
-		theResonance = 
-			new LauDabbaRes(resInfo, resPairAmpInt, daughters);
+		case LauAbsResonance::Kappa :
+			// Kappa model - should only be used for the K-pi system
+			std::cout<<"                                        : Using Kappa lineshape. "<<std::endl;
+			theResonance = new LauKappaRes(resInfo, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::Kappa ) {
+		case LauAbsResonance::Dabba :
+			// Dabba model - should only be used for the D-pi system
+			std::cout<<"                                        : Using Dabba lineshape. "<<std::endl;
+			theResonance = new LauDabbaRes(resInfo, resPairAmpInt, daughters);
+			break;
 
-		// Kappa model - should only be used for the K-pi system
-		std::cout<<"                                        : Using Kappa lineshape. "<<std::endl;
-		theResonance = 
-			new LauKappaRes(resInfo, resPairAmpInt, daughters);
+		case LauAbsResonance::LASS :
+			// LASS function to try and model the K-pi S-wave better
+			std::cout<<"                                        : Using LASS lineshape. "<<std::endl;
+			theResonance = new LauLASSRes(resInfo, resPairAmpInt, daughters);		  
+			break;
 
-	} else if ( resType == LauAbsResonance::Sigma ) {
+		case LauAbsResonance::LASS_BW :
+			// LASS function to try and model the K-pi S-wave better
+			std::cout<<"                                        : Using LASS lineshape (resonant part only). "<<std::endl;
+			theResonance = new LauLASSBWRes(resInfo, resPairAmpInt, daughters);		  
+			break;
 
-		// Sigma model - should only be used for the pi-pi system
-		std::cout<<"                                        : Using Sigma lineshape. "<<std::endl;
-		theResonance = 
-			new LauSigmaRes(resInfo, resPairAmpInt, daughters);
+		case LauAbsResonance::LASS_NR :
+			// LASS function to try and model the K-pi S-wave better
+			std::cout<<"                                        : Using LASS lineshape (nonresonant part only). "<<std::endl;
+			theResonance = new LauLASSNRRes(resInfo, resPairAmpInt, daughters);		  
+			break;
 
-	} else if ( resType == LauAbsResonance::LASS_BW ) {
+		case LauAbsResonance::EFKLLM :
+			// EFKLLM form-factor description of the K-pi S-wave
+			std::cout<<"                                        : Using EFKLLM lineshape. "<<std::endl;
+			theResonance = new LauEFKLLMRes(resInfo, resPairAmpInt, daughters);		  
+			break;
 
-		// LASS function to try and model the K-pi S-wave better
-		std::cout<<"                                        : Using LASS lineshape (resonant part only). "<<std::endl;
-		theResonance = 
-			new LauLASSBWRes(resInfo, resPairAmpInt, daughters);		  
+		case LauAbsResonance::FlatNR :
+			// uniform NR amplitude - arguments are there to preserve the interface
+			std::cout<<"                                        : Using uniform NR lineshape. "<<std::endl;
+			// we override resPairAmpInt here
+			theResonance = new LauFlatNR(resInfo, 0, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::LASS_NR ) {
+		case LauAbsResonance::NRModel :
+			// NR amplitude model - arguments are there to preserve the interface
+			std::cout<<"                                        : Using NR-model lineshape. "<<std::endl;
+			// we override resPairAmpInt here
+			theResonance = new LauNRAmplitude(resInfo, 0, daughters);
+			break;
 
-		// LASS function to try and model the K-pi S-wave better
-		std::cout<<"                                        : Using LASS lineshape (nonresonant part only). "<<std::endl;
-		theResonance = 
-			new LauLASSNRRes(resInfo, resPairAmpInt, daughters);		  
+		case LauAbsResonance::BelleNR :
+		case LauAbsResonance::PowerLawNR :
+			// Belle NR amplitude model - arguments are there to preserve the interface
+			std::cout<<"                                        : Using Belle NR lineshape. "<<std::endl;
+			theResonance = new LauBelleNR(resInfo, resType, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::LASS ) {
+		case LauAbsResonance::BelleSymNR :
+		case LauAbsResonance::BelleSymNRNoInter :
+		case LauAbsResonance::TaylorNR :
+			// Belle NR amplitude model - arguments are there to preserve the interface
+			std::cout<<"                                        : Using Belle symmetric NR lineshape. "<<std::endl;
+			theResonance = new LauBelleSymNR(resInfo, resType, resPairAmpInt, daughters);
+			break;
 
-		// LASS function to try and model the K-pi S-wave better
-		std::cout<<"                                        : Using LASS lineshape. "<<std::endl;
-		theResonance = 
-			new LauLASSRes(resInfo, resPairAmpInt, daughters);		  
+		case LauAbsResonance::PolNR :
+			// Polynomial NR amplitude model - arguments are there to preserve the interface
+			std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
+			theResonance = new LauPolNR(resInfo, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::GS ) {
+		case LauAbsResonance::MIPW_MagPhase :
+			// Model independent partial wave
+			std::cout<<"                                        : Using model independent partial wave lineshape (magnitude and phase). "<<std::endl;
+			theResonance = new LauModIndPartWaveMagPhase(resInfo, resPairAmpInt, daughters);
+			break;
 
-		// Gounaris-Sakurai function to try and model the rho(770) better
-		std::cout<<"                                        : Using Gounaris-Sakurai lineshape. "<<std::endl;
-		theResonance = 
-			new LauGounarisSakuraiRes(resInfo, resPairAmpInt, daughters);		  
+		case LauAbsResonance::MIPW_RealImag :
+			// Model independent partial wave
+			std::cout<<"                                        : Using model independent partial wave lineshape (real and imaginary part). "<<std::endl;
+			theResonance = new LauModIndPartWaveRealImag(resInfo, resPairAmpInt, daughters);
+			break;
 
-		LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
-		LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
-		if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
-			resCategory = resInfo->getBWCategory();
-		}
-		LauBlattWeisskopfFactor* resBWFactor = this->getBWFactor( resCategory, resInfo, bwType );
-		LauBlattWeisskopfFactor* parBWFactor = this->getBWFactor( parCategory, resInfo, bwType );
-		theResonance->setBarrierRadii( resBWFactor, parBWFactor );
+		case LauAbsResonance::MIPW_Sym_MagPhase :
+			// Model independent partial wave
+			std::cout<<"                                        : Using model independent partial wave lineshape for symmetric DPs (magnitude and phase). "<<std::endl;
+			theResonance = new LauModIndPartWaveSymMagPhase(resInfo, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::FlatNR ) {
+		case LauAbsResonance::MIPW_Sym_RealImag :
+			// Model independent partial wave
+			std::cout<<"                                        : Using model independent partial wave lineshape for symmetric DPs (real and imaginary part). "<<std::endl;
+			theResonance = new LauModIndPartWaveSymRealImag(resInfo, resPairAmpInt, daughters);
+			break;
 
-		// uniform NR amplitude - arguments are there to preserve the interface
-		std::cout<<"                                        : Using uniform NR lineshape. "<<std::endl;
-		// we override resPairAmpInt here
-		theResonance =
-			new LauFlatNR(resInfo, 0, daughters);
+		case LauAbsResonance::GaussIncoh :
+			// Incoherent Gaussian
+			std::cout<<"                                        : Using incoherent Gaussian lineshape. "<<std::endl;
+			theResonance = new LauGaussIncohRes(resInfo, resPairAmpInt, daughters);
+			break;
 
-	} else if ( resType == LauAbsResonance::NRModel ) {
-
-		// NR amplitude model - arguments are there to preserve the interface
-		std::cout<<"                                        : Using NR-model lineshape. "<<std::endl;
-		// we override resPairAmpInt here
-		theResonance =
-			new LauNRAmplitude(resInfo, 0, daughters);
-
-	} else if ( resType == LauAbsResonance::BelleSymNR || resType == LauAbsResonance::BelleSymNRNoInter || resType == LauAbsResonance::TaylorNR ) {
-
-		// Belle NR amplitude model - arguments are there to preserve the interface
-		std::cout<<"                                        : Using Belle symmetric NR lineshape. "<<std::endl;
-		theResonance =
-			new LauBelleSymNR(resInfo, resType, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::BelleNR || resType == LauAbsResonance::PowerLawNR ) {
-
-		// Belle NR amplitude model - arguments are there to preserve the interface
-		std::cout<<"                                        : Using Belle NR lineshape. "<<std::endl;
-		theResonance =
-			new LauBelleNR(resInfo, resType, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::PolNR ) {
-
-		// Polynomial NR amplitude model - arguments are there to preserve the interface
-		std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
-		theResonance =
-			new LauPolNR(resInfo, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::MIPW_MagPhase ) {
-
-		// Model independent partial wave
-		std::cout<<"                                        : Using model independent partial wave lineshape (magnitude and phase). "<<std::endl;
-		theResonance =
-			new LauModIndPartWaveMagPhase(resInfo, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::MIPW_RealImag ) {
-
-		// Model independent partial wave
-		std::cout<<"                                        : Using model independent partial wave lineshape (real and imaginary part). "<<std::endl;
-		theResonance =
-			new LauModIndPartWaveRealImag(resInfo, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::MIPW_Sym_MagPhase ) {
-
-		// Model independent partial wave
-		std::cout<<"                                        : Using model independent partial wave lineshape for symmetric DPs (magnitude and phase). "<<std::endl;
-		theResonance =
-			new LauModIndPartWaveSymMagPhase(resInfo, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::MIPW_Sym_RealImag ) {
-
-		// Model independent partial wave
-		std::cout<<"                                        : Using model independent partial wave lineshape for symmetric DPs (real and imaginary part). "<<std::endl;
-		theResonance =
-			new LauModIndPartWaveSymRealImag(resInfo, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::GaussIncoh ) {
-
-		// Incoherent Gaussian
-		std::cout<<"                                        : Using incoherent Gaussian lineshape. "<<std::endl;
-		theResonance =
-			new LauGaussIncohRes(resInfo, resPairAmpInt, daughters);
-
-	} else if ( resType == LauAbsResonance::BW ) {
-
-		// Simple non-relativistic Breit-Wigner
-		std::cout<<"                                        : Using simple Breit-Wigner lineshape. "<<std::endl;
-		theResonance = 
-			new LauBreitWignerRes(resInfo, resPairAmpInt, daughters);
-
-	} else {
-		std::cerr << "ERROR in LauResonanceMaker::getResonance : Could not match resonace type \"" << resType << "\"." << std::endl;
-		return 0;
+		default :
+			std::cerr << "ERROR in LauResonanceMaker::getResonance : Could not match resonace type \"" << resType << "\"." << std::endl;
+			break;
 	}
 
 	return theResonance;

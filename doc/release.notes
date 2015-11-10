@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+10th November 2015 Thomas Latham & Daniel Craik
+
+* Add the EFKLL form-factor model for the Kpi S-wave and an example using this lineshape
+* Modify LauResonanceMaker::getResonance to use a switch for greater clarity and easier checking on missing cases
+
 4th November 2015 Daniel Craik
 
 * Add checks to LauIsobarDynamics::addResonance and LauIsobarDynamics::addIncohResonance to stop the wrong type of LauResonanceModel being used

@@ -49,6 +49,7 @@ class LauAbsResonance {
 			LASS,			/*!< the LASS amplitude to describe the Kpi S-wave */
 			LASS_BW,		/*!< the resonant part of the LASS amplitude */
 			LASS_NR,		/*!< the nonresonant part of the LASS amplitude */
+			EFKLLM,			/*!< a form-factor-based description of the Kpi S-wave */
 			KMatrix,		/*!< S-wave description using K-matrix and P-vector */
 			FlatNR,			/*!< a uniform nonresonant amplitude */
 			NRModel,		/*!< a theoretical model nonresonant amplitude */

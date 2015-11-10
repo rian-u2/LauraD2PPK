@@ -37,6 +37,7 @@ bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
 		case LASS:
 		case LASS_BW:
 		case LASS_NR:
+		case EFKLLM:
 		case KMatrix:
 		case FlatNR:
 		case NRModel:

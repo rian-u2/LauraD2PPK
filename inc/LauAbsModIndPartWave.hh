@@ -121,6 +121,13 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		*/
 		virtual void createAmpParameters(const UInt_t iKnot) = 0;
 
+		//! Method to set the type of interpolation used for the splines
+		/*!
+		    \param [in] type1 the type of interpolation for the first spline
+		    \param [in] type2 the type of interpolation for the second spline
+		*/
+		void setSplineType(Lau1DCubicSpline::LauSplineType type1, Lau1DCubicSpline::LauSplineType type2);
+
 		//! Method to set the boundary conditions of the splines
 		/*!
 		    \param [in] leftBound1 the type of boundary condition for the left edge of the first spline
@@ -191,6 +198,11 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		Lau1DCubicSpline* spline1_;
 		//! The spline used to interpolate the values of the second real parameter
 		Lau1DCubicSpline* spline2_;
+
+		//! The type of interpolation used for the first spline
+		Lau1DCubicSpline::LauSplineType type1_;
+		//! The type of interpolation used for the second spline
+		Lau1DCubicSpline::LauSplineType type2_;
 
 		//! The lower boundary condition type for the first spline
 		Lau1DCubicSpline::LauSplineBoundaryType leftBound1_;

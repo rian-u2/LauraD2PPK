@@ -52,6 +52,15 @@ class LauModIndPartWaveMagPhase : public LauAbsModIndPartWave {
 		*/
 		virtual void setKnotAmp(const UInt_t knot, const Double_t magVal, const Double_t phaseVal, const Bool_t fixMagnitude, const Bool_t fixPhase);
 
+		//! Method to set the type of interpolation used for the splines
+		/*!
+		    \param [in] magType the type of interpolation for the magnitude spline
+		    \param [in] phaseType the type of interpolation for the phase spline
+		*/
+		void setType(Lau1DCubicSpline::LauSplineType magType, Lau1DCubicSpline::LauSplineType phaseType) {
+			this->setSplineType(magType,phaseType);
+		}
+
 		//! Method to set the boundary conditions of the splines
 		/*!
 		    \param [in] magLeftBound the type of boundary condition for the left edge of the magnitude spline

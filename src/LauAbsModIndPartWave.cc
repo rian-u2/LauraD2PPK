@@ -28,6 +28,8 @@ LauAbsModIndPartWave::LauAbsModIndPartWave(LauResonanceInfo* resInfo, Int_t resP
 	nKnots_(0),
 	spline1_(0),
 	spline2_(0),
+	type1_(Lau1DCubicSpline::StandardSpline),
+	type2_(Lau1DCubicSpline::StandardSpline),
 	leftBound1_(Lau1DCubicSpline::NotAKnot),
 	rightBound1_(Lau1DCubicSpline::NotAKnot),
 	leftBound2_(Lau1DCubicSpline::NotAKnot),
@@ -149,8 +151,8 @@ void LauAbsModIndPartWave::initialise()
 		amp2Vals_[i] = amp2Pars_[i]->unblindValue();
 	}
 
-	spline1_ = new Lau1DCubicSpline(masses_, amp1Vals_, leftBound1_, rightBound1_, leftGrad1_, rightGrad1_);
-	spline2_ = new Lau1DCubicSpline(masses_, amp2Vals_, leftBound2_, rightBound2_, leftGrad2_, rightGrad2_);
+	spline1_ = new Lau1DCubicSpline(masses_, amp1Vals_, type1_, leftBound1_, rightBound1_, leftGrad1_, rightGrad1_);
+	spline2_ = new Lau1DCubicSpline(masses_, amp2Vals_, type2_, leftBound2_, rightBound2_, leftGrad2_, rightGrad2_);
 }
 
 LauComplex LauAbsModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)
@@ -188,6 +190,12 @@ LauComplex LauAbsModIndPartWave::resAmp(Double_t mass, Double_t spinTerm)
 	amp_.rescale( spinTerm );
 
 	return amp_;
+}
+
+void LauAbsModIndPartWave::setSplineType(Lau1DCubicSpline::LauSplineType type1, Lau1DCubicSpline::LauSplineType type2)
+{
+	type1_ = type1;
+	type2_ = type2;
 }
 
 void LauAbsModIndPartWave::setSplineBoundaryConditions(Lau1DCubicSpline::LauSplineBoundaryType leftBound1, 

@@ -22,12 +22,14 @@
 #include "Lau1DCubicSpline.hh"
 
 Lau1DCubicSpline::Lau1DCubicSpline(const std::vector<Double_t>& xs, const std::vector<Double_t>& ys,
+				   LauSplineType type, 
 				   LauSplineBoundaryType leftBound, 
 				   LauSplineBoundaryType rightBound,
 				   Double_t dydx0, Double_t dydxn) :
 	nKnots_(xs.size()),
 	x_(xs),
 	y_(ys),
+	type_(type),
 	leftBound_(leftBound),
 	rightBound_(rightBound),
 	dydx0_(dydx0),
@@ -63,6 +65,10 @@ Double_t Lau1DCubicSpline::evaluate(Double_t x) const
 	Double_t yLow  = y_[cell];
 	Double_t yHigh = y_[cell+1];
 
+	if(type_ == Lau1DCubicSpline::LinearInterpolation) {
+		return yHigh*(x-xLow)/(xHigh-xLow) + yLow*(xHigh-x)/(xHigh-xLow);
+	}
+
 	// obtain t, the normalised x-coordinate within the cell, 
 	// and the coefficients a and b, which are defined in cell i as:
 	//
@@ -83,6 +89,14 @@ void Lau1DCubicSpline::updateYValues(const std::vector<Double_t>& ys)
 {
 	y_ = ys;
 	calcDerivatives();
+}
+
+void Lau1DCubicSpline::updateType(LauSplineType type)
+{
+	if(type_ != type) {
+		type_ = type;
+		calcDerivatives();
+	}
 }
 
 void Lau1DCubicSpline::updateBoundaryConditions(LauSplineBoundaryType leftBound,
@@ -129,6 +143,17 @@ void Lau1DCubicSpline::init()
 }
 
 void Lau1DCubicSpline::calcDerivatives()
+{
+	if(type_ == Lau1DCubicSpline::LinearInterpolation) {
+		return; //derivatives not needed for linear interpolation
+	} else if(type_ == Lau1DCubicSpline::AkimaSpline) {
+		this->calcDerivativesAkima();
+	} else {
+		this->calcDerivativesStandard();
+	}
+}
+
+void Lau1DCubicSpline::calcDerivativesStandard()
 {
 	// derivatives are determined such that the second derivative is continuous at internal knots
 
@@ -233,3 +258,63 @@ void Lau1DCubicSpline::calcDerivatives()
 	}
 }
 
+void Lau1DCubicSpline::calcDerivativesAkima() {
+	//derivatives are calculated according to the Akima method
+	// J.ACM vol. 17 no. 4 pp 589-602
+
+	Double_t am1(0.), an(0.), anp1(0.);
+
+	// a[i] is the slope of the segment from point i-1 to point i
+	//
+	// n.b. segment 0 is before point 0 and segment n is after point n-1
+	//      internal segments are numbered 1 - n-1
+	for(UInt_t i=1; i<nKnots_; ++i) {
+		a_[i] = (y_[i]-y_[i-1])/(x_[i]-x_[i-1]);
+	}
+
+	// calculate slopes between additional points on each end according to the Akima method
+	// method assumes that the additional points follow a quadratic defined by the last three points
+	// this leads to the relations a[2] - a[1] = a[1] - a[0] = a[0] - a[-1] and a[n-1] - a[n-2] = a[n] - a[n-1] = a[n+1] - a[n]
+	a_[0]         = 2*a_[1]         - a_[2];
+	am1           = 2*a_[0]         - a_[1];
+
+	an            = 2*a_[nKnots_-1] - a_[nKnots_-2];
+	anp1          = 2*an            - a_[nKnots_-1];
+
+	// b[i] is the weight of a[i]   towards dydx[i]
+	// c[i] is the weight of a[i+1] towards dydx[i]
+	// See Appendix A of J.ACM vol. 17 no. 4 pp 589-602 for a justification of these weights
+	b_[0] = TMath::Abs(a_[1] - a_[0]);
+	b_[1] = TMath::Abs(a_[2] - a_[1]);
+
+	c_[0] = TMath::Abs(a_[0] - am1  );
+	c_[1] = TMath::Abs(a_[1] - a_[0]);
+
+	for(UInt_t i=2; i<nKnots_-2; ++i) {
+		b_[i] = TMath::Abs(a_[i+2] - a_[i+1]);
+		c_[i] = TMath::Abs(a_[i]   - a_[i-1]);
+	}
+
+	b_[nKnots_-2] = TMath::Abs(an            - a_[nKnots_-1]);
+	b_[nKnots_-1] = TMath::Abs(anp1          - an           );
+
+	c_[nKnots_-2] = TMath::Abs(a_[nKnots_-2] - a_[nKnots_-3]);
+	c_[nKnots_-1] = TMath::Abs(a_[nKnots_-1] - a_[nKnots_-2]);
+
+	// dy/dx calculated as the weighted average of a[i] and a[i+1]:
+	// dy/dx_i = ( | a_i+2 - a_i+1 | a_i  +  | a_i - a_i-1 | a_i+1 ) / ( | a_i+2 - a_i+1 |  +  | a_i - a_i-1 | )
+	// in the special case a_i-1 == a_i != a_i+1 == a_i+2 this function is undefined so dy/dx is then defined as (a_i + a_i+1) / 2
+	for(UInt_t i=0; i<nKnots_-2; ++i) {
+		if(b_[i]==0 && c_[i]==0) {
+			dydx_[i] = ( a_[i] + a_[i+1] ) / 2.;
+		} else {
+			dydx_[i] = ( b_[i] * a_[i] + c_[i] * a_[i+1] ) / ( b_[i] + c_[i] );
+		}
+	}
+
+	if(b_[nKnots_-1]==0 && c_[nKnots_-1]==0) {
+		dydx_[nKnots_-1] = ( a_[nKnots_-1] + an ) / 2.;
+	} else {
+		dydx_[nKnots_-1] = ( b_[nKnots_-1] * a_[nKnots_-1] + c_[nKnots_-1] * an ) / ( b_[nKnots_-1] + c_[nKnots_-1] );
+	}
+}

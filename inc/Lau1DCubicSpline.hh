@@ -16,7 +16,9 @@
     \brief File containing implementation of Lau1DCubicSpline class.
 
     Class for defining a 1D cubic spline based on a set of knots.
-    The spline is defined by a piecewise cubic function which, between knots i and i+1, has the form
+    Interpolation between the knots is performed either by one of 
+    two types of cubic spline (standard or Akima) or by linear interpolation.
+    The splines are defined by a piecewise cubic function which, between knots i and i+1, has the form
 
     f_i(x) = (1 - t)*y_i + t*y_i+1 + t*(1 - t)(a*(1 - t) + b*t)
 
@@ -25,9 +27,10 @@
     b = -k_i+1*(x_i+1 - x_i) + (y_i+1 - y_i)
 
     and k_i is (by construction) the first derivative at knot i.
-
     f(x) and f'(x) are continuous at the internal knots by construction.
-    f''(x) is required to be continuous at all internal knots placing n-2 constraints on the n parameters, k_i.
+    
+    For the standard splines, f''(x) is required to be continuous 
+    at all internal knots placing n-2 constraints on the n parameters, k_i.
     The final two constraints are set by the boundary conditions.
     At each boundary, the function may be:
 
@@ -35,9 +38,26 @@
     (ii)  Natural :     f''(x) = 0 at the last knot
     (iii) Not a knot :  f'''(x) continuous at the second last knot
 
-    The algorithms used in this class can be found on:
+    The algorithms used in these splines can be found on:
     http://en.wikipedia.org/wiki/Spline_interpolation#Algorithm_to_find_the_interpolating_cubic_spline
     http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
+
+    For the Akima splines, the values of k_i are determined from the slopes of the four nearest segments (a_i-1, a_i, a_i+1 and a_i+2) as
+
+    k_i = ( | a_i+2 - a_i+1 | a_i  +  | a_i - a_i-1 | a_i+1 ) / ( | a_i+2 - a_i+1 |  +  | a_i - a_i-1 | )
+
+    and as
+
+    k_i = ( a_i + a_i+1 ) / 2
+
+    in the special case a_i-1 == a_i != a_i+1 == a_i+2.
+
+    Boundary conditions are specified by the relations
+    a_2 - a_1 = a_1 - a_0 = a_0 - a_-1 and 
+    a_n-1 - a_n-2 = a_n - a_n-1 = a_n+1 - a_n
+
+    The algorithms used in these splines can be found in:
+    J.ACM vol. 17 no. 4 pp 589-602
  */
 
 #ifndef LAU_1DCUBICSPLINE
@@ -50,7 +70,17 @@
 class Lau1DCubicSpline {
 
 	public:
+		//! Define the allowed interpolation types
+		enum LauSplineType {
+			StandardSpline, /*!< standard cubic splines with f''(x) continuous at all internal knots */
+			AkimaSpline, /*!< Akima cubic splines with f'(x) at each knot defined locally by the positions of only five knots */
+			LinearInterpolation /*! Linear interpolation between each pair of knots */
+		};
+
 		//! Define the allowed boundary condition types
+		/*!
+		    These are only supported by standard splines
+		*/
 		enum LauSplineBoundaryType {
 			Clamped, /*!< clamped boundary - f'(x) = C */
 			Natural, /*!< natural boundary - f''(x) = 0 */
@@ -67,6 +97,7 @@ class Lau1DCubicSpline {
 		    /param [in] dydxn the gradient at the right-hand boundary of a clamped spline
 		*/
 		Lau1DCubicSpline(const std::vector<Double_t>& xs, const std::vector<Double_t>& ys,
+				 LauSplineType type = Lau1DCubicSpline::StandardSpline,
 				 LauSplineBoundaryType leftBound = Lau1DCubicSpline::NotAKnot, 
 				 LauSplineBoundaryType rightBound = Lau1DCubicSpline::NotAKnot,
 				 Double_t dydx0 = 0.0, Double_t dydxn = 0.0);
@@ -86,6 +117,12 @@ class Lau1DCubicSpline {
 		    \param [in] ys the y-values of the knots
 		*/
 		void updateYValues(const std::vector<Double_t>& ys);
+
+		//! Update the type of interpolation to perform
+		/*!
+		    \param [in] type the type of interpolation
+		*/
+		void updateType(LauSplineType type);
 
 		//! Update the boundary conditions for the spline
 		/*!
@@ -112,6 +149,11 @@ class Lau1DCubicSpline {
 		//! Calculate the first derivative at each knot
 		void calcDerivatives();
 
+		//! Calculate the first derivatives according to the standard method
+		void calcDerivativesStandard();
+		//! Calculate the first derivatives according to the Akima method
+		void calcDerivativesAkima();
+
 		//! The number of knots in the spline
 		const UInt_t nKnots_;
 
@@ -130,6 +172,9 @@ class Lau1DCubicSpline {
 		std::vector<Double_t> c_;
 		//! The 'd' coefficients used to determine the derivatives
 		std::vector<Double_t> d_;
+
+		//! The type of interpolation to be performed
+		LauSplineType type_;
 
 		//! The left-hand boundary condition on the spline
 		LauSplineBoundaryType leftBound_;

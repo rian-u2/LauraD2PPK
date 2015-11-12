@@ -52,6 +52,15 @@ class LauModIndPartWaveRealImag : public LauAbsModIndPartWave {
 		*/
 		virtual void setKnotAmp(const UInt_t knot, const Double_t realVal, const Double_t imagVal, const Bool_t fixRealPart, const Bool_t fixImagPart);
 
+		//! Method to set the type of interpolation used for the splines
+		/*!
+		    \param [in] realType the type of interpolation for the real part spline
+		    \param [in] imagType the type of interpolation for the imaginary part spline
+		*/
+		void setType(Lau1DCubicSpline::LauSplineType realType, Lau1DCubicSpline::LauSplineType imagType) {
+			this->setSplineType(realType,imagType);
+		}
+
 		//! Method to set the boundary conditions of the splines
 		/*!
 		    \param [in] realLeftBound the type of boundary condition for the left edge of the real part spline

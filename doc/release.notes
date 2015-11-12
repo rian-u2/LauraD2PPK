@@ -4,9 +4,15 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+12th November 2015 Daniel Craik
+
+* Added support for Akima splines and linear interpolation to Lau1DCubicSpline
+* LauAbsModIndPartWave, LauModIndPartWaveRealImag and LauModIndPartWaveMagPhase updated to allow choice of spline interpolation method
+* LauEFKLLMRes updated to use Akima splines
+
 10th November 2015 Thomas Latham & Daniel Craik
 
-* Add the EFKLL form-factor model for the Kpi S-wave and an example using this lineshape
+* Add the EFKLLM form-factor model for the Kpi S-wave and an example using this lineshape
 * Modify LauResonanceMaker::getResonance to use a switch for greater clarity and easier checking on missing cases
 
 4th November 2015 Daniel Craik

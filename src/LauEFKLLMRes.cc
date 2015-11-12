@@ -148,8 +148,8 @@ void LauEFKLLMRes::setupFormFactor(const TString& inputFile)
 		delete magSpline_;
 		delete phaseSpline_;
 	}
-	magSpline_   = new Lau1DCubicSpline(mSqVals, magVals);
-	phaseSpline_ = new Lau1DCubicSpline(mSqVals, phaseVals);
+	magSpline_   = new Lau1DCubicSpline(mSqVals, magVals, Lau1DCubicSpline::AkimaSpline);
+	phaseSpline_ = new Lau1DCubicSpline(mSqVals, phaseVals, Lau1DCubicSpline::AkimaSpline);
 }
 
 void LauEFKLLMRes::setMassFactor(const Double_t massFactor)

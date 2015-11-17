@@ -88,14 +88,14 @@ Double_t Lau1DCubicSpline::evaluate(Double_t x) const
 void Lau1DCubicSpline::updateYValues(const std::vector<Double_t>& ys)
 {
 	y_ = ys;
-	calcDerivatives();
+	this->calcDerivatives();
 }
 
 void Lau1DCubicSpline::updateType(LauSplineType type)
 {
 	if(type_ != type) {
 		type_ = type;
-		calcDerivatives();
+		this->calcDerivatives();
 	}
 }
 
@@ -121,7 +121,9 @@ void Lau1DCubicSpline::updateBoundaryConditions(LauSplineBoundaryType leftBound,
 		if(rightBound_ == Lau1DCubicSpline::Clamped) updateDerivatives = kTRUE;
 	}
 
-	if(updateDerivatives) calcDerivatives();
+	if(updateDerivatives) {
+		this->calcDerivatives();
+	}
 }
 
 void Lau1DCubicSpline::init()
@@ -144,12 +146,16 @@ void Lau1DCubicSpline::init()
 
 void Lau1DCubicSpline::calcDerivatives()
 {
-	if(type_ == Lau1DCubicSpline::LinearInterpolation) {
-		return; //derivatives not needed for linear interpolation
-	} else if(type_ == Lau1DCubicSpline::AkimaSpline) {
-		this->calcDerivativesAkima();
-	} else {
-		this->calcDerivativesStandard();
+	switch ( type_ ) {
+		case Lau1DCubicSpline::StandardSpline :
+			this->calcDerivativesStandard();
+			break;
+		case Lau1DCubicSpline::AkimaSpline :
+			this->calcDerivativesAkima();
+			break;
+		case Lau1DCubicSpline::LinearInterpolation :
+			//derivatives not needed for linear interpolation
+			break;
 	}
 }
 

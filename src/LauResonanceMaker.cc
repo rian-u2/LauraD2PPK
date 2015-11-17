@@ -522,7 +522,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 
 	// if we couldn't find the right resonance then we should return a null pointer
 	if ( resInfo == 0 ) {
-		std::cout<<"WARNING in LauResonanceMaker::getResonance : Creating resonance: "<<resName<<std::endl;
+		std::cout<<"ERROR in LauResonanceMaker::getResonance : Unable to locate resonance info for: "<<resName<<std::endl;
 		return 0;
 	}
 
@@ -619,6 +619,11 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			theResonance = new LauEFKLLMRes(resInfo, resPairAmpInt, daughters);		  
 			break;
 
+		case LauAbsResonance::KMatrix :
+			// K-matrix description of S-wave
+			std::cerr<<"ERROR in LauResonanceMaker::getResonance : K-matrix type specified, which should be separately handled."<<std::endl;
+			break;
+
 		case LauAbsResonance::FlatNR :
 			// uniform NR amplitude - arguments are there to preserve the interface
 			std::cout<<"                                        : Using uniform NR lineshape. "<<std::endl;
@@ -683,14 +688,9 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			std::cout<<"                                        : Using incoherent Gaussian lineshape. "<<std::endl;
 			theResonance = new LauGaussIncohRes(resInfo, resPairAmpInt, daughters);
 			break;
-
-		default :
-			std::cerr << "ERROR in LauResonanceMaker::getResonance : Could not match resonace type \"" << resType << "\"." << std::endl;
-			break;
 	}
 
 	return theResonance;
-
 }
 
 Int_t LauResonanceMaker::resTypeInt(const TString& name) const

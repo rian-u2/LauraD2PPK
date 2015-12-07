@@ -4,6 +4,16 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+7th December 2015 Thomas Latham
+
+* Resolve bug that meant the order of resonances in LauIsobarDynamics was assumed to match with the order in which the complex coefficients are supplied to the fit model
+  - The ordering of resonances is defined by LauIsobarDynamics:
+    - Firstly all coherent resonances in order of addition
+    - Followed by all incoherent resonances in order of addition
+  - The complex coefficients are now rearranged to match that order
+  - Printout of the model summary at the end of initialisation has been enhanced to indicate the ordering
+  - Doxygen updated to reflect these changes
+
 12th November 2015 Daniel Craik
 
 * Added support for Akima splines and linear interpolation to Lau1DCubicSpline

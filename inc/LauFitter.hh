@@ -9,7 +9,7 @@
 // Paul Harrison
 
 /*! \file LauFitter.hh
-    \brief File containing LauFitter class.
+    \brief File containing declaration of LauFitter class.
 */
 
 /*! \class LauFitter

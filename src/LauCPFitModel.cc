@@ -87,9 +87,9 @@ LauCPFitModel::LauCPFitModel(LauIsobarDynamics* negModel, LauIsobarDynamics* pos
 	sigTotalLike_(0.0),
 	scfTotalLike_(0.0)
 {
-	LauDaughters* negDaug = negSigModel_->getDaughters();
+	const LauDaughters* negDaug = negSigModel_->getDaughters();
 	if (negDaug != 0) {negParent_ = negDaug->getNameParent();}
-	LauDaughters* posDaug = posSigModel_->getDaughters();
+	const LauDaughters* posDaug = posSigModel_->getDaughters();
 	if (posDaug != 0) {posParent_ = posDaug->getNameParent();}
 }
 
@@ -266,7 +266,7 @@ void LauCPFitModel::splitSignalComponent( const TH2* dpHisto, const Bool_t upper
 		return;
 	}
 
-	LauDaughters* daughters = negSigModel_->getDaughters();
+	const LauDaughters* daughters = negSigModel_->getDaughters();
 	scfFracHist_ = new LauEffModel( daughters, 0 );
 	scfFracHist_->setEffHisto( dpHisto, kTRUE, fluctuateBins, 0.0, 0.0, upperHalf, daughters->squareDP() );
 
@@ -388,35 +388,53 @@ void LauCPFitModel::setBkgndPdfs(const TString& bkgndClass, LauAbsPdf* negPdf, L
 
 void LauCPFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 {
+	// Resize the coeffPars vector if not already done
+	if ( coeffPars_.empty() ) {
+		const UInt_t nNegAmp = negSigModel_->getnTotAmp();
+		const UInt_t nPosAmp = posSigModel_->getnTotAmp();
+		if ( nNegAmp != nPosAmp ) {
+			std::cerr << "ERROR in LauCPFitModel::setAmpCoeffSet : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		coeffPars_.resize( nNegAmp );
+		for (std::vector<LauAbsCoeffSet*>::iterator iter = coeffPars_.begin(); iter != coeffPars_.end(); ++iter) {
+			(*iter) = 0;
+		}
+		fitFracAsymm_.resize( nNegAmp );
+		acp_.resize( nNegAmp );
+	}
+
 	// Is there a component called compName in the signal model?
 	TString compName(coeffSet->name());
-	Bool_t negOK = negSigModel_->hasResonance(compName);
 	TString conjName = negSigModel_->getConjResName(compName);
-	Bool_t posOK = posSigModel_->hasResonance(conjName);
-	if (!negOK) {
-		std::cerr << "ERROR in LauCPFitModel::setMagPhase : " << negParent_ << " signal DP model doesn't contain component \"" << compName << "\"." << std::endl;
+	const Int_t negIndex = negSigModel_->resonanceIndex(compName);
+	const Int_t posIndex = posSigModel_->resonanceIndex(conjName);
+	if ( negIndex < 0 ) {
+		std::cerr << "ERROR in LauCPFitModel::setAmpCoeffSet : " << negParent_ << " signal DP model doesn't contain component \"" << compName << "\"." << std::endl;
 		return;
 	}
-	if (!posOK) {
-		std::cerr << "ERROR in LauCPFitModel::setMagPhase : " << posParent_ << " signal DP model doesn't contain component \"" << conjName << "\"." << std::endl;
+	if ( posIndex < 0 ) {
+		std::cerr << "ERROR in LauCPFitModel::setAmpCoeffSet : " << posParent_ << " signal DP model doesn't contain component \"" << conjName << "\"." << std::endl;
+		return;
+	}
+	if ( posIndex != negIndex ) {
+		std::cerr << "ERROR in LauCPFitModel::setAmpCoeffSet : " << negParent_ << " signal DP model and " << posParent_ << " signal DP model have different indices for components \"" << compName << "\" and \"" << conjName << "\"." << std::endl;
 		return;
 	}
 
 	// Do we already have it in our list of names?
-	for (std::vector<LauAbsCoeffSet*>::const_iterator iter=coeffPars_.begin(); iter!=coeffPars_.end(); ++iter) {
-		if ((*iter)->name() == compName) {
-			std::cerr << "ERROR in LauCPFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << std::endl;
-			return;
-		}
+	if ( coeffPars_[negIndex] != 0 && coeffPars_[negIndex]->name() == compName) {
+		std::cerr << "ERROR in LauCPFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << std::endl;
+		return;
 	}
 
-	coeffSet->index(nSigComp_);
-	coeffPars_.push_back(coeffSet);
+	coeffSet->index(negIndex);
+	coeffPars_[negIndex] = coeffSet;
 
 	TString parName = coeffSet->baseName(); parName += "FitFracAsym";
-	fitFracAsymm_.push_back(LauParameter(parName, 0.0, -1.0, 1.0));
+	fitFracAsymm_[negIndex] = LauParameter(parName, 0.0, -1.0, 1.0);
 
-	acp_.push_back(coeffSet->acp());
+	acp_[negIndex] = coeffSet->acp();
 
 	++nSigComp_;
 
@@ -552,8 +570,8 @@ void LauCPFitModel::recalculateNormalisation()
 void LauCPFitModel::initialiseDPModels()
 {
 	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nNegAmp = negSigModel_->getnTotAmp();
-	UInt_t nPosAmp = posSigModel_->getnTotAmp();
+	const UInt_t nNegAmp = negSigModel_->getnTotAmp();
+	const UInt_t nPosAmp = posSigModel_->getnTotAmp();
 	if ( nNegAmp != nPosAmp ) {
 		std::cerr << "ERROR in LauCPFitModel::initialiseDPModels : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
@@ -1666,7 +1684,7 @@ Bool_t LauCPFitModel::generateSignalEvent()
 						// Retrieve the migration histogram
 						TH2* histo = scfMap_->trueHist( binNo );
 
-						LauAbsEffModel * effModel = model->getEffModel();
+						const LauAbsEffModel * effModel = model->getEffModel();
 						do {
 							// Get a random point from the histogram
 							histo->GetRandom2( xCoord, yCoord );
@@ -2978,7 +2996,8 @@ void LauCPFitModel::savePDFPlots(const TString& label)
 	TString resName = "TotalAmp";
 	if (resID != nAmp){
 		TString tStrResID = Form("%d", resID);
-		LauAbsResonance* resonance = negSigModel_->getResonance(resID);
+		const LauIsobarDynamics* model = negSigModel_;
+		const LauAbsResonance* resonance = model->getResonance(resID);
 		resName = resonance->getResonanceName();
 		std::cout << "resName = " << resName << std::endl;
 	}
@@ -3011,8 +3030,8 @@ void LauCPFitModel::savePDFPlots(const TString& label)
 				LauComplex posChAmp = posSigModel_->getEvtDPAmp();
 
 				if (resID != nAmp){
-					negChAmp = negSigModel_->getAmplitude(resID);
-					posChAmp = posSigModel_->getAmplitude(resID);
+					negChAmp = negSigModel_->getFullAmplitude(resID);
+					posChAmp = posSigModel_->getFullAmplitude(resID);
 				}
 				negChPdf = negChAmp.abs2();
 				posChPdf = posChAmp.abs2();
@@ -3110,12 +3129,13 @@ void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
 				negSigModel_->calcLikelihoodInfo(s13, s23);
 				for (UInt_t resID = 0; resID < nAmp; ++resID)
 				{
-					LauAbsResonance* resonance = negSigModel_->getResonance(resID);
+					const LauIsobarDynamics* model = negSigModel_;
+					const LauAbsResonance* resonance = model->getResonance(resID);
 					Int_t spin_res = resonance->getSpin();
 					if (spin != spin_res) continue;
 					noWaveRes = kFALSE;
-					negChAmp += negSigModel_->getAmplitude(resID);
-					posChAmp += posSigModel_->getAmplitude(resID);
+					negChAmp += negSigModel_->getFullAmplitude(resID);
+					posChAmp += posSigModel_->getFullAmplitude(resID);
 				}
 
 				if (noWaveRes) return;

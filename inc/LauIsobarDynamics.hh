@@ -111,6 +111,10 @@ class LauIsobarDynamics {
 
 		//! Add a resonance to the Dalitz plot
 		/*!
+		    NB the stored order of resonances is:
+		    - Firstly, all coherent resonances (i.e. those added using addResonance() or addKMatrixProdPole() or addKMatrixProdSVP()) in order of addition
+		    - Followed by all incoherent resonances (i.e. those added using addIncoherentResonance()) in order of addition
+
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the model for the resonance dynamics
@@ -122,7 +126,10 @@ class LauIsobarDynamics {
 
 		//! Add an incoherent resonance to the Dalitz plot
 		/*!
-		    Note that incoherent components must be added to the model last
+		    NB the stored order of resonances is:
+		    - Firstly, all coherent resonances (i.e. those added using addResonance() or addKMatrixProdPole() or addKMatrixProdSVP()) in order of addition
+		    - Followed by all incoherent resonances (i.e. those added using addIncoherentResonance()) in order of addition
+
 		    \param [in] resName the name of the resonant particle
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the model for the resonance dynamics
@@ -144,6 +151,10 @@ class LauIsobarDynamics {
 
 		//! Add a K-matrix production pole term to the model
 		/*!
+		    NB the stored order of resonances is:
+		    - Firstly, all coherent resonances (i.e. those added using addResonance() or addKMatrixProdPole() or addKMatrixProdSVP()) in order of addition
+		    - Followed by all incoherent resonances (i.e. those added using addIncoherentResonance()) in order of addition
+
 		    \param [in] poleName the name of the pole
 		    \param [in] propName the name of the propagator to use
 		    \param [in] poleIndex the index of the pole within the propagator
@@ -152,6 +163,10 @@ class LauIsobarDynamics {
 
 		//! Add a K-matrix slowly-varying part (SVP) term to the model
 		/*!
+		    NB the stored order of resonances is:
+		    - Firstly, all coherent resonances (i.e. those added using addResonance() or addKMatrixProdPole() or addKMatrixProdSVP()) in order of addition
+		    - Followed by all incoherent resonances (i.e. those added using addIncoherentResonance()) in order of addition
+
 		    \param [in] SVPName the name of the term
 		    \param [in] propName the name of the propagator to use
 		    \param [in] channelIndex the index of the channel within the propagator
@@ -175,12 +190,6 @@ class LauIsobarDynamics {
 		    \return the maximum of A squared that has been found
 		*/
 		inline Double_t getASqMaxVarValue() const { return aSqMaxVar_; }
-
-		//! Retrieve the Amplitude  of resonance resID
-		/*!
-		    \return the Amplitude  of resonance resID
-		*/
-		inline LauComplex getAmplitude(Int_t resID) const { return (Amp_[resID]*ff_[resID]);}
 
 		//! Generate a toy MC signal event
 		/*!
@@ -308,10 +317,17 @@ class LauIsobarDynamics {
 
 		//! Retrieve the normalised dynamic part of the amplitude of the given amplitude component at the current point in the Dalitz plot
 		/*!
-		    \param [in] resID the index of the amplitude component within the model
-		    \return the amplitude of the given amplitude component
+		    \param [in] resID the index of the component within the model
+		    \return the amplitude of the given component
 		*/
-		inline LauComplex getDynamicAmp(Int_t resID) const {return ff_[resID].scale(fNorm_[resID]);}
+		inline LauComplex getDynamicAmp(const Int_t resID) const {return ff_[resID].scale(fNorm_[resID]);}
+
+		//! Retrieve the Amplitude  of resonance resID
+		/*!
+		    \param [in] resID the index of the component within the model
+		    \return the amplitude of the given component
+		*/
+		inline LauComplex getFullAmplitude(const Int_t resID) const {return Amp_[resID] * this->getDynamicAmp(resID);}
 
 		//! Retrieve the event-by-event running totals of amplitude cross terms for all pairs of amplitude components
 		/*!
@@ -347,12 +363,33 @@ class LauIsobarDynamics {
 		*/
 		Bool_t hasResonance(const TString& resName) const;
 
+		//! Retrieve the index for the given resonance
+		/*!
+		    \param [in] resName the resonance
+		    \return the index of the resonance if it is present, -1 otherwise
+		*/
+		Int_t resonanceIndex(const TString& resName) const;
+
 		//! Retrieve the name of the charge conjugate of a named resonance
 		/*!
 		    \param [in] resName the resonance
 		    \return the name of the charge conjugate
 		*/
 		TString getConjResName(const TString& resName) const;
+
+		//! Retrieve the named resonance
+		/*!
+		    \param [in] resName the name of the resonance to retrieve
+		    \return the requested resonance
+		*/
+		const LauAbsResonance* findResonance(const TString& resName) const;
+
+		//! Retrieve a resonance by its index
+		/*!
+		    \param [in] resIndex the index of the resonance to retrieve
+		    \return the requested resonance
+		*/
+		const LauAbsResonance* getResonance(const UInt_t resIndex) const;
 
 		//! Update the complex coefficients for the resonances
 		/*!
@@ -370,13 +407,13 @@ class LauIsobarDynamics {
 		/*!
 		    \return the mean efficiency across the Dalitz plot
 		*/
-		inline LauParameter getMeanEff() const {return meanDPEff_;}
+		inline const LauParameter& getMeanEff() const {return meanDPEff_;}
 
 		//! Retrieve the overall Dalitz plot rate
 		/*!
 		    \return the overall Dalitz plot rate
 		*/
-		inline LauParameter getDPRate() const {return DPRate_;}
+		inline const LauParameter& getDPRate() const {return DPRate_;}
 
 		//! Retrieve the fit fractions for the amplitude components
 		/*!
@@ -414,23 +451,17 @@ class LauIsobarDynamics {
 		*/
 		inline Double_t getDPNorm() const {return DPNorm_;}
 
-		//! Retrieve the number of cached events
-		/*!
-		    \return the number of cached events
-		*/
-		inline UInt_t nData() const {return data_.size();}
-
-		//! Retrieve the cached data
-		/*!
-		    \return the cached data
-		*/
-		inline const std::vector<LauCacheData*>& getCacheData() const {return data_;}
-
 		//! Retrieve the daughters
 		/*!
 		    \return the daughters
 		*/
-		inline LauDaughters* getDaughters() {return daughters_;}
+		inline const LauDaughters* getDaughters() const {return daughters_;}
+
+		//! Retrieve the Dalitz plot kinematics
+		/*!
+		    \return the Dalitz plot kinematics
+		*/
+		inline const LauKinematics* getKinematics() const {return kinematics_;}
 
 		//! Retrieve the Dalitz plot kinematics
 		/*!
@@ -442,49 +473,22 @@ class LauIsobarDynamics {
 		/*!
 		    \return the efficiency model
 		*/
-		inline LauAbsEffModel* getEffModel() {return effModel_;}
-
-
-		//! Retrieve the named resonance
-		/*!
-		    \param [in] resIndex the index of the resonance to retrieve
-		    \return the named resonance
-		*/
-		LauAbsResonance* getResonance(UInt_t& resIndex);
-
-		//! Retrieve the resonance vector
-		/*!
-		    \return the resonance vector
-		*/
-
-		inline std::vector<LauAbsResonance*> getResonances() {return sigResonances_;}
-
-		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for the first (or only) tagging category
-		/*!
-		    \return the self cross feed fraction model
-		*/
-		inline LauAbsEffModel* getScfFractionModel() {return scfFractionModel_[0];}
-
-		//! Retrieve the model for the fraction of events that are poorly reconstructed (the self cross feed fraction) in each Dalitz plot bin for all tagging categories
-		/*!
-		    \return the self cross feed fraction models
-		*/
-		inline std::map <Int_t,LauAbsEffModel*> getScfFractionModels() {return scfFractionModel_;}
+		inline const LauAbsEffModel* getEffModel() const {return effModel_;}
 
 		//! Check whether a self cross feed fraction model is being used
 		/*!
 		    \return true if a self cross feed fraction model is being used, false otherwise
 		*/
-		inline Bool_t usingScfModel() { return ! scfFractionModel_.empty(); }
+		inline Bool_t usingScfModel() const { return ! scfFractionModel_.empty(); }
 
 		//! Retrieve any extra parameters/quantities (e.g. K-matrix total fit fractions)
 		/*!
 		    \return any extra parameters
 		*/
-		inline std::vector<LauParameter> getExtraParameters() {return extraParameters_;}
+		inline const std::vector<LauParameter>& getExtraParameters() const {return extraParameters_;}
 
 		//! Retrieve the floating parameters of the resonance models
-			/*!
+		/*!
 		    \return the list of floating parameters
 		*/
 		inline std::vector<LauParameter*>& getFloatingParameters() {return resonancePars_;}
@@ -600,17 +604,17 @@ class LauIsobarDynamics {
 
 		//! Retrieve the named resonance
 		/*!
-		    \param [in] name the name of the resonance to retrieve
-		    \return the named resonance
+		    \param [in] resName the name of the resonance to retrieve
+		    \return the requested resonance
 		*/
-		LauAbsResonance* findResonance(const TString& name);
+		LauAbsResonance* findResonance(const TString& resName);
 
-		//! Retrieve the named resonance
+		//! Retrieve a resonance by its index
 		/*!
-		    \param [in] name the name of the resonance to retrieve
-		    \return the named resonance
+		    \param [in] resIndex the index of the resonance to retrieve
+		    \return the requested resonance
 		*/
-		const LauAbsResonance* findResonance(const TString& name) const;
+		LauAbsResonance* getResonance(const UInt_t resIndex);
 
 		//! Remove the charge from the given particle name
 		/*!

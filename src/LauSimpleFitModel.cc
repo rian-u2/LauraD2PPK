@@ -158,7 +158,7 @@ void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, const Bool_t u
 		return;
 	}
 
-	LauDaughters* daughters = sigDPModel_->getDaughters();
+	const LauDaughters* daughters = sigDPModel_->getDaughters();
 	scfFracHist_ = new LauEffModel( daughters, 0 );
 	scfFracHist_->setEffHisto( dpHisto, kTRUE, fluctuateBins, 0.0, 0.0, upperHalf, daughters->squareDP() );
 
@@ -243,28 +243,34 @@ void LauSimpleFitModel::setBkgndPdf(const TString& bkgndClass, LauAbsPdf* pdf)
 
 void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 {
+	// Resize the coeffPars vector if not already done
+	if ( coeffPars_.empty() ) {
+		coeffPars_.resize( sigDPModel_->getnTotAmp() );
+		for (std::vector<LauAbsCoeffSet*>::iterator iter = coeffPars_.begin(); iter != coeffPars_.end(); ++iter) {
+			(*iter) = 0;
+		}
+	}
+
 	// Is there a component called compName in the signal model?
 	TString compName(coeffSet->name());
-	Bool_t ok = sigDPModel_->hasResonance(compName);
-	if (!ok) {
+	const Int_t index = sigDPModel_->resonanceIndex(compName);
+	if ( index < 0 ) {
 		std::cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Signal DP model doesn't contain component \"" << compName << "\"." << std::endl;
 		return;
 	}
 
 	// Do we already have it in our list of names?
-	for (std::vector<LauAbsCoeffSet*>::const_iterator iter = coeffPars_.begin(); iter != coeffPars_.end(); ++iter) {
-		if ((*iter)->name() == compName) {
-			std::cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << std::endl;
-			return;
-		}
+	if ( coeffPars_[index] != 0 && coeffPars_[index]->name() == compName) {
+		std::cerr << "ERROR in LauSimpleFitModel::setAmpCoeffSet : Have already set coefficients for \"" << compName << "\"." << std::endl;
+		return;
 	}
 
-	coeffSet->index(nSigComp_);
-	coeffPars_.push_back(coeffSet);
+	coeffSet->index(index);
+	coeffPars_[index] = coeffSet;
 
 	++nSigComp_;
 
-	std::cout << "INFO in LauSimpleFitModel::setAmpCoeffSet : Added coefficients for component \"" << compName << "\" to the fit model." << std::endl;
+	std::cout << "INFO in LauSimpleFitModel::setAmpCoeffSet : Added coefficients for component A"<< index << ": \"" << compName << "\" to the fit model." << std::endl;
 	coeffSet->printParValues();
 }
 
@@ -1057,7 +1063,7 @@ Bool_t LauSimpleFitModel::generateSignalEvent()
 						// Retrieve the migration histogram
 						TH2* histo = scfMap_->trueHist( binNo );
 
-						LauAbsEffModel * effModel = sigDPModel_->getEffModel();
+						const LauAbsEffModel * effModel = sigDPModel_->getEffModel();
 						do {
 							// Get a random point from the histogram
 							histo->GetRandom2( xCoord, yCoord );
@@ -2167,7 +2173,8 @@ void LauSimpleFitModel::savePDFPlots(const TString& label)
 	TString resName = "TotalAmp";
 	if (resID != nAmp){
 		TString tStrResID = Form("%d", resID);
-		LauAbsResonance* resonance = sigDPModel_->getResonance(resID);
+		const LauIsobarDynamics* model = sigDPModel_;
+		const LauAbsResonance* resonance = model->getResonance(resID);
 		resName = resonance->getResonanceName();
 		std::cout << "resName = " << resName << std::endl;
 	}
@@ -2191,7 +2198,7 @@ void LauSimpleFitModel::savePDFPlots(const TString& label)
 				sigDPModel_->calcLikelihoodInfo(s13, s23);
 				LauComplex chAmp = sigDPModel_->getEvtDPAmp();
 				if (resID != nAmp){
-					chAmp = sigDPModel_->getAmplitude(resID);
+					chAmp = sigDPModel_->getFullAmplitude(resID);
 				}
 				chPdf = chAmp.abs2();
 				//if ((z > 0.04)||(z < -0.03)) continue;
@@ -2280,11 +2287,12 @@ void LauSimpleFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin
 				sigDPModel_->calcLikelihoodInfo(s13, s23);
 				for (UInt_t resID = 0; resID < nAmp; ++resID)
 				{
-					LauAbsResonance* resonance = sigDPModel_->getResonance(resID);
+					const LauIsobarDynamics* model = sigDPModel_;
+					const LauAbsResonance* resonance = model->getResonance(resID);
 					Int_t spin_res = resonance->getSpin();
 					if (spin != spin_res) continue;
 					noWaveRes = kFALSE;
-					chAmp += sigDPModel_->getAmplitude(resID);
+					chAmp += sigDPModel_->getFullAmplitude(resID);
 				}
 
 				if (noWaveRes) return;

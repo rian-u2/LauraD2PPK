@@ -423,51 +423,46 @@ void LauIsobarDynamics::initSummary()
 	std::cout<<"                                       : In tracks 2 and 3:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 1) {
-			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name2<<", "<< name3<<std::endl;
+			std::cout<<"                                       :   A"<<i<<": "<<resTypAmp_[i]<<" to "<<name2<<", "<< name3<<std::endl;
 		}
 	}
 
 	for (i = 0; i < nIncohAmp_; i++) {
 		if (incohResPairAmp_[i] == 1) {
-			std::cout<<"                                       : "<<incohResTypAmp_[i]<<" (incoherent) to "<<name2<<", "<< name3<<std::endl;
+			std::cout<<"                                       :   A"<<nAmp_+i<<": "<<incohResTypAmp_[i]<<" (incoherent) to "<<name2<<", "<< name3<<std::endl;
 		}
 	}
-
-	std::cout<<std::endl;
 
 	std::cout<<"                                       : In tracks 1 and 3:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 2) {
-			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name1<<", "<< name3<<std::endl;
+			std::cout<<"                                       :   A"<<i<<": "<<resTypAmp_[i]<<" to "<<name1<<", "<< name3<<std::endl;
 		}
 	}
 
 	for (i = 0; i < nIncohAmp_; i++) {
 		if (incohResPairAmp_[i] == 2) {
-			std::cout<<"                                       : "<<incohResTypAmp_[i]<<" (incoherent) to "<<name1<<", "<< name3<<std::endl;
+			std::cout<<"                                       :   A"<<nAmp_+i<<": "<<incohResTypAmp_[i]<<" (incoherent) to "<<name1<<", "<< name3<<std::endl;
 		}
 	}
-
-	std::cout<<std::endl;
 
 	std::cout<<"                                       : In tracks 1 and 2:"<<std::endl;
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 3) {
-			std::cout<<"                                       : "<<resTypAmp_[i]<<" to "<<name1<<", "<< name2<<std::endl;
+			std::cout<<"                                       :   A"<<i<<": "<<resTypAmp_[i]<<" to "<<name1<<", "<< name2<<std::endl;
 		}
 	}
 
 	for (i = 0; i < nIncohAmp_; i++) {
 		if (incohResPairAmp_[i] == 3) {
-			std::cout<<"                                       : "<<incohResTypAmp_[i]<<" (incoherent) to "<<name1<<", "<< name2<<std::endl;
+			std::cout<<"                                       :   A"<<nAmp_+i<<": "<<incohResTypAmp_[i]<<" (incoherent) to "<<name1<<", "<< name2<<std::endl;
 		}
 	}
 
-	std::cout<<std::endl;
-
 	for (i = 0; i < nAmp_; i++) {
 		if (resPairAmp_[i] == 0) {
-			std::cout<<"                                       : and a non-resonant amplitude."<<std::endl;
+			std::cout<<"                                       : and a non-resonant amplitude:"<<std::endl;
+			std::cout<<"                                       :   A"<<i<<std::endl;
 		}
 	}
 
@@ -816,7 +811,7 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 		resTypAmp_.push_back(poleName);
 		resPairAmp_.push_back(resPairAmpInt);
 
-		nAmp_++;
+		++nAmp_;
 		sigResonances_.push_back(prodPole);
 
 		// Also store the propName-poleName pair for calculating total fit fractions later on
@@ -880,68 +875,90 @@ void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString&
 	}
 }
 
-LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name)
+Int_t LauIsobarDynamics::resonanceIndex(const TString& resName) const
 {
-	TString testName(name);
-	testName.ToLower();
-	LauAbsResonance* theResonance(0);
-
-	for (std::vector<LauAbsResonance*>::iterator iter=sigResonances_.begin(); iter!=sigResonances_.end(); ++iter) {
-		theResonance = (*iter);
-		if (theResonance != 0) {
-			TString resString = theResonance->getResonanceName();
-			resString.ToLower();
-			if (resString.BeginsWith(testName, TString::kExact)) {
-				return theResonance;
-			}
-		}
-	}
-
-	for (std::vector<LauAbsIncohRes*>::iterator iter=sigIncohResonances_.begin(); iter!=sigIncohResonances_.end(); ++iter) {
-		theResonance = (*iter);
-		if (theResonance != 0) {
-			TString resString = theResonance->getResonanceName();
-			resString.ToLower();
-			if (resString.BeginsWith(testName, TString::kExact)) {
-				return theResonance;
-			}
-		}
-	}
-
-	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<std::endl;
-	return 0;
-}
-
-const LauAbsResonance* LauIsobarDynamics::findResonance(const TString& name) const
-{
-	TString testName(name);
-	testName.ToLower();
+	Int_t index(0);
 	const LauAbsResonance* theResonance(0);
 
 	for (std::vector<LauAbsResonance*>::const_iterator iter=sigResonances_.begin(); iter!=sigResonances_.end(); ++iter) {
 		theResonance = (*iter);
 		if (theResonance != 0) {
-			TString resString = theResonance->getResonanceName();
-			resString.ToLower();
-			if (resString.BeginsWith(testName, TString::kExact)) {
-				return theResonance;
+			const TString& resString = theResonance->getResonanceName();
+			if (resString == resName) {
+				return index;
 			}
 		}
+		++index;
 	}
 
 	for (std::vector<LauAbsIncohRes*>::const_iterator iter=sigIncohResonances_.begin(); iter!=sigIncohResonances_.end(); ++iter) {
 		theResonance = (*iter);
 		if (theResonance != 0) {
-			TString resString = theResonance->getResonanceName();
-			resString.ToLower();
-			if (resString.BeginsWith(testName, TString::kExact)) {
-				return theResonance;
+			const TString& resString = theResonance->getResonanceName();
+			if (resString == resName) {
+				return index;
 			}
 		}
+		++index;
 	}
 
-	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance \""<<name<<"\" in the model."<<std::endl;
-	return 0;
+	return -1;
+}
+
+Bool_t LauIsobarDynamics::hasResonance(const TString& resName) const
+{
+	const Int_t index = this->resonanceIndex(resName);
+	if (index < 0) {
+		return kTRUE;
+	} else {
+		return kFALSE;
+	}
+}
+
+const LauAbsResonance* LauIsobarDynamics::getResonance(const UInt_t resIndex) const
+{
+	if ( resIndex < this->getnCohAmp() ) {
+		return sigResonances_[resIndex];
+	} else if ( resIndex < this->getnTotAmp() ) {
+		return sigIncohResonances_[ resIndex - nAmp_ ];
+	} else {
+		std::cerr<<"ERROR in LauIsobarDynamics::getResonance : Couldn't find resonance with index \""<<resIndex<<"\" in the model."<<std::endl;
+		return 0;
+	}
+}
+
+LauAbsResonance* LauIsobarDynamics::getResonance(const UInt_t resIndex)
+{
+	if ( resIndex < this->getnCohAmp() ) {
+		return sigResonances_[resIndex];
+	} else if ( resIndex < this->getnTotAmp() ) {
+		return sigIncohResonances_[ resIndex - nAmp_ ];
+	} else {
+		std::cerr<<"ERROR in LauIsobarDynamics::getResonance : Couldn't find resonance with index \""<<resIndex<<"\" in the model."<<std::endl;
+		return 0;
+	}
+}
+
+LauAbsResonance* LauIsobarDynamics::findResonance(const TString& resName)
+{
+	const Int_t index = this->resonanceIndex( resName );
+	if ( index < 0 ) {
+		std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance with name \""<<resName<<"\" in the model."<<std::endl;
+		return 0;
+	} else {
+		return this->getResonance( index );
+	}
+}
+
+const LauAbsResonance* LauIsobarDynamics::findResonance(const TString& resName) const
+{
+	const Int_t index = this->resonanceIndex( resName );
+	if ( index < 0 ) {
+		std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance with name \""<<resName<<"\" in the model."<<std::endl;
+		return 0;
+	} else {
+		return this->getResonance( index );
+	}
 }
 
 void LauIsobarDynamics::removeCharge(TString& string) const
@@ -2429,16 +2446,6 @@ void LauIsobarDynamics::updateCoeffs(const std::vector<LauComplex>& coeffs)
 	this->calcSigDPNorm();
 }
 
-Bool_t LauIsobarDynamics::hasResonance(const TString& resName) const
-{
-	const LauAbsResonance* theRes = this->findResonance(resName);
-	if (theRes != 0) {
-		return kTRUE;
-	} else {
-		return kFALSE;
-	}
-}
-
 TString LauIsobarDynamics::getConjResName(const TString& resName) const
 {
        // Get the name of the charge conjugate resonance
@@ -2481,25 +2488,4 @@ Double_t LauIsobarDynamics::retrieveScfFraction(Int_t tagCat)
 	}
 	return scfFraction;
 }
-
-LauAbsResonance* LauIsobarDynamics::getResonance(UInt_t& resIndex)
-{
-	LauAbsResonance* theResonance(0);
-	
-	UInt_t counter = 0;
-	std::vector<LauAbsResonance*> sigResonances = getResonances();
-
-	for (std::vector<LauAbsResonance*>::const_iterator iter=sigResonances.begin(); iter!=sigResonances.end(); ++iter) {
-		if (counter!=resIndex) {
-			counter++;
-			continue;
-		}
-		theResonance = (*iter);
-		return theResonance;
-	}
-
-	std::cerr<<"ERROR in LauIsobarDynamics::findResonance : Couldn't find resonance with index \""<<resIndex<<"\" in the model."<<std::endl;
-	return 0;
-}
-
 

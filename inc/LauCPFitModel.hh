@@ -201,6 +201,10 @@ class LauCPFitModel : public LauAbsFitModel {
 
 		//! Set the DP amplitude coefficients
 		/*!
+		  	The name of the coeffSet must match the name of one of the resonances in the DP model for the antiparticle (the name of the conjugate state in the model for the particle will be automatically determined).
+
+			The supplied order of coefficients will be rearranged to match the order in which the resonances are stored in the dynamics, see LauIsobarDynamics::addResonance.
+
 			\param [in] coeffSet the set of coefficients
 		*/
 		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet);

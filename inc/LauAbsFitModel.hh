@@ -253,6 +253,10 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		//! Set the DP amplitude coefficients
 		/*!
+		  	The name of the coeffSet must match the name of one of the resonances in the DP model.
+
+			The supplied order of coefficients will be rearranged to match the order in which the resonances are stored in the dynamics, see LauIsobarDynamics::addResonance.
+
 			\param [in] coeffSet the set of coefficients
 		*/
 		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet) = 0;

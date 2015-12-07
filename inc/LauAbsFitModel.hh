@@ -753,22 +753,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		//! Copy assignment operator (not implemented)
 		LauAbsFitModel& operator=(const LauAbsFitModel& rhs);
 
-		// Setup a struct to store information on constrained fit parameters
-		/*!
-		  \struct StoreConstraints
-		  \brief Struct to store constraint information until the fit is run
-		*/ 
-		struct StoreConstraints {
-		  	//! The formula to be used in the LauFormulaPar
-			TString formula_;
-		  	//! The list of LauParameter names to be used in the LauFormulaPar
-			std::vector<TString> conPars_;
-		  	//! The mean value of the Gaussian constraint to be applied
-			Double_t mean_;
-		  	//! The width of the Gaussian constraint to be applied
-			Double_t width_;
-		};
-
 		//! Store the constraints for fit parameters until initialisation is complete
 		std::vector<StoreConstraints> storeCon_;
 

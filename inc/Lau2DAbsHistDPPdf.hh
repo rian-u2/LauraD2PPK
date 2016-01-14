@@ -18,7 +18,7 @@
     Abstract base class for defining a normalised variation across a 2D DP based on a histogram.
     The returned values are normalised to the total area.
     The histogram can be defined in the conventional DP (m13Sq vs m23Sq) or in the square DP and
-    the upper half can be used to describe symmetric DPs.
+    one half can be used to describe symmetric DPs.
 */
 
 #ifndef LAU_2DABSHIST_DP_PDF
@@ -37,7 +37,7 @@ class Lau2DAbsHistDPPdf : public Lau2DAbsDPPdf {
 		/*!
 		    \param [in] kinematics the current DP kinematics
 		    \param [in] vetoes the vetoes within the DP
-		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to specify whether the supplied histogram is in square DP coordinates
 		*/
 		Lau2DAbsHistDPPdf(LauKinematics* kinematics, const LauVetoes* vetoes,

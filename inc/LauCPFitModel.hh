@@ -105,7 +105,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			Can also optionally provide a smearing matrix to smear the SCF DP PDF
 
 			\param [in] dpHisto the DP histogram of the SCF fraction value
-			\param [in] upperHalf whether this histogram is only in the upper half of a symmetric DP
+			\param [in] upperHalf boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 			\param [in] fluctuateBins whether the bins on the histogram should be varied in accordance with their uncertainties (for evaluation of systematic uncertainties)
 			\param [in] scfMap the (optional) smearing matrix
 		*/

@@ -19,7 +19,7 @@
     Contains helper methods to vary bin contents in the input histogram within uncertainties and 
     scale the input histogram to match a given average value.
     The histogram can be defined in the conventional DP (m13Sq vs m23Sq) or in the square DP and
-    the upper half can be used to describe symmetric DPs.
+    one half can be used to describe symmetric DPs.
 */
 
 #ifndef LAU_2DABSHIST_DP
@@ -37,7 +37,7 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		//! Constructor
 		/*!
 		    \param [in] daughters the daughter particles
-		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to specify whether the supplied histogram is in square DP coordinates
 		*/
 		Lau2DAbsHistDP(const LauDaughters* daughters, Bool_t useUpperHalfOnly = kFALSE, Bool_t squareDP = kFALSE);

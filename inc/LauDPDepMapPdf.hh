@@ -55,7 +55,7 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		    \param [in] pdfs the PDFs 
 		    \param [in] daughters the daughter particles
 		    \param [in] dpHisto the 2D histogram
-		    \param [in] upperHalf specifies whether only upper half of DP is supplied in the case of a symmetric DP
+		    \param [in] upperHalf boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		*/
 		LauDPDepMapPdf( const std::vector<LauAbsPdf*> &pdfs,
 				const LauDaughters* daughters,

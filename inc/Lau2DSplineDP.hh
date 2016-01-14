@@ -44,7 +44,7 @@ class Lau2DSplineDP : public Lau2DAbsHistDP {
 		    \param [in] avEff the desired average efficiency - see Lau2DSplineDP::raiseOrLowerBins.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] avEffError the error on that efficiency - see Lau2DSplineDP::raiseOrLowerBins
-		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to specify whether the supplied histogram is in square DP coordinates
 		*/
 		Lau2DSplineDP(const TH2* hist, const LauDaughters* daughters,
@@ -62,7 +62,7 @@ class Lau2DSplineDP : public Lau2DAbsHistDP {
 		    \param [in] avEff the desired average efficiency - see Lau2DSplineDP::raiseOrLowerBins.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] avEffError the error on that efficiency - see Lau2DSplineDP::raiseOrLowerBins
-		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to specify whether the supplied histogram is in square DP coordinates
 		*/
 		Lau2DSplineDP(const TH2* hist, const TH2* errorHi, const TH2* errorLo, const LauDaughters* daughters,

@@ -50,7 +50,7 @@ class LauDPDepSumPdf : public LauAbsPdf {
 		    \param [in] pdf2 the second PDF 
 		    \param [in] daughters the daughter particles
 		    \param [in] dpHisto the 2D histogram
-		    \param [in] upperHalf specifies whether only upper half of DP is supplied in the case of a symmetric DP
+		    \param [in] upperHalf boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] useSpline specifies whether a spline is used to interpolate the histogram
 		*/
 		LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,

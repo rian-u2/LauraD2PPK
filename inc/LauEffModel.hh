@@ -58,7 +58,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void setEffHisto(const TH2* effHisto,
@@ -79,7 +79,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void setEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
@@ -97,7 +97,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void setEffSpline(const TH2* effHisto,
@@ -117,7 +117,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void setEffSpline(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
@@ -134,7 +134,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void addEffHisto(const TH2* effHisto,
@@ -153,7 +153,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void addEffHisto(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,
@@ -169,7 +169,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void addEffSpline(const TH2* effHisto,
@@ -186,7 +186,7 @@ class LauEffModel : public LauAbsEffModel {
 		    \param [in] avEff the desired average efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour.
 		    The seed for the random number generator used to raise or lower the bins should first be set using LauRandom::setSeed.
 		    \param [in] absError the error on that efficiency - see Lau2DHistDP::raiseOrLowerBins, values less than zero switch off this behaviour
-		    \param [in] useUpperHalfOnly boolean flag to determine whether, in the case of a symmetric DP, the histogram supplied only includes the upper half of the DP.
+		    \param [in] useUpperHalfOnly boolean flag to specify that the supplied histogram contains only the upper half of a symmetric DP (or lower half if using square DP coordinates)
 		    \param [in] squareDP boolean flag to determine whether the supplied histogram is given in square DP coordinates
 		*/
 		void addEffSpline(const TH2* effHisto, const TH2* errorHi, const TH2* errorLo,

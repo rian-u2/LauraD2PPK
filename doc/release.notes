@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+19th January 2016 John Back
+* Correct the f(m^2) factor in the denominator of the LauGounarisSakuraiRes
+  lineshape to use Gamma_0 instead of Gamma(m)
+
 7th December 2015 Thomas Latham
 
 * Resolve bug that meant the order of resonances in LauIsobarDynamics was assumed to match with the order in which the complex coefficients are supplied to the fit model

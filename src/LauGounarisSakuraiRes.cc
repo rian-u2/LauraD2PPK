@@ -182,7 +182,7 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	const Double_t massSqTerm = resMassSq_ - massSq;
 
 	const Double_t h = 2.0*LauConstants::invPi * q/mass * TMath::Log((mass + 2.0*q)/(2.0*LauConstants::mPi));
-	const Double_t f = totWidth * resMassSq_/(q0_*q0_*q0_) * (q*q * (h - h0_) + massSqTerm * q0_*q0_ * dhdm0_);
+	const Double_t f = resWidth * resMassSq_/(q0_*q0_*q0_) * (q*q * (h - h0_) + massSqTerm * q0_*q0_ * dhdm0_);
 
 	// Compute the complex amplitude
 	resAmplitude = LauComplex(massSqTerm + f, resMass*totWidth);

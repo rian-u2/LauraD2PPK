@@ -173,9 +173,10 @@ class LauPolarGammaCPCoeffSet : public LauAbsCoeffSet {
 
 		//! Prepend the base name and index to the name of a parameter
 		/*!
-		    \param [out] par pointer to the parameter
+		    \param [in,out] par pointer to the parameter
+		    \param [in] oldBaseName the old base name, which might need to be removed before adding the new one
 		*/
-		virtual void adjustName(LauParameter* par);
+		virtual void adjustName(LauParameter* par, const TString& oldBaseName);
 
 		//! Update the amplitudes based on the new values of the parameters
 		void updateAmplitudes();

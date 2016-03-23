@@ -59,7 +59,8 @@ void LauAbsCoeffSet::index(UInt_t newIndex)
 {
 	index_ = newIndex;
 
-	TString basename( this->baseName() );
+	const TString oldBaseName( this->baseName() );
+	TString basename( oldBaseName );
 	if ( basename.Length() != 1 ) {
 		basename.Remove(1);
 	}
@@ -69,14 +70,16 @@ void LauAbsCoeffSet::index(UInt_t newIndex)
 
 	std::vector<LauParameter*> pars = this->getParameters();
 	for ( std::vector<LauParameter*>::iterator iter = pars.begin(); iter != pars.end(); ++iter ) {
-		this->adjustName( *iter );
+		this->adjustName( *iter, oldBaseName );
 	}
 }
 
-void LauAbsCoeffSet::adjustName(LauParameter* par)
+void LauAbsCoeffSet::adjustName(LauParameter* par, const TString& oldBaseName)
 {
 	TString theName(par->name());
-	theName.Remove(0,theName.Index("_")+1);
+	if ( theName.BeginsWith( oldBaseName ) ) {
+		theName.Remove(0,oldBaseName.Length());
+	}
 	theName.Prepend(this->baseName());
 	par->name(theName);
 }
@@ -148,6 +151,22 @@ void LauAbsCoeffSet::addGaussianConstraint(const TString& parName, const Double_
 	}
 
 	par->addGaussianConstraint( mean, width );
+}
+
+void LauAbsCoeffSet::addSuffixToParameterName(const TString& parName, const TString& suffix)
+{
+	LauParameter* par = this->findParameter( parName );
+	if ( par == 0 ) {
+		std::cerr << "ERROR in LauAbsCoeffSet::addSuffixToParameterName : Unable to find parameter \"" << parName << "\"" << std::endl;
+		return;
+	}
+
+	TString newName( par->name() );
+	if ( ! suffix.BeginsWith('_') ) {
+		newName += "_";
+	}
+	newName += suffix;
+	par->name( newName );
 }
 
 LauParameter* LauAbsCoeffSet::findParameter(const TString& parName)

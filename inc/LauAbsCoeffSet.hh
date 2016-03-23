@@ -187,7 +187,7 @@ class LauAbsCoeffSet {
 		    \param [in] blindingString the unique blinding string used to seed the random number generator
 		    \param [in] width the width of the Gaussian from which the offset should be sampled
 		*/
-		void blindParameter(const TString& parName, const TString& blindingString, const Double_t width);
+		virtual void blindParameter(const TString& parName, const TString& blindingString, const Double_t width);
 
 		//! Add Gaussian constraint to the named parameter
 		/*!
@@ -195,7 +195,14 @@ class LauAbsCoeffSet {
 		    \param [in] mean the mean of the Gaussian constraint
 		    \param [in] width the width of the Gaussian constraint
 		*/
-		void addGaussianConstraint(const TString& parName, const Double_t mean, const Double_t width);
+		virtual void addGaussianConstraint(const TString& parName, const Double_t mean, const Double_t width);
+
+		//! Add suffix to the name of the given parameter
+		/*!
+		    \param [in] parName the name of the parameter to adjust
+		    \param [in] suffix the suffix to add to the parameter name
+		*/
+		virtual void addSuffixToParameterName(const TString& parName, const TString& suffix);
 
 		//! Set the allowed range for magnitude parameters
 		/*!
@@ -242,9 +249,10 @@ class LauAbsCoeffSet {
 
 		//! Prepend the base name and index to the name of a parameter
 		/*!
-		    \param [out] par pointer to the parameter
+		    \param [in,out] par pointer to the parameter
+		    \param [in] oldBaseName the old base name, which might need to be removed before adding the new one
 		*/
-		virtual void adjustName(LauParameter* par);
+		virtual void adjustName(LauParameter* par, const TString& oldBaseName);
 
 		//! Minimum allowed value of magnitude parameters
 		static Double_t minMagnitude_;
@@ -263,7 +271,6 @@ class LauAbsCoeffSet {
 		//! Maximum allowed value of CP-violating real/imaginary part parameters
 		static Double_t maxDelta_;
 
-	protected:
 		//! Copy constructor
 		/*!
 		    \param [in] rhs the coefficient to clone

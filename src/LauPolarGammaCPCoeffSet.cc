@@ -211,10 +211,10 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const LauPolarGammaCPCoeffSet& 
 	}
 }
 
-void LauPolarGammaCPCoeffSet::adjustName(LauParameter* par)
+void LauPolarGammaCPCoeffSet::adjustName(LauParameter* par, const TString& oldBaseName)
 {
 	if (!useGlobalGamma_ || par!=gamma_) {
-		LauAbsCoeffSet::adjustName(par);
+		LauAbsCoeffSet::adjustName(par,oldBaseName);
 	}
 }
 

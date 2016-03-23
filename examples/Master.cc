@@ -30,6 +30,9 @@ int main(const int argc, const  char ** argv)
 	UInt_t nSlaves = 2;
 	UInt_t port = 0;
 
+	Bool_t useAsymmErrors = kFALSE;
+	Bool_t twoStageFit = kFALSE;
+
 	if ( argc > 3 ) {
 		firstExpt = atoi( argv[3] );
 
@@ -47,7 +50,7 @@ int main(const int argc, const  char ** argv)
 	ntupleName += ".root";
 
 	LauSimFitMaster master( nSlaves, port );
-	master.runSimFit( ntupleName, nExpt, firstExpt, kFALSE, kTRUE );
+	master.runSimFit( ntupleName, nExpt, firstExpt, useAsymmErrors, twoStageFit );
 
 	return EXIT_SUCCESS;
 }

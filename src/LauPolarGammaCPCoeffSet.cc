@@ -27,6 +27,8 @@
 #include "LauRandom.hh"
 
 LauParameter* LauPolarGammaCPCoeffSet::gammaGlobal_ = 0;
+LauParameter* LauPolarGammaCPCoeffSet::rDGlobal_ = 0;
+LauParameter* LauPolarGammaCPCoeffSet::deltaDGlobal_ = 0;
 
 ClassImp(LauPolarGammaCPCoeffSet)
 
@@ -40,7 +42,8 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const TString& compName, const 
 				const Bool_t rDFixed, const Bool_t deltaDFixed,
 				const Bool_t rBSecondStage, const Bool_t deltaBSecondStage, const Bool_t gammaSecondStage,
 				const Bool_t rDSecondStage, const Bool_t deltaDSecondStage,
-				const Bool_t useGlobalGamma) :
+				const Bool_t useGlobalGamma,
+				const Bool_t useGlobalADSPars) :
 	LauAbsCoeffSet(compName),
 	decayType_(decayType),
 	x_(0),
@@ -51,6 +54,7 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const TString& compName, const 
 	rD_(0),
 	deltaD_(0),
 	useGlobalGamma_(useGlobalGamma),
+	useGlobalADSPars_(useGlobalADSPars),
 	nonCPPart_(x,y),
 	cpPart_(0.0,0.0),
 	cpAntiPart_(0.0,0.0),
@@ -94,8 +98,20 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const TString& compName, const 
 	}
 
 	if ( decayType_ == ADS_Favoured || decayType_ == ADS_Suppressed || decayType_ == ADS_Favoured_btouOnly ) {
-		rD_ =  new LauParameter("rD", rD, minMagnitude_, maxMagnitude_, rDFixed);
-		deltaD_ =  new LauParameter("deltaD", deltaD, minPhase_, maxPhase_, deltaDFixed);
+		if (useGlobalADSPars_) {
+			if ( !rDGlobal_ ) {
+				rDGlobal_ =  new LauParameter("rD", rD, minMagnitude_, maxMagnitude_, rDFixed);
+				deltaDGlobal_ =  new LauParameter("deltaD", deltaD, minPhase_, maxPhase_, deltaDFixed);
+				rD_ = rDGlobal_;
+				deltaD_ = deltaDGlobal_;
+			} else {
+				rD_ = rDGlobal_->createClone();
+				deltaD_ = deltaDGlobal_->createClone();
+			}
+		} else {
+			rD_ =  new LauParameter("rD", rD, minMagnitude_, maxMagnitude_, rDFixed);
+			deltaD_ =  new LauParameter("deltaD", deltaD, minPhase_, maxPhase_, deltaDFixed);
+		}
 		if (rDSecondStage && !rDFixed) {
 			rD_->secondStage(kTRUE);
 			rD_->initValue(0.0);
@@ -117,6 +133,7 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const LauPolarGammaCPCoeffSet& 
 	rD_(0),
 	deltaD_(0),
 	useGlobalGamma_( rhs.useGlobalGamma_ ),
+	useGlobalADSPars_( rhs.useGlobalADSPars_ ),
 	nonCPPart_( rhs.nonCPPart_ ),
 	cpPart_( rhs.cpPart_ ),
 	cpAntiPart_( rhs.cpAntiPart_ ),
@@ -189,23 +206,28 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const LauPolarGammaCPCoeffSet& 
 			}
 		}
 		if ( decayType_ == ADS_Favoured || decayType_ == ADS_Suppressed || decayType_ == ADS_Favoured_btouOnly ) {
-			rD_ = new LauParameter("rD", rhs.rD_->value(), minMagnitude_, maxMagnitude_, rhs.rD_->fixed());
-			if ( rhs.rD_->blind() ) {
-				const LauBlind* blinder = rhs.rD_->blinder();
-				rD_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
-			}
-			deltaD_ = new LauParameter("deltaD", rhs.deltaD_->value(), minPhase_, maxPhase_, rhs.deltaD_->fixed());
-			if ( rhs.deltaD_->blind() ) {
-				const LauBlind* blinder = rhs.deltaD_->blinder();
-				deltaD_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
-			}
-			if ( rhs.rB_->secondStage() && !rhs.rB_->fixed() ) {
-				rB_->secondStage(kTRUE);
-				rB_->initValue(0.0);
-			}
-			if ( rhs.deltaB_->secondStage() && !rhs.deltaB_->fixed() ) {
-				deltaB_->secondStage(kTRUE);
-				deltaB_->initValue(0.0);
+			if ( useGlobalADSPars_ ) {
+				rD_ = rDGlobal_->createClone();
+				deltaD_ = deltaDGlobal_->createClone();
+			} else {
+				rD_ = new LauParameter("rD", rhs.rD_->value(), minMagnitude_, maxMagnitude_, rhs.rD_->fixed());
+				if ( rhs.rD_->blind() ) {
+					const LauBlind* blinder = rhs.rD_->blinder();
+					rD_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+				}
+				deltaD_ = new LauParameter("deltaD", rhs.deltaD_->value(), minPhase_, maxPhase_, rhs.deltaD_->fixed());
+				if ( rhs.deltaD_->blind() ) {
+					const LauBlind* blinder = rhs.deltaD_->blinder();
+					deltaD_->blindParameter( blinder->blindingString(), blinder->blindingWidth() );
+				}
+				if ( rhs.rD_->secondStage() && !rhs.rD_->fixed() ) {
+					rD_->secondStage(kTRUE);
+					rD_->initValue(0.0);
+				}
+				if ( rhs.deltaD_->secondStage() && !rhs.deltaD_->fixed() ) {
+					deltaD_->secondStage(kTRUE);
+					deltaD_->initValue(0.0);
+				}
 			}
 		}
 	}
@@ -213,7 +235,12 @@ LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const LauPolarGammaCPCoeffSet& 
 
 void LauPolarGammaCPCoeffSet::adjustName(LauParameter* par, const TString& oldBaseName)
 {
-	if (!useGlobalGamma_ || par!=gamma_) {
+	if ( ( par == gamma_ && useGlobalGamma_ ) || 
+	     ( par == rD_ && useGlobalADSPars_ ) ||
+	     ( par == deltaD_ && useGlobalADSPars_ ) ) {
+		// for global parameters we do not want to adjust their names
+		return;
+	} else {
 		LauAbsCoeffSet::adjustName(par,oldBaseName);
 	}
 }

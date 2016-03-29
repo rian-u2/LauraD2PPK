@@ -76,6 +76,7 @@ class LauPolarGammaCPCoeffSet : public LauAbsCoeffSet {
 		    \param [in] rDSecondStage whether rD should be floated only in the second stage of the fit
 		    \param [in] deltaDSecondStage whether deltaD should be floated only in the second stage of the fit
 		    \param [in] useGlobalGamma whether gamma should be shared with other resonances
+		    \param [in] useGlobalADSPars whether rD and deltaD should be shared with other resonances
 		*/
 		LauPolarGammaCPCoeffSet(const TString& compName, const DecayType decayType,
 				const Double_t x, const Double_t y,
@@ -86,7 +87,8 @@ class LauPolarGammaCPCoeffSet : public LauAbsCoeffSet {
 				const Bool_t rDFixed, const Bool_t deltaDFixed,
 				const Bool_t rBSecondStage = kFALSE, const Bool_t deltaBSecondStage = kFALSE, const Bool_t gammaSecondStage = kFALSE,
 				const Bool_t rDSecondStage = kFALSE, const Bool_t deltaDSecondStage = kFALSE,
-				const Bool_t useGlobalGamma = kFALSE);
+				const Bool_t useGlobalGamma = kFALSE,
+				const Bool_t useGlobalADSPars = kFALSE);
 
 		//! Destructor
 		virtual ~LauPolarGammaCPCoeffSet(){}
@@ -211,8 +213,17 @@ class LauPolarGammaCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP-violating phase (shared by multiple resonances)
 		static LauParameter* gammaGlobal_;
 
+		//! the magnitude of the ratio of the favoured and suppressed D-decay amplitudes (shared by multiple resonances)
+		static LauParameter* rDGlobal_;
+
+		//! the relative strong phase of the favoured and suppressed D-decay amplitudes (shared by multiple resonances)
+		static LauParameter* deltaDGlobal_;
+
 		//! Whether the global gamma is used for this resonance
 		const Bool_t useGlobalGamma_;
+
+		//! Whether the global rD and deltaD are used for this resonance
+		const Bool_t useGlobalADSPars_;
 
 		//! The b -> c part of the complex coefficient
 		LauComplex nonCPPart_;

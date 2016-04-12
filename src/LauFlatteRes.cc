@@ -44,9 +44,9 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 		mSumSq1_ = (LauConstants::mPi + LauConstants::mPi) * (LauConstants::mPi + LauConstants::mPi);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
 		mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
-		// constant factors from BES data
+		// constant factors from BES - Phys. Lett. B 607, 243 (2005)
 		// resMass should be 0.965 +/- 0.008 +/- 0.006 GeV/c^2
-		g1Val = 0.165;       // +/- 0.010 +/- 0.015 GeV/c^2
+		g1Val = 0.165;       // +/- 0.010 +/- 0.015 GeV^2
 		g2Val = g1Val*4.21;  // +/- 0.25 +/- 0.21
 
 		// or from E791

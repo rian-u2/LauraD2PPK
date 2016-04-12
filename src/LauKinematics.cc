@@ -122,21 +122,28 @@ void LauKinematics::calcSqDPVars()
 	}
 }
 
-Double_t LauKinematics::calcSqDPJacobian()
+Double_t LauKinematics::calcSqDPJacobian() const
+{
+	return this->calcSqDPJacobian(mPrime_,thetaPrime_);
+}
+
+Double_t LauKinematics::calcSqDPJacobian(const Double_t mPrime, const Double_t thPrime) const
 {
 	// Calculate the Jacobian for the transformation 
 	// m23^2, m13^2 -> m', theta' (square DP)
+	const Double_t m12 = 0.5*mDiff_[2]*(1.0 + TMath::Cos(LauConstants::pi*mPrime)) + mMin_[2];
+	const Double_t m12Sq = m12*m12;
 
-	Double_t e1Cms12 = (m12Sq_ - m2Sq_ + m1Sq_)/(2.0*m12_);
-	Double_t e3Cms12 = (mParentSq_ - m12Sq_ - m3Sq_)/(2.0*m12_);
+	const Double_t e1Cms12 = (m12Sq - m2Sq_ + m1Sq_)/(2.0*m12);
+	const Double_t e3Cms12 = (mParentSq_ - m12Sq - m3Sq_)/(2.0*m12);
 
-	Double_t p1Cms12 = this->pCalc(e1Cms12, m1Sq_);
-	Double_t p3Cms12 = this->pCalc(e3Cms12, m3Sq_);
+	const Double_t p1Cms12 = this->pCalc(e1Cms12, m1Sq_);
+	const Double_t p3Cms12 = this->pCalc(e3Cms12, m3Sq_);
 
-	Double_t deriv1 = LauConstants::piBy2*mDiff_[2]*TMath::Sin(LauConstants::pi*mPrime_);
-	Double_t deriv2 = LauConstants::pi*TMath::Sin(LauConstants::pi*thetaPrime_);
+	const Double_t deriv1 = LauConstants::piBy2*mDiff_[2]*TMath::Sin(LauConstants::pi*mPrime);
+	const Double_t deriv2 = LauConstants::pi*TMath::Sin(LauConstants::pi*thPrime);
 
-	Double_t jacobian = 4.0*p1Cms12*p3Cms12*m12_*deriv1*deriv2;
+	const Double_t jacobian = 4.0*p1Cms12*p3Cms12*m12*deriv1*deriv2;
 
 	return jacobian;
 }

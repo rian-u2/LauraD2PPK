@@ -6,6 +6,7 @@
 
 #include "LauDPPartialIntegralInfo.hh"
 #include "LauIntegrals.hh"
+#include "LauKinematics.hh"
 
 ClassImp(LauDPPartialIntegralInfo)
 
@@ -15,7 +16,9 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 						   const Double_t m13BinWidth, const Double_t m23BinWidth,
 						   const Double_t precision,
 						   const UInt_t nAmp,
-						   const UInt_t nIncohAmp) :
+						   const UInt_t nIncohAmp,
+						   const Bool_t squareDP,
+						   const LauKinematics* kinematics) :
 	minm13_(minm13),
 	maxm13_(maxm13),
 	minm23_(minm23),
@@ -25,7 +28,8 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 	nm13Points_(static_cast<UInt_t>((maxm13-minm13)/m13BinWidth)),
 	nm23Points_(static_cast<UInt_t>((maxm23-minm23)/m23BinWidth)),
 	nAmp_(nAmp),
-	nIncohAmp_(nIncohAmp)
+	nIncohAmp_(nIncohAmp),
+	squareDP_(squareDP)
 {
 	const Double_t meanm13 = 0.5*(minm13 + maxm13);
 	const Double_t rangem13 = maxm13 - minm13;
@@ -36,6 +40,12 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 	const Double_t halfRangem23 = 0.5*rangem23;
 
 	const Double_t intFactor = halfRangem13*halfRangem23;
+
+	// Raise error if squareDP is true but the kinematics object is not provided
+	if ( squareDP_ && kinematics == 0 ) {
+		std::cerr << "ERROR in LauDPPartialIntegralInfo constructor : Integration in the square DP has been specified but no valid kinematics object has been provided!" << std::endl;
+		return;
+	}
 
 	// Avoid integral if we have no points in either x or y space
 	if (nm13Points_ == 0 || nm23Points_ == 0) {
@@ -62,10 +72,17 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 		totm23Weight += m23Weights_[i];
 	}
 
-	std::cout<<"INFO in LauDPPartialIntegralInfo constructor : nm13Points = "<<nm13Points_<<", nm23Points = "<<nm23Points_<<std::endl;
-	std::cout<<"                                             : m13BinWidth = "<<m13BinWidth_<<", m23BinWidth = "<<m23BinWidth_<<std::endl;
-	std::cout<<"                                             : Integrating over m13 = "<<minm13_<<" to "<<maxm13_<<", m23 = "<<minm23_<<" to "<<maxm23_<<std::endl;
-	std::cout<<"                                             : totm13Weight = "<<totm13Weight<<", totm23Weight = "<<totm23Weight<<std::endl;
+	if ( squareDP_ ) {
+		std::cout<<"INFO in LauDPPartialIntegralInfo constructor : nmPrimePoints = "<<nm13Points_<<", nthPrimePoints = "<<nm23Points_<<std::endl;
+		std::cout<<"                                             : mPrimeBinWidth = "<<m13BinWidth_<<", thPrimeBinWidth = "<<m23BinWidth_<<std::endl;
+		std::cout<<"                                             : Integrating over mPrime = "<<minm13_<<" to "<<maxm13_<<", thPrime = "<<minm23_<<" to "<<maxm23_<<std::endl;
+		std::cout<<"                                             : totmPrimeWeight = "<<totm13Weight<<", totthPrimeWeight = "<<totm23Weight<<std::endl;
+	} else {
+		std::cout<<"INFO in LauDPPartialIntegralInfo constructor : nm13Points = "<<nm13Points_<<", nm23Points = "<<nm23Points_<<std::endl;
+		std::cout<<"                                             : m13BinWidth = "<<m13BinWidth_<<", m23BinWidth = "<<m23BinWidth_<<std::endl;
+		std::cout<<"                                             : Integrating over m13 = "<<minm13_<<" to "<<maxm13_<<", m23 = "<<minm23_<<" to "<<maxm23_<<std::endl;
+		std::cout<<"                                             : totm13Weight = "<<totm13Weight<<", totm23Weight = "<<totm23Weight<<std::endl;
+	}
 
 	// Calculate the m13 and m23 values at the grid points
 
@@ -111,7 +128,13 @@ LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const 
 		for (UInt_t j = 0; j < nm23Points_; ++j) {
 
 			Double_t weight = m13Weights_[i]*m23Weights_[j];
-			Double_t jacobian = 4.0*m13Points_[i]*m23Points_[j];
+
+			Double_t jacobian(0.0);
+			if ( squareDP_ ) {
+				jacobian = kinematics->calcSqDPJacobian( m13Points_[i], m23Points_[j] );
+			} else {
+				jacobian = 4.0*m13Points_[i]*m23Points_[j];
+			}
 			weight *= (jacobian*intFactor);
 
 			weights_[i][j] = weight;

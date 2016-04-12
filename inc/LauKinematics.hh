@@ -75,7 +75,13 @@ class LauKinematics {
 		/*!
 		    \return the jacobian of the transformation
 		*/
-		Double_t calcSqDPJacobian();
+		Double_t calcSqDPJacobian(const Double_t mPrime, const Double_t thPrime) const;
+
+		//! Calculate the Jacobian for the transformation m23^2, m13^2 -> m', theta' (square DP)
+		/*!
+		    \return the jacobian of the transformation
+		*/
+		Double_t calcSqDPJacobian() const;
 
 		//! Routine to generate events flat in phase-space
 		/*!

@@ -1061,7 +1061,7 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	//const UInt_t s12 = e12 ? 0 : m12NarrowRes.size();
 	const UInt_t s13 = e13 ? 0 : m13NarrowRes.size();
 	const UInt_t s23 = e23 ? 0 : m23NarrowRes.size();
-	const Double_t w12 = e12 ? DBL_MAX : m12NarrowRes.begin()->first / binningFactor_;
+	//const Double_t w12 = e12 ? DBL_MAX : m12NarrowRes.begin()->first / binningFactor_;
 	const Double_t w13 = e13 ? DBL_MAX : m13NarrowRes.begin()->first / binningFactor_;
 	const Double_t w23 = e23 ? DBL_MAX : m23NarrowRes.begin()->first / binningFactor_;
 
@@ -1077,12 +1077,14 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..."<<std::endl;
 		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
 	} else if ( ! e12 ) {
-		// If we have a narrow resonance on the diagonal then we'll
-		// have to just use a narrow bin width over the whole DP
-		// (a factor 10 larger than if we were doing this in a small region)
-		m13BinWidth = m23BinWidth = 10.0*TMath::Min( w12, TMath::Min( w13, w23 ) );
-		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole Dalitz plot with bin width of "<<m13BinWidth<<" GeV/c2..."<<std::endl;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_));
+		// We have at least one narrow resonance in m12
+		// Switch to using the square DP for the integration
+		// TODO - for the time being just use a single, reasonably fine, grid
+		//      - can later consider whether there's a need to split up the mPrime axis into regions around particularly narrow resonances in m12
+		//      - should also make this bin width tunable by the user, etc.
+		m13BinWidth = m23BinWidth = 0.001;
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin width of "<<m13BinWidth<<" in both mPrime and thetaPrime..."<<std::endl;
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
 	} else if ( s13==1 && e23 ) {
 		// We have a single narrow resonance in m13
 		// Divide the plot into 3 regions: the resonance band and
@@ -1497,6 +1499,7 @@ void LauIsobarDynamics::calcDPPartialIntegral(LauDPPartialIntegralInfo* intInfo)
 {
 	// Calculate the integrals for all parts of the amplitude in the given region of the DP
 
+	const Bool_t squareDP   = intInfo->getSquareDP();
 	const UInt_t nm13Points = intInfo->getnm13Points();
 	const UInt_t nm23Points = intInfo->getnm23Points();
 
@@ -1513,12 +1516,18 @@ void LauIsobarDynamics::calcDPPartialIntegral(LauDPPartialIntegralInfo* intInfo)
 			const Double_t weight = intInfo->getWeight(i,j);
 
 			// Calculate the integral contributions for each resonance.
-			// Only resonances within the DP area contribute.
+			// Only points within the DP area contribute.
 			// This also calculates the total DP area as a check.
-			Bool_t withinDP = kinematics_->withinDPLimits(m13Sq, m23Sq);
+			// NB if squareDP is true, m13 and m23 are actually mPrime and thetaPrime
+			Bool_t withinDP = squareDP ? kinematics_->withinSqDPLimits(m13, m23) : kinematics_->withinDPLimits(m13Sq, m23Sq);
 			if (withinDP == kTRUE) {
 
-				kinematics_->updateKinematics(m13Sq, m23Sq);
+				if ( squareDP ) {
+					// NB m13 and m23 are actually mPrime and thetaPrime
+					kinematics_->updateSqDPKinematics(m13, m23);
+				} else {
+					kinematics_->updateKinematics(m13Sq, m23Sq);
+				}
 
 				this->calculateAmplitudes(intInfo, i, j);
 

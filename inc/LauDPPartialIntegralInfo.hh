@@ -29,6 +29,8 @@
 
 #include "LauComplex.hh"
 
+class LauKinematics;
+
 
 class LauDPPartialIntegralInfo {
 
@@ -44,13 +46,17 @@ class LauDPPartialIntegralInfo {
 		    \param [in] precision the precision required for the Gauss-Legendre weights
 		    \param [in] nAmp the number of coherent amplitude components
 		    \param [in] nIncohAmp the number of incoherent amplitude components
+		    \param [in] squareDP whether or not to use the square DP for the integration - if so, m13 is actually mPrime and m23 is actually thetaPrime
+		    \param [in] kinematics the kinematics object to use to calculate the Jacobians (only relevant if squareDP is true)
 		*/
 		LauDPPartialIntegralInfo(const Double_t minm13, const Double_t maxm13,
 					 const Double_t minm23, const Double_t maxm23,
 					 const Double_t m13BinWidth, const Double_t m23BinWidth,
 					 const Double_t precision,
 					 const UInt_t nAmp,
-					 const UInt_t nIncohAmp);
+					 const UInt_t nIncohAmp,
+					 const Bool_t squareDP = kFALSE,
+					 const LauKinematics* kinematics = 0);
 
 		//! Destructor
 		virtual ~LauDPPartialIntegralInfo();
@@ -102,6 +108,12 @@ class LauDPPartialIntegralInfo {
 		    \return the number of bins in m23
 		*/
 		inline UInt_t getnm23Points() const {return nm23Points_;}
+
+		//! Retrieve the square DP flag
+		/*!
+		    \return whether or not the integration is performed in the square DP
+		*/
+		inline Bool_t getSquareDP() const {return squareDP_;}
 
 		//! Retrieve the weight for the given grid point
 		/*!
@@ -213,6 +225,9 @@ class LauDPPartialIntegralInfo {
 
 		//! The number of amplitude components
 		const UInt_t nIncohAmp_;
+
+		//! Flag whether or not we're using the square DP for the integration
+		const Bool_t squareDP_;
 
 		//! The m13 positions of the grid points
 		std::vector<Double_t> m13Points_;

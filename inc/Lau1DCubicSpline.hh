@@ -13,7 +13,7 @@
  */
 
 /*! \class Lau1DCubicSpline
-    \brief File containing implementation of Lau1DCubicSpline class.
+    \brief Class for defining a 1D cubic spline based on a set of knots.
 
     Class for defining a 1D cubic spline based on a set of knots.
     Interpolation between the knots is performed either by one of 

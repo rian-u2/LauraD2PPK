@@ -63,6 +63,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
+	mPrimeBinWidth_(0.001),
+	thPrimeBinWidth_(0.001),
 	narrowWidth_(0.020),
 	binningFactor_(100.0),
 	m13Sq_(0.0),
@@ -121,6 +123,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
+	mPrimeBinWidth_(0.001),
+	thPrimeBinWidth_(0.001),
 	narrowWidth_(0.020),
 	binningFactor_(100.0),
 	m13Sq_(0.0),
@@ -1065,9 +1069,11 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	const Double_t w13 = e13 ? DBL_MAX : m13NarrowRes.begin()->first / binningFactor_;
 	const Double_t w23 = e23 ? DBL_MAX : m23NarrowRes.begin()->first / binningFactor_;
 
-	// Start off with default bin width (5 MeV)
+	// Start off with default bin widths (5 MeV for m13 vs m23 and 0.001 for m' vs theta')
 	Double_t m13BinWidth = m13BinWidth_;
 	Double_t m23BinWidth = m23BinWidth_;
+	Double_t mPrimeBinWidth = mPrimeBinWidth_;
+	Double_t thPrimeBinWidth = thPrimeBinWidth_;
 
 	// Depending on how many narrow resonances we have and where they
 	// are we adopt different approaches
@@ -1079,12 +1085,10 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	} else if ( ! e12 ) {
 		// We have at least one narrow resonance in m12
 		// Switch to using the square DP for the integration
-		// TODO - for the time being just use a single, reasonably fine, grid
+		// TODO - for the time being just use a single, reasonably fine by default and tunable, grid
 		//      - can later consider whether there's a need to split up the mPrime axis into regions around particularly narrow resonances in m12
-		//      - should also make this bin width tunable by the user, etc.
-		m13BinWidth = m23BinWidth = 0.001;
-		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin width of "<<m13BinWidth<<" in both mPrime and thetaPrime..."<<std::endl;
-		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, m13BinWidth, m23BinWidth, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin widths of "<<mPrimeBinWidth<<" in mPrime and "<<thPrimeBinWidth<<" in thetaPrime..."<<std::endl;
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, mPrimeBinWidth, thPrimeBinWidth, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
 	} else if ( s13==1 && e23 ) {
 		// We have a single narrow resonance in m13
 		// Divide the plot into 3 regions: the resonance band and
@@ -1484,15 +1488,16 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	normalizationSchemeDone_ = kTRUE;
 }
 
-void LauIsobarDynamics::setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth)
+void LauIsobarDynamics::setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth,
+		                             const Double_t mPrimeBinWidth, const Double_t thPrimeBinWidth)
 {
-	// Specify whether we're going to use Gauss-Legendre integration to calculate the normalisation
-	// integrals, and the bin widths we require for the m13 and m23 axes. Note that the integration
-	// is done over m13, m23 space, with the appropriate Jacobian applied, and not m13^2, m23^2 space.
-	// The default bin widths in m13 and m23 space are 5 MeV.
-
+	// Set the bin widths for the m13 vs m23 integration grid
 	m13BinWidth_ = m13BinWidth;
 	m23BinWidth_ = m23BinWidth;
+
+	// Set the bin widths for the m' vs theta' integration grid
+	mPrimeBinWidth_ = mPrimeBinWidth;
+	thPrimeBinWidth_ = thPrimeBinWidth;
 }
 
 void LauIsobarDynamics::calcDPPartialIntegral(LauDPPartialIntegralInfo* intInfo)

@@ -913,9 +913,9 @@ Bool_t LauIsobarDynamics::hasResonance(const TString& resName) const
 {
 	const Int_t index = this->resonanceIndex(resName);
 	if (index < 0) {
-		return kTRUE;
-	} else {
 		return kFALSE;
+	} else {
+		return kTRUE;
 	}
 }
 

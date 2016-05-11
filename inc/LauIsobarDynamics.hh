@@ -88,8 +88,11 @@ class LauIsobarDynamics {
 		/*!
 		    \param [in] m13BinWidth the bin width to use when integrating over m13
 		    \param [in] m23BinWidth the bin width to use when integrating over m23
+		    \param [in] mPrimeBinWidth the bin width to use when integrating over m'
+		    \param [in] thPrimeBinWidth the bin width to use when integrating over theta'
 		*/
-		void setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth);
+		void setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth,
+					  const Double_t mPrimeBinWidth, const Double_t thPrimeBinWidth);
 
 		//! Set the value below which a resonance width is considered to be narrow
 		/*!
@@ -742,6 +745,12 @@ class LauIsobarDynamics {
 
 		//! The bin width to use when integrating over m23
 		Double_t m23BinWidth_;
+
+                //! The bin width to use when integrating over m'
+                Double_t mPrimeBinWidth_;
+
+                //! The bin width to use when integrating over theta'
+         	Double_t thPrimeBinWidth_;
 
 		//! The value below which a resonance width is considered to be narrow
 		Double_t narrowWidth_;

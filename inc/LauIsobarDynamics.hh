@@ -84,15 +84,22 @@ class LauIsobarDynamics {
 		inline void setIntFileName(const TString& fileName) {intFileName_ = fileName;}
 
 		// Integration
-		//! Set the widths of the bins to use when integrating across the Dalitz plot
+		//! Set the widths of the bins to use when integrating across the Dalitz plot or square Dalitz plot
 		/*!
+		    Specify the bin widths required when performing the DP integration.
+		    Note that the integration is not performed in m13^2 vs m23^2 space
+		    but in either m13 vs m23 space or mPrime vs thetaPrime space,
+		    with the appropriate Jacobian applied.
+		    The default bin widths in m13 vs m23 space are 0.005 GeV.
+		    The default bin widths in mPrime vs thetaPrime space are 0.001.
+
 		    \param [in] m13BinWidth the bin width to use when integrating over m13
 		    \param [in] m23BinWidth the bin width to use when integrating over m23
-		    \param [in] mPrimeBinWidth the bin width to use when integrating over m'
-		    \param [in] thPrimeBinWidth the bin width to use when integrating over theta'
+		    \param [in] mPrimeBinWidth the bin width to use when integrating over mPrime
+		    \param [in] thPrimeBinWidth the bin width to use when integrating over thetaPrime
 		*/
 		void setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth,
-					  const Double_t mPrimeBinWidth, const Double_t thPrimeBinWidth);
+				          const Double_t mPrimeBinWidth = 0.001, const Double_t thPrimeBinWidth = 0.001);
 
 		//! Set the value below which a resonance width is considered to be narrow
 		/*!
@@ -746,11 +753,11 @@ class LauIsobarDynamics {
 		//! The bin width to use when integrating over m23
 		Double_t m23BinWidth_;
 
-                //! The bin width to use when integrating over m'
-                Double_t mPrimeBinWidth_;
+		//! The bin width to use when integrating over mPrime
+		Double_t mPrimeBinWidth_;
 
-                //! The bin width to use when integrating over theta'
-         	Double_t thPrimeBinWidth_;
+		//! The bin width to use when integrating over thetaPrime
+		Double_t thPrimeBinWidth_;
 
 		//! The value below which a resonance width is considered to be narrow
 		Double_t narrowWidth_;

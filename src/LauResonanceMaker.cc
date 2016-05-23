@@ -38,6 +38,7 @@
 #include "LauRelBreitWignerRes.hh"
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
+#include "LauRhoOmegaMix.hh"
 #include "LauSigmaRes.hh"
 
 ClassImp(LauResonanceMaker);
@@ -688,6 +689,21 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			std::cout<<"                                        : Using incoherent Gaussian lineshape. "<<std::endl;
 			theResonance = new LauGaussIncohRes(resInfo, resPairAmpInt, daughters);
 			break;
+
+	        case LauAbsResonance::RhoOmegaMix :
+		        // Rho-omega mass mixing model
+		        std::cout<<"                                        : Using rho-omega mass mixing lineshape. "<<std::endl;
+			theResonance = new LauRhoOmegaMix(resInfo, resPairAmpInt, daughters);
+			LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
+			LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
+			if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
+				resCategory = resInfo->getBWCategory();
+			}
+			LauBlattWeisskopfFactor* resBWFactor = this->getBWFactor( resCategory, resInfo, bwType );
+			LauBlattWeisskopfFactor* parBWFactor = this->getBWFactor( parCategory, resInfo, bwType );
+			theResonance->setBarrierRadii( resBWFactor, parBWFactor );
+			break;
+
 	}
 
 	return theResonance;

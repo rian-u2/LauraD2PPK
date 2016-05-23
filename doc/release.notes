@@ -4,6 +4,9 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+23rd May 2016 John Back
+* Added new lineshape model for rho-omega mass mixing, LauRhoOmegaMix.
+
 19th January 2016 John Back
 * Correct the f(m^2) factor in the denominator of the LauGounarisSakuraiRes
   lineshape to use Gamma_0 instead of Gamma(m)

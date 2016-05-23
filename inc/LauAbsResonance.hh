@@ -63,7 +63,8 @@ class LauAbsResonance {
 			MIPW_RealImag, 		/*!< a model independent partial wave - real and imaginary part representation */
 			MIPW_Sym_MagPhase, 	/*!< a model independent partial wave for symmetrised DPs - magnitude and phase representation */
 			MIPW_Sym_RealImag, 	/*!< a model independent partial wave for symmetrised DPs - real and imaginary part representation */
-			GaussIncoh		/*!< an incoherent Gaussian shape */
+			GaussIncoh,		/*!< an incoherent Gaussian shape */
+			RhoOmegaMix             /*!< a rho-omega mass mixing model */
 		};
 
 		//! Is the resonance model incoherent?

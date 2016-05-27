@@ -277,10 +277,6 @@ void LauSimpleFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 
 void LauSimpleFitModel::initialise()
 {
-	// From the initial parameter values calculate the coefficients
-	// so they can be passed to the signal model
-	this->updateCoeffs();
-
 	// Initialisation
 	if (!this->useDP() && signalPdfs_.empty()) {
 		std::cerr << "ERROR in LauSimpleFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
@@ -304,6 +300,17 @@ void LauSimpleFitModel::initialise()
 				}
 			}
 		}
+
+		// Need to check that the number of components we have and that the dynamics has matches up
+		UInt_t nAmp = sigDPModel_->getnTotAmp();
+		if (nAmp != nSigComp_) {
+			std::cerr << "ERROR in LauSimpleFitModel::initialise : Number of signal DP components with magnitude and phase set not right." << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+
+		// From the initial parameter values calculate the coefficients
+		// so they can be passed to the signal model
+		this->updateCoeffs();
 
 		// If all is well, go ahead and initialise them
 		this->initialiseDPModels();
@@ -380,13 +387,6 @@ void LauSimpleFitModel::initialise()
 
 void LauSimpleFitModel::initialiseDPModels()
 {
-	// Need to check that the number of components we have and that the dynamics has matches up
-	UInt_t nAmp = sigDPModel_->getnTotAmp();
-	if (nAmp != nSigComp_) {
-		std::cerr << "ERROR in LauSimpleFitModel::initialiseDPModels : Number of signal DP components with magnitude and phase set not right." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
 	std::cout << "INFO in LauSimpleFitModel::initialiseDPModels : Initialising DP models" << std::endl;
 
 	sigDPModel_->initialise(coeffs_);

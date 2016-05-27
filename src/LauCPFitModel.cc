@@ -444,10 +444,6 @@ void LauCPFitModel::setAmpCoeffSet(LauAbsCoeffSet* coeffSet)
 
 void LauCPFitModel::initialise()
 {
-	// From the initial parameter values calculate the coefficients
-	// so they can be passed to the signal model
-	this->updateCoeffs();
-
 	// Initialisation
 	if (!this->useDP() && negSignalPdfs_.empty()) {
 		std::cerr << "ERROR in LauCPFitModel::initialise : Signal model doesn't exist for any variable." << std::endl;
@@ -484,6 +480,23 @@ void LauCPFitModel::initialise()
 				}
 			}
 		}
+
+		// Need to check that the number of components we have and that the dynamics has matches up
+		const UInt_t nNegAmp = negSigModel_->getnTotAmp();
+		const UInt_t nPosAmp = posSigModel_->getnTotAmp();
+		if ( nNegAmp != nPosAmp ) {
+			std::cerr << "ERROR in LauCPFitModel::initialise : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+		if ( nNegAmp != nSigComp_ ) {
+			std::cerr << "ERROR in LauCPFitModel::initialise : Number of signal DP components in the model (" << nNegAmp << ") not equal to number of coefficients supplied (" << nSigComp_ << ")." << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+
+
+		// From the initial parameter values calculate the coefficients
+		// so they can be passed to the signal model
+		this->updateCoeffs();
 
 		// If all is well, go ahead and initialise them
 		this->initialiseDPModels();
@@ -569,19 +582,6 @@ void LauCPFitModel::recalculateNormalisation()
 
 void LauCPFitModel::initialiseDPModels()
 {
-	// Need to check that the number of components we have and that the dynamics has matches up
-	const UInt_t nNegAmp = negSigModel_->getnTotAmp();
-	const UInt_t nPosAmp = posSigModel_->getnTotAmp();
-	if ( nNegAmp != nPosAmp ) {
-		std::cerr << "ERROR in LauCPFitModel::initialiseDPModels : Unequal number of signal DP components in the negative and positive models: " << nNegAmp << " != " << nPosAmp << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-	if ( nNegAmp != nSigComp_ ) {
-		std::cerr << "ERROR in LauCPFitModel::initialiseDPModels : Number of signal DP components in the model (" << nNegAmp << ") not equal to number of coefficients supplied (" << nSigComp_ << ")." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
-
 	std::cout << "INFO in LauCPFitModel::initialiseDPModels : Initialising signal DP model" << std::endl;
 	negSigModel_->initialise(negCoeffs_);
 	posSigModel_->initialise(posCoeffs_);

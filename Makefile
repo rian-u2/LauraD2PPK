@@ -120,6 +120,7 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.cc
 # Rule to make ROOTCINT output file
 $(CINTOBJ): $(HHLIST) $(INCDIR)/$(PACKAGE)_LinkDef.h
 	@mkdir -p $(OBJDIR)
+	@mkdir -p $(LIBDIR)
 ifeq ($(ROOTVERSION),5)
 	@echo "Running rootcint"
 	@$(ROOTBINDIR)/rootcint -f $(CINTFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h

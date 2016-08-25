@@ -64,7 +64,10 @@ class LauAbsResonance {
 			MIPW_Sym_MagPhase, 	/*!< a model independent partial wave for symmetrised DPs - magnitude and phase representation */
 			MIPW_Sym_RealImag, 	/*!< a model independent partial wave for symmetrised DPs - real and imaginary part representation */
 			GaussIncoh,		/*!< an incoherent Gaussian shape */
-			RhoOmegaMix             /*!< a rho-omega mass mixing model */
+			RhoOmegaMix_GS,         /*!< mass mixing model using GS for res 1 and RBW for res 2 */
+			RhoOmegaMix_RBW,        /*!< mass mixing model using two RBWs  */
+			RhoOmegaMix_GS_1,       /*!< mass mixing model using GS for res 1 and RBW for res 2, with denominator factor = 1 */
+			RhoOmegaMix_RBW_1       /*!< mass mixing model using two RBWs, with denominator factor = 1 */
 		};
 
 		//! Is the resonance model incoherent?
@@ -101,7 +104,7 @@ class LauAbsResonance {
 			\param [in] kinematics the kinematic variables of the current event
 			\return the complex amplitude
 		*/
-		virtual LauComplex amplitude(const LauKinematics* kinematics);
+                virtual LauComplex amplitude(const LauKinematics* kinematics);
 
 		//! Get the resonance model type
                 /*!
@@ -200,6 +203,31 @@ class LauAbsResonance {
 			\param [in] boolean the ignore momenta status
 		*/
 		void ignoreMomenta(const Bool_t boolean) {ignoreMomenta_ = boolean;}
+
+		//! Get the ignore spin flag
+		/*! 
+			\return the ignore spin flag
+		*/
+		Bool_t ignoreSpin() const {return ignoreSpin_;}
+
+		//! Set the ignore p_ and q_ flag
+		/*!
+			\param [in] boolean the ignore spin status
+		*/
+		void ignoreSpin(const Bool_t boolean) {ignoreSpin_ = boolean;}
+
+
+		//! Get the ignore barrier factor scaling flag
+		/*! 
+			\return the ignore barrier amplitude scaling flag
+		*/
+		Bool_t ignoreBarrierScaling() const {return ignoreBarrierScaling_;}
+
+		//! Set the ignore barrier factor scaling flag
+		/*!
+			\param [in] boolean the ignore barrier factor scaling status
+		*/
+		void ignoreBarrierScaling(const Bool_t boolean) {ignoreBarrierScaling_ = boolean;}
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
@@ -331,7 +359,7 @@ class LauAbsResonance {
 		LauBlattWeisskopfFactor* getParBWFactor() {return parBWFactor_;}
 		const LauBlattWeisskopfFactor* getParBWFactor() const {return parBWFactor_;}
 		//! Get the centrifugal barrier for the resonance decay
-		LauBlattWeisskopfFactor* getResBWFactor() {return resBWFactor_;}
+                LauBlattWeisskopfFactor* getResBWFactor() {return resBWFactor_;}
 		const LauBlattWeisskopfFactor* getResBWFactor() const {return resBWFactor_;}
 
 		//! Access the resonance info object
@@ -434,8 +462,12 @@ class LauAbsResonance {
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
-		//! Boolean to ignore q_ and p_ in spinTerm
+		//! Boolean to ignore q_ and p_ in spinTerm, as well as ignoring momentum dependent widths
 		Bool_t ignoreMomenta_;
+                //! Boolean to set the spinTerm to unity always
+                Bool_t ignoreSpin_;
+                //! Boolean to ignore barrier factor amplitude scaling; they are still used for the width
+                Bool_t ignoreBarrierScaling_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;

@@ -188,7 +188,10 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	resAmplitude = LauComplex(massSqTerm + f, resMass*totWidth);
 
 	// Scale by the denominator factor, as well as the spin term and Blatt-Weisskopf factors
-	const Double_t numerFactor = fFactorRRatio*fFactorBRatio*spinTerm*(1 + d_ * resWidth/resMass);
+	Double_t numerFactor = spinTerm*(1.0 + d_ * resWidth/resMass);
+	if (!this->ignoreBarrierScaling()) {
+   	        numerFactor *= fFactorRRatio*fFactorBRatio;
+	}
 	const Double_t denomFactor = (massSqTerm + f)*(massSqTerm + f) + resMassSq_*totWidth*totWidth;
 	resAmplitude.rescale(numerFactor/denomFactor);
 

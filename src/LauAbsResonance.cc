@@ -51,7 +51,10 @@ bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
 		case MIPW_RealImag: 
 		case MIPW_Sym_MagPhase:
 		case MIPW_Sym_RealImag:
-         	case RhoOmegaMix:
+         	case RhoOmegaMix_GS:
+         	case RhoOmegaMix_RBW:
+         	case RhoOmegaMix_GS_1:
+         	case RhoOmegaMix_RBW_1:
 			break;
 		case GaussIncoh:
 			return true;
@@ -77,6 +80,8 @@ LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairA
 	resBWFactor_(0),
 	flipHelicity_(kFALSE),
 	ignoreMomenta_(kFALSE),
+	ignoreSpin_(kFALSE),
+	ignoreBarrierScaling_(kFALSE),
 	q_(0.0),
 	p_(0.0),
 	pstar_(0.0)
@@ -130,6 +135,8 @@ LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpI
 	resBWFactor_(0),
 	flipHelicity_(kFALSE),
 	ignoreMomenta_(kFALSE),
+	ignoreSpin_(kFALSE),
+	ignoreBarrierScaling_(kFALSE),
 	q_(0.0),
 	p_(0.0),
 	pstar_(0.0)
@@ -215,8 +222,11 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	}
 
 	// Calculate the spin factors
-	Double_t pProd = q_*p_;
-	Double_t spinTerm = this->calcSpinTerm( cosHel, pProd );
+	Double_t spinTerm(1.0);
+	if (!this->ignoreSpin()) {
+	        Double_t pProd = q_*p_;
+	        spinTerm = this->calcSpinTerm( cosHel, pProd );
+	}
 
 	// Calculate the full amplitude
 	LauComplex resAmplitude = this->resAmp(mass, spinTerm);
@@ -350,7 +360,7 @@ void LauAbsResonance::fixBarrierRadii(const Bool_t fixResRad, const Bool_t fixPa
 Bool_t LauAbsResonance::fixResRadius() const
 {
 	if ( resBWFactor_ == 0 ) {
-		std::cerr << "WARNING in LauAbsResonance::fixResRadius : resonance barrier factor not present" << std::endl;
+	        std::cerr << "WARNING in LauAbsResonance::fixResRadius : resonance barrier factor not present" << std::endl;
 		return kTRUE;
 	}
 
@@ -361,7 +371,7 @@ Bool_t LauAbsResonance::fixResRadius() const
 Bool_t LauAbsResonance::fixParRadius() const
 {
 	if ( parBWFactor_ == 0 ) {
-		std::cerr << "WARNING in LauAbsResonance::fixParRadius : parent barrier factor not present" << std::endl;
+	        std::cerr << "WARNING in LauAbsResonance::fixParRadius : parent barrier factor not present" << std::endl;
 		return kTRUE;
 	}
 
@@ -372,7 +382,7 @@ Bool_t LauAbsResonance::fixParRadius() const
 Double_t LauAbsResonance::getResRadius() const
 {
 	if ( resBWFactor_ == 0 ) {
-		std::cerr << "WARNING in LauAbsResonance::getResRadius : resonance barrier factor not present" << std::endl;
+	        std::cerr << "WARNING in LauAbsResonance::getResRadius : resonance barrier factor not present" << std::endl;
 		return -1.0;
 	}
 
@@ -383,7 +393,7 @@ Double_t LauAbsResonance::getResRadius() const
 Double_t LauAbsResonance::getParRadius() const
 {
 	if ( parBWFactor_ == 0 ) {
-		std::cerr << "WARNING in LauAbsResonance::getParRadius : parent barrier factor not present" << std::endl;
+	        std::cerr << "WARNING in LauAbsResonance::getParRadius : parent barrier factor not present" << std::endl;
 		return -1.0;
 	}
 

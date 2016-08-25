@@ -156,29 +156,39 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	if ( ( (!this->fixMass()) && resMass != resMass_ ) ||
 	     ( (!this->fixResRadius()) && resRadius != resRadius_ ) ||
 	     ( (!this->fixParRadius()) && parRadius != parRadius_ ) ) {
+
 		this->initialise();
 	}
 
+	// Get barrier scaling factors
 	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
 	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
 	const Double_t fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
 	const Double_t fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
-	const Double_t fFactorRRatio = fFactorR/FR0_;
-	const Double_t fFactorBRatio = fFactorB/FP0_;
+	Double_t fFactorRRatio = fFactorR/FR0_;
+	Double_t fFactorBRatio = fFactorB/FP0_;
 
-	const Double_t qRatio = q/q0_;
-	Double_t qTerm(0.0);
-	if (resSpin == 0) {
-		qTerm = qRatio;
-	} else if (resSpin == 1) {
-		qTerm = qRatio*qRatio*qRatio;
-	} else if (resSpin == 2) {
-		qTerm = qRatio*qRatio*qRatio*qRatio*qRatio;
-	} else {
-		qTerm = TMath::Power(qRatio, 2*resSpin + 1);  
-	}
+	// If ignoreMomenta is set, set the total width simply as the pole width, and do
+	// not include any momentum-dependent barrier factors (set them to unity)
+	Double_t totWidth(resWidth);
 
-	const Double_t totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
+	if (!this->ignoreMomenta()) {
+
+		const Double_t qRatio = q/q0_;
+		Double_t qTerm(0.0);
+		if (resSpin == 0) {
+		    qTerm = qRatio;
+		} else if (resSpin == 1) {
+		    qTerm = qRatio*qRatio*qRatio;
+		} else if (resSpin == 2) {
+		    qTerm = qRatio*qRatio*qRatio*qRatio*qRatio;
+		} else {
+		    qTerm = TMath::Power(qRatio, 2.0*resSpin + 1.0);
+		}
+		
+		totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
+
+	} 
 
 	const Double_t massSq = mass*mass;
 	const Double_t massSqTerm = resMassSq_ - massSq;
@@ -186,8 +196,15 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	// Compute the complex amplitude
 	resAmplitude = LauComplex(massSqTerm, resMass*totWidth);
 
-	// Scale by the denominator factor, as well as the spin term and Blatt-Weisskopf factors
-	resAmplitude.rescale((fFactorRRatio*fFactorBRatio*spinTerm)/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth));
+	// Scale by the denominator factor, as well as the spin term
+	Double_t scale = spinTerm/(massSqTerm*massSqTerm + resMassSq_*totWidth*totWidth);
+
+	// Include Blatt-Weisskopf barrier factors
+	if (!this->ignoreBarrierScaling()) {
+	        scale *= fFactorRRatio*fFactorBRatio;
+	} 
+
+	resAmplitude.rescale(scale);
 
 	return resAmplitude;
 }

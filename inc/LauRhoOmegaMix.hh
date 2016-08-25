@@ -27,6 +27,11 @@
 #include "LauAbsResonance.hh"
 #include "LauComplex.hh"
 
+#include <vector>
+
+class LauResonanceInfo;
+class LauDaughters;
+class LauParameter;
 
 class LauRhoOmegaMix : public LauAbsResonance {
 
@@ -34,10 +39,12 @@ public:
     //! Constructor
     /*!
       \param [in] resInfo the object containing information on the resonance name, mass, width, spin, charge, etc.
+      \param [in] resType the model of the resonance
       \param [in] resPairAmpInt the number of the daughter not produced by the resonance
       \param [in] daughters the daughter particles
     */	
-    LauRhoOmegaMix(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
+    LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,
+		   const Int_t resPairAmpInt, const LauDaughters* daughters);
 
     //! Destructor
     virtual ~LauRhoOmegaMix();
@@ -45,11 +52,24 @@ public:
     //! Initialise the model
     virtual void initialise();
 
+    //! Initialise the rho resonance
+    void initialiseRho();
+
+    //! Initialise the omega resonance
+    void initialiseOmega();
+
+    //! Get the complex dynamical amplitude
+    /*! 
+      \param [in] kinematics the kinematic variables of the current event
+      \return the complex amplitude
+    */
+    virtual LauComplex amplitude(const LauKinematics* kinematics);
+
     //! Get the resonance model type
     /*!
       \return the resonance model type
     */
-    virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::RhoOmegaMix;}
+    virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return model_;}
 
     //! Set value of the various parameters
     /*!
@@ -172,13 +192,8 @@ protected:
       \return kTRUE if the omega mixing parameter delta is fixed, kFALSE otherwise
     */
     Bool_t fixdeltaValue() const { return (delta_!=0) ? delta_->fixed() : 0.0; }
-  
- 
-    //! Complex resonant ampltiude
-    /*!
-      \param [in] mass appropriate invariant mass for the resonance
-      \param [in] spinTerm Zemach spin term
-    */	
+   
+    //! This is not called, amplitude is used directly instead
     virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
     
     //! Check that both daughters are the same type of particle
@@ -192,44 +207,35 @@ private:
     //! Copy assignment operator (not implemented)
     LauRhoOmegaMix& operator=(const LauRhoOmegaMix& rhs);
     
-    //! Momentum of the daughters in the resonance rest frame (at pole mass)
-    Double_t q0_;
-    //! Momentum of the bachelor in the resonance rest frame (at pole mass)
-    Double_t p0_;
-    //! Momentum of the bachelor in the parent rest frame (at pole mass)
-    Double_t pstar0_;
-    //! The resonance mass
-    Double_t resMass_;
-    //! Square of the resonance mass
-    Double_t resMassSq_;
-    //! The resonance width
-    Double_t resWidth_;
-    //! The resonance barrier radius
-    Double_t resRadius_;
-    //! The parent barrier radius
-    Double_t parRadius_;
-    //! Sum of the two daughter masses
-    Double_t mDaugSum_;
-    //! Square of the sum of the two daughter masses
-    Double_t mDaugSumSq_;
-    //! Difference of the two daughter masses
-    Double_t mDaugDiff_;
-    //! Square of the difference of the two daughter masses
-    Double_t mDaugDiffSq_;
-    //! Square of the parent mass
-    Double_t mParentSq_;
-    //! Square of the bachelor mass
-    Double_t mBachSq_;
-    //! Value of the form factor for resonance decay (at pole mass)
-    Double_t FR0_;
-    //! Value of the form factor for parent decay (at pole mass)
-    Double_t FP0_;
+    //! The model to use
+    LauAbsResonance::LauResonanceModel model_;
+
+    //! Previous value of the pole mass of the rho resonance
+    Double_t rhoMass_;
+
+    //! Previous value of the barrier radius of the rho resonance
+    Double_t rhoResRadius_;
+
+    //! Previous value of the parents barrier radius of the rho resonance
+    Double_t rhoParRadius_;
 
     //! Pole mass of the omega contribution
     LauParameter* mOmega_;
 
+    //! Initial default value of the omega pole mass from LauResonanceMaker
+    Double_t mOmega0_;
+
+    //! Current value of the omega pole mass (floating or fixed)
+    Double_t mOmegaCur_;
+
     //! Pole width of the omega contribution
     LauParameter* wOmega_;
+
+    //! Initial default value of the omega pole width from LauResonanceMaker
+    Double_t wOmega0_;
+
+    //! Current value of the omega pole mass (floating or fixed)
+    Double_t wOmegaCur_;
 
     //! B magnitude parameter of the omega mixing contribution
     LauParameter* magB_;
@@ -239,6 +245,18 @@ private:
 
     //! delta parameter of the omega mixing contribution
     LauParameter* delta_;
+
+    //! Boolean to specify if we want to use the denominator factor
+    Bool_t useDenom_;
+
+    //! Boolean to specify if we have performed the first initialisation
+    Bool_t doneFirstInit_;
+
+    //! Pointer to the rho (or first) resonance lineshape
+    LauAbsResonance* rhoRes_;
+
+    //! Pointer to the omega (second) resonance lineshape
+    LauAbsResonance* omegaRes_;
 
     ClassDef(LauRhoOmegaMix,0) // Rho-omega mixing model
 

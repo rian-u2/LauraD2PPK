@@ -4,6 +4,24 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+25th August 2016 John Back
+* Modified LauRhoOmegaMix to allow either a RelBW or GS lineshape for the rho, as well as
+  allowing the option to set the second-order denominator term to be equal to unity. 
+  Also fixed the bug where the spinTerm was not included in the rho-omega amplitude.
+  Changed the LauAbsResonance enum from RhoOmegaMix to RhoOmegaMix_GS, RhoOmegaMix_RBW,
+  RhoOmegaMix_GS_1 and RhoOmegaMix_RBW_1, where _1 sets the denominator term to unity and
+  _GS or _RBW sets the appropriate rho lineshape. The omega is always a RelBW.
+
+* Added to LauAbsResonance: ignoreSpin and ignoreBarrierScaling boolean flags, which ignore
+  either the spin terms or the barrier scaling factors for the amplitude. The latter does not 
+  turn off the resonance barrier factor for mass-dependent widths
+
+* Added to LauResonanceMaker: getResInfo(resonanceName), which retrieves the resonance information.
+  This is used to obtain the PDG omega values for initialising LauRhoOmegaMix
+
+* Made LauRelBreitWignerRes ignore momentum-dependent terms for the resonance width if ignoreMomenta is set.
+  This is used in the LauRhoOmegaMix for the omega lineshape where its width does not depend on momentum
+
 23rd May 2016 John Back
 * Added new lineshape model for rho-omega mass mixing, LauRhoOmegaMix.
 

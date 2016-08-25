@@ -690,10 +690,13 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			theResonance = new LauGaussIncohRes(resInfo, resPairAmpInt, daughters);
 			break;
 
-	        case LauAbsResonance::RhoOmegaMix :
+	        case LauAbsResonance::RhoOmegaMix_GS :
+	        case LauAbsResonance::RhoOmegaMix_RBW :
+	        case LauAbsResonance::RhoOmegaMix_GS_1 :
+	        case LauAbsResonance::RhoOmegaMix_RBW_1 :
 		        // Rho-omega mass mixing model
 		        std::cout<<"                                        : Using rho-omega mass mixing lineshape. "<<std::endl;
-			theResonance = new LauRhoOmegaMix(resInfo, resPairAmpInt, daughters);
+			theResonance = new LauRhoOmegaMix(resInfo, resType, resPairAmpInt, daughters);
 			LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
 			LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
 			if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
@@ -737,3 +740,19 @@ void LauResonanceMaker::printAll( std::ostream& stream ) const
 	}
 }
 
+LauResonanceInfo* LauResonanceMaker::getResInfo(const TString& resName) const 
+{
+    	LauResonanceInfo* resInfo(0);
+	for (std::vector<LauResonanceInfo*>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
+
+		if (resName == (*iter)->getName()) {
+			// We have recognised the resonance name. 
+			resInfo = (*iter);
+			// stop looping
+			break;
+		}
+	}
+
+	return resInfo;
+
+}

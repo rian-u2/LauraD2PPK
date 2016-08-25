@@ -83,6 +83,13 @@ class LauResonanceMaker {
 		*/
 		void printAll( std::ostream& stream ) const;
 
+                //! Get the information for the given resonance name
+                /*!
+		  \param [in] resName the name of the resonant particle
+		  \return the LauResonanceInfo pointer if we can find the resonance name
+		*/
+                LauResonanceInfo* getResInfo(const TString& resName) const;
+
 	protected:
 		//! Create the list of known resonances
 		void createResonanceVector();

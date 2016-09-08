@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+8th September 2016 Thomas Latham
+* Modifications to LauResonanceInfo to allow customisation of which extra parameters are shared between charge conjugate or shared-parameter records.
+  Where the parameters are not shared they are independently created instead of being cloned.
+* Modification of LauRhoOmegaMix to take advantage of the above to have the magB and phiB parameters independent.
+* Addition to LauResonanceMaker of rho(770)_COPY record that is a shared record with rho(770) - this allows the above new feature to be used.
+* Minor unrelated improvement to information messages in LauIsobarDynamics.
+
 25th August 2016 John Back
 * Modified LauRhoOmegaMix to allow either a RelBW or GS lineshape for the rho, as well as
   allowing the option to set the second-order denominator term to be equal to unity. 

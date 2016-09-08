@@ -116,7 +116,7 @@ LauParameter* LauResonanceInfo::getExtraParameter( const TString& parName )
 	return par;
 }
 
-void LauResonanceInfo::addExtraParameter( LauParameter* param )
+void LauResonanceInfo::addExtraParameter( LauParameter* param, const Bool_t independentPar )
 {
 	bool ok = extraPars_.insert( param ).second;
 	if ( !ok ) {
@@ -125,21 +125,26 @@ void LauResonanceInfo::addExtraParameter( LauParameter* param )
 	}
 
 	if ( conjugate_ != 0 ) {
-		conjugate_->addCloneOfExtraParameter(param);
+		conjugate_->addCloneOfExtraParameter( param, independentPar );
 	}
 
 	for ( std::vector<LauResonanceInfo*>::iterator iter = sharedParRecords_.begin(); iter != sharedParRecords_.end(); ++iter ) {
-		(*iter)->addCloneOfExtraParameter(param);
+		(*iter)->addCloneOfExtraParameter( param, independentPar );
 	}
 }
 
-void LauResonanceInfo::addCloneOfExtraParameter( LauParameter* param )
+void LauResonanceInfo::addCloneOfExtraParameter( LauParameter* param, const Bool_t copyNotClone )
 {
 	TString parName = param->name();
 	parName.Remove(0, parName.Last('_'));
 	parName.Prepend( sanitisedName_ );
 
-	LauParameter* cloneParam = param->createClone( parName );
+	LauParameter* cloneParam(0);
+	if ( copyNotClone ) {
+		cloneParam = new LauParameter( parName, param->unblindValue(), param->minValue(), param->maxValue(), param->fixed() );
+	} else {
+		cloneParam = param->createClone( parName );
+	}
 	extraPars_.insert( cloneParam );
 }
 

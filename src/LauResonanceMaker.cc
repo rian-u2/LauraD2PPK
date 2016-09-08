@@ -98,6 +98,11 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
+	// The following two lines of code are placed here in order to allow the following, rather niche, scenario:
+	// The LauRhoOmegaMix code permits (through the use of the optional independentPar argument of LauResonanceInfo::addExtraParameter) the magnitude and phase of the rho/omega mixing to potentially differ between the decay of the parent particle to rho0 X and the parent antiparticle to rho0 Xbar.
+	// This can be acheived by using the rho0(770) record in one case and the rho0(770)_COPY record in the other.
+	neutral = neutral->createSharedParameterRecord("rho0(770)_COPY");
+	resInfo_.push_back( neutral );
 	// rho(1450)
 	neutral = new LauResonanceInfo("rho0(1450)",    1.465,    0.400,    1,     0,       LauBlattWeisskopfFactor::Light   );
 	positve = new LauResonanceInfo("rho+(1450)",    1.465,    0.400,    1,     1,       LauBlattWeisskopfFactor::Light   );

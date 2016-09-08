@@ -123,15 +123,17 @@ class LauResonanceInfo {
 		//! Add an extra parameter of the resonance
 		/*!
 		    \param [in] param the extra parameter to be added
+		    \param [in] independentPar governs whether any info record that usually shares parameters with this one should also share this one (the default) or make its own independent version
 		*/
-		void addExtraParameter(LauParameter* param);
+		void addExtraParameter( LauParameter* param, const Bool_t independentPar = kFALSE );
 
 	protected:
 		//! Add a clone of an extra parameter of the resonance
 		/*!
 		    \param [in] param the extra parameter to be added
+		    \param [in] copyNotClone should we create an unlinked copy instead of cloning - default is to clone
 		*/
-		void addCloneOfExtraParameter(LauParameter* param);
+		void addCloneOfExtraParameter( LauParameter* param, const Bool_t copyNotClone = kFALSE );
 
 	private:
 		//! Copy constructor (not implemented)

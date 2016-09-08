@@ -118,7 +118,7 @@ LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance:
     if (!magB_) {
 	magB_ = new LauParameter(magBName, magBVal, 0.0, 100.0, kTRUE);
 	magB_->secondStage(kTRUE);
-	resInfo->addExtraParameter(magB_);
+	resInfo->addExtraParameter(magB_, kTRUE); // the kTRUE here allows this value to vary between B and Bbar - TODO: maybe make this configurable?
     }
 
     TString phiBName(parNameBase); phiBName += "_phiB";
@@ -126,7 +126,7 @@ LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance:
     if (!phiB_) {
 	phiB_ = new LauParameter(phiBName, phiBVal, -10.0, 10.0, kTRUE);
 	phiB_->secondStage(kTRUE);
-	resInfo->addExtraParameter(phiB_);
+	resInfo->addExtraParameter(phiB_, kTRUE); // the kTRUE here allows this value to vary between B and Bbar - TODO: maybe make this configurable?
     }
 
     // Set the delta parameter for the omega amplitude mixing term. This

@@ -1045,14 +1045,23 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		TString name = (*iter)->getResonanceName();
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: "<<name<<", mass = "<<mass<<", width = "<<width<<", pair int = "<<pair<<std::endl;
 		if ( pair == 1 ) {
-			if ( mass < minm23 || mass > maxm23 ){ continue; }
-			m23NarrowRes.insert( std::make_pair(width,mass) );
+			if ( mass < minm23 || mass > maxm23 ){
+				std::cout<<"                                                     : But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration"<<std::endl;
+			} else {
+				m23NarrowRes.insert( std::make_pair(width,mass) );
+			}
 		} else if ( pair == 2 ) {
-			if ( mass < minm13 || mass > maxm13 ){ continue; }
-			m13NarrowRes.insert( std::make_pair(width,mass) );
+			if ( mass < minm13 || mass > maxm13 ){
+				std::cout<<"                                                     : But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration"<<std::endl;
+			} else {
+				m13NarrowRes.insert( std::make_pair(width,mass) );
+			}
 		} else if ( pair == 3 ) {
-			if ( mass < minm12 || mass > maxm12 ){ continue; }
-			m12NarrowRes.insert( std::make_pair(width,mass) );
+			if ( mass < minm12 || mass > maxm12 ){
+				std::cout<<"                                                     : But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration"<<std::endl;
+			} else {
+				m12NarrowRes.insert( std::make_pair(width,mass) );
+			}
 		} else {
 			std::cerr<<"WARNING in LauIsobarDynamics::calcDPNormalisationScheme : strange pair integer, "<<pair<<", for resonance \""<<(*iter)->getResonanceName()<<std::endl;
 		}
@@ -1087,6 +1096,7 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		// Switch to using the square DP for the integration
 		// TODO - for the time being just use a single, reasonably fine by default and tunable, grid
 		//      - can later consider whether there's a need to split up the mPrime axis into regions around particularly narrow resonances in m12
+		//      - but it seems that this isn't really needed since even the default tune gives a good resolution for most narrow resonances such as phi / chi_c0
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin widths of "<<mPrimeBinWidth<<" in mPrime and "<<thPrimeBinWidth<<" in thetaPrime..."<<std::endl;
 		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, mPrimeBinWidth, thPrimeBinWidth, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
 	} else if ( s13==1 && e23 ) {

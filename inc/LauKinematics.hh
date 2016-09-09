@@ -74,7 +74,7 @@ class LauKinematics {
 		//! Calculate the Jacobian for the transformation m23^2, m13^2 -> m', theta' (square DP) at the given point in the square DP
 		/*!
 		    \param [in] mPrime the m' co-ordinate
-		    \param [in] thetaPrime the theta' co-ordinate
+		    \param [in] thPrime the theta' co-ordinate
 		    \return the jacobian of the transformation
 		*/
 		Double_t calcSqDPJacobian(const Double_t mPrime, const Double_t thPrime) const;

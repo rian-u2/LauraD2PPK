@@ -61,8 +61,6 @@ class LauAbsResonance {
 			PolNR,			/*!< an empirical polynomial nonresonant amplitude */
 			MIPW_MagPhase, 		/*!< a model independent partial wave - magnitude and phase representation */
 			MIPW_RealImag, 		/*!< a model independent partial wave - real and imaginary part representation */
-			MIPW_Sym_MagPhase, 	/*!< a model independent partial wave for symmetrised DPs - magnitude and phase representation */
-			MIPW_Sym_RealImag, 	/*!< a model independent partial wave for symmetrised DPs - real and imaginary part representation */
 			GaussIncoh,		/*!< an incoherent Gaussian shape */
 			RhoOmegaMix_GS,         /*!< mass mixing model using GS for res 1 and RBW for res 2 */
 			RhoOmegaMix_RBW,        /*!< mass mixing model using two RBWs  */

@@ -142,6 +142,7 @@ void LauResonanceInfo::addCloneOfExtraParameter( LauParameter* param, const Bool
 	LauParameter* cloneParam(0);
 	if ( copyNotClone ) {
 		cloneParam = new LauParameter( parName, param->unblindValue(), param->minValue(), param->maxValue(), param->fixed() );
+		cloneParam->secondStage(kTRUE);
 	} else {
 		cloneParam = param->createClone( parName );
 	}

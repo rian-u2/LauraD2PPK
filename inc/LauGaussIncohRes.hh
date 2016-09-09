@@ -13,7 +13,9 @@
 */
 
 /*! \class LauGaussIncohRes
-    \brief Class for defining a uniform nonresonant amplitude
+    \brief Class for defining an incoherent resonance with a Gaussian mass dependence
+
+    Useful for modelling resolution-dominated sharp structures such as D*(2010)
 */
 
 #ifndef LAU_GAUSS_INCOH_RES

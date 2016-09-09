@@ -13,9 +13,6 @@
 */
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "TFile.h"
 #include "TMath.h"
@@ -71,25 +68,79 @@ void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus,
 	// make the correlation matrix the correct dimensions
 	if (definedFitTree_ == kFALSE) {
 		corrMatrix_.clear();
-		if ( covMatrix.GetNoElements() != 0 ) {
-			corrMatrix_.resize(nFitPars_);
-			for (UInt_t i = 0; i < nFitPars_; ++i) {corrMatrix_[i].resize(nFitPars_);}
-		}
+		corrMatrix_.resize(nFitPars_);
+		for (UInt_t i = 0; i < nFitPars_; ++i) {corrMatrix_[i].resize(nFitPars_);}
 	}
 
-	if ( covMatrix.GetNoElements() == 0 ) {
+	// under certain circumstances, e.g. if the fit has failed in the first
+	// stage of a two-stage fit, the covariance matrix might not have the
+	// expected dimensions, or it might even be empty
+	Bool_t needsPadding = kFALSE;
+	const UInt_t nElements = covMatrix.GetNoElements();
+	if ( nElements == 0 ) {
+
+		// if it's empty we can just make a diagonal matrix
+		std::cerr << "WARNING in LauFitNtuple::storeCorrMatrix : received empty covariance matrix - will store diagonal correlation matrix" << std::endl;
+		for (UInt_t i = 0; i < nFitPars_; ++i) {
+			for (UInt_t j = 0; j < nFitPars_; ++j) {
+				if (i == j) {
+					corrMatrix_[i][j] = 1.0;
+				} else {
+					corrMatrix_[i][j] = 0.0;
+				}
+			}
+		}
 		return;
+
+	} else if ( nElements != nFreePars_*nFreePars_ ) {
+
+		UInt_t dimension = covMatrix.GetNrows();
+		UInt_t nSecondStage = 0;
+		for (UInt_t i = 0; i < nFitPars_; ++i) {      
+			if ( fitVars_[i]->secondStage() ) {
+				++nSecondStage;
+			}
+		}
+
+		if ( (dimension + nSecondStage) == nFreePars_ ) {
+			needsPadding = kTRUE;
+			std::cerr << "WARNING in LauFitNtuple::storeCorrMatrix : received smaller covariance matrix than expected, likely due to failure of first stage fit - will pad the correlation matrix" << std::endl;
+			std::cerr << "                                         : nFitPars_      = " << nFitPars_ << std::endl;
+			std::cerr << "                                         : nFreePars_     = " << nFreePars_ << std::endl;
+			std::cerr << "                                         : nSecondStage   = " << nSecondStage << std::endl;
+			std::cerr << "                                         : covMatrix size = " << dimension << std::endl;
+		} else {
+			std::cerr << "WARNING in LauFitNtuple::storeCorrMatrix : received smaller covariance matrix than expected, for unknown reasons - will store diagonal correlation matrix" << std::endl;
+			std::cerr << "                                         : nFitPars_      = " << nFitPars_ << std::endl;
+			std::cerr << "                                         : nFreePars_     = " << nFreePars_ << std::endl;
+			std::cerr << "                                         : nSecondStage   = " << nSecondStage << std::endl;
+			std::cerr << "                                         : covMatrix size = " << dimension << std::endl;
+			for (UInt_t i = 0; i < nFitPars_; ++i) {
+				for (UInt_t j = 0; j < nFitPars_; ++j) {
+					if (i == j) {
+						corrMatrix_[i][j] = 1.0;
+					} else {
+						corrMatrix_[i][j] = 0.0;
+					}
+				}
+			}
+			return;
+		}
+
 	}
 
 	// calculate the  correlation matrix information from the fitter covariance matrix
 	Bool_t iFixed(kFALSE);
 	Bool_t jFixed(kFALSE);
+	Bool_t iSecondStage(kFALSE);
+	Bool_t jSecondStage(kFALSE);
 	UInt_t iFree(0);
 	UInt_t jFree(0);
 
 	for (UInt_t i = 0; i < nFitPars_; ++i) {      
 
 		iFixed = fitVars_[i]->fixed();
+		iSecondStage = fitVars_[i]->secondStage();
 
 		// reset the "j" free parameter counter
 		jFree = 0;
@@ -98,10 +149,13 @@ void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus,
 		for (UInt_t j = 0; j < nFitPars_; ++j) {
 
 			jFixed = fitVars_[j]->fixed();
+			jSecondStage = fitVars_[j]->secondStage();
 
 			if (i == j) {
 				corrMatrix_[i][j] = 1.0;
 			} else if (iFixed == kTRUE || jFixed == kTRUE) {
+				corrMatrix_[i][j] = 0.0;
+			} else if ( needsPadding && ( iSecondStage || jSecondStage ) ) {
 				corrMatrix_[i][j] = 0.0;
 			} else {
 				Double_t r_ij = covMatrix(iFree,jFree);
@@ -120,12 +174,12 @@ void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus,
 				corrMatrix_[i][j] = r_ij / denom;
 			}
 
-			if (!jFixed) {
+			if ( !jFixed && !(needsPadding && jSecondStage) ) {
 				++jFree;
 			}
 		}
 
-		if (!iFixed) {
+		if ( !iFixed && !(needsPadding && iSecondStage) ) {
 			++iFree;
 		}
 	}
@@ -139,8 +193,8 @@ void LauFitNtuple::storeParsAndErrors(const std::vector<LauParameter*>& fitVars,
 	// the number of parameters being given to us should be the same as the number from the last fit
 	// OR it's the first time so the "last" number is zero
 	if (nFitPars_ != 0 && nFitPars_ != nFitPars) {
-		cerr << "ERROR in LauFitNtuple::storeParsAndErrors : expected total number of parameters (" << nFitPars_
-			 << ") not the same as the number provided (" << nFitPars << ")." << endl;
+		std::cerr << "ERROR in LauFitNtuple::storeParsAndErrors : expected total number of parameters (" << nFitPars_
+			  << ") not the same as the number provided (" << nFitPars << ")." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -151,8 +205,8 @@ void LauFitNtuple::storeParsAndErrors(const std::vector<LauParameter*>& fitVars,
 	// OR it's the first time so the "last" number is zero
 	// (NB we check whether nFitPars_ is zero for this since it is possible to have zero free parameters, albeit rather daft)
 	if (nFitPars_ != 0 && nFreePars_ != nFreePars) {
-		cerr << "ERROR in LauFitNtuple::storeParsAndErrors : expected number of free parameters (" << nFreePars_
-			 << ") not the same as the number provided (" << nFreePars << ")." << endl;
+		std::cerr << "ERROR in LauFitNtuple::storeParsAndErrors : expected number of free parameters (" << nFreePars_
+			  << ") not the same as the number provided (" << nFreePars << ")." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -168,7 +222,7 @@ void LauFitNtuple::updateFitNtuple()
 	// Now create and fill the stored fit results into an ntuple (TTree)
 	if (definedFitTree_ == kFALSE) {
 
-		cout << "INFO in LauFitNtuple::updateFitNtuple : totNoPars = " << nFitPars_ << endl;
+		std::cout << "INFO in LauFitNtuple::updateFitNtuple : totNoPars = " << nFitPars_ << std::endl;
 
 		// Add experiment number as a branch
 		fitResults_->Branch("iExpt", &iExpt_, "iExpt/I");
@@ -256,7 +310,7 @@ void LauFitNtuple::updateFitNtuple()
 
 	}
 
-	cout << "NLL = " << NLL_ << endl;
+	std::cout << "NLL = " << NLL_ << std::endl;
 
 	fitResults_->Fill();
 }  

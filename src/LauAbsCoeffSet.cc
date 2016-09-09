@@ -77,7 +77,7 @@ void LauAbsCoeffSet::index(UInt_t newIndex)
 void LauAbsCoeffSet::adjustName(LauParameter* par, const TString& oldBaseName)
 {
 	TString theName(par->name());
-	if ( theName.BeginsWith( oldBaseName ) ) {
+	if ( theName.BeginsWith( oldBaseName ) && theName != oldBaseName ) {
 		theName.Remove(0,oldBaseName.Length());
 	}
 	theName.Prepend(this->baseName());

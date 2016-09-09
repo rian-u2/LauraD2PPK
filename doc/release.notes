@@ -4,7 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v3r1
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 9th September 2016 Thomas Latham
+
 * Modification of LauFitNtuple to check the size of the covariance matrix wrt known number of parameters and act accordingly:
   - If it is empty, just fill a diagonal correlation matrix and issue a warning.
   - If it results from a failed first stage of a two-stage fit then the correlation matrix is padded with 1s and 0s for the parameters that were fixed in the first stage.
@@ -12,13 +17,15 @@
 * Minor fix to LauAbsCoeffSet: the names of parameters would be mangled if they were the same as the basename, e.g. A1_A would become A1_ while A1_B would be correct.
 
 8th September 2016 Thomas Latham
+
 * Modifications to LauResonanceInfo to allow customisation of which extra parameters are shared between charge conjugate or shared-parameter records.
-  Where the parameters are not shared they are independently created instead of being cloned.
+  - Where the parameters are not shared they are independently created instead of being cloned.
 * Modification of LauRhoOmegaMix to take advantage of the above to have the magB and phiB parameters independent.
 * Addition to LauResonanceMaker of rho(770)_COPY record that is a shared record with rho(770) - this allows the above new feature to be used.
 * Minor unrelated improvement to information messages in LauIsobarDynamics.
 
 25th August 2016 John Back
+
 * Modified LauRhoOmegaMix to allow either a RelBW or GS lineshape for the rho, as well as
   allowing the option to set the second-order denominator term to be equal to unity. 
   Also fixed the bug where the spinTerm was not included in the rho-omega amplitude.
@@ -37,11 +44,22 @@
   This is used in the LauRhoOmegaMix for the omega lineshape where its width does not depend on momentum
 
 23rd May 2016 John Back
+
 * Added new lineshape model for rho-omega mass mixing, LauRhoOmegaMix.
 
+12th April 2016 Thomas Latham
+
+* Switch to integrating in square DP when narrow resonances are found in m12.
+  - The integration grid size can be specified by the user
+
 19th January 2016 John Back
+
 * Correct the f(m^2) factor in the denominator of the LauGounarisSakuraiRes
   lineshape to use Gamma_0 instead of Gamma(m)
+
+14th January 2016 Thomas Latham
+
+* Documentation improvements
 
 7th December 2015 Thomas Latham
 

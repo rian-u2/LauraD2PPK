@@ -85,12 +85,6 @@ class LauAbsFitter {
 		*/
 		virtual std::pair<Int_t,Double_t> minimise() = 0;
 
-		//! Fix parameters marked as "first stage"
-		virtual void fixFirstStageParameters() = 0;
-
-		//! Release parameters marked as "first stage"
-		virtual void releaseFirstStageParameters() = 0;
-
 		//! Fix parameters marked as "second stage"
 		virtual void fixSecondStageParameters() = 0;
 

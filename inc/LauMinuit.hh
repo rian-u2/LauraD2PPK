@@ -86,12 +86,6 @@ class LauMinuit : public LauAbsFitter {
 		*/
 		virtual std::pair<Int_t,Double_t> minimise();
 
-		//! Fix parameters marked as "first stage"
-		virtual void fixFirstStageParameters();
-
-		//! Release parameters marked as "first stage"
-		virtual void releaseFirstStageParameters();
-
 		//! Fix parameters marked as "second stage"
 		virtual void fixSecondStageParameters();
 

@@ -410,9 +410,6 @@ void LauSimFitMaster::checkParameter( const LauParameter* param, UInt_t index ) 
 	if ( param->fixed() != storedPar->fixed() ) {
 		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Fixed/floating property of parameter " << parName << " is different, will use the value first set: " << (storedPar->fixed() ? "fixed" : "floating") << std::endl;
 	}
-	if ( param->firstStage() != storedPar->firstStage() ) {
-		std::cerr << "WARNING in LauSimFitMaster::checkParameter : First stage property of parameter " << parName << " is different, will use the value first set: " << (storedPar->firstStage() ? "true" : "false") << std::endl;
-	}
 	if ( param->secondStage() != storedPar->secondStage() ) {
 		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Second stage property of parameter " << parName << " is different, will use the value first set: " << (storedPar->secondStage() ? "true" : "false") << std::endl;
 	}
@@ -620,7 +617,6 @@ void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
 			std::cerr << "ERROR in LauSimFitMaster:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
-			LauFitter::fitter()->fixFirstStageParameters();
 			LauFitter::fitter()->releaseSecondStageParameters();
 			nParams_ = LauFitter::fitter()->nParameters();
 			nFreeParams_ = LauFitter::fitter()->nFreeParameters();
@@ -639,7 +635,6 @@ void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
 	// all sub-classes can use within their own finalFitResults implementation
 	// used below (e.g. putting them into an ntuple in a root file)
 	LauFitter::fitter()->updateParameters();
-	LauFitter::fitter()->releaseFirstStageParameters();
 }
 
 void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)

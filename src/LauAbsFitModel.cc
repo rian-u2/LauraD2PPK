@@ -644,7 +644,6 @@ void LauAbsFitModel::fitExpt()
 			std::cerr << "WARNING in LauAbsFitModel:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
-			LauFitter::fitter()->fixFirstStageParameters();
 			LauFitter::fitter()->releaseSecondStageParameters();
 			nParams_ = LauFitter::fitter()->nParameters();
 			nFreeParams_ = LauFitter::fitter()->nFreeParameters();
@@ -663,7 +662,6 @@ void LauAbsFitModel::fitExpt()
 	// all sub-classes can use within their own finalFitResults implementation
 	// used below (e.g. putting them into an ntuple in a root file)
 	LauFitter::fitter()->updateParameters();
-	LauFitter::fitter()->releaseFirstStageParameters();
 }
 
 void LauAbsFitModel::writeOutAllFitResults()
@@ -936,8 +934,7 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 		for (LauAbsRValuePList::iterator pars_iter = pars.begin(); pars_iter != pars.end(); ++pars_iter) {
 			LauParameterPList params = (*pars_iter)->getPars();
 			for (LauParameterPList::iterator params_iter = params.begin(); params_iter != params.end(); ++params_iter) {
-				if ( !(*params_iter)->clone() && ( !(*params_iter)->fixed() ||
-							(this->twoStageFit() && ( (*params_iter)->secondStage() || (*params_iter)->firstStage())) ) ) {
+				if ( !(*params_iter)->clone() && ( !(*params_iter)->fixed() || ( this->twoStageFit() && (*params_iter)->secondStage() ) ) ) {
 					fitVars_.push_back(*params_iter);
 					++nParsAdded;
 				}

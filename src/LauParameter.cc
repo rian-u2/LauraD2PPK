@@ -38,7 +38,6 @@ LauParameter::LauParameter() :
 	minValue_(0.0),
 	maxValue_(0.0),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -63,7 +62,6 @@ LauParameter::LauParameter(const TString& parName) :
 	minValue_(0.0),
 	maxValue_(0.0),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -88,7 +86,6 @@ LauParameter::LauParameter(Double_t parValue) :
 	minValue_(parValue-1e-6),
 	maxValue_(parValue+1e-6),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -113,7 +110,6 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue) :
 	minValue_(parValue-1e-6),
 	maxValue_(parValue+1e-6),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -138,7 +134,6 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max) :
 	minValue_(min),
 	maxValue_(max),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -164,7 +159,6 @@ LauParameter::LauParameter(Double_t parValue, Double_t parError, Double_t min, D
 	minValue_(min),
 	maxValue_(max),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -190,7 +184,6 @@ LauParameter::LauParameter(Double_t parValue, Double_t min, Double_t max, Bool_t
 	minValue_(min),
 	maxValue_(max),
 	fixed_(parFixed),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -216,7 +209,6 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	minValue_(min),
 	maxValue_(max),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -242,7 +234,6 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t m
 	minValue_(min),
 	maxValue_(max),
 	fixed_(parFixed),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -268,7 +259,6 @@ LauParameter::LauParameter(const TString& parName, Double_t parValue, Double_t p
 	minValue_(min),
 	maxValue_(max),
 	fixed_(kTRUE),
-	firstStage_(kFALSE),
 	secondStage_(kFALSE),
 	gaussConstraint_(kFALSE),
 	constraintMean_(0.0),
@@ -294,7 +284,6 @@ LauParameter::LauParameter(const LauParameter& rhs) : TObject(rhs), LauAbsRValue
 	minValue_(rhs.minValue_),
 	maxValue_(rhs.maxValue_),
 	fixed_(rhs.fixed_),
-	firstStage_(rhs.firstStage_),
 	secondStage_(rhs.secondStage_),
 	gaussConstraint_(rhs.gaussConstraint_),
 	constraintMean_(rhs.constraintMean_),
@@ -324,7 +313,6 @@ LauParameter& LauParameter::operator=(const LauParameter& rhs)
 		minValue_ = rhs.minValue_;
 		maxValue_ = rhs.maxValue_;
 		fixed_ = rhs.fixed_;
-		firstStage_ = rhs.firstStage_;
 		secondStage_ = rhs.secondStage_;
 		gaussConstraint_ = rhs.gaussConstraint_;
 		constraintMean_ = rhs.constraintMean_;
@@ -505,16 +493,6 @@ void LauParameter::fixed(Bool_t parFixed)
 	}
 }
 
-void LauParameter::firstStage(Bool_t firstStagePar)
-{
-	if (this->clone()) {
-		parent_->firstStage(firstStagePar);
-	} else {
-		firstStage_ = firstStagePar;
-		this->updateClones(kFALSE);
-	}
-}
-
 void LauParameter::secondStage(Bool_t secondStagePar)
 {
 	if (this->clone()) {
@@ -690,7 +668,6 @@ void LauParameter::updateClones(Bool_t justValue)
 			clonePar->minValue_ = constFactor*this->minValue();
 			clonePar->maxValue_ = constFactor*this->maxValue();
 			clonePar->fixed_ = this->fixed();
-			clonePar->firstStage_ = this->firstStage();
 			clonePar->secondStage_ = this->secondStage();
 			clonePar->gaussConstraint_ = this->gaussConstraint();
 			clonePar->constraintMean_ = this->constraintMean();

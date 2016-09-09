@@ -213,12 +213,6 @@ class LauParameter : public TObject, public LauAbsRValue {
 		*/
 		inline Bool_t fixed() const {return fixed_;}
 
-		//! Check whether the parameter should be floated only in the first stage of a two stage fit
-		/*!
-		    \return the boolean flag true/false whether it floats only in the first stage
-		*/
-		inline Bool_t firstStage() const {return firstStage_;}
-
 		//! Check whether the parameter should be floated only in the second stage of a two stage fit
 		/*!
 		    \return the boolean flag true/false whether it floats only in the second stage
@@ -373,12 +367,6 @@ class LauParameter : public TObject, public LauAbsRValue {
 		*/
 		void fixed(Bool_t parFixed);
 
-		//! Set parameter as first-stage or not of the fit
-		/*!
-		    \param [in] firstStagePar boolean flag to check whether is a first-stage parameter
-		*/
-		void firstStage(Bool_t firstStagePar);
-
 		//! Set parameter as second-stage or not of the fit
 		/*!
 		    \param [in] secondStagePar boolean flag to check whether is a second-stage parameter
@@ -515,8 +503,6 @@ class LauParameter : public TObject, public LauAbsRValue {
 
 		//! Fix/float option for parameter
 		Bool_t fixed_;
-		//! Flag whether it is floated only in the first stage of the fit
-		Bool_t firstStage_;
 		//! Flag whether it is floated only in the second stage of the fit
 		Bool_t secondStage_;
 
@@ -547,7 +533,7 @@ class LauParameter : public TObject, public LauAbsRValue {
 		//! The blinding engine
 		LauBlind* blinder_;
 
-		ClassDef(LauParameter, 2)
+		ClassDef(LauParameter, 3)
 
 };
 

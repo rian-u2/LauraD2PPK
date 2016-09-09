@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+9th September 2016 Thomas Latham
+* Modification of LauFitNtuple to check the size of the covariance matrix wrt known number of parameters and act accordingly:
+  - If it is empty, just fill a diagonal correlation matrix and issue a warning.
+  - If it results from a failed first stage of a two-stage fit then the correlation matrix is padded with 1s and 0s for the parameters that were fixed in the first stage.
+* Remove the feature that allows parameters to float in first stage of a two-stage fit but to be fixed in second.
+* Minor fix to LauAbsCoeffSet: the names of parameters would be mangled if they were the same as the basename, e.g. A1_A would become A1_ while A1_B would be correct.
+
 8th September 2016 Thomas Latham
 * Modifications to LauResonanceInfo to allow customisation of which extra parameters are shared between charge conjugate or shared-parameter records.
   Where the parameters are not shared they are independently created instead of being cloned.

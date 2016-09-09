@@ -212,32 +212,6 @@ std::pair<Int_t,Double_t> LauMinuit::minimise()
 	return std::make_pair( fitStatus_, NLL_ );
 }
 
-void LauMinuit::fixFirstStageParameters()
-{
-	for (UInt_t i = 0; i < nParams_; ++i) {
-		Bool_t firstStage = params_[i]->firstStage();
-		if (firstStage == kTRUE) {
-			params_[i]->fixed(kTRUE);
-			minuit_->FixParameter(i);
-		}
-	}
-	LauParamFixed pred;
-	nFreeParams_ = nParams_ - std::count_if(params_.begin(),params_.end(),pred);
-}
-
-void LauMinuit::releaseFirstStageParameters()
-{
-	for (UInt_t i = 0; i < nParams_; ++i) {
-		Bool_t firstStage = params_[i]->firstStage();
-		if (firstStage == kTRUE) {
-			params_[i]->fixed(kFALSE);
-			minuit_->ReleaseParameter(i);
-		}
-	}
-	LauParamFixed pred;
-	nFreeParams_ = nParams_ - std::count_if(params_.begin(),params_.end(),pred);
-}
-
 void LauMinuit::fixSecondStageParameters()
 {
 	for (UInt_t i = 0; i < nParams_; ++i) {

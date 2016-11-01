@@ -227,6 +227,19 @@ class LauAbsResonance {
 		*/
 		void ignoreBarrierScaling(const Bool_t boolean) {ignoreBarrierScaling_ = boolean;}
 
+                //! Get the ignore covariant flag
+                /*!
+                        \return the ignore covariant flag
+                */
+                Bool_t ignoreCovariant() const {return ignoreCovariant_;}
+
+
+                //! Set the ignore covariant flag
+                /*!
+                        \param [in] boolean the ignore covariant status
+                */
+                void ignoreCovariant(const Bool_t boolean) {ignoreCovariant_ = boolean;}
+
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
 			Negative values wil be ignored, so if, for example, you
@@ -392,6 +405,8 @@ class LauAbsResonance {
 		//! Access the list of floating parameters
 		std::vector<LauParameter*>& getParameters() { return resParameters_; }
 
+                //! calculate covariant factor
+                Double_t calcCovFactor( const Double_t Erm) const;
 
 	private:
 		//! Copy constructor (not implemented)
@@ -467,12 +482,18 @@ class LauAbsResonance {
                 //! Boolean to ignore barrier factor amplitude scaling; they are still used for the width
                 Bool_t ignoreBarrierScaling_;
 
+                //! Boolean to ignore covariant factor
+                Bool_t ignoreCovariant_;
+
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;
 		//! Bachelor momentum in resonance rest frame
 		Double_t p_;
 		//! Bachelor momentum in parent rest frame
 		Double_t pstar_;
+
+                //! Covariant factor
+                Double_t erm_;
 
 		ClassDef(LauAbsResonance,0) // Abstract resonance class
 

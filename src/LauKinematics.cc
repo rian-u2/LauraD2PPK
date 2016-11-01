@@ -72,6 +72,8 @@ LauKinematics::LauKinematics(Double_t m1, Double_t m2, Double_t m3, Double_t mPa
 	} else {
 		std::cout<<"INFO in LauKinematics::LauKinematics : squareDP = kFALSE"<<std::endl;
 	}
+
+       // add covariant factor calculation
 }
 
 LauKinematics::~LauKinematics()

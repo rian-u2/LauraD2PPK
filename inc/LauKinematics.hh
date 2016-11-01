@@ -381,6 +381,24 @@ class LauKinematics {
 		*/
 		void drawDPContour(Int_t orientation = 1323, Int_t nbins = 100);
 
+                //! Get covariant factor in 12 axis
+                /*!
+                    \return covariant factor in 12 axis
+                */
+                inline Double_t getcov12() const {return (mParentSq_ + m12Sq_ - m3Sq_)/(2.*mParent_*m12_);}
+
+                //! Get covariant factor in 13 axis  
+                /*!
+                    \return covariant factor in 13 axis  
+                */
+                inline Double_t getcov13() const {return (mParentSq_ + m13Sq_ - m2Sq_)/(2.*mParent_*m13_);} 
+
+                //! Get covariant factor in 23 axis  
+                /*!
+                    \return covariant factor in 23 axis  
+                */
+                inline Double_t getcov23() const {return (mParentSq_ + m23Sq_ - m1Sq_)/(2.*mParent_*m23_);} 
+
 	protected:
 		//! Update the variables m23Sq_ and m13Sq_ given the invariant mass m12 and the cosine of the helicity angle c12
 		/*!

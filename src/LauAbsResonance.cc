@@ -80,9 +80,11 @@ LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairA
 	ignoreMomenta_(kFALSE),
 	ignoreSpin_(kFALSE),
 	ignoreBarrierScaling_(kFALSE),
+        ignoreCovariant_(kFALSE),
 	q_(0.0),
 	p_(0.0),
-	pstar_(0.0)
+	pstar_(0.0),
+        erm_(1.0)
 {
 	if ( resInfo == 0 ) {
 		std::cerr << "ERROR in LauAbsResonance constructor : null LauResonanceInfo object provided" << std::endl;
@@ -135,9 +137,11 @@ LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpI
 	ignoreMomenta_(kFALSE),
 	ignoreSpin_(kFALSE),
 	ignoreBarrierScaling_(kFALSE),
+        ignoreCovariant_(kFALSE),
 	q_(0.0),
 	p_(0.0),
-	pstar_(0.0)
+	pstar_(0.0), 
+        erm_(1.0)
 {
 	if ( daughters_ == 0 ) {
 		std::cerr << "ERROR in LauAbsResonance constructor : null LauDaughters object provided" << std::endl;
@@ -180,6 +184,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	// Also need the momentum of track k in the parent rest-frame for
 	// calculation of the Blatt-Weisskopf factors.
 	q_ = 0.0;  p_ = 0.0;  pstar_ = 0.0;
+        erm_ = 1.0;
 
 	if (resPairAmpInt_ == 1) {
 
@@ -188,6 +193,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 		q_ = kinematics->getp2_23();
 		p_ = kinematics->getp1_23();
 		pstar_ = kinematics->getp1_Parent();
+                erm_ = kinematics->getcov23();
 
 	} else if (resPairAmpInt_ == 2) {
 
@@ -196,6 +202,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 		q_ = kinematics->getp1_13();
 		p_ = kinematics->getp2_13();
 		pstar_ = kinematics->getp2_Parent();
+                erm_ = kinematics->getcov13();
 
 	} else if (resPairAmpInt_ == 3) {
 
@@ -204,6 +211,7 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 		q_ = kinematics->getp1_12();
 		p_ = kinematics->getp3_12();
 		pstar_ = kinematics->getp3_Parent();
+                erm_ = kinematics->getcov12();
 
 	} else {
 		std::cerr << "ERROR in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array." << std::endl;
@@ -221,13 +229,20 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 
 	// Calculate the spin factors
 	Double_t spinTerm(1.0);
+        Double_t covFactor(1.0);
 	if (!this->ignoreSpin()) {
 	        Double_t pProd = q_*p_;
 	        spinTerm = this->calcSpinTerm( cosHel, pProd );
+                covFactor = this->calcCovFactor( erm_ );
 	}
+ 
+        if (!this->ignoreCovariant()) {
+                covFactor = this->calcCovFactor( erm_ );
+        }
+
 
 	// Calculate the full amplitude
-	LauComplex resAmplitude = this->resAmp(mass, spinTerm);
+	LauComplex resAmplitude = this->resAmp(mass, spinTerm*covFactor);
 
 	return resAmplitude;
 }
@@ -595,5 +610,24 @@ TString LauAbsResonance::getNameBachelor() const
 	}
 
 	return name;
+}
+
+Double_t LauAbsResonance::calcCovFactor( const Double_t Erm) const
+{
+        Double_t covFactor = 1.0;
+
+        if (resSpin_ == 1) {
+                covFactor = Erm;
+        } else if (resSpin_ == 2) {
+                covFactor = Erm*Erm + 0.5;
+        } else if (resSpin_ == 3) {
+                covFactor = Erm*(Erm*Erm + 1.5);
+        } else if (resSpin_ == 4) {
+                covFactor = (8.*Erm*Erm*Erm*Erm + 24.*Erm*Erm + 3.)/35.;
+        } else {
+                std::cerr << "cov factor not calculated for spin 5 "<<std::endl;                
+        }
+
+        return covFactor;
 }
 

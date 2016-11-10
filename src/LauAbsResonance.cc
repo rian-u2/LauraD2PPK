@@ -233,7 +233,6 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	if (!this->ignoreSpin()) {
 	        Double_t pProd = q_*p_;
 	        spinTerm = this->calcSpinTerm( cosHel, pProd );
-                covFactor = this->calcCovFactor( erm_ );
 	}
  
         if (!this->ignoreCovariant()) {

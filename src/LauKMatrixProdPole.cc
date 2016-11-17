@@ -20,11 +20,22 @@
 ClassImp(LauKMatrixProdPole)
 
 LauKMatrixProdPole::LauKMatrixProdPole(const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
-				       LauKMatrixPropagator* propagator, const LauDaughters* daughters) : 
+				       LauKMatrixPropagator* propagator, const LauDaughters* daughters, 
+				       Bool_t useProdAdler) : 
 	LauAbsResonance(poleName, resPairAmpInt, daughters),
 	thePropagator_(propagator),
-	poleIndex_(poleIndex - 1) // poleIndex goes from 1 to nPoles
+        poleIndex_(poleIndex - 1), // poleIndex goes from 1 to nPoles
+        useProdAdler_(useProdAdler)
 {
+
+        if (useProdAdler_) {
+	    std::cout<<"Creating K matrix production pole "<<poleName<<" with poleIndex = "
+		     <<poleIndex<<" with s-dependent production Adler zero term"<<std::endl;
+	} else {
+	    std::cout<<"Creating K matrix production pole "<<poleName<<" with poleIndex = "
+		     <<poleIndex<<" with production Adler zero factor = 1"<<std::endl;
+	}
+
 }
 
 LauKMatrixProdPole::~LauKMatrixProdPole() 
@@ -71,7 +82,12 @@ LauComplex LauKMatrixProdPole::amplitude(const LauKinematics* kinematics)
 	}
 
 	Double_t poleDenom = thePropagator_->getPoleDenomTerm(poleIndex_);
-	amp.rescale(poleDenom);
+
+	// Include Adler zero factor if requested
+	Double_t adlerZero(1.0);
+	if (useProdAdler_) {adlerZero = thePropagator_->getAdlerZero();}
+
+	amp.rescale(poleDenom*adlerZero);
 
 	return amp;
 

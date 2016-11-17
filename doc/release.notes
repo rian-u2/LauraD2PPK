@@ -4,6 +4,15 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+17th November 2016 John Back
+* Modifications of the K matrix implementation:
+ - Changed the format of the parameter file to use keywords, with updated examples
+ - The scattering coefficients are now symmetrised, unless "ScattSymmetry 0" is used
+ - Allow the option to use the Adler zero suppression term for the production poles and SVPs (default = off).
+   These are specified with the useProdAdler boolean in the LauKMatrixProdPole/SVP constructors
+ - Added a few helper functions for obtaining coefficients and (internal) matrices
+ - Added a method to return the Lorentz-invariant transition amplitude for plots/tests
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r1
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

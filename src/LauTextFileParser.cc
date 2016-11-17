@@ -65,7 +65,7 @@ void LauTextFileParser::processFile()
 	std::ifstream getData(theFile_.c_str());
 
 	std::string whiteSpace(" ");
-	int lineNo(0);
+	UInt_t lineNo(0);
 
 	cout<<"Processing input file "<<theFile_<<endl;
 
@@ -124,7 +124,7 @@ std::vector<std::string> LauTextFileParser::getNextLine()
 	return theLine;
 }
 
-std::vector<std::string> LauTextFileParser::getLine(int lineNo)
+std::vector<std::string> LauTextFileParser::getLine(UInt_t lineNo)
 {
 	// Retrieve the vector of white-space separated strings/numbers
 	// for the given (non-commented) line number

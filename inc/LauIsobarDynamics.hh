@@ -157,7 +157,7 @@ class LauIsobarDynamics {
 		    \param [in] rowIndex the index of the row to be used when summing over all amplitude channels: S-wave corresponds to rowIndex = 1.
 		*/
 		void defineKMatrixPropagator(const TString& propName, const TString& paramFileName,
-						     Int_t resPairAmpInt, Int_t nChannels, Int_t nPoles, Int_t rowIndex = 1);
+					     Int_t resPairAmpInt, Int_t nChannels, Int_t nPoles, Int_t rowIndex = 1);
 
 		//! Add a K-matrix production pole term to the model
 		/*!
@@ -168,8 +168,9 @@ class LauIsobarDynamics {
 		    \param [in] poleName the name of the pole
 		    \param [in] propName the name of the propagator to use
 		    \param [in] poleIndex the index of the pole within the propagator
+                    \param [in] useProdAdler boolean to turn on/off the production Adler zero factor (default = off)
 		*/
-		void addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex);
+                void addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex, Bool_t useProdAdler = kFALSE);
 
 		//! Add a K-matrix slowly-varying part (SVP) term to the model
 		/*!
@@ -180,8 +181,9 @@ class LauIsobarDynamics {
 		    \param [in] SVPName the name of the term
 		    \param [in] propName the name of the propagator to use
 		    \param [in] channelIndex the index of the channel within the propagator
+		    \param [in] useProdAdler boolean to turn on/off the production Adler zero factor (default = off)
 		*/
-		void addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex);
+                void addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex, Bool_t useProdAdler = kFALSE);
 
 		//! Set the maximum value of A squared to be used in the accept/reject
 		/*!

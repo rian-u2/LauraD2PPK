@@ -127,7 +127,7 @@ int main( int argc, char** argv )
 	// Add a normal relativistic BW
 	sigModel->addResonance("rho0(770)", 3, LauAbsResonance::RelBW);
 
-	sigModel->setASqMaxValue(2.2);
+	sigModel->setASqMaxValue(3.0);
 
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
 

@@ -19,13 +19,24 @@
 
 ClassImp(LauKMatrixProdSVP)
 
-LauKMatrixProdSVP::LauKMatrixProdSVP(const TString& poleName, Int_t channelIndex, Int_t resPairAmpInt,
-		                     LauKMatrixPropagator* propagator, const LauDaughters* daughters) : 
-	LauAbsResonance(poleName, resPairAmpInt, daughters),
+LauKMatrixProdSVP::LauKMatrixProdSVP(const TString& SVPName, Int_t channelIndex, Int_t resPairAmpInt,
+		                     LauKMatrixPropagator* propagator, const LauDaughters* daughters,
+				     Bool_t useProdAdler) : 
+	LauAbsResonance(SVPName, resPairAmpInt, daughters),
 	thePropagator_(propagator),
-	channelIndex_(channelIndex - 1) // channelIndex goes from 1 to nChannels.
+        channelIndex_(channelIndex - 1), // channelIndex goes from 1 to nChannels.
+        useProdAdler_(useProdAdler)
 {
 	// Constructor
+        if (useProdAdler_) {
+	    std::cout<<"Creating K matrix production SVP "<<SVPName<<" with channelIndex = "
+		     <<channelIndex<<" with s-dependent production Adler zero term"<<std::endl;
+	} else {
+	    std::cout<<"Creating K matrix production SVP "<<SVPName<<" with channelIndex = "
+		     <<channelIndex<<" with production Adler zero factor = 1"<<std::endl;
+	}
+
+
 }
 
 LauKMatrixProdSVP::~LauKMatrixProdSVP() 
@@ -58,7 +69,12 @@ LauComplex LauKMatrixProdSVP::amplitude(const LauKinematics* kinematics)
 	Double_t SVPTerm = thePropagator_->getProdSVPTerm();
 
 	amp = thePropagator_->getPropTerm(channelIndex_);
-	amp.rescale(SVPTerm);
+
+	// Include Adler zero factor if requested
+	Double_t adlerZero(1.0);
+	if (useProdAdler_) {adlerZero = thePropagator_->getAdlerZero();}
+
+	amp.rescale(SVPTerm*adlerZero);
 
 	return amp;
 

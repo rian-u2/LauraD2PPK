@@ -58,7 +58,8 @@ LauKMatrixPropagator::LauKMatrixPropagator(const TString& name, const TString& p
 	fourPiFactor2_(TMath::Sqrt(1.0 - fourPiFactor1_)),
 	adlerZeroFactor_(0.0),
 	parametersSet_(kFALSE),
-	verbose_(kFALSE)
+	verbose_(kFALSE),
+	scattSymmetry_(kTRUE)
 {
 	// Constructor
 
@@ -187,6 +188,7 @@ void LauKMatrixPropagator::updatePropagator(Double_t s)
 	// A = I + K*Imag(rho), B = -K*Real(Rho)
 	// Calculate C and D matrices such that (A + iB)*(C + iD) = I,
 	// ie. C + iD = (I - i K*rho)^-1, separated into real and imaginary parts.
+	// realProp C = (A + B A^-1 B)^-1, imagProp D = -A^-1 B C
 	TMatrixD A(IMatrix_);
 	A += K_imagRho;
 	TMatrixD B(zeroMatrix_);
@@ -227,160 +229,101 @@ void LauKMatrixPropagator::setParameters(const TString& inputFile)
 	// slow-varying constants. The input file should also provide the Adler zero 
 	// constants s_0, s_A and s_A0.
 
-	// Format of input file:
-	// Indices (nChannels) of phase space channel types (defined in KMatrixChannels enum)
-	// Then the bare pole mass and coupling constants over all channels for each pole:
-	// m_{alpha} g_1^{alpha} g_2^{alpha} ... g_n^{alpha}   where n = nChannels
-	// Repeat for N poles. Then define the f_{ab} scattering coefficients
-	// f_{11} f_{12} ... f_{1n}
-	// f_{21} f_{22} ... f_{2n} etc.. where n = nChannels
-	// Note that the K-matrix will be symmetrised (by definition), so it is sufficient 
-	// to only have the upper half filled with sensible values.
-	// Then define the Adler-zero and slowly-varying part (SVP) constants
-	// m0^2 s0Scatt s0Prod sA sA0
-	// where m0^2 = mass-squared constant for scattering production f_{ab} numerator
 	parametersSet_ = kFALSE;
 
 	cout<<"Initialising K-matrix propagator "<<name_<<" parameters from "<<inputFile.Data()<<endl;
 
 	cout<<"nChannels = "<<nChannels_<<", nPoles = "<<nPoles_<<endl;
 
+	// Initialise various matrices
+	this->initialiseMatrices();	
+
+	// The format of the input file contains lines starting with a keyword followed by the
+	// appropriate set of parameters. Keywords are case insensitive (treated as lower-case).
+	// 1) Indices (nChannels) of N phase space channel types (defined in KMatrixChannels enum)
+	// "Channels iChannel1 iChannel2 ... iChannelN"
+	// 2) Definition of poles: bare mass (GeV), pole index (1 to NPoles), N channel couplings g_j
+	// "Pole poleIndex mass g_1 g_2 ... g_N"
+	// 3) Definition of scattering f_{ij} constants: scattering index (1 to N), channel values
+	// "Scatt index f_{i1} f_{i2} ... f_{iN}", where i = index
+	// 4) Various Adler zero and scattering constants; each line is "name value".
+	//    Possible names are mSq0, s0Scatt, s0Prod, sA, sA0
+	// By default, the scattering constants are symmetrised: f_{ji} = f_{ij}. 
+	// To not assume this use "ScattSymmetry 0" on a line
+
 	LauTextFileParser readFile(inputFile);
 	readFile.processFile();
 
-	// Get the first (non-comment) line
-	std::vector<std::string> channelTypeLine = readFile.getNextLine();
-	Int_t nTypes = static_cast<Int_t>(channelTypeLine.size());
-	if (nTypes != nChannels_) {
-		cerr<<"Error in LauKMatrixPropagator::setParameters. Input file "<<inputFile
-			<<" defines "<<nTypes<<" channels when "<<nChannels_<<" are expected"<<endl;
-		return;
-	}
+	// Loop over the (non-commented) lines
+	UInt_t nTotLines = readFile.getTotalNumLines();
+	UInt_t iLine(0);
 
-	// Get the list of channel indices to specify what phase space factors should be used
-	// e.g. pipi, Kpi, eta eta', 4pi etc..
-	Int_t iChannel(0);
-	phaseSpaceTypes_.clear();
-	for (iChannel = 0; iChannel < nChannels_; iChannel++) {
+	for (iLine = 1; iLine <= nTotLines; iLine++) {
 
-		Int_t phaseSpaceInt = atoi(channelTypeLine[iChannel].c_str());
-		Bool_t checkChannel = this->checkPhaseSpaceType(phaseSpaceInt);
+		// Get the line of strings
+		std::vector<std::string> theLine = readFile.getLine(iLine);
 
-		if (checkChannel == kTRUE) {
-			cout<<"Adding phase space channel index "<<phaseSpaceInt
-				<<" to K-matrix propagator "<<name_<<endl;
-			phaseSpaceTypes_.push_back(phaseSpaceInt);
+		// There should always be at least two strings: a keyword and at least 1 value
+		if (theLine.size() < 2) {continue;}
+
+		TString keyword(theLine[0].c_str());
+		keyword.ToLower(); // Use lowercase
+		
+		if (!keyword.CompareTo("channels")) {
+
+			// Channel indices for phase-space factors
+			this->storeChannels(theLine);
+
+		} else if (!keyword.CompareTo("pole")) {
+
+			// Pole terms
+			this->storePole(theLine);
+
+		} else if (!keyword.CompareTo("scatt")) {
+
+			// Scattering terms
+			this->storeScattering(theLine);
+
 		} else {
-			cerr<<"Phase space channel index "<<phaseSpaceInt
-				<<" should be between 1 and "<<LauKMatrixPropagator::TotChannels-1<<endl;
-			cerr<<"Stopping initialisation of the K-matrix propagator "<<name_<<endl;
-			cerr<<"Please correct the channel index on the first line of "<<inputFile<<endl;
-			return;
-		}
 
-	}
-
-	// Clear vector of pole masses^2 as well as the map of the coupling constant vectors.
-	mSqPoles_.clear(); gCouplings_.clear();
-
-	Double_t poleMass(0.0), poleMassSq(0.0), couplingConst(0.0);
-	Int_t iPole(0);
-	Int_t nPoleNumbers(nChannels_+1);
-
-	for (iPole = 0; iPole < nPoles_; iPole++) {
-
-		// Read the next line of bare pole mass and its coupling constants 
-		// over all channels (nChannels_)
-		std::vector<std::string> poleLine = readFile.getNextLine();
-		Int_t nPoleValues = static_cast<Int_t>(poleLine.size());
-		if (nPoleValues != nPoleNumbers) {
-			cerr<<"Error in LauKMatrixPropagator::setParameters. Expecting "
-				<<nPoleNumbers<<" numbers for the bare pole "<<iPole<<" line (mass and "
-				<<nChannels_<<" coupling constants). Found "<<nPoleValues<<" values instead."
-				<<endl;
-			return;
-		}
-
-		poleMass = atof(poleLine[0].c_str());
-		poleMassSq = poleMass*poleMass;
-		LauParameter mPoleParam(poleMassSq);
-		mSqPoles_.push_back(mPoleParam);
-
-		std::vector<LauParameter> couplingVector;
-
-		cout<<"Added bare pole mass "<<poleMass<<" GeV for pole number "<<iPole+1<<endl;
-
-		for (iChannel = 0; iChannel < nChannels_; iChannel++) {
-
-			couplingConst = atof(poleLine[iChannel+1].c_str());
-			LauParameter couplingParam(couplingConst);
-			couplingVector.push_back(couplingParam);
-
-			cout<<"Added coupling parameter g^"<<iPole+1<<"_"<<iChannel+1<<" = "<<couplingConst<<endl;
+			// Usually Adler-zero constants
+			TString parString(theLine[1].c_str());
+			this->storeParameter(keyword, parString);
 
 		}
 
-		gCouplings_[iPole] = couplingVector;    
-
 	}
 
-	// Scattering (slowly-varying part, or SVP) values
+	sAConst_ = 0.5*sA_.unblindValue()*LauConstants::mPiSq;
 
-	fScattering_.clear();
-	Int_t jChannel(0);
+	// Symmetrise scattering parameters if enabled
+	if (scattSymmetry_ == kTRUE) {
 
-	std::vector<std::string> scatteringLine = readFile.getNextLine();
-	Int_t nScatteringValues = static_cast<Int_t>(scatteringLine.size());
-	if (nScatteringValues != nChannels_) {
-		cerr<<"Error in LauKMatrixPropagator::setParameters. Expecting "
-			<<nChannels_<<" scattering SVP f constants instead of "<<nScatteringValues
-			<<" for the K-matrix row index "<<index_<<endl;
-		return;
+		for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
+
+			for (Int_t jChannel = iChannel; jChannel < nChannels_; jChannel++) {
+
+				LauParameter fPar = fScattering_[iChannel][jChannel];
+				fScattering_[jChannel][iChannel] = LauParameter(fPar);
+
+			}
+		}
 	}
 
-	std::vector<LauParameter> scatteringVect;
-	for (jChannel = 0; jChannel < nChannels_; jChannel++) {
+	// All required parameters have been set
+	parametersSet_ = kTRUE;
 
-		Double_t fScattValue = atof(scatteringLine[jChannel].c_str());
-		LauParameter scatteringParam(fScattValue);
-		scatteringVect.push_back(scatteringParam);
+	cout<<"Finished initialising K-matrix propagator "<<name_<<endl;
 
-		cout<<"Added scattering SVP f("<<index_+1<<","<<jChannel+1<<") = "<<fScattValue<<endl;
+}
 
-	}
-
-	fScattering_[index_] = scatteringVect;
-
-	// Now extract the constants for the "Adler-zero" terms
-	std::vector<std::string> constLine = readFile.getNextLine();
-	Int_t nConstValues = static_cast<Int_t>(constLine.size());
-	if (nConstValues != 5) {
-		cerr<<"Error in LauKMatrixPropagator::setParameters. Expecting 5 values for the Adler-zero constants:"
-			<<" m0^2 s0Scatt s0Prod sA sA0"<<endl;
-		return;
-	}
-
-	Double_t mSq0Value = atof(constLine[0].c_str());
-	Double_t s0ScattValue = atof(constLine[1].c_str());
-	Double_t s0ProdValue = atof(constLine[2].c_str());
-	Double_t sAValue = atof(constLine[3].c_str());
-	Double_t sA0Value = atof(constLine[4].c_str());
-
-	cout<<"Adler zero constants:"<<endl;
-	cout<<"m0Sq = "<<mSq0Value<<", s0Scattering = "<<s0ScattValue<<", s0Production = "
-		<<s0ProdValue<<", sA = "<<sAValue<<" and sA0 = "<<sA0Value<<endl;
-
-	mSq0_ = LauParameter("mSq0", mSq0Value);
-	s0Scatt_ = LauParameter("s0Scatt", s0ScattValue);
-	s0Prod_ = LauParameter("s0Prod", s0ProdValue);
-	sA_ = LauParameter("sA", sAValue);
-	sA0_ = LauParameter("sA0", sA0Value);
-	sAConst_ = 0.5*sAValue*LauConstants::mPiSq;
-
+void LauKMatrixPropagator::initialiseMatrices()
+{
+	
 	// Identity and null matrices
 	IMatrix_.Clear();
 	IMatrix_.ResizeTo(nChannels_, nChannels_);
-	for (iChannel = 0; iChannel < nChannels_; iChannel++) {
+	for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
 		IMatrix_[iChannel][iChannel] = 1.0;
 	}
 
@@ -411,12 +354,196 @@ void LauKMatrixPropagator::setParameters(const TString& inputFile)
       	ReTMatrix_.ResizeTo(nChannels_, nChannels_);
 	ImTMatrix_.ResizeTo(nChannels_, nChannels_);
 
-	// All required parameters have been set
-	parametersSet_ = kTRUE;
+	// For the coupling and scattering constants, use LauParArrays instead of TMatrices
+	// so that the quantities remain LauParameters instead of just doubles.
+	// Each array is an stl vector of another stl vector of LauParameters:
+	// std::vector< std::vector<LauParameter> >.
+	// Set their sizes using the number of poles and channels defined in the constructor
+	gCouplings_.clear();
+	gCouplings_.resize(nPoles_);
 
-	cout<<"Finished initialising K-matrix propagator "<<name_<<endl;
+	for (Int_t iPole = 0; iPole < nPoles_; iPole++) {
+		gCouplings_[iPole].resize(nChannels_);
+	}
+
+	fScattering_.clear();
+	fScattering_.resize(nChannels_);
+
+	for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
+		fScattering_[iChannel].resize(nChannels_);
+	}
+
+	// Clear other vectors
+	phaseSpaceTypes_.clear();
+	phaseSpaceTypes_.resize(nChannels_);
+
+	mSqPoles_.clear();
+	mSqPoles_.resize(nPoles_);
 
 }
+
+void LauKMatrixPropagator::storeChannels(const std::vector<std::string>& theLine) 
+{
+
+	// Get the list of channel indices to specify what phase space factors should be used
+	// e.g. pipi, Kpi, eta eta', 4pi etc..
+
+	// Check that the line has nChannels_+1 strings
+	Int_t nTypes = static_cast<Int_t>(theLine.size()) - 1;
+	if (nTypes != nChannels_) {
+		cerr<<"Error in LauKMatrixPropagator::storeChannels. The input file defines "
+		    <<nTypes<<" channels when "<<nChannels_<<" are expected"<<endl;
+		return;
+	}
+
+	for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
+
+		Int_t phaseSpaceInt = std::atoi(theLine[iChannel+1].c_str());
+		Bool_t checkChannel = this->checkPhaseSpaceType(phaseSpaceInt);
+		
+		if (checkChannel == kTRUE) {
+			cout<<"Adding phase space channel index "<<phaseSpaceInt
+			    <<" to K-matrix propagator "<<name_<<endl;
+			phaseSpaceTypes_[iChannel] = phaseSpaceInt;
+		} else {
+			cerr<<"Phase space channel index "<<phaseSpaceInt
+			    <<" should be between 1 and "<<LauKMatrixPropagator::TotChannels-1<<endl;
+		}
+
+	}
+
+}
+
+void LauKMatrixPropagator::storePole(const std::vector<std::string>& theLine)
+{
+
+	// Store the pole mass and its coupling constants for each channel.
+	// Each line will contain: Pole poleNumber poleMass poleCouplingsPerChannel
+
+	// Check that the line has nChannels_ + 3 strings
+	Int_t nWords = static_cast<Int_t>(theLine.size()); 
+	Int_t nExpect = nChannels_ + 3;
+
+	if (nWords == nExpect) {
+		
+		Int_t poleIndex = std::atoi(theLine[1].c_str()) - 1;
+		if (poleIndex >= 0 && poleIndex < nPoles_) {
+
+			Double_t poleMass = std::atof(theLine[2].c_str());
+			Double_t poleMassSq = poleMass*poleMass;
+			LauParameter mPoleParam(poleMassSq);
+			mSqPoles_[poleIndex] = mPoleParam;
+
+			cout<<"Added bare pole mass "<<poleMass<<" GeV for pole number "<<poleIndex+1<<endl;
+
+			for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
+
+				Double_t couplingConst = std::atof(theLine[iChannel+3].c_str());
+				LauParameter couplingParam(couplingConst);
+				gCouplings_[poleIndex][iChannel] = couplingParam;
+
+				cout<<"Added coupling parameter g^{"<<poleIndex+1<<"}_"
+				    <<iChannel+1<<" = "<<couplingConst<<endl;
+
+			}
+
+		}
+
+	} else {
+
+		cerr<<"Error in LauKMatrixPropagator::storePole. Expecting "<<nExpect
+		    <<" numbers for pole definition but found "<<nWords
+		    <<" values instead"<<endl;
+
+	}
+
+
+}
+
+void LauKMatrixPropagator::storeScattering(const std::vector<std::string>& theLine)
+{
+
+	// Store the scattering constants (along one of the channel rows).
+	// Each line will contain: Scatt ScattIndex ScattConstantsPerChannel
+
+	// Check that the line has nChannels_ + 2 strings
+	Int_t nWords = static_cast<Int_t>(theLine.size()); 
+	Int_t nExpect = nChannels_ + 2;
+
+	if (nWords == nExpect) {
+		
+		Int_t scattIndex = std::atoi(theLine[1].c_str()) - 1;
+		if (scattIndex >= 0 && scattIndex < nChannels_) {
+
+			for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
+				
+				Double_t scattConst = std::atof(theLine[iChannel+2].c_str());
+				LauParameter scattParam(scattConst);
+				fScattering_[scattIndex][iChannel] = scattParam;
+
+				cout<<"Added scattering parameter f("<<scattIndex+1<<","
+				    <<iChannel+1<<") = "<<scattConst<<endl;
+
+			}
+
+		}
+
+	} else {
+
+		cerr<<"Error in LauKMatrixPropagator::storeScattering. Expecting "<<nExpect
+		    <<" numbers for scattering constants definition but found "<<nWords
+		    <<" values instead"<<endl;
+
+	}
+
+
+}
+
+void LauKMatrixPropagator::storeParameter(const TString& keyword, const TString& parString)
+{
+
+	if (!keyword.CompareTo("msq0")) {
+		
+		Double_t mSq0Value = std::atof(parString.Data());
+		cout<<"Adler zero constant m0Sq = "<<mSq0Value<<endl;
+		mSq0_ = LauParameter("mSq0", mSq0Value);
+
+	} else if (!keyword.CompareTo("s0scatt")) {
+
+		Double_t s0ScattValue = std::atof(parString.Data());
+		cout<<"Adler zero constant s0Scatt = "<<s0ScattValue<<endl;
+		s0Scatt_ = LauParameter("s0Scatt", s0ScattValue);
+
+	} else if (!keyword.CompareTo("s0prod")) {
+
+		Double_t s0ProdValue = std::atof(parString.Data());
+		cout<<"Adler zero constant s0Prod = "<<s0ProdValue<<endl;
+		s0Prod_ = LauParameter("s0Scatt", s0ProdValue);
+
+	} else if (!keyword.CompareTo("sa0")) {
+
+		Double_t sA0Value = std::atof(parString.Data());
+		cout<<"Adler zero constant sA0 = "<<sA0Value<<endl;
+		sA0_ = LauParameter("sA0", sA0Value);
+
+	} else if (!keyword.CompareTo("sa")) {
+
+		Double_t sAValue = std::atof(parString.Data());
+		cout<<"Adler zero constant sA = "<<sAValue<<endl;
+		sA_ = LauParameter("sA", sAValue);
+
+	} else if (!keyword.CompareTo("scattsymmetry")) {
+
+		Int_t flag = std::atoi(parString.Data());
+		if (flag == 0) {
+			cout<<"Turning off scattering parameter symmetry: f_ji = f_ij will not be assumed"<<endl;
+			scattSymmetry_ = kFALSE;
+		}
+		
+	}
+
+}
+
 
 void LauKMatrixPropagator::calcScattKMatrix(Double_t s) 
 {
@@ -442,13 +569,6 @@ void LauKMatrixPropagator::calcScattKMatrix(Double_t s)
 	// Now loop over iChannel, jChannel to calculate Kij = Kji.
 	for (iChannel = 0; iChannel < nChannels_; iChannel++) {
 
-		std::vector<LauParameter> SVPVect(0);   
-
-		KMatrixParamMap::iterator SVPIter = fScattering_.find(iChannel);
-		if (SVPIter != fScattering_.end()) {SVPVect = SVPIter->second;}
-
-		Int_t SVPVectSize = static_cast<Int_t>(SVPVect.size());
-
 		// Scattering matrix is real and symmetric. Start j loop from i.
 		for (jChannel = iChannel; jChannel < nChannels_; jChannel++) {
 
@@ -457,22 +577,16 @@ void LauKMatrixPropagator::calcScattKMatrix(Double_t s)
 			// Calculate pole mass summation term
 			for (iPole = 0; iPole < nPoles_; iPole++) {
 
-				KMatrixParamMap::iterator couplingIter = gCouplings_.find(iPole);
-
-				std::vector<LauParameter> couplingVect = couplingIter->second;
-
-				Double_t g_i = couplingVect[iChannel].unblindValue();
-				Double_t g_j = couplingVect[jChannel].unblindValue();
+				Double_t g_i = this->getCouplingConstant(iPole, iChannel);
+				Double_t g_j = this->getCouplingConstant(iPole, jChannel);
 
 				Kij += poleDenomVect_[iPole]*g_i*g_j;
 				if (verbose_) {cout<<"1: Kij for i = "<<iChannel<<", j = "<<jChannel<<" = "<<Kij<<endl;}
 
 			}
 
-			if (SVPVectSize != 0 && jChannel < SVPVectSize) {
-				Double_t fij = SVPVect[jChannel].unblindValue();
-				Kij += fij*scattSVP_;
-			}
+			Double_t fij = this->getScatteringConstant(iChannel, jChannel);
+			Kij += fij*scattSVP_;
 
 			Kij *= adlerZeroFactor_;
 			if (verbose_) {cout<<"2: Kij for i = "<<iChannel<<", j = "<<jChannel<<" = "<<Kij<<endl;}
@@ -520,13 +634,24 @@ Double_t LauKMatrixPropagator::getCouplingConstant(Int_t poleIndex, Int_t channe
 {
 
 	if (parametersSet_ == kFALSE) {return 0.0;}
+	if (poleIndex < 0 || poleIndex >= nPoles_) {return 0.0;}
+	if (channelIndex < 0 || channelIndex >= nChannels_) {return 0.0;}	
 
-	Double_t couplingConst(0.0);
-	KMatrixParamMap::const_iterator couplingIter = gCouplings_.find(poleIndex);
-	std::vector<LauParameter> couplingVect = couplingIter->second;
-	couplingConst = couplingVect[channelIndex].unblindValue();
-
+	Double_t couplingConst = gCouplings_[poleIndex][channelIndex].unblindValue();
 	return couplingConst;
+
+}
+
+
+Double_t LauKMatrixPropagator::getScatteringConstant(Int_t channel1Index, Int_t channel2Index) const
+{
+
+	if (parametersSet_ == kFALSE) {return 0.0;}
+	if (channel1Index < 0 || channel1Index >= nChannels_) {return 0.0;}
+	if (channel2Index < 0 || channel2Index >= nChannels_) {return 0.0;}
+
+	Double_t scatteringConst = fScattering_[channel1Index][channel2Index].unblindValue();
+	return scatteringConst;
 
 }
 
@@ -729,7 +854,7 @@ LauComplex LauKMatrixPropagator::calcEtaEtaPRho(Double_t s) const
 	if (sqrtTerm < 0.0) {
 		rho.setImagPart( TMath::Sqrt(-sqrtTerm) );
 	} else {
-		rho.setRealPart( TMath::Sqrt(sqrtTerm) );
+	        rho.setRealPart( TMath::Sqrt(sqrtTerm) );
 	}
 
 	return rho;
@@ -947,8 +1072,8 @@ void LauKMatrixPropagator::getSqrtRhoMatrix()
 
                 Double_t realRho = ReRhoMatrix_[iChannel][iChannel];
                 Double_t imagRho = ImRhoMatrix_[iChannel][iChannel];
-
-                Double_t rhoMag = sqrt(realRho*realRho + imagRho*imagRho);
+		
+		Double_t rhoMag = sqrt(realRho*realRho + imagRho*imagRho);
                 Double_t rhoSum = rhoMag + realRho;
                 Double_t rhoDiff = rhoMag - realRho;
 
@@ -963,3 +1088,25 @@ void LauKMatrixPropagator::getSqrtRhoMatrix()
 
 
 }
+
+LauComplex LauKMatrixPropagator::getTHat(Double_t s, Int_t channel) {
+
+        LauComplex THat(0.0, 0.0);
+	channel -= 1;
+	if (channel < 0 || channel >= nChannels_) {return THat;}
+
+	this->updatePropagator(s);
+
+	// Find the real and imaginary T_hat matrices
+	TMatrixD THatReal = realProp_*ScattKMatrix_;
+	TMatrixD THatImag(zeroMatrix_);
+	THatImag -= negImagProp_*ScattKMatrix_;
+
+	// Return the specific THat component
+	THat.setRealPart(THatReal[index_][channel]);
+	THat.setImagPart(THatImag[index_][channel]);
+	
+	return THat;
+
+}
+

@@ -61,7 +61,7 @@ class LauTextFileParser {
 		    \param [in] lineNo the line number
 		    \return the specified line
 		*/
-		std::vector<std::string> getLine(int lineNo);
+		std::vector<std::string> getLine(UInt_t lineNo);
 
 		//! Retrieve the next line
 		/*!
@@ -73,7 +73,13 @@ class LauTextFileParser {
 		/*!
 		    \param [in] lineNo the new line number
 		*/
-		void resetLineNumber(int lineNo) {lineNumber_ = lineNo;}
+		void resetLineNumber(UInt_t lineNo) {lineNumber_ = lineNo;}
+
+                //! Get the total number of lines that are not comments
+                /*!
+		    \return the total number of non-comment lines
+		*/
+                UInt_t getTotalNumLines() const {return totalLines_;}
 
 	protected:
 
@@ -94,10 +100,10 @@ class LauTextFileParser {
 		LineMap lineMap_;
 
 		//! The total number of lines in the file
-		int totalLines_;
+		UInt_t totalLines_;
 
 		//! The current line number
-		int lineNumber_;
+		UInt_t lineNumber_;
 
 };
 

@@ -38,9 +38,11 @@ class LauKMatrixProdPole : public LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] propagator a K-matrix propagator
 			\param [in] daughters the daughter particles
+			\param [in] useProdAdler boolean to turn on/off the production Adler zero factor
 		*/	
                 LauKMatrixProdPole(const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
-		                   LauKMatrixPropagator* propagator, const LauDaughters* daughters);
+		                   LauKMatrixPropagator* propagator, const LauDaughters* daughters,
+				   Bool_t useProdAdler = kFALSE);
 
 		//! Destructor
   		virtual ~LauKMatrixProdPole();
@@ -76,6 +78,9 @@ class LauKMatrixProdPole : public LauAbsResonance {
    		LauKMatrixPropagator* thePropagator_;
 		//! The number of the pole
 		Int_t poleIndex_;
+
+                //! Boolean to turn on/off the production Adler zero factor
+                Bool_t useProdAdler_;
 
    		ClassDef(LauKMatrixProdPole, 0) // K-matrix production pole
 

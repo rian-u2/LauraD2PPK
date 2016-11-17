@@ -787,7 +787,7 @@ void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const T
 
 }
 
-void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex)
+void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex, Bool_t useProdAdler)
 {
 
 	// Add a K-matrix production pole term, using the K-matrix propagator given by the propName.
@@ -810,7 +810,8 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 
 		// Now add the K-matrix production pole amplitude to the vector of LauAbsResonance pointers.
 		Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
-		LauAbsResonance* prodPole = new LauKMatrixProdPole(poleName, poleIndex, resPairAmpInt, thePropagator, daughters_);
+		LauAbsResonance* prodPole = new LauKMatrixProdPole(poleName, poleIndex, resPairAmpInt, 
+								   thePropagator, daughters_, useProdAdler);
 
 		resTypAmp_.push_back(poleName);
 		resPairAmp_.push_back(resPairAmpInt);
@@ -834,7 +835,7 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 }
 
 
-void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex)
+void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex, Bool_t useProdAdler)
 {
 
 	// Add a K-matrix production "slowly-varying part" (SVP) term, using the K-matrix propagator
@@ -857,7 +858,8 @@ void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString&
 
 		// Now add the K-matrix production SVP amplitude to the vector of LauAbsResonance pointers.
 		Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
-		LauAbsResonance* prodSVP = new LauKMatrixProdSVP(SVPName, channelIndex, resPairAmpInt, thePropagator, daughters_);
+		LauAbsResonance* prodSVP = new LauKMatrixProdSVP(SVPName, channelIndex, resPairAmpInt, 
+								 thePropagator, daughters_, useProdAdler);
 
 		resTypAmp_.push_back(SVPName);
 		resPairAmp_.push_back(resPairAmpInt);

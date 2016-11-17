@@ -28,12 +28,11 @@ int main(const int /*argc*/, const char** /*argv*/) {
 								    nPoles, KMatrixIndex);
 
 	// Find the transition amplitude T for the pi pi mode for
-	// s between (2*mpi)^2 and 4.0 GeV^2
-	Double_t mPi = 0.13957018;
-	Double_t twomPiSq = 4.0*mPi*mPi;
-
-	Double_t sMin(twomPiSq), sMax(4.0), ds(0.001);
-        Int_t nS = Int_t(((sMax - sMin)/ds) + 0.5);
+	// invariant mass squared s between (2*mpi)^2 and 4.0 GeV^2
+	Double_t mMin(0.28);
+	Double_t mMax(2.0);
+	Int_t nS = 2000;
+	Double_t dm = (mMax - mMin)/(nS*1.0);
 
 	// Argand plot
 	TGraph* TxyGraph = new TGraph(nS);
@@ -52,16 +51,17 @@ int main(const int /*argc*/, const char** /*argv*/) {
 
         for (Int_t i = 0; i < nS; i++) {
 
-	    Double_t s = ds*i + sMin;
-	    Double_t m(0.0);
-	    if (s > 0.0) {m = TMath::Sqrt(s);}
+	    Double_t m = dm*i + mMin;
+	    Double_t s = m*m;
 
 	    LauComplex TAmp = propagator->getTransitionAmp(s, KMatrixIndex);
 
 	    Double_t realT = TAmp.re();
 	    Double_t imagT = TAmp.im();
 
+	    // Argand diagram showing the transition amplitude phase motion
 	    TxyGraph->SetPoint(i, realT, imagT);
+	    // Transition amplitude squared
 	    TSqGraph->SetPoint(i, m, TAmp.abs2());
 
 	    // T - E = 0.5*i, where E = inelasticity vector, pointing to T from (0,i/2)

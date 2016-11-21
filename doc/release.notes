@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+21st November 2016 John Back
+* Added two K-matrix examples for creating pedagogical plots (with associated data files):
+ - B3piKMatrixPlots for K-matrix elements, propagator, and pole and SVP production terms
+ - B3piKMatrixMassProj for pole and SVP mass projections generated over the DP
+
 17th November 2016 John Back
 * Modifications of the K matrix implementation:
  - Changed the format of the parameter file to use keywords, with updated examples

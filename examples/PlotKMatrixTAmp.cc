@@ -15,6 +15,8 @@ using std::endl;
 #include "TAxis.h"
 #include "TLine.h"
 #include "TMath.h"
+#include "TLatex.h"
+#include "TArrow.h"
 
 int main(const int /*argc*/, const char** /*argv*/) {
 
@@ -99,55 +101,105 @@ int main(const int /*argc*/, const char** /*argv*/) {
         theCanvas->Divide(2,2);
  	// Argand plot
 	theCanvas->cd(1);
-	TxyGraph->SetTitle("Argand plot");
+	TxyGraph->SetTitle("Transition amplitude T#; S #equiv I + 2iT");
 	TxyGraph->GetXaxis()->SetTitle("Re(T)");
         TxyGraph->GetYaxis()->SetTitle("Im(T)");
+	TxyGraph->GetXaxis()->CenterTitle(kTRUE);
+	TxyGraph->GetYaxis()->CenterTitle(kTRUE);
+	TxyGraph->SetLineWidth(1);
         TxyGraph->Draw("apl");
 
 	// Overlay the elastic boundaries
 	TLine lineA1(-0.5, 0.0, -0.5, 1.0);
 	lineA1.SetLineStyle(kDotted);
+	lineA1.SetLineWidth(1);
 	lineA1.Draw();
 	TLine lineA2(0.5, 0.0, 0.5, 1.0);
 	lineA2.SetLineStyle(kDotted);
+	lineA2.SetLineWidth(1);
 	lineA2.Draw();
 	TLine lineA3(-0.5, 1.0, 0.5, 1.0);
 	lineA3.SetLineStyle(kDotted);
+	lineA3.SetLineWidth(1);
 	lineA3.Draw();
 	
 	// Intensity
         theCanvas->cd(2);
-	TSqGraph->SetTitle("Intensity");
-	TSqGraph->GetXaxis()->SetTitle("#sqrt{s} (GeV/c^{2})");
+	TSqGraph->SetTitle("Transition amplitude intensity");
+	TSqGraph->GetXaxis()->SetTitle("m(#pi^{+}#pi^{-}) (GeV/c^{2})");
         TSqGraph->GetYaxis()->SetTitle("|T|^{2}");
+	TSqGraph->SetLineWidth(1);
+	TSqGraph->GetXaxis()->CenterTitle(kTRUE);
+	TSqGraph->GetYaxis()->CenterTitle(kTRUE);
         TSqGraph->Draw("apl");
 	// Overlay the unitarity limit
 	TAxis* xAxis = TSqGraph->GetXaxis();
 	TLine lineB1(xAxis->GetXmin(), 1.0, xAxis->GetXmax(), 1.0);
 	lineB1.SetLineStyle(kDotted);
+	lineB1.SetLineWidth(1);
 	lineB1.Draw();
+
+	// Also overlay "interesting regions"
+	TLatex text;
+	text.SetTextSize(0.045);
+
+	// sigma
+	text.DrawLatex(0.65, 0.6, "f_{0}(500)");
+	text.DrawLatex(0.68, 0.525, "or #sigma");
+
+	// f0(980)
+	text.SetTextSize(0.045);
+	text.DrawLatex(0.9, 1.02, "f_{0}(980)");
+	TArrow arrow1(0.98, 1.0, 0.98, 0.8, 0.01);
+	arrow1.SetLineWidth(1);
+	arrow1.Draw();
+	
+	// f0(1370)
+	text.DrawLatex(1.25, 0.91, "f_{0}(1370)");
+	TArrow arrow2(1.37, 0.9, 1.37, 0.7, 0.01);
+	arrow2.SetLineWidth(1);
+	arrow2.Draw();
+
+	// f0(1500)
+	text.DrawLatex(1.45, 0.76, "f_{0}(1500)");
+	TArrow arrow3(1.50, 0.72, 1.50, 0.52, 0.01);
+	arrow3.SetLineWidth(1);
+	arrow3.Draw();
+
+	// f0(1710)
+	text.DrawLatex(1.60, 0.61, "f_{0}(1710)");
+	TArrow arrow4(1.71, 0.6, 1.71, 0.45, 0.01);
+	arrow4.SetLineWidth(1);
+	arrow4.Draw();
 
 	// Phase
         theCanvas->cd(3);
 	TDeltaGraph->SetTitle("Phase shift");
-        TDeltaGraph->GetXaxis()->SetTitle("#sqrt{s} (GeV/c^{2})");
+        TDeltaGraph->GetXaxis()->SetTitle("m(#pi^{+}#pi^{-}) (GeV/c^{2})");
         TDeltaGraph->GetYaxis()->SetTitle("#delta (degrees)");
+	TDeltaGraph->GetXaxis()->CenterTitle(kTRUE);
+	TDeltaGraph->GetYaxis()->CenterTitle(kTRUE);
+	TDeltaGraph->SetLineWidth(1);
         TDeltaGraph->Draw("apl");
 
  	// Inelasticity
 	theCanvas->cd(4);
-	TEtaGraph->SetTitle("Inelasticity");
-        TEtaGraph->GetXaxis()->SetTitle("#sqrt{s} (GeV/c^{2})");
+	TEtaGraph->SetTitle("Inelasticity, #eta #equiv |2T - iI| = |S|");
+        TEtaGraph->GetXaxis()->SetTitle("m(#pi^{+}#pi^{-}) (GeV/c^{2})");
 	TEtaGraph->GetYaxis()->SetTitle("#eta");
+	TEtaGraph->GetXaxis()->CenterTitle(kTRUE);
+	TEtaGraph->GetYaxis()->CenterTitle(kTRUE);
+	TEtaGraph->SetLineWidth(1);
         TEtaGraph->Draw("apl");
+
 	// Overlay the elastic limit
 	xAxis = TEtaGraph->GetXaxis();
 	TLine lineD1(xAxis->GetXmin(), 1.0, xAxis->GetXmax(), 1.0);
 	lineD1.SetLineStyle(kDotted);
+	lineD1.SetLineWidth(1);
 	lineD1.Draw();
 
-
         theCanvas->Print("KMatrixTAmpPlots.png");
-
+        theCanvas->Print("KMatrixTAmpPlots.eps");
 
 }

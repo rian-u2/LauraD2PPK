@@ -600,13 +600,13 @@ class LauIsobarDynamics {
 		/*!
 		    \param [in] index the index of the amplitude component within the model
 		*/
-		void resAmp(const UInt_t index);
+		LauComplex resAmp(const UInt_t index);
 
 		//! Calculate the dynamic part of the intensity for a given incoherent component at the current point in the Dalitz plot
 		/*!
 		    \param [in] index the index of the incoherent component within the model
 		*/
-		void incohResAmp(const UInt_t index);
+		Double_t incohResAmp(const UInt_t index);
 
 		//! Load the data for a given event
 		/*!

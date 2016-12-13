@@ -1655,7 +1655,7 @@ void LauIsobarDynamics::calculateAmplitudes()
     		// Calculate the dynamics for this resonance
     		if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
     			ff_[*iter] += this->resAmp(*iter);
-    		} else if ( !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+		} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
     			incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
     		}
 

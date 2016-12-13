@@ -623,8 +623,8 @@ Double_t LauAbsResonance::calcCovFactor( const Double_t Erm) const
                 covFactor = Erm*(Erm*Erm + 1.5);
         } else if (resSpin_ == 4) {
                 covFactor = (8.*Erm*Erm*Erm*Erm + 24.*Erm*Erm + 3.)/35.;
-        } else if (resSpin_ > 5) {
-                std::cerr << "cov factor not calculated for spin 5 onwards "<<std::endl;                
+        } else if (resSpin_ > 4) {
+                std::cerr << "cov factor not calculated for spin 5 onwards!" << std::endl;                
         }
 
         return covFactor;

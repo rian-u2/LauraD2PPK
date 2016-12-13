@@ -518,6 +518,50 @@ class LauIsobarDynamics {
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
 		void calcDPNormalisation();
 
+        //! Form the regions that are produced by the spaces between narrow resonances in m13
+        /*!
+            \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual coarse regions
+        */
+        std::vector<std::pair<Double_t, Double_t> > formGapsFromRegions(const std::vector<std::pair<Double_t, Double_t> > & regions, Double_t min, Double_t max);
+
+        //! Removes entries in the vector of LauDPPartialIntegralInfo * that are null
+        void cullNullRegions(std::vector<LauDPPartialIntegralInfo *> & regions);
+
+        //! Wrapper for LauDPPartialIntegralInfo constructor
+        /*!
+            \return NULL if the integration region has zero internal points, else returns the corresponding LauDPPartialIntegralInfo
+        */
+        LauDPPartialIntegralInfo * newDPIntegrationRegion(const Double_t minm13, const Double_t maxm13,
+                                                          const Double_t minm23, const Double_t maxm23,
+                                                          const Double_t m13BinWidth, const Double_t m23BinWidth,
+                                                          const Double_t precision,
+                                                          const UInt_t nAmp,
+                                                          const UInt_t nIncohAmp);
+
+        //! Correct regions to ensure that the finest integration grid takes precedence                             
+        void correctDPOverlap(std::vector<std::pair<Double_t, Double_t> > & regions, const std::vector<Double_t> & binnings);
+
+        //! Calculate the integration scheme for narrow m23Regions that are integrated according to m23Binnings grid size, and the overlap according to m13Binnings x m23Binnings
+        /*!
+            \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual regions
+        */
+        std::vector<LauDPPartialIntegralInfo *> m23IntegrationRegions(const std::vector<std::pair<Double_t, Double_t> > & m13Regions,
+                                                                      const std::vector<std::pair<Double_t, Double_t> > & m23Regions,
+                                                                      const std::vector<Double_t> & m13Binnings,
+                                                                      const std::vector<Double_t> & m23Binnings, // Needed for overlap region
+                                                                      const Double_t precision,
+                                                                      const Double_t defaultBinning);
+
+        //! Calculate the integration scheme for narrow m13Regions that are integrated according to m13Binnings grid size
+        /*!
+            \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual regions
+        */
+        std::vector<LauDPPartialIntegralInfo *> m13IntegrationRegions(const std::vector<std::pair<Double_t, Double_t> > & m13Regions,
+                                                                      const std::vector<std::pair<Double_t, Double_t> > & m23Regions,
+                                                                      const std::vector<Double_t> & m13Binnings,
+                                                                      const Double_t precision,
+                                                                      const Double_t defaultBinning);
+
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
 		void calcDPNormalisationScheme();
 

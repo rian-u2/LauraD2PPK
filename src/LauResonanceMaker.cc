@@ -73,7 +73,7 @@ LauResonanceMaker& LauResonanceMaker::get()
 	return *resonanceMaker_;
 }
 
-void LauResonanceMaker::createResonanceVector() 
+void LauResonanceMaker::createResonanceVector()
 {
 	// Function to create all possible resonances that this class supports.
 	// Also add in the sigma and kappa - but a special paramterisation is used
@@ -108,6 +108,9 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
+	// rho(1690)
+	neutral = new LauResonanceInfo("rho3(1690)",    1.686,    0.186,    3,     0,       LauBlattWeisskopfFactor::Light   );
+        resInfo_.push_back( neutral );
 	// rho(1700)
 	neutral = new LauResonanceInfo("rho0(1700)",    1.720,    0.250,    1,     0,       LauBlattWeisskopfFactor::Light   );
 	positve = new LauResonanceInfo("rho+(1700)",    1.720,    0.250,    1,     1,       LauBlattWeisskopfFactor::Light   );
@@ -115,6 +118,12 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
+	// rho0(1900)
+	neutral = new LauResonanceInfo("rho0(1900)",    1.909,    0.130,    1,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// rho3(1990)
+	neutral = new LauResonanceInfo("rho3(1990)",    1.982,    0.188,    3,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
 
 	// K* resonances               name,            mass,     width,    spin,  charge,  BW category,    BW radius parameter (defaults to 4.0)
 	// K*(892)
@@ -188,17 +197,44 @@ void LauResonanceMaker::createResonanceVector()
 	// f'_0(1300), from Belle's Kspipi paper
 	neutral = new LauResonanceInfo("f'_0(1300)",    1.449,    0.126,    0,     0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
+	// f_2(1430)
+	neutral = new LauResonanceInfo("f_2(1430)",     1.430,    0.150,    2,     0,       LauBlattWeisskopfFactor::Light   ); // PDG width in the range 13 - 150
+	resInfo_.push_back( neutral );
 	// f_0(1500)
 	neutral = new LauResonanceInfo("f_0(1500)",     1.505,    0.109,    0,     0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
 	// f'_2(1525)
 	neutral = new LauResonanceInfo("f'_2(1525)",    1.525,    0.073,    2,     0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
+	// f_2(1565)
+	neutral = new LauResonanceInfo("f_2(1565)",     1.562,    0.134,    2,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// f_2(1640)
+	neutral = new LauResonanceInfo("f_2(1640)",     1.639,    0.099,    2,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
 	// f_0(1710)
 	neutral = new LauResonanceInfo("f_0(1710)",     1.722,    0.135,    0,     0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
+	// f_2(1810)
+	neutral = new LauResonanceInfo("f_2(1810)",     1.816,    0.197,    2,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// f_2(1910)
+	neutral = new LauResonanceInfo("f_2(1910)",     1.903,    0.196,    2,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// f_2(1950)
+	neutral = new LauResonanceInfo("f_2(1950)",     1.944,    0.472,    2,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
 	// f_2(2010)
 	neutral = new LauResonanceInfo("f_2(2010)",     2.011,    0.202,    2,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// f_0(2020)
+	neutral = new LauResonanceInfo("f_0(2020)",     1.992,    0.442,    0,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// f_4(2050)
+	neutral = new LauResonanceInfo("f_4(2050)",     2.018,    0.237,    4,     0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	// f_0(2100)
+	neutral = new LauResonanceInfo("f_0(2100)",     2.101,    0.224,    0,     0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
 
 	// omega resonances            name,            mass,     width,    spin,  charge,  BW category,    BW radius parameter (defaults to 4.0)
@@ -366,7 +402,7 @@ void LauResonanceMaker::createResonanceVector()
 	// Bs*
 	neutral = new LauResonanceInfo("Bs*0",          5.4154,   0.00,     1,     0,       LauBlattWeisskopfFactor::StrangeBeauty,  6.0);
 	resInfo_.push_back( neutral );
-	
+
 	// nonresonant models          name,            mass,     width,   spin,   charge,  BW category,    BW radius parameter (defaults to 4.0)
 	// Phase-space nonresonant model
 	neutral = new LauResonanceInfo("NonReson",      0.0,      0.0,     0,      0,       LauBlattWeisskopfFactor::Light   );
@@ -416,6 +452,12 @@ void LauResonanceMaker::createResonanceVector()
         neutral = new LauResonanceInfo("PolNR_P1",      0.0,      0.0,     1,      0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
         neutral = new LauResonanceInfo("PolNR_P2",      0.0,      0.0,     1,      0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+
+	// Fake resonances for S-Wave splines
+	neutral = new LauResonanceInfo("Spline_S0",         0.0,      0.0,     0,      0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	neutral = new LauResonanceInfo("Spline_S0_Bar",     0.0,      0.0,     0,      0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
 
 	nResDefMax_ = resInfo_.size();
@@ -504,17 +546,17 @@ LauBlattWeisskopfFactor* LauResonanceMaker::getBWFactor( const LauBlattWeisskopf
 LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauBlattWeisskopfFactor::BarrierType bwType)
 {
 	// Routine to return the appropriate LauAbsResonance object given the resonance
-	// name (resName), which daughter is the bachelor track (resPairAmpInt = 1,2 or 3), 
+	// name (resName), which daughter is the bachelor track (resPairAmpInt = 1,2 or 3),
 	// and the resonance type ("BW" = Breit-Wigner, "Flatte" = Flatte distribution).
 
-	// Loop over all possible resonance states we have defined in 
+	// Loop over all possible resonance states we have defined in
 	// createResonanceVector() until we get a match with the name of the resonance
 
 	LauResonanceInfo* resInfo(0);
 	for (std::vector<LauResonanceInfo*>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
 
 		if (resName == (*iter)->getName()) {
-			// We have recognised the resonance name. 
+			// We have recognised the resonance name.
 			std::cout<<"INFO in LauResonanceMaker::getResonance : Creating resonance: "<<resName<<std::endl;
 
 			resInfo = (*iter);
@@ -563,7 +605,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			{
 			// Gounaris-Sakurai function to try and model the rho(770) better
 			std::cout<<"                                        : Using Gounaris-Sakurai lineshape. "<<std::endl;
-			theResonance = new LauGounarisSakuraiRes(resInfo, resPairAmpInt, daughters);		  
+			theResonance = new LauGounarisSakuraiRes(resInfo, resPairAmpInt, daughters);
 			LauBlattWeisskopfFactor::BlattWeisskopfCategory parCategory = LauBlattWeisskopfFactor::Parent;
 			LauBlattWeisskopfFactor::BlattWeisskopfCategory resCategory = bwCategory;
 			if ( bwCategory == LauBlattWeisskopfFactor::Default ) {
@@ -602,25 +644,25 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		case LauAbsResonance::LASS :
 			// LASS function to try and model the K-pi S-wave better
 			std::cout<<"                                        : Using LASS lineshape. "<<std::endl;
-			theResonance = new LauLASSRes(resInfo, resPairAmpInt, daughters);		  
+			theResonance = new LauLASSRes(resInfo, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::LASS_BW :
 			// LASS function to try and model the K-pi S-wave better
 			std::cout<<"                                        : Using LASS lineshape (resonant part only). "<<std::endl;
-			theResonance = new LauLASSBWRes(resInfo, resPairAmpInt, daughters);		  
+			theResonance = new LauLASSBWRes(resInfo, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::LASS_NR :
 			// LASS function to try and model the K-pi S-wave better
 			std::cout<<"                                        : Using LASS lineshape (nonresonant part only). "<<std::endl;
-			theResonance = new LauLASSNRRes(resInfo, resPairAmpInt, daughters);		  
+			theResonance = new LauLASSNRRes(resInfo, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::EFKLLM :
 			// EFKLLM form-factor description of the K-pi S-wave
 			std::cout<<"                                        : Using EFKLLM lineshape. "<<std::endl;
-			theResonance = new LauEFKLLMRes(resInfo, resPairAmpInt, daughters);		  
+			theResonance = new LauEFKLLMRes(resInfo, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::KMatrix :
@@ -731,13 +773,13 @@ void LauResonanceMaker::printAll( std::ostream& stream ) const
 	}
 }
 
-LauResonanceInfo* LauResonanceMaker::getResInfo(const TString& resName) const 
+LauResonanceInfo* LauResonanceMaker::getResInfo(const TString& resName) const
 {
     	LauResonanceInfo* resInfo(0);
 	for (std::vector<LauResonanceInfo*>::const_iterator iter=resInfo_.begin(); iter!=resInfo_.end(); ++iter) {
 
 		if (resName == (*iter)->getName()) {
-			// We have recognised the resonance name. 
+			// We have recognised the resonance name.
 			resInfo = (*iter);
 			// stop looping
 			break;

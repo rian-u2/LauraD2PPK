@@ -1200,44 +1200,41 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	std::vector<std::pair<Double_t,Double_t> > m23NarrowRes;
 	std::vector<std::pair<Double_t,Double_t> > m12NarrowRes;
 
-    // Rho-omega mixing models implicitly contains omega(782) model, but width is of rho(770) - handle as a special case
-    Double_t omegaMass = 0.783;
-    Double_t omegaWidth = 0.00849;
+	// Rho-omega mixing models implicitly contains omega(782) model, but width is of rho(770) - handle as a special case
+	Double_t omegaMass = 0.783;
+	Double_t omegaWidth = 0.00849;
 
 	for ( std::vector<LauAbsResonance*>::const_iterator iter = sigResonances_.begin(); iter != sigResonances_.end(); ++iter ) {
 
         Bool_t isRhomega = kFALSE;
 
-        if ( (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_GS ||
-             (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_GS_1 ||
-             (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_RBW ||
-             (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_RBW_1 ) {
-                 isRhomega = kTRUE;
-        }
+    if ( (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_GS ||
+         (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_GS_1 ||
+         (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_RBW ||
+         (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_RBW_1 ) {
+           isRhomega = kTRUE;
+    }
 
-		Double_t width = (*iter)->getWidth();
+    Double_t width = (*iter)->getWidth();
 
-		if ( (width > narrowWidth_ || width == 0.0) && !isRhomega) { continue; }
+    if ( (width > narrowWidth_ || width == 0.0) && !isRhomega) { continue; }
 
-		Double_t mass = (*iter)->getMass();
-		Int_t pair = (*iter)->getPairInt();
+    Double_t mass = (*iter)->getMass();
+    Int_t pair = (*iter)->getPairInt();
 
-		TString name = (*iter)->getResonanceName();
+    TString name = (*iter)->getResonanceName();
 
-		std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: " << name << ", mass = " << mass << ", width = " << width << ", pair int = " << pair << std::endl;
-		if ( pair == 1 ) {
-			if ( mass < minm23 || mass > maxm23 ){ continue; }
-
+    std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: " << name << ", mass = " << mass << ", width = " << width << ", pair int = " << pair << std::endl;
+    if ( pair == 1 ) {
+        if ( mass < minm23 || mass > maxm23 ){ continue; }
             if ( !isRhomega ) m23NarrowRes.push_back( std::make_pair(width,mass) );
             else { m23NarrowRes.push_back( std::make_pair(omegaWidth, omegaMass) );}
 		} else if ( pair == 2 ) {
 			if ( mass < minm13 || mass > maxm13 ){ continue; }
-
             if ( !isRhomega ) m13NarrowRes.push_back( std::make_pair(width,mass) );
             else { m13NarrowRes.push_back( std::make_pair(omegaWidth, omegaMass) );}
 		} else if ( pair == 3 ) {
 			if ( mass < minm12 || mass > maxm12 ){ continue; }
-
             if ( !isRhomega ) m12NarrowRes.push_back( std::make_pair(width,mass) );
             else { m12NarrowRes.push_back( std::make_pair(omegaWidth, omegaMass) );}
 		} else {
@@ -1280,14 +1277,18 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		}
 	}
 
-    if (m13NarrowRes.empty() && m23NarrowRes.empty()) {
+	if (m13NarrowRes.empty() && m23NarrowRes.empty()) {
 
-        std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..." << std::endl;
-        dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth_, m23BinWidth_, precision, nAmp_, nIncohAmp_));
+	  std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..." << std::endl;
+	  dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth_, m23BinWidth_, precision, nAmp_, nIncohAmp_));
 
-    } else {
+	} else {
 
         // Get regions in that correspond to narrow resonances in m13 and m23, and correct for overlaps in each dimension (to use the finest binning)
+        // Sort resonances by ascending mass to calculate regions properly
+
+        std::sort(m13NarrowRes.begin(), m13NarrowRes.end());
+        std::sort(m23NarrowRes.begin(), m23NarrowRes.end());
 
         std::vector<std::pair<Double_t, Double_t> > m13Regions;
         std::vector<Double_t> m13Binnings;

@@ -273,13 +273,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		void compareFitData(UInt_t toyMCScale = 10, const TString& mcFileName = "fitToyMC.root",
 				const TString& tableFileName = "fitToyMCTable.tex", Bool_t poissonSmearing = kTRUE);
 
-		//! Reweighting - allows e.g. MC events to be weighted by the DP model
-		/*! 
-			\param [in] dataFileName the name of the data file
-			\param [in] dataTreeName the name of the tree containing the data
-		*/
-		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName ) = 0;
-
 		//! Start the toy generation / fitting
 		/*!
 			\param [in] applicationCode specifies what to do, perform a fit ("fit") or generate toy MC ("gen")
@@ -352,6 +345,13 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		//! Clear the vectors containing extra ntuple variables
 		void clearExtraVarVectors();
+
+		//! Reweighting - allows e.g. MC events to be weighted by the DP model
+		/*! 
+			\param [in] dataFileName the name of the data file
+			\param [in] dataTreeName the name of the tree containing the data
+		*/
+		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName ) = 0;
 
 		//! Generate toy MC 
 		/*!

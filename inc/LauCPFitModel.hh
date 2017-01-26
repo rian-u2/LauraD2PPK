@@ -209,13 +209,6 @@ class LauCPFitModel : public LauAbsFitModel {
 		*/
 		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet);
 
-		//! Weight events based on the DP model
-		/*!
-			\param [in] dataFileName the name of the data file
-			\param [in] dataTreeName the name of the data tree
-		*/	
-		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName );
-
 	protected:
 		//! Define a map to be used to store a category name and numbers
 		typedef std::map< std::pair<TString,Int_t>, std::pair<Int_t,Double_t> > LauGenInfo;
@@ -235,6 +228,13 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Typedef for a vector of booleans to flag if events are reused
 		typedef std::vector<Bool_t> LauBkgndReuseEventsList;
 
+
+		//! Weight events based on the DP model
+		/*!
+			\param [in] dataFileName the name of the data file
+			\param [in] dataTreeName the name of the data tree
+		*/	
+		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName );
 
 		//! Initialise the fit
 		virtual void initialise();

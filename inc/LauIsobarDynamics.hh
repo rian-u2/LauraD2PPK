@@ -518,49 +518,85 @@ class LauIsobarDynamics {
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
 		void calcDPNormalisation();
 
-        //! Form the regions that are produced by the spaces between narrow resonances in m13
-        /*!
-            \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual coarse regions
-        */
-        std::vector<std::pair<Double_t, Double_t> > formGapsFromRegions(const std::vector<std::pair<Double_t, Double_t> > & regions, Double_t min, Double_t max);
+		//! Form the regions that are produced by the spaces between narrow resonances
+		/*!
+		    \param [in] regions the regions defined around narrow resonances
+		    \param [in] min the minimum value of the invariant mass
+		    \param [in] max the maximum value of the invariant mass
+		    \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual coarse regions
+		*/
+		std::vector< std::pair<Double_t,Double_t> > formGapsFromRegions(const std::vector< std::pair<Double_t,Double_t> >& regions, const Double_t min, const Double_t max) const;
 
-        //! Removes entries in the vector of LauDPPartialIntegralInfo * that are null
-        void cullNullRegions(std::vector<LauDPPartialIntegralInfo *> & regions);
+		//! Removes entries in the vector of LauDPPartialIntegralInfo* that are null
+		/*!
+		    \param [in] regions the list of region pointers
+		*/
+		void cullNullRegions(std::vector<LauDPPartialIntegralInfo*>& regions) const;
 
-        //! Wrapper for LauDPPartialIntegralInfo constructor
-        /*!
-            \return NULL if the integration region has zero internal points, else returns the corresponding LauDPPartialIntegralInfo
-        */
-        LauDPPartialIntegralInfo * newDPIntegrationRegion(const Double_t minm13, const Double_t maxm13,
-                                                          const Double_t minm23, const Double_t maxm23,
-                                                          const Double_t m13BinWidth, const Double_t m23BinWidth,
-                                                          const Double_t precision,
-                                                          const UInt_t nAmp,
-                                                          const UInt_t nIncohAmp);
+		//! Wrapper for LauDPPartialIntegralInfo constructor
+		/*!
+		    \param [in] minm13 the minimum of the m13 range
+		    \param [in] maxm13 the maximum of the m13 range
+		    \param [in] minm23 the minimum of the m23 range
+		    \param [in] maxm23 the maximum of the m23 range
+		    \param [in] m13BinWidth the m13 bin width
+		    \param [in] m23BinWidth the m23 bin width
+		    \param [in] precision the precision required for the Gauss-Legendre weights
+		    \param [in] nAmp the number of coherent amplitude components
+		    \param [in] nIncohAmp the number of incoherent amplitude components
+		    \return 0 if the integration region has no internal points, otherwise returns a pointer to the newly constructed LauDPPartialIntegralInfo object
+		 */
+		LauDPPartialIntegralInfo* newDPIntegrationRegion(const Double_t minm13, const Double_t maxm13,
+				                                 const Double_t minm23, const Double_t maxm23,
+				                                 const Double_t m13BinWidth, const Double_t m23BinWidth,
+				                                 const Double_t precision,
+				                                 const UInt_t nAmp,
+				                                 const UInt_t nIncohAmp) const;
 
-        //! Correct regions to ensure that the finest integration grid takes precedence                             
-        void correctDPOverlap(std::vector<std::pair<Double_t, Double_t> > & regions, const std::vector<Double_t> & binnings);
+		//! Correct regions to ensure that the finest integration grid takes precedence                             
+		/*!
+		    \param [in] regions the windows in invariant mass
+		    \param [in] binnings the corresponding binnings for each window
+		*/
+		void correctDPOverlap(std::vector< std::pair<Double_t,Double_t> >& regions, const std::vector<Double_t>& binnings) const;
 
-        //! Calculate the integration scheme for narrow m23Regions that are integrated according to m23Binnings grid size, and the overlap according to m13Binnings x m23Binnings
-        /*!
-            \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual regions
-        */
-        std::vector<LauDPPartialIntegralInfo *> m23IntegrationRegions(const std::vector<std::pair<Double_t, Double_t> > & m13Regions,
-                                                                      const std::vector<std::pair<Double_t, Double_t> > & m23Regions,
-                                                                      const std::vector<Double_t> & m13Binnings,
-                                                                      const std::vector<Double_t> & m23Binnings, // Needed for overlap region
-                                                                      const Double_t precision,
-                                                                      const Double_t defaultBinning);
+		//! Create the integration grid objects for the m23 narrow resonance regions, including the overlap regions with the m13 narrow resonances
+		/*!
+		    The overlap regions will have an m13Binnings x m23Binnings grid.
+		    The other regions will have a defaultBinning x m23Binnings grid.
 
-        //! Calculate the integration scheme for narrow m13Regions that are integrated according to m13Binnings grid size
-        /*!
-            \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual regions
-        */
-        std::vector<LauDPPartialIntegralInfo *> m13IntegrationRegions(const std::vector<std::pair<Double_t, Double_t> > & m13Regions,
-                                                                      const std::vector<std::pair<Double_t, Double_t> > & m23Regions,
-                                                                      const std::vector<Double_t> & m13Binnings,
-                                                                      const Double_t precision,
-                                                                      const Double_t defaultBinning);
+		    \param [in] m13Regions the limits of each narrow-resonance region in m13
+		    \param [in] m23Regions the limits of each narrow-resonance region in m23
+		    \param [in] m13Binnings the binning of each narrow-resonance region in m13
+		    \param [in] m23Binnings the binning of each narrow-resonance region in m23
+		    \param [in] precision the precision required for the Gauss-Legendre weights
+		    \param [in] defaultBinning the binning used in the bulk of the phase space
+		    \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual regions
+		*/
+		std::vector<LauDPPartialIntegralInfo*> m23IntegrationRegions(const std::vector< std::pair<Double_t,Double_t> >& m13Regions,
+				                                             const std::vector< std::pair<Double_t,Double_t> >& m23Regions,
+				                                             const std::vector<Double_t>& m13Binnings,
+				                                             const std::vector<Double_t>& m23Binnings,
+				                                             const Double_t precision,
+				                                             const Double_t defaultBinning) const;
+
+		//! Create the integration grid objects for the m13 narrow resonance regions, excluding the overlap regions with the m23 narrow resonances
+		/*!
+		    The regions will have a m13Binnings x defaultBinning grid.
+		    The overlap regions are created by the m23IntegrationRegions function.
+
+		    \param [in] m13Regions the limits of each narrow-resonance region in m13
+		    \param [in] m23Regions the limits of each narrow-resonance region in m23
+		    \param [in] m13Binnings the binning of each narrow-resonance region in m13
+		    \param [in] precision the precision required for the Gauss-Legendre weights
+		    \param [in] defaultBinning the binning used in the bulk of the phase space
+		    \return vector of pointers to LauDPPartialIntegralInfo objects that contain the individual regions
+		*/
+		std::vector<LauDPPartialIntegralInfo*> m13IntegrationRegions(const std::vector< std::pair<Double_t,Double_t> >& m13Regions,
+				                                             const std::vector< std::pair<Double_t,Double_t> >& m23Regions,
+				                                             const std::vector<Double_t>& m13Binnings,
+				                                             const Double_t precision,
+				                                             const Double_t defaultBinning) const;
 
 		//! Calculate the Dalitz plot normalisation integrals across the whole Dalitz plot
 		void calcDPNormalisationScheme();

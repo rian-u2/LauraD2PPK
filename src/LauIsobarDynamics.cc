@@ -41,6 +41,7 @@
 #include "LauNRAmplitude.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"
+#include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
 
 ClassImp(LauIsobarDynamics)
@@ -996,185 +997,173 @@ void LauIsobarDynamics::calcDPNormalisation()
 	}
 }
 
-
-std::vector<std::pair<Double_t, Double_t> > LauIsobarDynamics::formGapsFromRegions(const std::vector<std::pair<Double_t, Double_t> > & regions, Double_t min, Double_t max)
+std::vector< std::pair<Double_t, Double_t> > LauIsobarDynamics::formGapsFromRegions( const std::vector< std::pair<Double_t, Double_t> >& regions, const Double_t min, const Double_t max ) const
 {
-
-    std::vector<std::pair<Double_t, Double_t> > gaps(regions.size() + 1, std::make_pair(0., 0.));
+    std::vector< std::pair<Double_t, Double_t> > gaps(regions.size() + 1, std::make_pair(0., 0.));
 
     // Given some narrow resonance regions, find the regions that correspond to the gaps between them
 
     gaps[0].first = min;
+
+    for (UInt_t i = 0; i < regions.size(); ++i) {
+        gaps[i].second = regions[i].first;
+        gaps[i + 1].first = regions[i].second;
+    }
+
     gaps[gaps.size() - 1].second = max;
 
-    for (Int_t i = Int_t(regions.size() - 1); i >= 0; i--) {
-        gaps[i + 1].first = regions[i].second;
-        gaps[i].second = regions[i].first;
-    }
-
     return gaps;
-
 }
 
-void LauIsobarDynamics::cullNullRegions(std::vector<LauDPPartialIntegralInfo *> & regions)
+void LauIsobarDynamics::cullNullRegions( std::vector<LauDPPartialIntegralInfo*>& regions ) const
 {
-    LauDPPartialIntegralInfo * tmp(0);
-    regions.erase(std::remove(regions.begin(), regions.end(), tmp), regions.end());
+	LauDPPartialIntegralInfo* tmp(0);
+	regions.erase( std::remove(regions.begin(), regions.end(), tmp), regions.end() );
 }
 
-void LauIsobarDynamics::correctDPOverlap(std::vector<std::pair<Double_t, Double_t> > & regions, const std::vector<Double_t> & binnings)
+void LauIsobarDynamics::correctDPOverlap( std::vector< std::pair<Double_t, Double_t> >& regions, const std::vector<Double_t>& binnings ) const
 {
-    if (regions.empty()) return;
+	if (regions.empty()) {
+		return;
+	}
 
-    // If the regions overlap, ensure that the one with the finest binning takes precedence (i.e., extends its full width)
+	// If the regions overlap, ensure that the one with the finest binning takes precedence (i.e., extends its full width)
 
-    for (UInt_t i = 0; i < regions.size() - 1; i++) {
-        if ( regions[i + 1].first <= regions[i].second ) {
-            if ((binnings[i] < binnings[i + 1])) {
-                regions[i + 1] = std::make_pair(regions[i].second, regions[i + 1].second);
-            } else {
-                regions[i] = std::make_pair(regions[i].first, regions[i + 1].first);
-            }
-        }
-    }
+	for (UInt_t i = 0; i < regions.size() - 1; ++i) {
+		if ( regions[i + 1].first <= regions[i].second ) {
+			if ((binnings[i] < binnings[i + 1])) {
+				regions[i + 1] = std::make_pair(regions[i].second, regions[i + 1].second);
+			} else {
+				regions[i] = std::make_pair(regions[i].first, regions[i + 1].first);
+			}
+		}
+	}
 
 }
 
 
-std::vector<LauDPPartialIntegralInfo *> LauIsobarDynamics::m13IntegrationRegions(const std::vector<std::pair<Double_t, Double_t> > & m13Regions,
-                                                                                       const std::vector<std::pair<Double_t, Double_t> > & m23Regions,
-                                                                                       const std::vector<Double_t> & m13Binnings,
-                                                                                       const Double_t precision,
-                                                                                       const Double_t defaultBinning)
+std::vector<LauDPPartialIntegralInfo*> LauIsobarDynamics::m13IntegrationRegions( const std::vector< std::pair<Double_t,Double_t> >& m13Regions,
+                                                                                 const std::vector< std::pair<Double_t,Double_t> >& m23Regions,
+                                                                                 const std::vector<Double_t>& m13Binnings,
+                                                                                 const Double_t precision,
+                                                                                 const Double_t defaultBinning ) const
 {
+	// Create integration regions for all narrow resonances in m13 except for the overlaps with narrow resonances in m23
+	std::vector<LauDPPartialIntegralInfo*> integrationRegions;
 
-	Double_t m23Min = kinematics_->getm23Min();
-	Double_t m23Max = kinematics_->getm23Max();
+	const Double_t m23Min = kinematics_->getm23Min();
+	const Double_t m23Max = kinematics_->getm23Max();
 
-    std::vector<LauDPPartialIntegralInfo *> integrationRegions;
+	// Loop over narrow resonances in m13
+	for (UInt_t m13i = 0; m13i < m13Regions.size(); ++m13i) {
 
-    // For narrow resonances in m13
+		const Double_t m13Binning = m13Binnings[m13i];
 
-    for (UInt_t m13i = 0; m13i < m13Regions.size(); m13i++) {
+		const Double_t resMin13 = m13Regions[m13i].first;
+		const Double_t resMax13 = m13Regions[m13i].second;
 
-        Double_t m13Binning = m13Binnings[m13i];
+		// Initialise to the full height of the DP in case there are no narrow resonances in m23
+		Double_t lastResMax23 = m23Min;
 
-        Double_t resMin13 = m13Regions[m13i].first;
-        Double_t resMax13 = m13Regions[m13i].second;
+		// Loop over narrow resonances in m23
+		for (UInt_t m23i = 0; m23i < m23Regions.size(); m23i++) {
 
-        // Initialise to the full height of the DP in case there are no narrow resonances in m23
-        Double_t lastResMax23 = m23Min;
+			const Double_t resMin23 = m23Regions[m23i].first;
+			const Double_t resMax23 = m23Regions[m23i].second;
 
-        for (UInt_t m23i = 0; m23i < m23Regions.size(); m23i++){
+			// For the first entry, add the area between m23 threshold and this first entry
+			if (m23i == 0) {
+				integrationRegions.push_back(this->newDPIntegrationRegion(resMin13, resMax13, m23Min, resMin23, m13Binning, defaultBinning, precision, nAmp_, nIncohAmp_));
+			}
 
-            Double_t resMin23 = m23Regions[m23i].first;
-            Double_t resMax23 = m23Regions[m23i].second;
+			// For all entries except the last one, add the area between this and the next entry
+			if (m23i != (m23Regions.size() - 1)) {
+				const Double_t nextResMin23 = m23Regions[m23i + 1].first;
+				integrationRegions.push_back(this->newDPIntegrationRegion(resMin13, resMax13, resMax23, nextResMin23, m13Binning, defaultBinning, precision, nAmp_, nIncohAmp_));
+			} else {
+				lastResMax23 = resMax23;
+			}
+		}
 
-            if (m23i == 0) {
+		// Add the area between the last entry and the maximum m23 (which could be the whole strip if there are no entries in m23Regions)
+		integrationRegions.push_back(this->newDPIntegrationRegion(resMin13, resMax13, lastResMax23, m23Max, m13Binning, defaultBinning, precision, nAmp_, nIncohAmp_));
+	}
 
-                integrationRegions.push_back(newDPIntegrationRegion(resMin13, resMax13, m23Min, resMin23, m13Binning, defaultBinning, precision, nAmp_, nIncohAmp_));
-
-            }
-
-            if (m23i != m23Regions.size() - 1) {
-
-                Double_t nextResMin23 = m23Regions[m23i + 1].first;
-
-                integrationRegions.push_back(newDPIntegrationRegion(resMin13, resMax13, resMax23, nextResMin23, m13Binning, defaultBinning, precision, nAmp_, nIncohAmp_));
-
-            } else {
-
-                lastResMax23 = resMax23;
-
-            }
-
-        }
-
-        integrationRegions.push_back(newDPIntegrationRegion(resMin13, resMax13, lastResMax23, m23Max, m13Binning, defaultBinning, precision, nAmp_, nIncohAmp_));
-
-    }
-
-    return integrationRegions;
-
+	return integrationRegions;
 }
 
-std::vector<LauDPPartialIntegralInfo *> LauIsobarDynamics::m23IntegrationRegions(const std::vector<std::pair<Double_t, Double_t> > & m13Regions,
-                                                                                       const std::vector<std::pair<Double_t, Double_t> > & m23Regions,
-                                                                                       const std::vector<Double_t> & m13Binnings,
-                                                                                       const std::vector<Double_t> & m23Binnings,
-                                                                                       const Double_t precision,
-                                                                                       const Double_t defaultBinning)
+std::vector<LauDPPartialIntegralInfo*> LauIsobarDynamics::m23IntegrationRegions( const std::vector<std::pair<Double_t,Double_t> >& m13Regions,
+                                                                                 const std::vector<std::pair<Double_t,Double_t> >& m23Regions,
+                                                                                 const std::vector<Double_t>& m13Binnings,
+                                                                                 const std::vector<Double_t>& m23Binnings,
+                                                                                 const Double_t precision,
+                                                                                 const Double_t defaultBinning ) const
 {
+	// Create integration regions for all narrow resonances in m23 (including the overlap regions with m13 narrow resonances)
+	std::vector<LauDPPartialIntegralInfo *> integrationRegions;
 
-    Double_t m13Min = kinematics_->getm13Min();
-	Double_t m13Max = kinematics_->getm13Max();
-    std::vector<LauDPPartialIntegralInfo *> integrationRegions;
+	const Double_t m13Min = kinematics_->getm13Min();
+	const Double_t m13Max = kinematics_->getm13Max();
 
-    // For narrow resonances in m23
+	// Loop over narrow resonances in m23
+	for (UInt_t m23i = 0; m23i < m23Regions.size(); m23i++) {
 
-    for (UInt_t m23i = 0; m23i < m23Regions.size(); m23i++) {
+		const Double_t m23Binning = m23Binnings[m23i];
 
-        Double_t m23Binning = m23Binnings[m23i];
+		const Double_t resMin23 = m23Regions[m23i].first;
+		const Double_t resMax23 = m23Regions[m23i].second;
 
-        Double_t resMin23 = m23Regions[m23i].first;
-        Double_t resMax23 = m23Regions[m23i].second;
+		// Initialise to the full width of the DP in case there are no narrow resonances in m13
+		Double_t lastResMax13 = m13Min;
 
-        // Initialise to the full width of the DP in case there are no narrow resonances in m13
-        Double_t lastResMax13 = m13Min;
+		// Loop over narrow resonances in m13
+		for (UInt_t m13i = 0; m13i < m13Regions.size(); m13i++){
 
-        for (UInt_t m13i = 0; m13i < m13Regions.size(); m13i++){
+			const Double_t m13Binning = m13Binnings[m23i];
 
-            Double_t m13Binning = m13Binnings[m23i];
+			const Double_t resMin13 = m13Regions[m13i].first;
+			const Double_t resMax13 = m13Regions[m13i].second;
 
-            Double_t resMin13 = m13Regions[m13i].first;
-            Double_t resMax13 = m13Regions[m13i].second;
+			// Overlap region (only needed in m23)
+			integrationRegions.push_back(this->newDPIntegrationRegion(resMin13, resMax13, resMin23, resMax23, m13Binning, m23Binning, precision, nAmp_, nIncohAmp_));
 
-            // Overlap region (only needed in m23)
-            integrationRegions.push_back(newDPIntegrationRegion(resMin13, resMax13, resMin23, resMax23, m13Binning, m23Binning, precision, nAmp_, nIncohAmp_));
+			// For the first entry, add the area between m13 threshold and this first entry
+			if (m13i == 0) {
+				integrationRegions.push_back(this->newDPIntegrationRegion(m13Min, resMin13, resMin23, resMax23, defaultBinning, m23Binning, precision, nAmp_, nIncohAmp_));
+			}
 
-            if (m13i == 0) {
+			// For all entries except the last one, add the area between this and the next entry
+			if (m13i != m13Regions.size() - 1) {
+				const Double_t nextResMin13 = m23Regions[m13i + 1].first;
+				integrationRegions.push_back(this->newDPIntegrationRegion(resMax13, nextResMin13, resMin23, resMax23, defaultBinning, m23Binning, precision, nAmp_, nIncohAmp_));
+			} else {
+				lastResMax13 = resMax13;
+			}
+		}
 
-                integrationRegions.push_back(newDPIntegrationRegion(m13Min, resMin13, resMin23, resMax23, defaultBinning, m23Binning, precision, nAmp_, nIncohAmp_));
+		// Add the area between the last entry and the maximum m13 (which could be the whole strip if there are no entries in m13Regions)
+		integrationRegions.push_back(this->newDPIntegrationRegion(lastResMax13, m13Max, resMin23, resMax23, defaultBinning, m23Binning, precision, nAmp_, nIncohAmp_));
+	}
 
-            }
-
-            if (m13i != m13Regions.size() - 1) {
-
-                Double_t nextResMin13 = m23Regions[m13i + 1].first;
-
-                integrationRegions.push_back(newDPIntegrationRegion(resMax13, nextResMin13, resMin23, resMax23, defaultBinning, m23Binning, precision, nAmp_, nIncohAmp_));
-
-            } else {
-
-                lastResMax13 = resMax13;
-
-            }
-
-        }
-
-        integrationRegions.push_back(newDPIntegrationRegion(lastResMax13, m13Max, resMin23, resMax23, defaultBinning, m23Binning, precision, nAmp_, nIncohAmp_));
-
-    }
-
-    return integrationRegions;
-
+	return integrationRegions;
 }
 
-LauDPPartialIntegralInfo * LauIsobarDynamics::newDPIntegrationRegion(const Double_t minm13, const Double_t maxm13,
+LauDPPartialIntegralInfo* LauIsobarDynamics::newDPIntegrationRegion( const Double_t minm13, const Double_t maxm13,
                                                                      const Double_t minm23, const Double_t maxm23,
                                                                      const Double_t m13BinWidth, const Double_t m23BinWidth,
                                                                      const Double_t precision,
                                                                      const UInt_t nAmp,
-                                                                     const UInt_t nIncohAmp)
+                                                                     const UInt_t nIncohAmp ) const
 {
-    UInt_t nm13Points = static_cast<UInt_t>((maxm13-minm13)/m13BinWidth);
-    UInt_t nm23Points = static_cast<UInt_t>((maxm23-minm23)/m23BinWidth);
+	const UInt_t nm13Points = static_cast<UInt_t>((maxm13-minm13)/m13BinWidth);
+	const UInt_t nm23Points = static_cast<UInt_t>((maxm23-minm23)/m23BinWidth);
 
-    // If we would create a region with no interior points, just return NULL
+	// If we would create a region with no interior points, just return a null pointer
+	if (nm13Points == 0 || nm23Points == 0) {
+		return 0;
+	}
 
-    if (nm13Points == 0 || nm23Points == 0) return NULL;
-    return new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp, nIncohAmp);
-
+	return new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth, m23BinWidth, precision, nAmp, nIncohAmp);
 }
 
 void LauIsobarDynamics::calcDPNormalisationScheme()
@@ -1188,69 +1177,78 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 	const Double_t precision(1e-6);
 
 	// Get the rectangle that encloses the DP
-	Double_t minm13 = kinematics_->getm13Min();
-	Double_t maxm13 = kinematics_->getm13Max();
-	Double_t minm23 = kinematics_->getm23Min();
-	Double_t maxm23 = kinematics_->getm23Max();
-	Double_t minm12 = kinematics_->getm12Min();
-	Double_t maxm12 = kinematics_->getm12Max();
+	const Double_t minm13 = kinematics_->getm13Min();
+	const Double_t maxm13 = kinematics_->getm13Max();
+	const Double_t minm23 = kinematics_->getm23Min();
+	const Double_t maxm23 = kinematics_->getm23Max();
+	const Double_t minm12 = kinematics_->getm12Min();
+	const Double_t maxm12 = kinematics_->getm12Max();
 
 	// Find out whether we have narrow resonances in the DP (defined here as width < 20 MeV).
-	std::vector<std::pair<Double_t,Double_t> > m13NarrowRes;
-	std::vector<std::pair<Double_t,Double_t> > m23NarrowRes;
-	std::vector<std::pair<Double_t,Double_t> > m12NarrowRes;
+	std::vector< std::pair<Double_t,Double_t> > m13NarrowRes;
+	std::vector< std::pair<Double_t,Double_t> > m23NarrowRes;
+	std::vector< std::pair<Double_t,Double_t> > m12NarrowRes;
 
 	// Rho-omega mixing models implicitly contains omega(782) model, but width is of rho(770) - handle as a special case
-	Double_t omegaMass = 0.783;
-	Double_t omegaWidth = 0.00849;
+	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
+	LauResonanceInfo* omega_info = resonanceMaker.getResInfo("omega(782)");
+	const Double_t omegaMass  = (omega_info!=0) ? omega_info->getMass()->unblindValue()  : 0.78265;
+	const Double_t omegaWidth = (omega_info!=0) ? omega_info->getWidth()->unblindValue() : 0.00849;
 
 	for ( std::vector<LauAbsResonance*>::const_iterator iter = sigResonances_.begin(); iter != sigResonances_.end(); ++iter ) {
 
-        Bool_t isRhomega = kFALSE;
+		LauAbsResonance::LauResonanceModel model = (*iter)->getResonanceModel();
+		const TString& name = (*iter)->getResonanceName();
+		Int_t pair = (*iter)->getPairInt();
+		Double_t mass = (*iter)->getMass();
+		Double_t width = (*iter)->getWidth();
 
-    if ( (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_GS ||
-         (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_GS_1 ||
-         (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_RBW ||
-         (*iter)->getResonanceModel() == LauAbsResonance::RhoOmegaMix_RBW_1 ) {
-           isRhomega = kTRUE;
-    }
+		if ( model == LauAbsResonance::RhoOmegaMix_GS   ||
+		     model == LauAbsResonance::RhoOmegaMix_GS_1 ||
+		     model == LauAbsResonance::RhoOmegaMix_RBW  ||
+		     model == LauAbsResonance::RhoOmegaMix_RBW_1 ) {
+			mass = omegaMass;
+			width = omegaWidth;
+		}
 
-    Double_t width = (*iter)->getWidth();
+		if ( width > narrowWidth_ || width == 0.0 ) {
+			continue;
+		}
 
-    if ( (width > narrowWidth_ || width == 0.0) && !isRhomega) { continue; }
-
-    Double_t mass = (*iter)->getMass();
-    Int_t pair = (*iter)->getPairInt();
-
-    TString name = (*iter)->getResonanceName();
-
-    std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: " << name << ", mass = " << mass << ", width = " << width << ", pair int = " << pair << std::endl;
-    if ( pair == 1 ) {
-        if ( mass < minm23 || mass > maxm23 ){ continue; }
-            if ( !isRhomega ) m23NarrowRes.push_back( std::make_pair(width,mass) );
-            else { m23NarrowRes.push_back( std::make_pair(omegaWidth, omegaMass) );}
+		std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: " << name << ", mass = " << mass << ", width = " << width << ", pair int = " << pair << std::endl;
+		if ( pair == 1 ) {
+			if ( mass < minm23 || mass > maxm23 ){
+				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
+			} else {
+				m23NarrowRes.push_back( std::make_pair(mass,width) );
+			}
 		} else if ( pair == 2 ) {
-			if ( mass < minm13 || mass > maxm13 ){ continue; }
-            if ( !isRhomega ) m13NarrowRes.push_back( std::make_pair(width,mass) );
-            else { m13NarrowRes.push_back( std::make_pair(omegaWidth, omegaMass) );}
+			if ( mass < minm13 || mass > maxm13 ){
+				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
+			} else {
+				m13NarrowRes.push_back( std::make_pair(mass,width) );
+			}
 		} else if ( pair == 3 ) {
-			if ( mass < minm12 || mass > maxm12 ){ continue; }
-            if ( !isRhomega ) m12NarrowRes.push_back( std::make_pair(width,mass) );
-            else { m12NarrowRes.push_back( std::make_pair(omegaWidth, omegaMass) );}
+			if ( mass < minm12 || mass > maxm12 ){
+				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
+			} else {
+				m12NarrowRes.push_back( std::make_pair(mass,width) );
+			}
 		} else {
 			std::cerr << "WARNING in LauIsobarDynamics::calcDPNormalisationScheme : strange pair integer, " << pair << ", for resonance \"" << (*iter)->getResonanceName() << std::endl;
 		}
 	}
 
 	for ( std::vector<LauAbsIncohRes*>::const_iterator iter = sigIncohResonances_.begin(); iter != sigIncohResonances_.end(); ++iter ) {
+
+		const TString& name = (*iter)->getResonanceName();
+		Int_t pair = (*iter)->getPairInt();
+		Double_t mass = (*iter)->getMass();
 		Double_t width = (*iter)->getWidth();
 
-		if ( width > narrowWidth_ || width == 0.0 ) { continue; }
-
-		Double_t mass = (*iter)->getMass();
-		Int_t pair = (*iter)->getPairInt();
-
-		TString name = (*iter)->getResonanceName();
+		if ( width > narrowWidth_ || width == 0.0 ) {
+			continue;
+		}
 
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : Found narrow resonance: " << name << ", mass = " << mass << ", width = " << width << ", pair int = " << pair << std::endl;
 
@@ -1258,91 +1256,129 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			if ( mass < minm23 || mass > maxm23 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
-				m23NarrowRes.push_back( std::make_pair(width,mass) );
+				m23NarrowRes.push_back( std::make_pair(mass,width) );
 			}
 		} else if ( pair == 2 ) {
 			if ( mass < minm13 || mass > maxm13 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
-				m13NarrowRes.push_back( std::make_pair(width,mass) );
+				m13NarrowRes.push_back( std::make_pair(mass,width) );
 			}
 		} else if ( pair == 3 ) {
 			if ( mass < minm12 || mass > maxm12 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
-				m12NarrowRes.push_back( std::make_pair(width,mass) );
+				m12NarrowRes.push_back( std::make_pair(mass,width) );
 			}
 		} else {
 			std::cerr << "WARNING in LauIsobarDynamics::calcDPNormalisationScheme : strange pair integer, " << pair << ", for resonance \"" << (*iter)->getResonanceName() << std::endl;
 		}
 	}
 
-	if (m13NarrowRes.empty() && m23NarrowRes.empty()) {
+	// Depending on how many narrow resonances we have and where they are
+	// we adopt different approaches
+	if ( ! m12NarrowRes.empty() ) {
 
-	  std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..." << std::endl;
-	  dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth_, m23BinWidth_, precision, nAmp_, nIncohAmp_));
+		// We have at least one narrow resonance in m12
+		// Switch to using the square DP for the integration
+		// TODO - for the time being just use a single, reasonably fine by default and tunable, grid
+		//      - can later consider whether there's a need to split up the mPrime axis into regions around particularly narrow resonances in m12
+		//      - but it seems that this isn't really needed since even the default tune gives a good resolution for most narrow resonances such as phi / chi_c0
+		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin widths of "<<mPrimeBinWidth_<<" in mPrime and "<<thPrimeBinWidth_<<" in thetaPrime..."<<std::endl;
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, mPrimeBinWidth_, thPrimeBinWidth_, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
+
+	} else if (m13NarrowRes.empty() && m23NarrowRes.empty()) {
+
+		// There are no narrow resonances, so we just do a single grid over the whole DP
+		std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : No narrow resonances found, integrating over whole Dalitz plot..." << std::endl;
+		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(minm13, maxm13, minm23, maxm23, m13BinWidth_, m23BinWidth_, precision, nAmp_, nIncohAmp_));
 
 	} else {
 
-        // Get regions in that correspond to narrow resonances in m13 and m23, and correct for overlaps in each dimension (to use the finest binning)
-        // Sort resonances by ascending mass to calculate regions properly
+		// Get regions in that correspond to narrow resonances in m13 and m23, and correct for overlaps in each dimension (to use the finest binning)
 
-        std::sort(m13NarrowRes.begin(), m13NarrowRes.end());
-        std::sort(m23NarrowRes.begin(), m23NarrowRes.end());
+		// Sort resonances by ascending mass to calculate regions properly
+		std::sort(m13NarrowRes.begin(), m13NarrowRes.end());
+		std::sort(m23NarrowRes.begin(), m23NarrowRes.end());
 
-        std::vector<std::pair<Double_t, Double_t> > m13Regions;
-        std::vector<Double_t> m13Binnings;
+		// For each narrow resonance in m13, determine the corresponding window and its binning
+		std::vector<std::pair<Double_t, Double_t> > m13Regions;
+		std::vector<Double_t> m13Binnings;
 
-        for ( std::vector<std::pair<Double_t, Double_t> >::const_iterator iter = m13NarrowRes.begin(); iter != m13NarrowRes.end(); ++iter ) {
-            Double_t width = iter->first;
-            Double_t mass = iter->second;
+		for ( std::vector<std::pair<Double_t, Double_t> >::const_iterator iter = m13NarrowRes.begin(); iter != m13NarrowRes.end(); ++iter ) {
+			Double_t mass = iter->first;
+			Double_t width = iter->second;
 
-            Double_t regionBegin = mass - 5.0 * width;
-            Double_t regionEnd = mass + 5.0 * width;
+			Double_t regionBegin = mass - 5.0 * width;
+			Double_t regionEnd = mass + 5.0 * width;
+			Double_t binning = width / binningFactor_;
 
-            m13Regions.push_back(std::make_pair(regionBegin, regionEnd));
-            m13Binnings.push_back(width / binningFactor_);
-        }
+			// check if we ought to extend the region to the edge of the phase space (in either direction)
+			if ( regionBegin < (minm13+50.0*m13BinWidth_) ) {
+				std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Resonance at m13 = " << mass << " is close to threshold, extending integration region" << std::endl;
+				regionBegin = minm13;
+			}
+			if ( regionEnd > (maxm13-50.0*m13BinWidth_) ) {
+				std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Resonance at m13 = " << mass << " is close to upper edge of phase space, extending integration region" << std::endl;
+				regionEnd = maxm13;
+			}
 
-        std::vector<std::pair<Double_t, Double_t> > m23Regions;
-        std::vector<Double_t> m23Binnings;
+			m13Regions.push_back(std::make_pair(regionBegin, regionEnd));
+			m13Binnings.push_back(binning);
+		}
 
-        for ( std::vector<std::pair<Double_t, Double_t> >::const_iterator iter = m23NarrowRes.begin(); iter != m23NarrowRes.end(); ++iter ) {
-            Double_t width = iter->first;
-            Double_t mass = iter->second;
+		// For each narrow resonance in m23, determine the corresponding window and its binning
+		std::vector<std::pair<Double_t, Double_t> > m23Regions;
+		std::vector<Double_t> m23Binnings;
 
-            Double_t regionBegin = mass - 5.0 * width;
-            Double_t regionEnd = mass + 5.0 * width;
+		for ( std::vector<std::pair<Double_t, Double_t> >::const_iterator iter = m23NarrowRes.begin(); iter != m23NarrowRes.end(); ++iter ) {
+			Double_t mass = iter->first;
+			Double_t width = iter->second;
 
-            m23Regions.push_back(std::make_pair(regionBegin, regionEnd));
-            m23Binnings.push_back(width / binningFactor_);
-        }
+			Double_t regionBegin = mass - 5.0 * width;
+			Double_t regionEnd = mass + 5.0 * width;
+			Double_t binning = width / binningFactor_;
 
-        correctDPOverlap(m13Regions, m13Binnings);
-        correctDPOverlap(m23Regions, m23Binnings);
+			// check if we ought to extend the region to the edge of the phase space (in either direction)
+			if ( regionBegin < (minm23+50.0*m23BinWidth_) ) {
+				std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Resonance at m23 = " << mass << " is close to threshold, extending integration region" << std::endl;
+				regionBegin = minm23;
+			}
+			if ( regionEnd > (maxm23-50.0*m23BinWidth_) ) {
+				std::cout << "INFO in LauIsobarDynamics::calcDPNormalisationScheme : Resonance at m23 = " << mass << " is close to upper edge of phase space, extending integration region" << std::endl;
+				regionEnd = maxm23;
+			}
 
-        // Get the narrow resonance regions plus any overlap region
+			m23Regions.push_back(std::make_pair(regionBegin, regionEnd));
+			m23Binnings.push_back(binning);
+		}
 
-        std::vector<LauDPPartialIntegralInfo *> fineScheme13 = m13IntegrationRegions(m13Regions, m23Regions, m13Binnings, precision, m13BinWidth_);
-        std::vector<LauDPPartialIntegralInfo *> fineScheme23 = m23IntegrationRegions(m13Regions, m23Regions, m13Binnings, m23Binnings, precision, m23BinWidth_);
+		// Sort out overlaps between regions in the same mass pairing
+		this->correctDPOverlap(m13Regions, m13Binnings);
+		this->correctDPOverlap(m23Regions, m23Binnings);
 
-        // Get coarse regions by calculating the gaps between the narrow resonances and using the same functions to calculate the integrate scheme for each
+		// Get the narrow resonance regions plus any overlap region
+		std::vector<LauDPPartialIntegralInfo*> fineScheme13 = this->m13IntegrationRegions(m13Regions, m23Regions, m13Binnings, precision, m13BinWidth_);
+		std::vector<LauDPPartialIntegralInfo*> fineScheme23 = this->m23IntegrationRegions(m13Regions, m23Regions, m13Binnings, m23Binnings, precision, m23BinWidth_);
 
-        std::vector<std::pair<Double_t, Double_t> > coarseRegions = formGapsFromRegions(m13Regions, minm13, maxm13);
-        std::vector<LauDPPartialIntegralInfo *> coarseScheme = m13IntegrationRegions(coarseRegions, m23Regions, std::vector<Double_t>(1 + fineScheme13.size(),m13BinWidth_), precision, m13BinWidth_);
+		// Get coarse regions by calculating the gaps between the
+		// narrow resonances and using the same functions to create
+		// the integration grid object for each
+		std::vector< std::pair<Double_t,Double_t> > coarseRegions = this->formGapsFromRegions(m13Regions, minm13, maxm13);
+		std::vector<Double_t> coarseBinning( fineScheme13.size()+1, m13BinWidth_ );
+		std::vector<LauDPPartialIntegralInfo*> coarseScheme = this->m13IntegrationRegions(coarseRegions, m23Regions, coarseBinning, precision, m13BinWidth_);
 
-        dpPartialIntegralInfo_.insert(dpPartialIntegralInfo_.end(), fineScheme13.begin(), fineScheme13.end());
-        dpPartialIntegralInfo_.insert(dpPartialIntegralInfo_.end(), fineScheme23.begin(), fineScheme23.end());
-        dpPartialIntegralInfo_.insert(dpPartialIntegralInfo_.end(), coarseScheme.begin(), coarseScheme.end());
+		dpPartialIntegralInfo_.insert(dpPartialIntegralInfo_.end(), fineScheme13.begin(), fineScheme13.end());
+		dpPartialIntegralInfo_.insert(dpPartialIntegralInfo_.end(), fineScheme23.begin(), fineScheme23.end());
+		dpPartialIntegralInfo_.insert(dpPartialIntegralInfo_.end(), coarseScheme.begin(), coarseScheme.end());
 
-        // Remove any possible NULL entries to the integral list that are produced when an integration region with no interior points is defined
+		// Remove any null pointer entries in the integral list
+		// (that are produced when an integration region with no
+		// interior points is defined)
+		this->cullNullRegions(dpPartialIntegralInfo_);
+	}
 
-        cullNullRegions(dpPartialIntegralInfo_);
-
-    } // narrowRes
-
-    normalizationSchemeDone_ = kTRUE;
-
+	normalizationSchemeDone_ = kTRUE;
 }
 
 void LauIsobarDynamics::setIntegralBinWidths(const Double_t m13BinWidth, const Double_t m23BinWidth,

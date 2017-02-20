@@ -55,6 +55,10 @@ LauBkgndDPModel::~LauBkgndDPModel()
 
 void LauBkgndDPModel::setBkgndHisto(const TH2* histo, Bool_t useInterpolation, Bool_t fluctuateBins, Bool_t useUpperHalfOnly, Bool_t squareDP)
 {
+	if ( ! histo ) {
+		std::cerr << "WARNING in LauBkgndDPModel::setBkgndHisto : Supplied background histogram pointer is null, likelihood for this component will be flat in the Dalitz plot" << std::endl;
+	}
+
 	Bool_t upperHalf = kFALSE;
 	if (symmetricalDP_ == kTRUE && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
 	std::cout<<"INFO in LauBkgndDPModel::setBkgndHisto : Background histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;
@@ -71,6 +75,10 @@ void LauBkgndDPModel::setBkgndHisto(const TH2* histo, Bool_t useInterpolation, B
 
 void LauBkgndDPModel::setBkgndSpline(const TH2* histo, Bool_t fluctuateBins, Bool_t useUpperHalfOnly, Bool_t squareDP)
 {
+	if ( ! histo ) {
+		std::cerr << "WARNING in LauBkgndDPModel::setBkgndSpline : Supplied background histogram pointer is null, construction of spline will fail" << std::endl;
+	}
+
 	Bool_t upperHalf = kFALSE;
 	if (symmetricalDP_ == kTRUE && useUpperHalfOnly == kTRUE) {upperHalf = kTRUE;}
 	std::cout<<"INFO in LauBkgndDPModel::setBkgndSpline : Background histogram has upperHalf = "<<static_cast<Int_t>(upperHalf)<<std::endl;

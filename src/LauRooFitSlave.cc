@@ -38,7 +38,6 @@ LauRooFitSlave::LauRooFitSlave( RooAbsPdf& model, std::vector<RooAbsData*>& data
 	nEvent_(0),
 	nllVar_(0),
 	fitNtuple_(0),
-	nParams_(0),
 	nFreeParams_(0),
 	fitStatus_(0),
 	NLL_(0.0)
@@ -86,7 +85,6 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 
 	// Store the set of parameters and the total number of parameters
 	RooArgSet* varSet = nllVar_->getParameters( exptData_ );
-	nParams_ = varSet->getSize();
 	nFreeParams_ = 0;
 
 	// Loop through the fit parameters
@@ -201,7 +199,7 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 	// free and floating...
 
 	// Update all the floating ones with their new values
-	for (UInt_t i(0); i<nParams_; ++i) {
+	for (UInt_t i(0); i<nFreeParams_; ++i) {
 		if (!fitPars_[i]->fixed()) {
 			// Set both the RooRealVars and the LauParameters
 			fitPars_[i]->value(par[i]);
@@ -250,9 +248,9 @@ void LauRooFitSlave::finaliseResults( const Int_t fitStat, const Double_t NLL, c
 
 	// Now process the parameters
 	UInt_t nPars = parsFromMaster->GetEntries();
-	if ( nPars != nParams_ ) {
+	if ( nPars != nFreeParams_ ) {
 		std::cerr << "ERROR in LauRooFitSlave::finaliseResults : Unexpected number of parameters received from master" << std::endl;
-		std::cerr << "                                         : Received " << nPars << " when expecting " << nParams_ << std::endl;
+		std::cerr << "                                         : Received " << nPars << " when expecting " << nFreeParams_ << std::endl;
 		gSystem->Exit( EXIT_FAILURE );
 	}
 

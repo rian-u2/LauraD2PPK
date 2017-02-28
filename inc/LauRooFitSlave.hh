@@ -152,9 +152,6 @@ class LauRooFitSlave : public LauSimFitSlave {
 		//! The fit parameters (as LauParameter's)
 		std::vector<LauParameter*> fitPars_;
 
-		//! The number of fit parameters
-		UInt_t nParams_; 
-
 		//! The number of free fit parameters
 		UInt_t nFreeParams_;
 

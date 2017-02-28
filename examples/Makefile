@@ -101,7 +101,7 @@ $(UTILSLIB): $(LIBOLIST)
 	@$(CXX) $(LIBOLIST) $(SOFLAGS) -o $(UTILSLIB)
 
 # Rule to compile all binaries
-% : $(OBJDIR)/%.o $(UTILSLIB)
+% : $(OBJDIR)/%.o $(LAURALIB) $(UTILSLIB)
 	@echo "Linking $@"
 	@$(CXX) $(LDFLAGS) $< -o $@ $(LAURALIB) $(UTILSLIB) $(ROOTLIBS)
 

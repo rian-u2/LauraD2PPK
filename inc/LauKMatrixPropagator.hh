@@ -120,7 +120,7 @@ class LauKMatrixPropagator {
 		//! Get scattering constants that were loaded from the input file
 		/*!
 			\param [in] channel1Index number of the first channel index
-			\param [in] channelIndex number of the second channel index
+			\param [in] channel2Index number of the second channel index
 			\return the value of the scattering constant
 		*/
 		Double_t getScatteringConstant(Int_t channel1Index, Int_t channel2Index) const;
@@ -353,7 +353,8 @@ class LauKMatrixPropagator {
 
         	//! Store miscelleanous parameters from a line in the parameter file
 	        /*!
-	                \param [in] theLine Vector of strings corresponding to the line from the parameter file
+	                \param [in] keyword the name of the parameter to be set
+	                \param [in] parString the string containing the value of the parameter
 		*/
         	void storeParameter(const TString& keyword, const TString& parString);
 

@@ -20,6 +20,8 @@ ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
 ROOTLIBS   += -lEG
 ROOTLIBS   += -lMinuit
 ROOTLIBS   += -lTreePlayer
+ROOTLIBS   += -lRooFitCore
+ROOTLIBS   += -lRooFit
 
 INCLUDES = 
 WORKDIR  = tmp
@@ -101,7 +103,7 @@ $(UTILSLIB): $(LIBOLIST)
 	@$(CXX) $(LIBOLIST) $(SOFLAGS) -o $(UTILSLIB)
 
 # Rule to compile all binaries
-% : $(OBJDIR)/%.o $(UTILSLIB)
+% : $(OBJDIR)/%.o $(LAURALIB) $(UTILSLIB)
 	@echo "Linking $@"
 	@$(CXX) $(LDFLAGS) $< -o $@ $(LAURALIB) $(UTILSLIB) $(ROOTLIBS)
 

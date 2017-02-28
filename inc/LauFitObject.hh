@@ -36,7 +36,13 @@ class LauFitObject : public TObject {
 
 			\param [in] inAsymErrCalc boolean marking that the fit is calculating the asymmetric errors
 		*/
-		virtual void withinAsymErrorCalc(Bool_t inAsymErrCalc) = 0;
+		virtual void withinAsymErrorCalc(const Bool_t inAsymErrCalc) {withinAsymErrorCalc_ = inAsymErrCalc;}
+
+		//! Query whether the fit is calculating the asymmetric errors
+		/*!
+		    \return kTRUE if the fit is calculating the asymmetric errors, kFALSE otherwise
+		*/
+		virtual Bool_t withinAsymErrorCalc() const {return withinAsymErrorCalc_;}
 
 		//! This function sets the parameter values from Minuit
 		/*! 
@@ -66,7 +72,7 @@ class LauFitObject : public TObject {
 
 	protected:
 		//! Constructor
-		LauFitObject() : TObject() {}
+		LauFitObject() : TObject(), withinAsymErrorCalc_(kFALSE) {}
 
 		// Setup a struct to store information on constrained fit parameters
 		/*!
@@ -90,6 +96,9 @@ class LauFitObject : public TObject {
 
 		//! Copy assignment operator (not implemented)
 		LauFitObject& operator=(const LauFitObject& rhs);
+
+		//! Flag to indicate if the asymmetric error calculation (e.g. MINOS) is currently running
+		Bool_t withinAsymErrorCalc_;
 
 		ClassDef(LauFitObject,0)
 };

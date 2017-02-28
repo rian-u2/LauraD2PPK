@@ -41,7 +41,8 @@ LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 	reqPort_(port),
 	nParams_(0),
 	nFreeParams_(0),
-	withinAsymErrorCalc_(kFALSE),
+	twoStageFit_(kFALSE),
+	useAsymmFitErrors_(kFALSE),
 	numberOKFits_(0),
 	numberBadFits_(0),
 	fitStatus_(0),
@@ -130,6 +131,7 @@ void LauSimFitMaster::initSockets()
 		TMessage message( kMESS_ANY );
 		message.WriteUInt(iSlave);
 		message.WriteUInt(nSlaves_);
+		message.WriteBool(useAsymmFitErrors_);
 
 		sSlaves_[iSlave]->Send(message);
 
@@ -423,6 +425,8 @@ void LauSimFitMaster::initialise()
 void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt, Bool_t useAsymmErrors, Bool_t twoStageFit )
 {
 	// Routine to perform the total fit.
+	useAsymmFitErrors_ = useAsymmErrors;
+	twoStageFit_ = twoStageFit;
 
 	// First, initialise
 	this->initialise();
@@ -439,7 +443,7 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 	// Create and setup the fit results ntuple
 	std::cout << "INFO in LauSimFitMaster::runSimFit : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
-	fitNtuple_ = new LauFitNtuple(fitNtupleFileName, useAsymmErrors);
+	fitNtuple_ = new LauFitNtuple(fitNtupleFileName, useAsymmFitErrors_);
 
 	// Loop over the number of experiments
 	for (iExpt_ = firstExpt; iExpt_ < (firstExpt+nExpt); ++iExpt_) {
@@ -459,7 +463,7 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 		this->cacheInputData();
 
 		// Do the fit
-		this->fitExpt( useAsymmErrors, twoStageFit );
+		this->fitExpt();
 
 		// Stop the timer and see how long the program took so far
 		timer_.Stop();
@@ -490,6 +494,50 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 
 	// Instruct the slaves to write out any fit results (ntuples etc...).
 	this->writeOutResults();
+}
+
+void LauSimFitMaster::withinAsymErrorCalc(const Bool_t inAsymErrCalc)
+{
+	this->LauFitObject::withinAsymErrorCalc(inAsymErrCalc);
+
+	if ( socketMonitor_ == 0 ) {
+		std::cerr << "ERROR in LauSimFitMaster::withinAsymErrorCalc : Sockets not initialised." << std::endl;
+		return;
+	}
+
+	// Construct a message, informing the slaves whether or not we are now within the asymmetric error calculation
+	TString msgStr("Asym Error Calc");
+	const Bool_t asymErrorCalc( this->withinAsymErrorCalc() );
+	TMessage message( kMESS_STRING );
+	message.WriteTString( msgStr );
+	message.WriteBool( asymErrorCalc );
+
+	// Send the message to the slaves
+	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+		sSlaves_[iSlave]->Send(message);
+	}
+
+	TSocket* sActive(0);
+	UInt_t responsesReceived(0);
+	while ( responsesReceived != nSlaves_ ) {
+
+		// Get the next queued response
+		sActive = socketMonitor_->Select();
+
+		// Extract from the message the ID of the slave and the number of events read
+		Bool_t response(kTRUE);
+		UInt_t iSlave(0);
+		sActive->Recv( messageFromSlave_ );
+		messageFromSlave_->ReadUInt( iSlave );
+		messageFromSlave_->ReadBool( response );
+
+		if ( response != asymErrorCalc ) {
+			std::cerr << "WARNING in LauSimFitMaster::withinAsymErrorCalc : Problem informing slave " << iSlave << std::endl;
+		}
+
+		++responsesReceived;
+	}
+
 }
 
 Bool_t LauSimFitMaster::readData()
@@ -587,7 +635,7 @@ void LauSimFitMaster::checkInitFitParams()
 	this->printParInfo();
 }
 
-void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
+void LauSimFitMaster::fitExpt()
 {
 	// Routine to perform the actual fit for the given experiment
 
@@ -595,8 +643,8 @@ void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
 	this->checkInitFitParams();
 
 	// Initialise the fitter
-	LauFitter::fitter()->useAsymmFitErrors( useAsymmErrors );
-	LauFitter::fitter()->twoStageFit( twoStageFit );
+	LauFitter::fitter()->useAsymmFitErrors( useAsymmFitErrors_ );
+	LauFitter::fitter()->twoStageFit( twoStageFit_ );
 	LauFitter::fitter()->initialise( this, params_ );
 
 	nParams_ = LauFitter::fitter()->nParameters();
@@ -611,7 +659,7 @@ void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
 
 	// If we're doing a two stage fit we can now release (i.e. float)
 	// the 2nd stage parameters and re-fit
-	if ( twoStageFit ) {
+	if ( twoStageFit_ ) {
 
 		if ( fitStatus_ != 3 ) {
 			std::cerr << "ERROR in LauSimFitMaster:fitExpt : Not running second stage fit since first stage failed." << std::endl;
@@ -644,7 +692,7 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 
 	// MINOS reports different numbers of free parameters depending on the
 	// situation, so disable this check
-	if ( ! withinAsymErrorCalc_ ) {
+	if ( ! this->withinAsymErrorCalc() ) {
 		if (static_cast<UInt_t>(npar) != nFreeParams_) {
 			std::cerr << "ERROR in LauSimFitMaster::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
 			std::cerr << "                                              Expected: " << nFreeParams_ << ".\n" << std::endl;
@@ -841,8 +889,6 @@ Bool_t LauSimFitMaster::finalise()
 	TObjArray array;
 
 	// Send messages to all slaves containing the final parameters and fit status, NLL
-	// TODO - at present we lose the information on the correlations between the parameters that are unique to each slave
-	//      - so should we store the full correlation matrix in an ntuple? along with all the parameters?
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
 
 		array.Clear();

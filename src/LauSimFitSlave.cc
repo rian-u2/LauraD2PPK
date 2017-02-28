@@ -34,6 +34,7 @@ LauSimFitSlave::LauSimFitSlave() :
 	slaveId_(0),
 	nSlaves_(0),
 	nParams_(0),
+	useAsymmFitErrors_(kFALSE),
 	parValues_(0)
 {
 }
@@ -43,6 +44,11 @@ LauSimFitSlave::~LauSimFitSlave()
 	delete sMaster_; sMaster_ = 0;
 	delete messageFromMaster_; messageFromMaster_ = 0;
 	delete[] parValues_; parValues_ = 0;
+}
+
+void LauSimFitSlave::addConstraint(const TString& /*formula*/, const std::vector<TString>& /*pars*/, const Double_t /*mean*/, const Double_t /*width*/)
+{
+	std::cerr << "WARNING in LauSimFitSlave::addConstraint : Constraints should not be added to slaves but to the master process, not doing anything..." << std::endl;
 }
 
 void LauSimFitSlave::connectToMaster( const TString& addressMaster, const UInt_t portMaster )
@@ -57,6 +63,7 @@ void LauSimFitSlave::connectToMaster( const TString& addressMaster, const UInt_t
 	sMaster_->Recv( messageFromMaster_ );
 	messageFromMaster_->ReadUInt( slaveId_ );
 	messageFromMaster_->ReadUInt( nSlaves_ );
+	messageFromMaster_->ReadBool( useAsymmFitErrors_ );
 
 	delete messageFromMaster_;
 	messageFromMaster_ = 0;
@@ -126,6 +133,17 @@ void LauSimFitSlave::processMasterRequests()
 				messageToMaster.Reset( kMESS_ANY );
 				messageToMaster.WriteUInt( slaveId_ );
 				messageToMaster.WriteBool( kTRUE );
+				sMaster_->Send( messageToMaster );
+
+			} else if ( msgStr == "Asym Error Calc" ) {
+
+				Bool_t asymErrorCalc(kFALSE);
+				messageFromMaster_->ReadBool( asymErrorCalc );
+				this->withinAsymErrorCalc( asymErrorCalc );
+
+				messageToMaster.Reset( kMESS_ANY );
+				messageToMaster.WriteUInt( slaveId_ );
+				messageToMaster.WriteBool( asymErrorCalc );
 				sMaster_->Send( messageToMaster );
 
 			} else if ( msgStr == "Write Results" ) {

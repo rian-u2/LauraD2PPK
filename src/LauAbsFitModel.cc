@@ -43,7 +43,6 @@ ClassImp(LauAbsFitModel)
 LauAbsFitModel::LauAbsFitModel() :
 	storeCon_(0),
 	twoStageFit_(kFALSE),
-	useAsymmFitErrors_(kFALSE),
 	compareFitData_(kFALSE),
 	writeLatexTable_(kFALSE),
 	writeSPlotData_(kFALSE),
@@ -69,7 +68,6 @@ LauAbsFitModel::LauAbsFitModel() :
 	nParams_(0),
 	nFreeParams_(0),
 	worstLogLike_(std::numeric_limits<Double_t>::max()),
-	withinAsymErrorCalc_(kFALSE),
 	nullString_(""),
 	doSFit_(kFALSE),
 	sWeightBranchName_(""),
@@ -168,6 +166,10 @@ void LauAbsFitModel::runSlave(const TString& dataFileName, const TString& dataTr
 	// NB call to addConParameters() is intentionally not included here cf.
 	// run() since this has to be dealt with by the master to avoid
 	// multiple inclusions of each penalty term
+	// Print a warning if constraints on combinations of parameters have been specified
+	if ( ! storeCon_.empty() ) {
+		std::cerr << "WARNING in LauAbsFitModel::runSlave : It appears that constraints have been added but these will be ignored - they should have been added to the master process" << std::endl;
+	}
 
 	TString dataFileNameCopy(dataFileName);
 	TString dataTreeNameCopy(dataTreeName);
@@ -886,7 +888,7 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 
 	// MINOS reports different numbers of free parameters depending on the
 	// situation, so disable this check
-	if ( ! withinAsymErrorCalc_ ) {
+	if ( ! this->withinAsymErrorCalc() ) {
 		if (static_cast<UInt_t>(npar) != nFreeParams_) {
 			std::cerr << "ERROR in LauAbsFitModel::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
 			std::cerr << "                                             Expected: " << nFreeParams_ << ".\n" << std::endl;

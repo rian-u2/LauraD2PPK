@@ -72,7 +72,10 @@ class LauSimFitMaster : public LauFitObject {
 
 			\param [in] inAsymErrCalc boolean marking that the fit is calculating the asymmetric errors
 		*/
-		virtual void withinAsymErrorCalc(Bool_t inAsymErrCalc) { withinAsymErrorCalc_ = inAsymErrCalc; }
+		virtual void withinAsymErrorCalc(const Bool_t inAsymErrCalc);
+
+		// Need to unshadow the query method defined in the base class
+		using LauFitObject::withinAsymErrorCalc;
 
 		//! This function sets the parameter values from Minuit
 		/*! 
@@ -141,7 +144,7 @@ class LauSimFitMaster : public LauFitObject {
 		Bool_t cacheInputData();
 
 		//! Perform the fit for the current experiment
-		void fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit );
+		void fitExpt();
 
 		//! Instruct the slaves to update the initial fit parameter values, if required
 		void checkInitFitParams();
@@ -175,8 +178,11 @@ class LauSimFitMaster : public LauFitObject {
 		//! The number of free fit parameters
 		UInt_t nFreeParams_;
 
-		//! Flag to indicate if the asymmetric error calculation (e.g. MINOS) is currently running
-		Bool_t withinAsymErrorCalc_;
+		//! Option to perform a two stage fit
+		Bool_t twoStageFit_; 
+
+		//! Option to use asymmetric errors
+		Bool_t useAsymmFitErrors_; 
 
 		//! The number of successful fits
 		UInt_t numberOKFits_;

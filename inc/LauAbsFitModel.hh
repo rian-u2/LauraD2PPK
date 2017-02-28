@@ -77,7 +77,7 @@ class LauGenNtuple;
 class LauAbsRValue;
 class LauParameter;
 
-class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
+class LauAbsFitModel : public LauSimFitSlave {
 
 	public:
 		//! Constructor
@@ -130,15 +130,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		*/	
 		virtual void twoStageFit(Bool_t doTwoStageFit) {twoStageFit_ = doTwoStageFit;}
 
-		//! Determine whether calculation of asymmetric errors is enabled
-		Bool_t useAsymmFitErrors() const {return useAsymmFitErrors_;}
-
-		//! Turn on or off the computation of asymmetric errors (e.g. MINOS routine in Minuit)
-		/*!
-			\param [in] useAsymmErrors boolean specifying whether or not the computation of asymmetric errors is enabled
-		*/	
-		void useAsymmFitErrors(Bool_t useAsymmErrors) {useAsymmFitErrors_ = useAsymmErrors;}
-
 		//! Determine whether Poisson smearing is enabled for the toy MC generation
 		Bool_t doPoissonSmearing() const {return poissonSmear_;}
 
@@ -156,15 +147,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 			\param [in] enable boolean specifying whether to embed events
 		*/	
 	        void enableEmbedding(Bool_t enable) {enableEmbedding_ = enable;}
-
-		//! Mark that the fit is calculating asymmetric errors
-		/*!
-			This is called by the fitter interface to mark when
-			entering and exiting the asymmetric error calculation
-
-			\param [in] inAsymErrCalc boolean marking that the fit is calculating the asymmetric errors
-		*/
-		virtual void withinAsymErrorCalc(Bool_t inAsymErrCalc) {withinAsymErrorCalc_ = inAsymErrCalc;}
 
 		//! Determine whether writing out of the latex table is enabled
 		Bool_t writeLatexTable() const {return writeLatexTable_;}
@@ -764,8 +746,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		//! Option to perform a two stage fit
 		Bool_t twoStageFit_; 
-		//! Option to use asymmetric errors
-		Bool_t useAsymmFitErrors_; 
 		//! Option to make toy from 1st successful experiment
 		Bool_t compareFitData_; 
 		//! Option to output a .C file of PDF's
@@ -841,8 +821,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		UInt_t nFreeParams_;
 		//! The worst LL value found so far
 		Double_t worstLogLike_;
-		//! Flag to indicate if the asymmetric error calculation (e.g. MINOS) is currently running
-		Bool_t withinAsymErrorCalc_;
 
 		// Background class names
 		//! The background class names

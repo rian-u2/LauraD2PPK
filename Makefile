@@ -126,7 +126,7 @@ ifeq ($(ROOTVERSION),5)
 	@$(ROOTBINDIR)/rootcint -f $(CINTFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
 else
 	@echo "Running rootcling"
-	@$(ROOTBINDIR)/rootcling -f $(CINTFILE) -s $(SHLIBFILE) -rml $(SHLIBFILE) -rml libEG.so -rml libHist.so -rml libMatrix.so -rml libNet.so -rml libRIO.so -rml libTree.so -rml libMathCore.so -rml libCore.so -rmf $(ROOTMAPFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
+	@$(ROOTBINDIR)/rootcling -f $(CINTFILE) -s $(SHLIBFILE) -rml $(SHLIBFILE) -rml libEG.so -rml libHist.so -rml libMatrix.so -rml libNet.so -rml libRIO.so -rml libTree.so -rml libMathCore.so -rml libCore.so -rmf $(ROOTMAPFILE) -I$(PWD)/$(INCDIR) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
 endif
 	@echo "Compiling $(CINTFILE)"
 	@$(CXX) $(CXXFLAGS) -c $(CINTFILE) -o $(CINTOBJ)

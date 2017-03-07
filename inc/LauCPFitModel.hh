@@ -32,7 +32,6 @@
 
 #include "LauAbsFitModel.hh"
 #include "LauParameter.hh"
-#include "LauGenNtuple.hh"
 
 class TH2;
 class LauAbsBkgndDPModel;
@@ -43,7 +42,6 @@ class LauEffModel;
 class LauEmbeddedData;
 class LauKinematics;
 class LauScfMap;
-class LauGenNtuple;
 
 
 class LauCPFitModel : public LauAbsFitModel {

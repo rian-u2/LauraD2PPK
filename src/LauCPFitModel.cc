@@ -37,6 +37,7 @@
 #include "LauEffModel.hh"
 #include "LauEmbeddedData.hh"
 #include "LauFitNtuple.hh"
+#include "LauGenNtuple.hh"
 #include "LauKinematics.hh"
 #include "LauPrint.hh"
 #include "LauRandom.hh"

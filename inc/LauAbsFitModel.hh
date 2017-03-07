@@ -346,7 +346,7 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		//! Clear the vectors containing extra ntuple variables
 		void clearExtraVarVectors();
 
-		//! Reweighting - allows e.g. MC events to be weighted by the DP model
+		//! Weighting - allows e.g. MC events to be weighted by the DP model
 		/*! 
 			\param [in] dataFileName the name of the data file
 			\param [in] dataTreeName the name of the tree containing the data

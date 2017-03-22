@@ -18,8 +18,11 @@
 #include <vector>
 
 #include "RooRealVar.h"
+#include "RooDataSet.h"
+#include "TFile.h"
 #include "TString.h"
 #include "TSystem.h"
+#include "TTree.h"
 
 #include "LauParameter.hh"
 #include "LauSimFitSlave.hh"
@@ -28,13 +31,17 @@
 ClassImp(LauRooFitSlave)
 
 
-LauRooFitSlave::LauRooFitSlave( RooAbsPdf& model, std::vector<RooAbsData*>& data, const Bool_t extended ) :
+LauRooFitSlave::LauRooFitSlave( RooAbsPdf& model, const Bool_t extended, const RooArgSet& vars, const TString& weightVarName ) :
 	LauSimFitSlave(),
 	model_(model),
-	data_(data),
+	dataVars_(vars),
+	weightVarName_(weightVarName),
+	dataFile_(0),
+	dataTree_(0),
 	exptData_(0),
 	extended_(extended),
 	iExpt_(0),
+	iExptCat_("iExpt","Expt Number"),
 	nEvent_(0),
 	nllVar_(0),
 	fitNtuple_(0),
@@ -42,26 +49,114 @@ LauRooFitSlave::LauRooFitSlave( RooAbsPdf& model, std::vector<RooAbsData*>& data
 	fitStatus_(0),
 	NLL_(0.0)
 {
+	if ( weightVarName_ != "" ) {
+		Bool_t weightVarFound = kFALSE;
+		RooFIter argset_iter = dataVars_.fwdIterator();
+		RooAbsArg* param(0);
+		while ( (param = argset_iter.next()) ) {
+			TString name = param->GetName();
+			if ( name == weightVarName_ ) {
+				weightVarFound = kTRUE;
+				break;
+			}
+		}
+		if ( ! weightVarFound ) {
+			std::cerr << "ERROR in LauRooFitSlave::LauRooFitSlave : The set of data variables does not contain the weighting variable \"" << weightVarName_ << std::endl;
+			std::cerr << "                                        : Weighting will be disabled." << std::endl;
+			weightVarName_ = "";
+		}
+	}
+
 }
 
 LauRooFitSlave::~LauRooFitSlave()
 {
 	delete nllVar_; nllVar_ = 0;
 	delete fitNtuple_; fitNtuple_ = 0;
+	this->cleanData();
 }
 
-void LauRooFitSlave::runSlave(const TString& /*dataFileName*/, const TString& /*dataTreeName*/,
+void LauRooFitSlave::cleanData()
+{
+	if ( dataFile_ != 0 ) {
+		dataFile_->Close();
+		delete dataFile_;
+		dataTree_ = 0;
+		dataFile_ = 0;
+	}
+	delete exptData_;
+	exptData_ = 0;
+}
+
+Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& dataTreeName)
+{
+	// Clean-up from any previous runs
+	if ( dataFile_ != 0 ) {
+		this->cleanData();
+	}
+
+	// Open the data file
+	dataFile_ = TFile::Open( dataFileName );
+	if ( ! dataFile_ ) {
+		std::cerr << "ERROR in LauRooFitSlave::cacheFitData : Problem opening data file \"" << dataFileName << "\"" << std::endl;
+		return kFALSE;
+	}
+
+	// Retrieve the tree
+	dataTree_ = dynamic_cast<TTree*>( dataFile_->Get( dataTreeName ) );
+	if ( ! dataTree_ ) {
+		std::cerr << "ERROR in LauRooFitSlave::cacheFitData : Problem retrieving tree \"" << dataTreeName << "\" from data file \"" << dataFileName << "\"" << std::endl;
+		dataFile_->Close();
+		delete dataFile_;
+		dataFile_ = 0;
+		return kFALSE;
+	}
+
+	// Check that the tree contains branches for all the fit variables
+	RooFIter argset_iter = dataVars_.fwdIterator();
+	RooAbsArg* param(0);
+	while ( (param = argset_iter.next()) ) {
+		TString name = param->GetName();
+		TBranch* branch = dataTree_->GetBranch( name );
+		if ( branch == 0 ) {
+			std::cerr << "ERROR in LauRooFitSlave::cacheFitData : The data tree does not contain a branch for fit variable \"" << name << std::endl;
+			return kFALSE;
+		}
+	}
+
+	// Check whether the tree has the branch iExpt
+	TBranch* branch = dataTree_->GetBranch("iExpt");
+	if ( branch == 0 ) {
+		std::cout << "WARNING in LauRooFitSlave::cacheFitData : Cannot find branch \"iExpt\" in the tree, will treat all data as being from a single experiment" << std::endl;
+	} else {
+		// Define the valid values for the iExpt RooCategory
+		iExptCat_.clearTypes();
+		const UInt_t firstExpt = dataTree_->GetMinimum("iExpt");
+		const UInt_t lastExpt  = dataTree_->GetMaximum("iExpt");
+		for ( UInt_t iExpt = firstExpt; iExpt <= lastExpt; ++iExpt ) {
+			iExptCat_.defineType( TString::Format("expt%d",iExpt), iExpt );
+		}
+	}
+
+	return kTRUE;
+}
+
+void LauRooFitSlave::runSlave(const TString& dataFileName, const TString& dataTreeName,
 			      const TString& histFileName, const TString& /*tableFileName*/,
 			      const TString& addressMaster, const UInt_t portMaster)
 {
-	// TODO - should we actually use the dataFileName and dataTreeName to open a ROOT file and create the RooDataSet objects?
-	//      - if so we will need to modify the constructor accordingly
+	// Load the data
+	Bool_t dataOK = this->cacheFitData(dataFileName, dataTreeName);
+	if ( ! dataOK ) {
+		std::cerr << "ERROR in LauRooFitSlave::runSlave : Problem reading the data, aborting fit" << std::endl;
+		return;
+	}
 
 	// Establish the connection to the master process
 	this->connectToMaster( addressMaster, portMaster );
 
 	// Create the ntuple in which to store the fit results
-	std::cout << "INFO in LauRooFitSlave::fitSlave : Creating fit ntuple." << std::endl;
+	std::cout << "INFO in LauRooFitSlave::runSlave : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
 	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
 
@@ -71,15 +166,17 @@ void LauRooFitSlave::runSlave(const TString& /*dataFileName*/, const TString& /*
 
 void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 {
-	// Check that we've not already done this
-	if ( ! fitVars_.empty() ) {
-		std::cerr << "ERROR in LauRooFitSlave::prepareInitialParArray : have already processed fit variables, not doing so again" << std::endl;
-		return;
-	}
-
 	// Check that the NLL variable has been initialised
 	if ( ! nllVar_ ) {
 		std::cerr << "ERROR in LauRooFitSlave::prepareInitialParArray : NLL var not initialised" << std::endl;
+		return;
+	}
+
+	// If we already prepared the entries in the fitPars_ vector then we only need to add the contents to the array
+	if ( ! fitPars_.empty() ) {
+		for ( std::vector<LauParameter*>::iterator iter = fitPars_.begin(); iter != fitPars_.end(); ++iter ) {
+			array.Add(*iter);
+		}
 		return;
 	}
 
@@ -176,7 +273,8 @@ std::vector< std::pair<RooRealVar*,LauParameter*> > LauRooFitSlave::convertToLau
 
 Double_t LauRooFitSlave::getTotNegLogLikelihood()
 {
-	return (nllVar_ != 0) ? nllVar_->getVal() : 0.0;
+	Double_t nll = (nllVar_ != 0) ? nllVar_->getVal() : 0.0;
+	return nll;
 }
 
 void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
@@ -211,8 +309,11 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 UInt_t LauRooFitSlave::readExperimentData( const UInt_t exptIndex )
 {
 	// check that we're being asked to read a valid index
-	if ( exptIndex >= data_.size() ) {
-		std::cerr << "ERROR in LauRooFitSlave::readExperimentData : Invalid experiment number " << exptIndex << ", data contains " << data_.size() << " experiments" << std::endl;
+	if ( iExptCat_.numTypes() == 0 && exptIndex != 0 ) {
+		std::cerr << "ERROR in LauRooFitSlave::readExperimentData : Invalid experiment number " << exptIndex << ", data contains only one experiment" << std::endl;
+		return 0;
+	} else if ( ! iExptCat_.isValidIndex( exptIndex ) ) {
+		std::cerr << "ERROR in LauRooFitSlave::readExperimentData : Invalid experiment number " << exptIndex << std::endl;
 		return 0;
 	}
 
@@ -220,7 +321,15 @@ UInt_t LauRooFitSlave::readExperimentData( const UInt_t exptIndex )
 	iExpt_ = exptIndex;
 
 	// retrieve the data and find out how many events have been read
-	exptData_ = data_[ iExpt_ ];
+	RooArgSet dataVars(dataVars_);
+	if ( iExptCat_.numTypes() == 0 ) {
+		exptData_ = new RooDataSet( TString::Format("expt%dData",iExpt_), "", dataTree_, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
+	} else {
+		const TString selectionString = TString::Format("iExpt==%d",iExpt_);
+		TTree* exptTree = dataTree_->CopyTree(selectionString);
+		exptData_ = new RooDataSet( TString::Format("expt%dData",iExpt_), "", exptTree, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
+		delete exptTree;
+	}
 	nEvent_ = exptData_->numEntries();
 
 	return nEvent_;

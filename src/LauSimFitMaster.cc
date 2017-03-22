@@ -14,7 +14,9 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
+#include "TMath.h"
 #include "TMatrixD.h"
 #include "TMessage.h"
 #include "TMonitor.h"
@@ -48,6 +50,7 @@ LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 	fitStatus_(0),
 	iExpt_(0),
 	NLL_(0.0),
+	worstNegLogLike_(-std::numeric_limits<Double_t>::max()),
 	socketMonitor_(0),
 	messageFromSlave_(0),
 	fitNtuple_(0)
@@ -639,6 +642,9 @@ void LauSimFitMaster::fitExpt()
 {
 	// Routine to perform the actual fit for the given experiment
 
+	// Reset the worst likelihood found to its catch-all value
+	worstNegLogLike_ = -std::numeric_limits<Double_t>::max();
+
 	// Instruct the salves to update initial fit parameters if required (e.g. if using random numbers).
 	this->checkInitFitParams();
 
@@ -744,12 +750,18 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 	Double_t negLogLike(0.0);
 	TSocket  *sActive(0);
 	UInt_t responsesReceived(0);
+	Bool_t allOK(kTRUE);
 	while ( responsesReceived != nSlaves_ ) {
 
 		sActive = socketMonitor_->Select();
 		sActive->Recv(messageFromSlave_);	    
 
 		messageFromSlave_->ReadDouble( vectorRes_[responsesReceived] );
+
+		Double_t& nll = vectorRes_[responsesReceived];
+		if ( nll == 0.0 || TMath::IsNaN(nll) || !TMath::Finite(nll) ) {
+			allOK = kFALSE;
+		}
 
 		negLogLike += vectorRes_[responsesReceived];
 
@@ -759,6 +771,14 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 	// Calculate any penalty terms from Gaussian constrained variables
 	if ( ! conVars_.empty() ){
 		negLogLike += this->getLogLikelihoodPenalty();
+	}
+
+	if ( ! allOK ) {
+		std::cerr << "WARNING in LauSimFitMaster::getTotNegLogLikelihood : Strange NLL value returned by one or more slaves\n";
+		std::cerr << "                                                   : Returning worst NLL found so far to force MINUIT out of this region." << std::endl;
+		negLogLike = worstNegLogLike_;
+	} else if ( negLogLike > worstNegLogLike_ ) {
+		worstNegLogLike_ = negLogLike;
 	}
 
 	return negLogLike;

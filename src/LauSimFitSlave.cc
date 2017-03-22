@@ -70,6 +70,9 @@ void LauSimFitSlave::connectToMaster( const TString& addressMaster, const UInt_t
 
 	std::cout << "INFO in LauSimFitSlave::connectToMaster : Established connection to master on port " << portMaster << std::endl;
 	std::cout << "                                        : We are slave " << slaveId_ << " of " << nSlaves_ << std::endl;
+	if ( useAsymmFitErrors_ ) {
+		std::cout << "                                        : The fit will determine asymmetric errors" << std::endl;
+	}
 }
 
 void LauSimFitSlave::processMasterRequests()

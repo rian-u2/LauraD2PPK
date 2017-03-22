@@ -199,6 +199,9 @@ class LauSimFitMaster : public LauFitObject {
 		//! The negative log-likelihood
 		Double_t NLL_;
 
+		//! The worst LL value found so far
+		Double_t worstNegLogLike_;
+
 		//! The fit covariance matrix
 		TMatrixD covMatrix_;
 

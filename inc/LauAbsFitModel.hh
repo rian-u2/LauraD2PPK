@@ -396,7 +396,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] dataFileName the name of the input file
 			\param [in] dataTreeName the name of the input tree
 		*/	
-		Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName);
+		virtual Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName);
 
 		//! Cache the input data values to calculate the likelihood during the fit
 		virtual void cacheInputFitVars() = 0;

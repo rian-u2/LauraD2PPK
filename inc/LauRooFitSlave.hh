@@ -23,6 +23,7 @@
 
 #include "RooAbsPdf.h"
 #include "RooAbsData.h"
+#include "RooCategory.h"
 #include "RooNLLVar.h"
 //#include "TMatrixDfwd.h"
 #include "TMatrixD.h"
@@ -37,7 +38,7 @@ class LauRooFitSlave : public LauSimFitSlave {
 
 	public:
 		//! Constructor
-		LauRooFitSlave( RooAbsPdf& model, std::vector<RooAbsData*>& data, const Bool_t extended );
+		LauRooFitSlave( RooAbsPdf& model, const Bool_t extended, const RooArgSet& vars, const TString& weightVarName = "" );
 
 		//! Destructor
 		virtual ~LauRooFitSlave();
@@ -102,6 +103,13 @@ class LauRooFitSlave : public LauSimFitSlave {
 		*/	
 		virtual void finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
 
+		//! Store variables from the input file into the internal data storage
+		/*!
+			\param [in] dataFileName the name of the input file
+			\param [in] dataTreeName the name of the input tree
+		*/	
+		virtual Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName);
+
 		//! Read in the data for the specified experiment
 		/*!
 			\param [in] exptIndex the experiment number to be read
@@ -116,6 +124,9 @@ class LauRooFitSlave : public LauSimFitSlave {
 		virtual void writeOutAllFitResults();
 
 	private:
+		//! Cleanup the data
+		void cleanData();
+
 		//! Copy constructor (not implemented)
 		LauRooFitSlave(const LauRooFitSlave& rhs);
 
@@ -125,8 +136,17 @@ class LauRooFitSlave : public LauSimFitSlave {
 		//! The model
 		RooAbsPdf& model_;
 
-		//! The data for each experiment
-		std::vector<RooAbsData*>& data_;
+		//! The dataset variables
+		RooArgSet dataVars_;
+
+		//! The name of the (optional) weight variable in the dataset
+		TString weightVarName_;
+
+		//! The data file
+		TFile* dataFile_;
+
+		//! The data tree
+		TTree* dataTree_;
 
 		//! The data for the current experiment
 		RooAbsData* exptData_;
@@ -136,6 +156,9 @@ class LauRooFitSlave : public LauSimFitSlave {
 
 		//! The current experiment
 		UInt_t iExpt_;
+
+		//! The experiment category variable
+		RooCategory iExptCat_;
 
 		//! The number of events in the current experiment
 		UInt_t nEvent_;

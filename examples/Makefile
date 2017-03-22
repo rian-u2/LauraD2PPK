@@ -12,16 +12,14 @@ else
   ROOTBINDIR := $(ROOTSYS)/bin
 endif
 
+# By default, don't build the LauRooFitSlave class since it depends on RooFit
+# and we don't want to pull in that library if we don't have to.
+# If you want to build it, just set the SKIPLIST variable to be empty.
+SKIPLIST = SlaveRooFit.cc
+
 ROOTCONFIG := $(ROOTBINDIR)/root-config
 ARCH       := $(shell $(ROOTCONFIG) --arch)
 PLATFORM   := $(shell $(ROOTCONFIG) --platform)
-ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
-ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
-ROOTLIBS   += -lEG
-ROOTLIBS   += -lMinuit
-ROOTLIBS   += -lTreePlayer
-ROOTLIBS   += -lRooFitCore
-ROOTLIBS   += -lRooFit
 
 INCLUDES = 
 WORKDIR  = tmp
@@ -51,6 +49,15 @@ INCDIR=../inc
 DEPDIR=$(WORKDIR)/dependencies
 OBJDIR=$(WORKDIR)/objects
 
+ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
+ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
+ROOTLIBS   += -lEG
+ROOTLIBS   += -lMinuit
+ROOTLIBS   += -lTreePlayer
+ifeq ($(strip $(SKIPLIST)),)
+	ROOTLIBS   += -lRooFitCore
+	ROOTLIBS   += -lRooFit
+endif
 LAURALIBDIR=$(shell pwd | xargs dirname)/lib
 LAURALIB = $(LAURALIBDIR)/libLaura++.so
 UTILSLIB = $(PWD)/$(WORKDIR)/libLauraUtils.so
@@ -62,7 +69,7 @@ CXXFLAGS += $(ROOTCFLAGS)
 default: bin
 
 # List of all source files
-CCLIST:=$(wildcard *.cc)
+CCLIST:=$(filter-out $(SKIPLIST), $(wildcard *.cc))
 
 # List of all source files that contain main functions
 BINCCLIST:=$(shell egrep -l "^[[:space:]]*int[[:space:]]*main\>" $(CCLIST))

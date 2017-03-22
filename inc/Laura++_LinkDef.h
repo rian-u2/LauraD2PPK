@@ -102,7 +102,9 @@
 #pragma link C++ class LauResonanceInfo+;
 #pragma link C++ class LauResonanceMaker+;
 #pragma link C++ class LauRhoOmegaMix+;
+#ifdef DOLAUROOFITSLAVE
 #pragma link C++ class LauRooFitSlave+;
+#endif
 #pragma link C++ class LauScfMap+;
 #pragma link C++ class LauSigmaRes+;
 #pragma link C++ class LauSigmoidPdf+;

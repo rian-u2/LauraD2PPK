@@ -12,8 +12,6 @@
   \brief File containing implementation of LauRooFitSlave class.
  */
 
-// TODO - can some of this implementation go into the base class?
-
 #include <iostream>
 #include <vector>
 
@@ -132,10 +130,10 @@ Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& 
 	} else {
 		// Define the valid values for the iExpt RooCategory
 		iExptCat_.clearTypes();
-		const UInt_t firstExpt = dataTree_->GetMinimum("iExpt");
-		const UInt_t lastExpt  = dataTree_->GetMaximum("iExpt");
-		for ( UInt_t iExpt = firstExpt; iExpt <= lastExpt; ++iExpt ) {
-			iExptCat_.defineType( TString::Format("expt%d",iExpt), iExpt );
+		const UInt_t firstExp = dataTree_->GetMinimum("iExpt");
+		const UInt_t lastExp  = dataTree_->GetMaximum("iExpt");
+		for ( UInt_t iExp = firstExp; iExp <= lastExp; ++iExp ) {
+			iExptCat_.defineType( TString::Format("expt%d",iExp), iExp );
 		}
 	}
 
@@ -160,7 +158,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 
 	// Store the set of parameters and the total number of parameters
 	RooArgSet* varSet = nllVar_->getParameters( exptData_ );
-	UInt_t nFreeParams(0);
+	UInt_t nFreePars(0);
 
 	// Loop through the fit parameters
 	RooFIter argset_iter = varSet->fwdIterator();
@@ -172,7 +170,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 			RooRealVar* rrvar = dynamic_cast<RooRealVar*>( param );
 			if ( rrvar != 0 ) {
 				// Count the number of free parameters
-				++nFreeParams;
+				++nFreePars;
 				// Do the conversion and add it to the array
 				LauParameter* lpar = this->convertToLauParameter( rrvar );
 				fitVars_.push_back( rrvar );
@@ -193,7 +191,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 					}
 
 					// Count the number of free parameters
-					++nFreeParams;
+					++nFreePars;
 					// Add the parameter to the array
 					fitVars_.push_back( rrvar );
 					fitPars_.push_back( lpar );
@@ -204,7 +202,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 	}
 	delete varSet;
 
-	this->startNewFit( nFreeParams, nFreeParams );
+	this->startNewFit( nFreePars, nFreePars );
 }
 
 LauParameter* LauRooFitSlave::convertToLauParameter( const RooRealVar* rooParameter ) const
@@ -253,8 +251,8 @@ std::vector< std::pair<RooRealVar*,LauParameter*> > LauRooFitSlave::convertToLau
 
 Double_t LauRooFitSlave::getTotNegLogLikelihood()
 {
-	Double_t nll = (nllVar_ != 0) ? nllVar_->getVal() : 0.0;
-	return nll;
+	Double_t nLL = (nllVar_ != 0) ? nllVar_->getVal() : 0.0;
+	return nLL;
 }
 
 void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
@@ -264,11 +262,11 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 
 	// MINOS reports different numbers of free parameters depending on the
 	// situation, so disable this check
-	const UInt_t nFreeParams = this->nFreeParams();
+	const UInt_t nFreePars = this->nFreeParams();
 	if ( ! this->withinAsymErrorCalc() ) {
-		if (static_cast<UInt_t>(npar) != nFreeParams) {
+		if (static_cast<UInt_t>(npar) != nFreePars) {
 			std::cerr << "ERROR in LauRooFitSlave::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
-			std::cerr << "                                             Expected: " << nFreeParams << ".\n" << std::endl;
+			std::cerr << "                                             Expected: " << nFreePars << ".\n" << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -278,7 +276,7 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 	// free and floating...
 
 	// Update all the floating ones with their new values
-	for (UInt_t i(0); i<nFreeParams; ++i) {
+	for (UInt_t i(0); i<nFreePars; ++i) {
 		if (!fitPars_[i]->fixed()) {
 			// Set both the RooRealVars and the LauParameters
 			fitPars_[i]->value(par[i]);
@@ -332,11 +330,11 @@ void LauRooFitSlave::finaliseExperiment( const Int_t fitStat, const Double_t NLL
 	this->storeFitStatus( fitStat, NLL, *covMat );
 
 	// Now process the parameters
-	const UInt_t nFreeParams = this->nFreeParams();
+	const UInt_t nFreePars = this->nFreeParams();
 	UInt_t nPars = parsFromMaster->GetEntries();
-	if ( nPars != nFreeParams ) {
+	if ( nPars != nFreePars ) {
 		std::cerr << "ERROR in LauRooFitSlave::finaliseExperiment : Unexpected number of parameters received from master" << std::endl;
-		std::cerr << "                                            : Received " << nPars << " when expecting " << nFreeParams << std::endl;
+		std::cerr << "                                            : Received " << nPars << " when expecting " << nFreePars << std::endl;
 		gSystem->Exit( EXIT_FAILURE );
 	}
 

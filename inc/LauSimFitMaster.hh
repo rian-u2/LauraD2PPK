@@ -56,12 +56,12 @@ class LauSimFitMaster : public LauFitObject {
 		//! Run the fit
 		/*! 
 			\param [in] fitNtupleFileName the file to which the ntuple containing the fit results should be written
-			\param [in] nExpt the number of experiments to be fitted
-			\param [in] firstExpt the ID of the first experiment to be fitted
+			\param [in] nExp the number of experiments to be fitted
+			\param [in] firstExp the ID of the first experiment to be fitted
 			\param [in] useAsymmErrors should asymmetric errors be calculated or not
-			\param [in] twoStageFit should the fit be performed in two stages or not
+			\param [in] doTwoStageFit should the fit be performed in two stages or not
 		*/
-		void runSimFit( const TString& fitNtupleFileName, const UInt_t nExpt, const UInt_t firstExpt = 0, const Bool_t useAsymmErrors = kFALSE, const Bool_t twoStageFit = kFALSE );
+		void runSimFit( const TString& fitNtupleFileName, const UInt_t nExp, const UInt_t firstExp = 0, const Bool_t useAsymmErrors = kFALSE, const Bool_t doTwoStageFit = kFALSE );
 
 		//! Mark that the fit is calculating asymmetric errors
 		/*!

@@ -31,6 +31,7 @@ LauFitObject::LauFitObject() : TObject(),
 	fitStatus_(0),
 	NLL_(0),
 	worstLogLike_(std::numeric_limits<Double_t>::max()),
+	covMatrix_(),
 	numberOKFits_(0),
 	numberBadFits_(0)
 {
@@ -43,24 +44,24 @@ void LauFitObject::resetFitCounters()
 	fitStatus_ = -1;
 }
 
-void LauFitObject::startNewFit( const UInt_t nParams, const UInt_t nFreeParams )
+void LauFitObject::startNewFit( const UInt_t nPars, const UInt_t nFreePars )
 {
 	// Reset the worst likelihood found to its catch-all value
 	worstLogLike_ = std::numeric_limits<Double_t>::max();
 
 	// Store the number of fit parameters (total and floating)
-	nParams_ = nParams;
-	nFreeParams_ = nFreeParams;
+	nParams_ = nPars;
+	nFreeParams_ = nFreePars;
 }
 
-void LauFitObject::storeFitStatus( const Int_t fitStatus, const Double_t NLL, const TMatrixD& covarianceMatrix )
+void LauFitObject::storeFitStatus( const Int_t status, const Double_t NLL, const TMatrixD& covMatrix )
 {
-	fitStatus_ = fitStatus;
+	fitStatus_ = status;
 	NLL_ = NLL;
 
 	covMatrix_.Clear();
-	covMatrix_.ResizeTo( covarianceMatrix.GetNrows(), covarianceMatrix.GetNcols() );
-	covMatrix_.SetMatrixArray( covarianceMatrix.GetMatrixArray() );
+	covMatrix_.ResizeTo( covMatrix.GetNrows(), covMatrix.GetNcols() );
+	covMatrix_.SetMatrixArray( covMatrix.GetMatrixArray() );
 
 	// Keep track of how many fits worked or failed
 	// NB values of fitStatus_ indicate the status of the error matrix:

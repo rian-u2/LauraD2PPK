@@ -34,15 +34,17 @@ LauSimFitSlave::LauSimFitSlave() :
 	messageFromMaster_(0),
 	slaveId_(0),
 	nSlaves_(0),
-	parValues_(0)
+	parValues_(0),
+	fitNtuple_(0)
 {
 }
 
 LauSimFitSlave::~LauSimFitSlave()
 {
-	delete sMaster_; sMaster_ = 0;
-	delete messageFromMaster_; messageFromMaster_ = 0;
-	delete[] parValues_; parValues_ = 0;
+	delete sMaster_;
+	delete messageFromMaster_;
+	delete[] parValues_;
+	delete fitNtuple_;
 }
 
 void LauSimFitSlave::runSlave(const TString& dataFileName, const TString& dataTreeName,
@@ -156,14 +158,14 @@ void LauSimFitSlave::processMasterRequests()
 			} else if ( msgStr == "Read Expt" ) {
 
 				// Read the data for this experiment
-				UInt_t iExpt(0);
-				messageFromMaster_->ReadUInt( iExpt );
+				UInt_t iExp(0);
+				messageFromMaster_->ReadUInt( iExp );
 
-				this->setCurrentExperiment( iExpt );
+				this->setCurrentExperiment( iExp );
 
 				UInt_t nEvents = this->readExperimentData();
 				if ( nEvents < 1 ) {
-					std::cerr << "WARNING in LauSimFitSlave::processMasterRequests : Zero events in experiment " << iExpt << ", the master should skip this experiment..." << std::endl;
+					std::cerr << "WARNING in LauSimFitSlave::processMasterRequests : Zero events in experiment " << iExp << ", the master should skip this experiment..." << std::endl;
 				}
 
 				messageToMaster.Reset( kMESS_ANY );
@@ -218,9 +220,9 @@ void LauSimFitSlave::processMasterRequests()
 
 			std::cout << "INFO in LauSimFitSlave::processMasterRequests : Received message from master: Finalise" << std::endl;
 
-			Int_t fitStatus(0);
+			Int_t status(0);
 			Double_t NLL(0.0);
-			messageFromMaster_->ReadInt( fitStatus );
+			messageFromMaster_->ReadInt( status );
 			messageFromMaster_->ReadDouble( NLL );
 
 			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
@@ -236,7 +238,7 @@ void LauSimFitSlave::processMasterRequests()
 			}
 
 			TObjArray array;
-			this->finaliseExperiment( fitStatus, NLL, objarray, covMat, array );
+			this->finaliseExperiment( status, NLL, objarray, covMat, array );
 
 			delete objarray; objarray = 0;
 			delete covMat; covMat = 0;

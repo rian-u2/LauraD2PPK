@@ -151,16 +151,16 @@ class LauFitObject : public TObject {
 
 		//! Set the ID of the current experiment
 		/*!
-		    \param [in] iExpt the experiment number
+		    \param [in] curExpt the experiment number
 		*/
-		void setCurrentExperiment( const UInt_t iExpt ) { iExpt_ = iExpt; }
+		void setCurrentExperiment( const UInt_t curExpt ) { iExpt_ = curExpt; }
 
 		//! Indicate the start of a new fit
 		/*!
-		    \param [in] nParams the total number of fit parameters
-		    \param [in] nFreeParams the number of free fit parameters
+		    \param [in] nPars the total number of fit parameters
+		    \param [in] nFreePars the number of free fit parameters
 		*/
-		void startNewFit( const UInt_t nParams, const UInt_t nFreeParams );
+		void startNewFit( const UInt_t nPars, const UInt_t nFreePars );
 
 		//! Set the number of events in the current experiment
 		void eventsPerExpt(UInt_t nEvents) {evtsPerExpt_ = nEvents;}
@@ -176,11 +176,11 @@ class LauFitObject : public TObject {
 
 		//! Store fit status information
 		/*!
-		    \param [in] fitStatus the status code of the fit
+		    \param [in] status the status code of the fit
 		    \param [in] NLL the minimised negative log likelihood
-		    \param [in] covarianceMatrix the fit covariance matrix
+		    \param [in] covMatrix the fit covariance matrix
 		*/
-		void storeFitStatus( const Int_t fitStatus, const Double_t NLL, const TMatrixD& covarianceMatrix );
+		void storeFitStatus( const Int_t status, const Double_t NLL, const TMatrixD& covMatrix );
 
 		//! Access the total number of fit parameters
 		UInt_t nTotParams() const {return nParams_;}

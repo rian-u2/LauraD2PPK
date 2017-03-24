@@ -40,6 +40,7 @@ ClassImp(LauAbsFitModel)
 
 LauAbsFitModel::LauAbsFitModel() :
 	compareFitData_(kFALSE),
+	savePDF_(kFALSE),
 	writeLatexTable_(kFALSE),
 	writeSPlotData_(kFALSE),
 	storeDPEff_(kFALSE),
@@ -271,22 +272,22 @@ void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTr
 	// Start the cumulative timer
 	cumulTimer_.Start();
 
-	const UInt_t firstExpt = this->firstExpt();
-	const UInt_t nExpt = this->nExpt();
+	const UInt_t firstExp = this->firstExpt();
+	const UInt_t nExp = this->nExpt();
 
 	Bool_t genOK(kTRUE);
 	do {
 		// Loop over the number of experiments
-		for (UInt_t iExpt = firstExpt; iExpt < (firstExpt+nExpt); ++iExpt) {
+		for (UInt_t iExp = firstExp; iExp < (firstExp+nExp); ++iExp) {
 
 			// Start the timer to see how long each experiment takes to generate
 			timer_.Start();
 
 			// Store the experiment number in the ntuple
-			this->setGenNtupleIntegerBranchValue("iExpt",iExpt);
+			this->setGenNtupleIntegerBranchValue("iExpt",iExp);
 
 			// Do the generation for this experiment
-			std::cout << "INFO in LauAbsFitModel::generate : Generating experiment number " << iExpt << std::endl;
+			std::cout << "INFO in LauAbsFitModel::generate : Generating experiment number " << iExp << std::endl;
 			genOK = this->genExpt();
 
 			// Stop the timer and see how long the program took so far
@@ -305,7 +306,7 @@ void LauAbsFitModel::generate(const TString& dataFileName, const TString& dataTr
 			if (this->writeLatexTable()) {
 				TString tableFileName(tableFileNameBase);
 				tableFileName += "_";
-				tableFileName += iExpt;
+				tableFileName += iExp;
 				tableFileName += ".tex";
 				this->writeOutTable(tableFileName);
 			}
@@ -394,11 +395,11 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 {
 	// Routine to perform the total fit.
 
-	const UInt_t firstExpt = this->firstExpt();
-	const UInt_t nExpt = this->nExpt();
+	const UInt_t firstExp = this->firstExpt();
+	const UInt_t nExp = this->nExpt();
 
-	std::cout << "INFO in LauAbsFitModel::fit : First experiment = " << firstExpt << std::endl;
-	std::cout << "INFO in LauAbsFitModel::fit : Number of experiments = " << nExpt << std::endl;
+	std::cout << "INFO in LauAbsFitModel::fit : First experiment = " << firstExp << std::endl;
+	std::cout << "INFO in LauAbsFitModel::fit : Number of experiments = " << nExp << std::endl;
 
 	// Start the cumulative timer
 	cumulTimer_.Start();
@@ -425,16 +426,16 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 	}
 
 	// Loop over the number of experiments
-	for (UInt_t iExpt = firstExpt; iExpt < (firstExpt+nExpt); ++iExpt) {
+	for (UInt_t iExp = firstExp; iExp < (firstExp+nExp); ++iExp) {
 
 		// Start the timer to see how long each fit takes
 		timer_.Start();
 
-		this->setCurrentExperiment( iExpt );
+		this->setCurrentExperiment( iExp );
 
 		UInt_t nEvents = this->readExperimentData();
 		if (nEvents < 1) {
-			std::cerr << "WARNING in LauAbsFitModel::fit : Zero events in experiment " << iExpt << ", skipping..." << std::endl;
+			std::cerr << "WARNING in LauAbsFitModel::fit : Zero events in experiment " << iExp << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
 		}
@@ -485,7 +486,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 	std::cout << "INFO in LauAbsFitModel::fit : Number of OK Fits = " << nOKFits << std::endl;
 	std::cout << "INFO in LauAbsFitModel::fit : Number of Failed Fits = " << nBadFits << std::endl;
 	Double_t fitEff(0.0);
-	if (nExpt != 0) {fitEff = nOKFits/(1.0*nExpt);}
+	if (nExp != 0) {fitEff = nOKFits/(1.0*nExp);}
 	std::cout << "INFO in LauAbsFitModel::fit : Fit efficiency = " << fitEff*100.0 << "%." << std::endl;
 
 	// Write out any fit results (ntuples etc...).
@@ -757,7 +758,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 
 	// Loop over the data points to calculate the log likelihood
 	Double_t logLike(0.0);
-	const Double_t worstLogLike = this->worstLogLike();
+	const Double_t worstLL = this->worstLogLike();
 
 	// Loop over the number of events in this experiment
 	Bool_t ok(kTRUE);
@@ -782,8 +783,8 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 
 	if (!ok) {
 		std::cerr << "                                                  : Returning worst NLL found so far to force MINUIT out of this region." << std::endl;
-		logLike = worstLogLike;
-	} else if (logLike < worstLogLike) {
+		logLike = worstLL;
+	} else if (logLike < worstLL) {
 		this->worstLogLike( logLike );
 	}
 
@@ -798,10 +799,10 @@ void LauAbsFitModel::setParsFromMinuit(Double_t* par, Int_t npar)
 	// MINOS reports different numbers of free parameters depending on the
 	// situation, so disable this check
 	if ( ! this->withinAsymErrorCalc() ) {
-		const UInt_t nFreeParams = this->nFreeParams();
-		if (static_cast<UInt_t>(npar) != nFreeParams) {
+		const UInt_t nFreePars = this->nFreeParams();
+		if (static_cast<UInt_t>(npar) != nFreePars) {
 			std::cerr << "ERROR in LauAbsFitModel::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
-			std::cerr << "                                             Expected: " << nFreeParams << ".\n" << std::endl;
+			std::cerr << "                                             Expected: " << nFreePars << ".\n" << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -968,18 +969,18 @@ void LauAbsFitModel::prepareInitialParArray( TObjArray& array )
 	this->checkInitFitParams();
 
 	// Store the total number of parameters and the number of free parameters
-	UInt_t nParams = fitVars_.size();
-	UInt_t nFreeParams = 0;
+	UInt_t nPars = fitVars_.size();
+	UInt_t nFreePars = 0;
 
 	// Send the fit parameters
 	for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
 		if ( ! (*iter)->fixed() ) {
-			++nFreeParams;
+			++nFreePars;
 		}
 		array.Add( *iter );
 	}
 
-	this->startNewFit( nParams, nFreeParams );
+	this->startNewFit( nPars, nFreePars );
 }
 
 void LauAbsFitModel::finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
@@ -988,15 +989,15 @@ void LauAbsFitModel::finaliseExperiment( const Int_t fitStat, const Double_t NLL
 	this->storeFitStatus( fitStat, NLL, *covMat );
 
 	// Now process the parameters
-	const UInt_t nParams = this->nTotParams();
-	UInt_t nPars = parsFromMaster->GetEntries();
-	if ( nPars != nParams ) {
+	const UInt_t nPars = this->nTotParams();
+	UInt_t nParsFromMaster = parsFromMaster->GetEntries();
+	if ( nParsFromMaster != nPars ) {
 		std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Unexpected number of parameters received from master" << std::endl;
-		std::cerr << "                                            : Received " << nPars << " when expecting " << nParams << std::endl;
+		std::cerr << "                                            : Received " << nParsFromMaster << " when expecting " << nPars << std::endl;
 		gSystem->Exit( EXIT_FAILURE );
 	}
 
-	for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
+	for ( UInt_t iPar(0); iPar < nParsFromMaster; ++iPar ) {
 		LauParameter* parameter = dynamic_cast<LauParameter*>( (*parsFromMaster)[iPar] );
 		if ( ! parameter ) {
 			std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Error reading parameter from master" << std::endl;

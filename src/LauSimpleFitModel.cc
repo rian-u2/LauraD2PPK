@@ -2080,10 +2080,9 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 	weightsTuple->addIntegerBranch("iEvtWithinExpt");
 	weightsTuple->addDoubleBranch("dpModelWeight");
 
-	UInt_t iExpmt = this->iExpt();
 	UInt_t nExpmt = this->nExpt();
 	UInt_t firstExpmt = this->firstExpt();
-	for (iExpmt = firstExpmt; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
+	for (UInt_t iExpmt = firstExpmt; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
 
 		inputFitData->readExperimentData(iExpmt);
 		UInt_t nEvents = inputFitData->nEvents();

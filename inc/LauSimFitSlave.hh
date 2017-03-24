@@ -31,6 +31,7 @@
 class TMessage;
 class TSocket;
 class TString;
+class LauFitNtuple;
 
 
 class LauSimFitSlave : public LauFitObject {
@@ -59,7 +60,14 @@ class LauSimFitSlave : public LauFitObject {
 		*/	
 		virtual void runSlave(const TString& dataFileName, const TString& dataTreeName,
 			              const TString& histFileName, const TString& tableFileName = "",
-			              const TString& addressMaster = "localhost", const UInt_t portMaster = 9090) = 0;
+			              const TString& addressMaster = "localhost", const UInt_t portMaster = 9090);
+
+		//! Initialise the fit model
+		/*!
+			Each class that inherits from this one must implement
+			this to do what is appropriate
+		*/
+		virtual void initialise() = 0;
 
 		//! This function sets the parameter values from Minuit
 		/*! 
@@ -71,30 +79,13 @@ class LauSimFitSlave : public LauFitObject {
 		//! Calculates the total negative log-likelihood
 		virtual Double_t getTotNegLogLikelihood() = 0;
 
-		//! Determine whether calculation of asymmetric errors is enabled
-		Bool_t useAsymmFitErrors() const {return useAsymmFitErrors_;}
-
-		//! Turn on or off the computation of asymmetric errors (e.g. MINOS routine in Minuit)
-		/*!
-			\param [in] useAsymmErrors boolean specifying whether or not the computation of asymmetric errors is enabled
-		*/	
-		void useAsymmFitErrors(Bool_t useAsymmErrors) {useAsymmFitErrors_ = useAsymmErrors;}
-
-		//! Store constraint information for fit parameters
-		/*!
-		        In simultaneous fits, constraints should be added to the master process.
-			This default implementation therefore prints a warning and does nothing else.
-			The exception would be if the slave keeps the variation of certain parameters to itself.
-			In this case, the slave should override this default implementation.
-
-			\param [in] formula the formula to be used in the LauFormulaPar
-			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
-			\param [in] mean the value of the mean of the Gaussian constraint 
-			\param [in] width the value of the width of the Gaussian constraint 
-		*/	
-		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
-
 	protected:
+		//! Const access to the fit ntuple
+		const LauFitNtuple* fitNtuple() const {return fitNtuple_;}
+
+		//! Access to the fit ntuple
+		LauFitNtuple* fitNtuple() {return fitNtuple_;}
+
 		//! Establish the connection to the master process
 		/*!
 			\param [in] addressMaster the hostname of the machine running the master process
@@ -104,6 +95,16 @@ class LauSimFitSlave : public LauFitObject {
 
 		//! Listen for requests from the master and act accordingly
 		void processMasterRequests();
+
+		//! Setup saving of fit results to ntuple/LaTeX table etc.
+		/*!
+		  	Provide here a default implementation that produces an ntuple only.
+			Derived classes can override as they wish.
+
+			\param [in] histFileName the file name for the output histograms
+			\param [in] tableFileName the file name for the latex output file
+		*/	
+		virtual void setupResultsOutputs( const TString& histFileName, const TString& tableFileName );
 
 		//! Package the initial fit parameters for transmission to the master
 		/*!
@@ -123,7 +124,7 @@ class LauSimFitSlave : public LauFitObject {
 			\param [in] covMat the fit covariance matrix
 			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster ) = 0;
+		virtual void finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster ) = 0;
 
 		//! Store variables from the input file into the internal data storage
 		/*!
@@ -132,18 +133,17 @@ class LauSimFitSlave : public LauFitObject {
 		*/	
 		virtual Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName) = 0;
 
-		//! Read in the data for the specified experiment
+		//! Read in the data for the current experiment
 		/*!
-			\param [in] exptIndex the experiment number to be read
 			\return the number of events read in
 		*/	
-		virtual UInt_t readExperimentData( const UInt_t exptIndex ) = 0;
+		virtual UInt_t readExperimentData() = 0;
 
 		//! Cache the input data values to calculate the likelihood during the fit
 		virtual void cacheInputFitVars() = 0;
 
 		//! Write out any fit results
-		virtual void writeOutAllFitResults() = 0;
+		virtual void writeOutAllFitResults();
 
 	private:
 		//! Copy constructor (not implemented)
@@ -164,14 +164,11 @@ class LauSimFitSlave : public LauFitObject {
 		//! The total number of slaves
 		UInt_t nSlaves_;
 
-		//! The total number of fit parameters
-		UInt_t nParams_;
-
-		//! Option to use asymmetric errors
-		Bool_t useAsymmFitErrors_; 
-
 		//! Parameter values array (for reading from the master)
 		Double_t* parValues_;
+
+		//! The fit ntuple
+		LauFitNtuple* fitNtuple_;
 
 		ClassDef(LauSimFitSlave,0);
 };

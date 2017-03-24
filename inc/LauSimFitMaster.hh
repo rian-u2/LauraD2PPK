@@ -61,7 +61,7 @@ class LauSimFitMaster : public LauFitObject {
 			\param [in] useAsymmErrors should asymmetric errors be calculated or not
 			\param [in] twoStageFit should the fit be performed in two stages or not
 		*/
-		void runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt = 0, Bool_t useAsymmErrors = kFALSE, Bool_t twoStageFit = kFALSE );
+		void runSimFit( const TString& fitNtupleFileName, const UInt_t nExpt, const UInt_t firstExpt = 0, const Bool_t useAsymmErrors = kFALSE, const Bool_t twoStageFit = kFALSE );
 
 		//! Mark that the fit is calculating asymmetric errors
 		/*!
@@ -93,15 +93,6 @@ class LauSimFitMaster : public LauFitObject {
 			It should not be called otherwise!
 		*/	
 		virtual Double_t getTotNegLogLikelihood();
-
-		//! Store constraint information for fit parameters
-		/*!
-			\param [in] formula the formula to be used in the LauFormulaPar
-			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
-			\param [in] mean the value of the mean of the Gaussian constraint 
-			\param [in] width the value of the width of the Gaussian constraint 
-		*/	
-		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
 	protected:
 		//! Print information on the parameters
@@ -171,39 +162,6 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! The requested port
 		const UInt_t reqPort_;
-
-		//! The number of fit parameters
-		UInt_t nParams_; 
-
-		//! The number of free fit parameters
-		UInt_t nFreeParams_;
-
-		//! Option to perform a two stage fit
-		Bool_t twoStageFit_; 
-
-		//! Option to use asymmetric errors
-		Bool_t useAsymmFitErrors_; 
-
-		//! The number of successful fits
-		UInt_t numberOKFits_;
-
-		//! The number of fit failures
-		UInt_t numberBadFits_;
-
-		//! The status of the current fit
-		Int_t fitStatus_;
-
-		//! The experiment number of the current fit
-		UInt_t iExpt_;
-
-		//! The negative log-likelihood
-		Double_t NLL_;
-
-		//! The worst LL value found so far
-		Double_t worstNegLogLike_;
-
-		//! The fit covariance matrix
-		TMatrixD covMatrix_;
 
 		//! The covariance sub-matrices for each slave
 		std::vector<TMatrixD> covMatrices_;

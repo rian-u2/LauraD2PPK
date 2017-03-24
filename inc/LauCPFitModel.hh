@@ -31,6 +31,7 @@
 #include "TString.h"
 
 #include "LauAbsFitModel.hh"
+#include "LauComplex.hh"
 #include "LauParameter.hh"
 
 class TH2;

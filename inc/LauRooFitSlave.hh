@@ -21,17 +21,19 @@
 #ifndef LAU_ROO_FIT_SLAVE
 #define LAU_ROO_FIT_SLAVE
 
+#include <utility>
+#include <vector>
+
 #include "RooAbsPdf.h"
 #include "RooAbsData.h"
 #include "RooCategory.h"
 #include "RooNLLVar.h"
-//#include "TMatrixDfwd.h"
-#include "TMatrixD.h"
+#include "TMatrixDfwd.h"
+#include "TString.h"
 
-#include "LauFitNtuple.hh"
 #include "LauSimFitSlave.hh"
 
-class TString;
+class LauParameter;
 
 
 class LauRooFitSlave : public LauSimFitSlave {
@@ -43,19 +45,8 @@ class LauRooFitSlave : public LauSimFitSlave {
 		//! Destructor
 		virtual ~LauRooFitSlave();
 
-		//! Start the slave process for simultaneous fitting
-		/*!
-			\param [in] dataFileName the name of the input data file
-			\param [in] dataTreeName the name of the tree containing the data
-			\param [in] histFileName the file name for the output histograms
-			\param [in] tableFileName the file name for the latex output file
-			\param [in] addressMaster the hostname of the machine running the master process
-			\param [in] portMaster the port number on which the master process is listening
-		*/	
-		virtual void runSlave(const TString& dataFileName, const TString& dataTreeName,
-			              const TString& histFileName, const TString& tableFileName = "",
-			              const TString& addressMaster = "localhost", const UInt_t portMaster = 9090);
-
+		//! Initialise the fit model
+		virtual void initialise();
 
 		//! This function sets the parameter values from Minuit
 		/*! 
@@ -101,7 +92,7 @@ class LauRooFitSlave : public LauSimFitSlave {
 			\param [in] covMat the fit covariance matrix
 			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
+		virtual void finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
 
 		//! Store variables from the input file into the internal data storage
 		/*!
@@ -110,18 +101,14 @@ class LauRooFitSlave : public LauSimFitSlave {
 		*/	
 		virtual Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName);
 
-		//! Read in the data for the specified experiment
+		//! Read in the data for the current experiment
 		/*!
-			\param [in] exptIndex the experiment number to be read
 			\return the number of events read in
 		*/	
-		virtual UInt_t readExperimentData( const UInt_t exptIndex );
+		virtual UInt_t readExperimentData();
 
 		//! Cache the input data values to calculate the likelihood during the fit
 		virtual void cacheInputFitVars();
-
-		//! Write out any fit results
-		virtual void writeOutAllFitResults();
 
 	private:
 		//! Cleanup the data
@@ -154,38 +141,17 @@ class LauRooFitSlave : public LauSimFitSlave {
 		//! Is the PDF extended?
 		const Bool_t extended_;
 
-		//! The current experiment
-		UInt_t iExpt_;
-
 		//! The experiment category variable
 		RooCategory iExptCat_;
 
-		//! The number of events in the current experiment
-		UInt_t nEvent_;
-
 		//! The NLL variable
 		RooNLLVar* nllVar_;
-
-		//! The fit ntuple
-		LauFitNtuple* fitNtuple_;
 
 		//! The fit parameters (as RooRealVar's)
 		std::vector<RooRealVar*> fitVars_;
 
 		//! The fit parameters (as LauParameter's)
 		std::vector<LauParameter*> fitPars_;
-
-		//! The number of free fit parameters
-		UInt_t nFreeParams_;
-
-		//! The fit status of the current experiment
-		Int_t fitStatus_;
-
-		//! The NLL value for the current experiment
-		Double_t NLL_;
-
-		//! The fit covariance matrix
-		TMatrixD covMatrix_;
 
 		ClassDef(LauRooFitSlave,0);
 };

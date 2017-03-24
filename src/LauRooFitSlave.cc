@@ -24,6 +24,7 @@
 #include "TSystem.h"
 #include "TTree.h"
 
+#include "LauFitNtuple.hh"
 #include "LauParameter.hh"
 #include "LauSimFitSlave.hh"
 #include "LauRooFitSlave.hh"
@@ -40,39 +41,14 @@ LauRooFitSlave::LauRooFitSlave( RooAbsPdf& model, const Bool_t extended, const R
 	dataTree_(0),
 	exptData_(0),
 	extended_(extended),
-	iExpt_(0),
 	iExptCat_("iExpt","Expt Number"),
-	nEvent_(0),
-	nllVar_(0),
-	fitNtuple_(0),
-	nFreeParams_(0),
-	fitStatus_(0),
-	NLL_(0.0)
+	nllVar_(0)
 {
-	if ( weightVarName_ != "" ) {
-		Bool_t weightVarFound = kFALSE;
-		RooFIter argset_iter = dataVars_.fwdIterator();
-		RooAbsArg* param(0);
-		while ( (param = argset_iter.next()) ) {
-			TString name = param->GetName();
-			if ( name == weightVarName_ ) {
-				weightVarFound = kTRUE;
-				break;
-			}
-		}
-		if ( ! weightVarFound ) {
-			std::cerr << "ERROR in LauRooFitSlave::LauRooFitSlave : The set of data variables does not contain the weighting variable \"" << weightVarName_ << std::endl;
-			std::cerr << "                                        : Weighting will be disabled." << std::endl;
-			weightVarName_ = "";
-		}
-	}
-
 }
 
 LauRooFitSlave::~LauRooFitSlave()
 {
 	delete nllVar_; nllVar_ = 0;
-	delete fitNtuple_; fitNtuple_ = 0;
 	this->cleanData();
 }
 
@@ -86,6 +62,27 @@ void LauRooFitSlave::cleanData()
 	}
 	delete exptData_;
 	exptData_ = 0;
+}
+
+void LauRooFitSlave::initialise()
+{
+	if ( weightVarName_ != "" ) {
+		Bool_t weightVarFound = kFALSE;
+		RooFIter argset_iter = dataVars_.fwdIterator();
+		RooAbsArg* param(0);
+		while ( (param = argset_iter.next()) ) {
+			TString name = param->GetName();
+			if ( name == weightVarName_ ) {
+				weightVarFound = kTRUE;
+				break;
+			}
+		}
+		if ( ! weightVarFound ) {
+			std::cerr << "ERROR in LauRooFitSlave::initialise : The set of data variables does not contain the weighting variable \"" << weightVarName_ << std::endl;
+			std::cerr << "                                    : Weighting will be disabled." << std::endl;
+			weightVarName_ = "";
+		}
+	}
 }
 
 Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& dataTreeName)
@@ -115,13 +112,17 @@ Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& 
 	// Check that the tree contains branches for all the fit variables
 	RooFIter argset_iter = dataVars_.fwdIterator();
 	RooAbsArg* param(0);
+	Bool_t allOK(kTRUE);
 	while ( (param = argset_iter.next()) ) {
 		TString name = param->GetName();
 		TBranch* branch = dataTree_->GetBranch( name );
 		if ( branch == 0 ) {
 			std::cerr << "ERROR in LauRooFitSlave::cacheFitData : The data tree does not contain a branch for fit variable \"" << name << std::endl;
-			return kFALSE;
+			allOK = kFALSE;
 		}
+	}
+	if ( ! allOK ) {
+		return kFALSE;
 	}
 
 	// Check whether the tree has the branch iExpt
@@ -139,29 +140,6 @@ Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& 
 	}
 
 	return kTRUE;
-}
-
-void LauRooFitSlave::runSlave(const TString& dataFileName, const TString& dataTreeName,
-			      const TString& histFileName, const TString& /*tableFileName*/,
-			      const TString& addressMaster, const UInt_t portMaster)
-{
-	// Load the data
-	Bool_t dataOK = this->cacheFitData(dataFileName, dataTreeName);
-	if ( ! dataOK ) {
-		std::cerr << "ERROR in LauRooFitSlave::runSlave : Problem reading the data, aborting fit" << std::endl;
-		return;
-	}
-
-	// Establish the connection to the master process
-	this->connectToMaster( addressMaster, portMaster );
-
-	// Create the ntuple in which to store the fit results
-	std::cout << "INFO in LauRooFitSlave::runSlave : Creating fit ntuple." << std::endl;
-	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
-	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
-
-	// Now process the various requests from the master
-	this->processMasterRequests();
 }
 
 void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
@@ -182,7 +160,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 
 	// Store the set of parameters and the total number of parameters
 	RooArgSet* varSet = nllVar_->getParameters( exptData_ );
-	nFreeParams_ = 0;
+	UInt_t nFreeParams(0);
 
 	// Loop through the fit parameters
 	RooFIter argset_iter = varSet->fwdIterator();
@@ -194,7 +172,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 			RooRealVar* rrvar = dynamic_cast<RooRealVar*>( param );
 			if ( rrvar != 0 ) {
 				// Count the number of free parameters
-				++nFreeParams_;
+				++nFreeParams;
 				// Do the conversion and add it to the array
 				LauParameter* lpar = this->convertToLauParameter( rrvar );
 				fitVars_.push_back( rrvar );
@@ -215,7 +193,7 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 					}
 
 					// Count the number of free parameters
-					++nFreeParams_;
+					++nFreeParams;
 					// Add the parameter to the array
 					fitVars_.push_back( rrvar );
 					fitPars_.push_back( lpar );
@@ -225,6 +203,8 @@ void LauRooFitSlave::prepareInitialParArray( TObjArray& array )
 		}
 	}
 	delete varSet;
+
+	this->startNewFit( nFreeParams, nFreeParams );
 }
 
 LauParameter* LauRooFitSlave::convertToLauParameter( const RooRealVar* rooParameter ) const
@@ -284,10 +264,11 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 
 	// MINOS reports different numbers of free parameters depending on the
 	// situation, so disable this check
+	const UInt_t nFreeParams = this->nFreeParams();
 	if ( ! this->withinAsymErrorCalc() ) {
-		if (static_cast<UInt_t>(npar) != nFreeParams_) {
+		if (static_cast<UInt_t>(npar) != nFreeParams) {
 			std::cerr << "ERROR in LauRooFitSlave::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
-			std::cerr << "                                             Expected: " << nFreeParams_ << ".\n" << std::endl;
+			std::cerr << "                                             Expected: " << nFreeParams << ".\n" << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -297,7 +278,7 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 	// free and floating...
 
 	// Update all the floating ones with their new values
-	for (UInt_t i(0); i<nFreeParams_; ++i) {
+	for (UInt_t i(0); i<nFreeParams; ++i) {
 		if (!fitPars_[i]->fixed()) {
 			// Set both the RooRealVars and the LauParameters
 			fitPars_[i]->value(par[i]);
@@ -306,9 +287,10 @@ void LauRooFitSlave::setParsFromMinuit(Double_t* par, Int_t npar)
 	}
 }
 
-UInt_t LauRooFitSlave::readExperimentData( const UInt_t exptIndex )
+UInt_t LauRooFitSlave::readExperimentData()
 {
 	// check that we're being asked to read a valid index
+	const UInt_t exptIndex = this->iExpt();
 	if ( iExptCat_.numTypes() == 0 && exptIndex != 0 ) {
 		std::cerr << "ERROR in LauRooFitSlave::readExperimentData : Invalid experiment number " << exptIndex << ", data contains only one experiment" << std::endl;
 		return 0;
@@ -317,22 +299,22 @@ UInt_t LauRooFitSlave::readExperimentData( const UInt_t exptIndex )
 		return 0;
 	}
 
-	// set our record of which experiment we're examining
-	iExpt_ = exptIndex;
+	// cleanup the data from any previous experiment
+	delete exptData_;
 
 	// retrieve the data and find out how many events have been read
-	RooArgSet dataVars(dataVars_);
 	if ( iExptCat_.numTypes() == 0 ) {
-		exptData_ = new RooDataSet( TString::Format("expt%dData",iExpt_), "", dataTree_, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
+		exptData_ = new RooDataSet( TString::Format("expt%dData",exptIndex), "", dataTree_, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
 	} else {
-		const TString selectionString = TString::Format("iExpt==%d",iExpt_);
+		const TString selectionString = TString::Format("iExpt==%d",exptIndex);
 		TTree* exptTree = dataTree_->CopyTree(selectionString);
-		exptData_ = new RooDataSet( TString::Format("expt%dData",iExpt_), "", exptTree, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
+		exptData_ = new RooDataSet( TString::Format("expt%dData",exptIndex), "", exptTree, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
 		delete exptTree;
 	}
-	nEvent_ = exptData_->numEntries();
 
-	return nEvent_;
+	const UInt_t nEvent = exptData_->numEntries();
+	this->eventsPerExpt( nEvent );
+	return nEvent;
 }
 
 void LauRooFitSlave::cacheInputFitVars()
@@ -344,34 +326,29 @@ void LauRooFitSlave::cacheInputFitVars()
 	nllVar_ = new RooNLLVar("nllVar", "", model_, *exptData_, extended_);
 }
 
-void LauRooFitSlave::finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
+void LauRooFitSlave::finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
 {
 	// Copy the fit status information
-	fitStatus_ = fitStat;
-	NLL_ = NLL;
-
-	// Copy the contents of the covariance matrix
-	covMatrix_.Clear();
-	covMatrix_.ResizeTo( covMat->GetNrows(), covMat->GetNcols() );
-	covMatrix_.SetMatrixArray( covMat->GetMatrixArray() );
+	this->storeFitStatus( fitStat, NLL, *covMat );
 
 	// Now process the parameters
+	const UInt_t nFreeParams = this->nFreeParams();
 	UInt_t nPars = parsFromMaster->GetEntries();
-	if ( nPars != nFreeParams_ ) {
-		std::cerr << "ERROR in LauRooFitSlave::finaliseResults : Unexpected number of parameters received from master" << std::endl;
-		std::cerr << "                                         : Received " << nPars << " when expecting " << nFreeParams_ << std::endl;
+	if ( nPars != nFreeParams ) {
+		std::cerr << "ERROR in LauRooFitSlave::finaliseExperiment : Unexpected number of parameters received from master" << std::endl;
+		std::cerr << "                                            : Received " << nPars << " when expecting " << nFreeParams << std::endl;
 		gSystem->Exit( EXIT_FAILURE );
 	}
 
 	for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 		LauParameter* parameter = dynamic_cast<LauParameter*>( (*parsFromMaster)[iPar] );
 		if ( ! parameter ) {
-			std::cerr << "ERROR in LauRooFitSlave::finaliseResults : Error reading parameter from master" << std::endl;
+			std::cerr << "ERROR in LauRooFitSlave::finaliseExperiment : Error reading parameter from master" << std::endl;
 			gSystem->Exit( EXIT_FAILURE );
 		}
 
 		if ( parameter->name() != fitPars_[iPar]->name() ) {
-			std::cerr << "ERROR in LauAbsFitModel::finaliseResults : Error reading parameter from master" << std::endl;
+			std::cerr << "ERROR in LauRooFitSlave::finaliseExperiment : Error reading parameter from master" << std::endl;
 			gSystem->Exit( EXIT_FAILURE );
 		}
 
@@ -392,20 +369,13 @@ void LauRooFitSlave::finaliseResults( const Int_t fitStat, const Double_t NLL, c
 
 	// Write the results into the ntuple
 	std::vector<LauParameter> extraVars;
-	fitNtuple_->storeParsAndErrors(fitPars_, extraVars);
+	LauFitNtuple* ntuple = this->fitNtuple();
+	ntuple->storeParsAndErrors(fitPars_, extraVars);
 
 	// find out the correlation matrix for the parameters
-	fitNtuple_->storeCorrMatrix(iExpt_, NLL_, fitStatus_, covMatrix_);
+	ntuple->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus(), this->covarianceMatrix());
 
 	// Fill the data into ntuple
-	fitNtuple_->updateFitNtuple();
-}
-
-void LauRooFitSlave::writeOutAllFitResults()
-{
-	// Write out histograms at end
-	if (fitNtuple_ != 0) {
-		fitNtuple_->writeOutFitResults();
-	}
+	ntuple->updateFitNtuple();
 }
 

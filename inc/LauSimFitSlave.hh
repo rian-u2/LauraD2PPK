@@ -126,12 +126,12 @@ class LauSimFitSlave : public LauFitObject {
 		*/	
 		virtual void finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster ) = 0;
 
-		//! Store variables from the input file into the internal data storage
+		//! Open the input file and verify that all required variables are present
 		/*!
 			\param [in] dataFileName the name of the input file
 			\param [in] dataTreeName the name of the input tree
 		*/	
-		virtual Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName) = 0;
+		virtual Bool_t verifyFitData(const TString& dataFileName, const TString& dataTreeName) = 0;
 
 		//! Read in the data for the current experiment
 		/*!

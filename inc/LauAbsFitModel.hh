@@ -314,12 +314,12 @@ class LauAbsFitModel : public LauSimFitSlave {
 		*/	
 		virtual UInt_t readExperimentData();
 
-		//! Store variables from the input file into the internal data storage
+		//! Open the input file and verify that all required variables are present
 		/*!
 			\param [in] dataFileName the name of the input file
 			\param [in] dataTreeName the name of the input tree
 		*/	
-		virtual Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName);
+		virtual Bool_t verifyFitData(const TString& dataFileName, const TString& dataTreeName);
 
 		//! Cache the input data values to calculate the likelihood during the fit
 		virtual void cacheInputFitVars() = 0;

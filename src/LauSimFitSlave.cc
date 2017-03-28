@@ -71,7 +71,7 @@ void LauSimFitSlave::runSlave(const TString& dataFileName, const TString& dataTr
 
 	// This reads in the given dataFile and creates an input
 	// fit data tree that stores them for all events and experiments.
-	Bool_t dataOK = this->cacheFitData(dataFileName,dataTreeName);
+	Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
 	if (!dataOK) {
 		std::cerr << "ERROR in LauSimFitSlave::runSlave : Problem caching the fit data." << std::endl;
 		return;

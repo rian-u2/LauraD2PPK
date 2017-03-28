@@ -419,7 +419,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 
 	// This reads in the given dataFile and creates an input
 	// fit data tree that stores them for all events and experiments.
-	Bool_t dataOK = this->cacheFitData(dataFileName,dataTreeName);
+	Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
 	if (!dataOK) {
 		std::cerr << "ERROR in LauAbsFitModel::fit : Problem caching the fit data." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
@@ -503,7 +503,7 @@ void LauAbsFitModel::setupResultsOutputs( const TString& histFileName, const TSt
 	outputTableName_ = tableFileName;
 }
 
-Bool_t LauAbsFitModel::cacheFitData(const TString& dataFileName, const TString& dataTreeName)
+Bool_t LauAbsFitModel::verifyFitData(const TString& dataFileName, const TString& dataTreeName)
 {
 	// From the input data stream, store the variables into the
 	// internal tree inputFitData_ that can be used by the sub-classes

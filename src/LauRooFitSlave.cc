@@ -83,7 +83,7 @@ void LauRooFitSlave::initialise()
 	}
 }
 
-Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& dataTreeName)
+Bool_t LauRooFitSlave::verifyFitData(const TString& dataFileName, const TString& dataTreeName)
 {
 	// Clean-up from any previous runs
 	if ( dataFile_ != 0 ) {
@@ -93,14 +93,14 @@ Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& 
 	// Open the data file
 	dataFile_ = TFile::Open( dataFileName );
 	if ( ! dataFile_ ) {
-		std::cerr << "ERROR in LauRooFitSlave::cacheFitData : Problem opening data file \"" << dataFileName << "\"" << std::endl;
+		std::cerr << "ERROR in LauRooFitSlave::verifyFitData : Problem opening data file \"" << dataFileName << "\"" << std::endl;
 		return kFALSE;
 	}
 
 	// Retrieve the tree
 	dataTree_ = dynamic_cast<TTree*>( dataFile_->Get( dataTreeName ) );
 	if ( ! dataTree_ ) {
-		std::cerr << "ERROR in LauRooFitSlave::cacheFitData : Problem retrieving tree \"" << dataTreeName << "\" from data file \"" << dataFileName << "\"" << std::endl;
+		std::cerr << "ERROR in LauRooFitSlave::verifyFitData : Problem retrieving tree \"" << dataTreeName << "\" from data file \"" << dataFileName << "\"" << std::endl;
 		dataFile_->Close();
 		delete dataFile_;
 		dataFile_ = 0;
@@ -115,7 +115,7 @@ Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& 
 		TString name = param->GetName();
 		TBranch* branch = dataTree_->GetBranch( name );
 		if ( branch == 0 ) {
-			std::cerr << "ERROR in LauRooFitSlave::cacheFitData : The data tree does not contain a branch for fit variable \"" << name << std::endl;
+			std::cerr << "ERROR in LauRooFitSlave::verifyFitData : The data tree does not contain a branch for fit variable \"" << name << std::endl;
 			allOK = kFALSE;
 		}
 	}
@@ -126,7 +126,7 @@ Bool_t LauRooFitSlave::cacheFitData(const TString& dataFileName, const TString& 
 	// Check whether the tree has the branch iExpt
 	TBranch* branch = dataTree_->GetBranch("iExpt");
 	if ( branch == 0 ) {
-		std::cout << "WARNING in LauRooFitSlave::cacheFitData : Cannot find branch \"iExpt\" in the tree, will treat all data as being from a single experiment" << std::endl;
+		std::cout << "WARNING in LauRooFitSlave::verifyFitData : Cannot find branch \"iExpt\" in the tree, will treat all data as being from a single experiment" << std::endl;
 	} else {
 		// Define the valid values for the iExpt RooCategory
 		iExptCat_.clearTypes();

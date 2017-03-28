@@ -3003,7 +3003,7 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
 
       const LauFitData& evtData = inputFitData->getData( iEvent );
 
-      Double_t m13Sq_MC = evtData.find("m12Sq_MC")->second;
+      Double_t m13Sq_MC = evtData.find("m13Sq_MC")->second;
       Double_t m23Sq_MC = evtData.find("m23Sq_MC")->second;
       Int_t charge = evtData.find("charge")->second;
 

@@ -1285,6 +1285,10 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		//      - can later consider whether there's a need to split up the mPrime axis into regions around particularly narrow resonances in m12
 		//      - but it seems that this isn't really needed since even the default tune gives a good resolution for most narrow resonances such as phi / chi_c0
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin widths of "<<mPrimeBinWidth_<<" in mPrime and "<<thPrimeBinWidth_<<" in thetaPrime..."<<std::endl;
+
+		// Make sure that the kinematics will calculate the square DP co-ordinates
+		kinematics_->squareDP(kTRUE);
+
 		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, mPrimeBinWidth_, thPrimeBinWidth_, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
 
 	} else if (m13NarrowRes.empty() && m23NarrowRes.empty()) {

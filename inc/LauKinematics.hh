@@ -44,6 +44,12 @@ class LauKinematics {
 		//! Destructor
 		virtual ~LauKinematics();
 
+		//! Enable/disable the calculation of square Dalitz plot co-ordinates
+		/*!
+		    \param [in] calcSquareDPCoords kTRUE/kFALSE to enable/disable calculation of the square DP co-ordinates
+		*/
+		inline void squareDP( const Bool_t calcSquareDPCoords ) { squareDP_ = calcSquareDPCoords; }
+
 		//! Are the square Dalitz plot co-ordinates being calculated?
 		/*!
 		    \return kTRUE if the square Dalitz plot co-ordinates are being calculated, kFALSE otherwise

@@ -2959,7 +2959,7 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
 
   // This reads in the given dataFile and creates an input
   // fit data tree that stores them for all events and experiments.
-  Bool_t dataOK = this->cacheFitData(dataFileName,dataTreeName);
+  Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
   if (!dataOK) {
     std::cerr << "ERROR in LauSimpleFitModel::weightEvents : Problem caching the data." << std::endl;
     return;

@@ -23,6 +23,7 @@
 #include "TSystem.h"
 
 #include "LauSimFitSlave.hh"
+#include "LauFitNtuple.hh"
 
 
 ClassImp(LauSimFitSlave)
@@ -33,16 +34,61 @@ LauSimFitSlave::LauSimFitSlave() :
 	messageFromMaster_(0),
 	slaveId_(0),
 	nSlaves_(0),
-	nParams_(0),
-	parValues_(0)
+	parValues_(0),
+	fitNtuple_(0)
 {
 }
 
 LauSimFitSlave::~LauSimFitSlave()
 {
-	delete sMaster_; sMaster_ = 0;
-	delete messageFromMaster_; messageFromMaster_ = 0;
-	delete[] parValues_; parValues_ = 0;
+	delete sMaster_;
+	delete messageFromMaster_;
+	delete[] parValues_;
+	delete fitNtuple_;
+}
+
+void LauSimFitSlave::runSlave(const TString& dataFileName, const TString& dataTreeName,
+			      const TString& histFileName, const TString& tableFileName,
+			      const TString& addressMaster, const UInt_t portMaster)
+{
+	// Establish the connection to the master process
+	this->connectToMaster( addressMaster, portMaster );
+
+	// Initialise the fit model
+	this->initialise();
+
+	// NB call to addConParameters() is intentionally not included here cf.
+	// LauAbsFitModel::run() since this has to be dealt with by the master
+	// to avoid multiple inclusions of each penalty term
+	// Print a warning if constraints on combinations of parameters have been specified
+	const std::vector<StoreConstraints>& storeCon = this->constraintsStore();
+	if ( ! storeCon.empty() ) {
+		std::cerr << "WARNING in LauSimFitSlave::runSlave : Constraints have been added but these will be ignored - they should have been added to the master process" << std::endl;
+	}
+
+	// Setup saving of fit results to ntuple/LaTeX table etc.
+	this->setupResultsOutputs( histFileName, tableFileName );
+
+	// This reads in the given dataFile and creates an input
+	// fit data tree that stores them for all events and experiments.
+	Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
+	if (!dataOK) {
+		std::cerr << "ERROR in LauSimFitSlave::runSlave : Problem caching the fit data." << std::endl;
+		return;
+	}
+
+	// Now process the various requests from the master
+	this->processMasterRequests();
+
+	std::cout << "INFO in LauSimFitSlave::runSlave : Fit slave " << this->slaveId() << " has finished successfully" << std::endl;
+}
+
+void LauSimFitSlave::setupResultsOutputs( const TString& histFileName, const TString& /*tableFileName*/ )
+{
+	// Create and setup the fit results ntuple
+	std::cout << "INFO in LauSimFitSlave::setupResultsOutputs : Creating fit ntuple." << std::endl;
+	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
+	fitNtuple_ = new LauFitNtuple(histFileName, this->useAsymmFitErrors());
 }
 
 void LauSimFitSlave::connectToMaster( const TString& addressMaster, const UInt_t portMaster )
@@ -55,14 +101,22 @@ void LauSimFitSlave::connectToMaster( const TString& addressMaster, const UInt_t
 	// Open connection to master
 	sMaster_ = new TSocket(addressMaster, portMaster);
 	sMaster_->Recv( messageFromMaster_ );
+
 	messageFromMaster_->ReadUInt( slaveId_ );
 	messageFromMaster_->ReadUInt( nSlaves_ );
+
+	Bool_t useAsymErrs(kFALSE);
+	messageFromMaster_->ReadBool( useAsymErrs );
+	this->useAsymmFitErrors(useAsymErrs);
 
 	delete messageFromMaster_;
 	messageFromMaster_ = 0;
 
 	std::cout << "INFO in LauSimFitSlave::connectToMaster : Established connection to master on port " << portMaster << std::endl;
 	std::cout << "                                        : We are slave " << slaveId_ << " of " << nSlaves_ << std::endl;
+	if ( useAsymErrs ) {
+		std::cout << "                                        : The fit will determine asymmetric errors" << std::endl;
+	}
 }
 
 void LauSimFitSlave::processMasterRequests()
@@ -94,8 +148,8 @@ void LauSimFitSlave::processMasterRequests()
 					delete[] parValues_;
 					parValues_ = 0;
 				}
-				nParams_ = array.GetEntries();
-				parValues_ = new Double_t[nParams_];
+				UInt_t nPar = array.GetEntries();
+				parValues_ = new Double_t[nPar];
 
 				messageToMaster.Reset( kMESS_OBJECT );
 				messageToMaster.WriteObject( &array );
@@ -104,12 +158,14 @@ void LauSimFitSlave::processMasterRequests()
 			} else if ( msgStr == "Read Expt" ) {
 
 				// Read the data for this experiment
-				UInt_t iExpt(0);
-				messageFromMaster_->ReadUInt( iExpt );
+				UInt_t iExp(0);
+				messageFromMaster_->ReadUInt( iExp );
 
-				UInt_t nEvents = this->readExperimentData( iExpt );
+				this->setCurrentExperiment( iExp );
+
+				UInt_t nEvents = this->readExperimentData();
 				if ( nEvents < 1 ) {
-					std::cerr << "WARNING in LauSimFitSlave::processMasterRequests : Zero events in experiment " << iExpt << ", the master should skip this experiment..." << std::endl;
+					std::cerr << "WARNING in LauSimFitSlave::processMasterRequests : Zero events in experiment " << iExp << ", the master should skip this experiment..." << std::endl;
 				}
 
 				messageToMaster.Reset( kMESS_ANY );
@@ -126,6 +182,17 @@ void LauSimFitSlave::processMasterRequests()
 				messageToMaster.Reset( kMESS_ANY );
 				messageToMaster.WriteUInt( slaveId_ );
 				messageToMaster.WriteBool( kTRUE );
+				sMaster_->Send( messageToMaster );
+
+			} else if ( msgStr == "Asym Error Calc" ) {
+
+				Bool_t asymErrorCalc(kFALSE);
+				messageFromMaster_->ReadBool( asymErrorCalc );
+				this->withinAsymErrorCalc( asymErrorCalc );
+
+				messageToMaster.Reset( kMESS_ANY );
+				messageToMaster.WriteUInt( slaveId_ );
+				messageToMaster.WriteBool( asymErrorCalc );
 				sMaster_->Send( messageToMaster );
 
 			} else if ( msgStr == "Write Results" ) {
@@ -153,9 +220,9 @@ void LauSimFitSlave::processMasterRequests()
 
 			std::cout << "INFO in LauSimFitSlave::processMasterRequests : Received message from master: Finalise" << std::endl;
 
-			Int_t fitStatus(0);
+			Int_t status(0);
 			Double_t NLL(0.0);
-			messageFromMaster_->ReadInt( fitStatus );
+			messageFromMaster_->ReadInt( status );
 			messageFromMaster_->ReadDouble( NLL );
 
 			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
@@ -171,7 +238,7 @@ void LauSimFitSlave::processMasterRequests()
 			}
 
 			TObjArray array;
-			this->finaliseResults( fitStatus, NLL, objarray, covMat, array );
+			this->finaliseExperiment( status, NLL, objarray, covMat, array );
 
 			delete objarray; objarray = 0;
 			delete covMat; covMat = 0;
@@ -190,9 +257,9 @@ void LauSimFitSlave::processMasterRequests()
 			messageFromMaster_->ReadUInt( nPars );
 			messageFromMaster_->ReadUInt( nFreePars );
 
-			if ( nPars != nParams_ ) {
+			if ( nPars != this->nTotParams() ) {
 				std::cerr << "ERROR in LauSimFitSlave::processMasterRequests : Unexpected number of parameters received from master" << std::endl;
-				std::cerr << "                                               : Received " << nPars << " when expecting " << nParams_ << std::endl;
+				std::cerr << "                                               : Received " << nPars << " when expecting " << this->nTotParams() << std::endl;
 				gSystem->Exit( EXIT_FAILURE );
 			}
 
@@ -216,4 +283,11 @@ void LauSimFitSlave::processMasterRequests()
 	}
 }
 
+void LauSimFitSlave::writeOutAllFitResults()
+{
+	// Write out histograms at end
+	if (fitNtuple_ != 0) {
+		fitNtuple_->writeOutFitResults();
+	}
+}
 

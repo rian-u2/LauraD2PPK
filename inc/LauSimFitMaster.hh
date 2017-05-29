@@ -56,12 +56,12 @@ class LauSimFitMaster : public LauFitObject {
 		//! Run the fit
 		/*! 
 			\param [in] fitNtupleFileName the file to which the ntuple containing the fit results should be written
-			\param [in] nExpt the number of experiments to be fitted
-			\param [in] firstExpt the ID of the first experiment to be fitted
+			\param [in] nExp the number of experiments to be fitted
+			\param [in] firstExp the ID of the first experiment to be fitted
 			\param [in] useAsymmErrors should asymmetric errors be calculated or not
-			\param [in] twoStageFit should the fit be performed in two stages or not
+			\param [in] doTwoStageFit should the fit be performed in two stages or not
 		*/
-		void runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt = 0, Bool_t useAsymmErrors = kFALSE, Bool_t twoStageFit = kFALSE );
+		void runSimFit( const TString& fitNtupleFileName, const UInt_t nExp, const UInt_t firstExp = 0, const Bool_t useAsymmErrors = kFALSE, const Bool_t doTwoStageFit = kFALSE );
 
 		//! Mark that the fit is calculating asymmetric errors
 		/*!
@@ -72,7 +72,10 @@ class LauSimFitMaster : public LauFitObject {
 
 			\param [in] inAsymErrCalc boolean marking that the fit is calculating the asymmetric errors
 		*/
-		virtual void withinAsymErrorCalc(Bool_t inAsymErrCalc) { withinAsymErrorCalc_ = inAsymErrCalc; }
+		virtual void withinAsymErrorCalc(const Bool_t inAsymErrCalc);
+
+		// Need to unshadow the query method defined in the base class
+		using LauFitObject::withinAsymErrorCalc;
 
 		//! This function sets the parameter values from Minuit
 		/*! 
@@ -90,15 +93,6 @@ class LauSimFitMaster : public LauFitObject {
 			It should not be called otherwise!
 		*/	
 		virtual Double_t getTotNegLogLikelihood();
-
-		//! Store constraint information for fit parameters
-		/*!
-			\param [in] formula the formula to be used in the LauFormulaPar
-			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
-			\param [in] mean the value of the mean of the Gaussian constraint 
-			\param [in] width the value of the width of the Gaussian constraint 
-		*/	
-		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
 	protected:
 		//! Print information on the parameters
@@ -141,7 +135,7 @@ class LauSimFitMaster : public LauFitObject {
 		Bool_t cacheInputData();
 
 		//! Perform the fit for the current experiment
-		void fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit );
+		void fitExpt();
 
 		//! Instruct the slaves to update the initial fit parameter values, if required
 		void checkInitFitParams();
@@ -168,33 +162,6 @@ class LauSimFitMaster : public LauFitObject {
 
 		//! The requested port
 		const UInt_t reqPort_;
-
-		//! The number of fit parameters
-		UInt_t nParams_; 
-
-		//! The number of free fit parameters
-		UInt_t nFreeParams_;
-
-		//! Flag to indicate if the asymmetric error calculation (e.g. MINOS) is currently running
-		Bool_t withinAsymErrorCalc_;
-
-		//! The number of successful fits
-		UInt_t numberOKFits_;
-
-		//! The number of fit failures
-		UInt_t numberBadFits_;
-
-		//! The status of the current fit
-		Int_t fitStatus_;
-
-		//! The experiment number of the current fit
-		UInt_t iExpt_;
-
-		//! The negative log-likelihood
-		Double_t NLL_;
-
-		//! The fit covariance matrix
-		TMatrixD covMatrix_;
 
 		//! The covariance sub-matrices for each slave
 		std::vector<TMatrixD> covMatrices_;

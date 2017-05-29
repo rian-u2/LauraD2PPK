@@ -49,10 +49,9 @@
 #ifndef LAU_ABS_FIT_MODEL
 #define LAU_ABS_FIT_MODEL
 
-#include "TMatrixD.h"
+#include "TMatrixDfwd.h"
 #include "TString.h"
 #include "TStopwatch.h"
-#include "TVectorDfwd.h"
 
 #include <iosfwd>
 #include <set>
@@ -64,20 +63,14 @@
 // LauSPlot included to get LauSPlot::NameSet typedef
 #include "LauSPlot.hh"
 
-class TMessage;
-class TMonitor;
-class TSocket;
-class TTree;
 class LauAbsCoeffSet;
 class LauAbsPdf;
-class LauComplex;
 class LauFitDataTree;
-class LauFitNtuple;
 class LauGenNtuple;
 class LauAbsRValue;
 class LauParameter;
 
-class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
+class LauAbsFitModel : public LauSimFitSlave {
 
 	public:
 		//! Constructor
@@ -114,31 +107,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		*/	
 		void doEMLFit(Bool_t emlFit) {emlFit_ = emlFit;}
 
-		//! Determine whether the two-stage fit is enabled
-		virtual Bool_t twoStageFit() const {return twoStageFit_;}
-
-		//! Turn on or off the two stage fit
-		/*!
-			The two-stage fit allows certain parameters to be fixed
-			in one stage and floated in another stage of the fit.
-			Can be used, for example, in a CP fit where the
-			CP-parameters are fixed to zero in the first stage
-			(while the CP-average parameters are determined), then
-			floated in the second.
-
-			\param [in] doTwoStageFit boolean specifying whether or not the two-stage fit should be enabled
-		*/	
-		virtual void twoStageFit(Bool_t doTwoStageFit) {twoStageFit_ = doTwoStageFit;}
-
-		//! Determine whether calculation of asymmetric errors is enabled
-		Bool_t useAsymmFitErrors() const {return useAsymmFitErrors_;}
-
-		//! Turn on or off the computation of asymmetric errors (e.g. MINOS routine in Minuit)
-		/*!
-			\param [in] useAsymmErrors boolean specifying whether or not the computation of asymmetric errors is enabled
-		*/	
-		void useAsymmFitErrors(Bool_t useAsymmErrors) {useAsymmFitErrors_ = useAsymmErrors;}
-
 		//! Determine whether Poisson smearing is enabled for the toy MC generation
 		Bool_t doPoissonSmearing() const {return poissonSmear_;}
 
@@ -156,15 +124,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 			\param [in] enable boolean specifying whether to embed events
 		*/	
 	        void enableEmbedding(Bool_t enable) {enableEmbedding_ = enable;}
-
-		//! Mark that the fit is calculating asymmetric errors
-		/*!
-			This is called by the fitter interface to mark when
-			entering and exiting the asymmetric error calculation
-
-			\param [in] inAsymErrCalc boolean marking that the fit is calculating the asymmetric errors
-		*/
-		virtual void withinAsymErrorCalc(Bool_t inAsymErrCalc) {withinAsymErrorCalc_ = inAsymErrCalc;}
 
 		//! Determine whether writing out of the latex table is enabled
 		Bool_t writeLatexTable() const {return writeLatexTable_;}
@@ -204,28 +163,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		//! Randomise the initial values of the fit parameters, in particular the isobar coefficient parameters
 		void useRandomInitFitPars(Bool_t boolean) {randomFit_ = boolean;}
-
-		//! Set the number of experiments and the first experiment
-		/*!
-			\param [in] nExperiments the number of experiments
-			\param [in] firstExperiment the number of the first experiment
-		*/	
-		void setNExpts(UInt_t nExperiments, UInt_t firstExperiment = 0) {
-			nExpt_ = nExperiments;
-			firstExpt_ = firstExperiment;
-		}
-
-		//! Obtain the total number of events in the current experiment
-		UInt_t eventsPerExpt() const {return evtsPerExpt_;}
-
-		//! Obtain the number of experiments
-		UInt_t nExpt() const {return nExpt_;}
-
-		//! Obtain the number of the first experiment
-		UInt_t firstExpt() const {return firstExpt_;}
-
-		//! Obtain the number of the current experiment
-		UInt_t iExpt() const {return iExpt_;}
 
 		//! Setup the background class names
 		/*!
@@ -284,19 +221,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		void run(const TString& applicationCode, const TString& dataFileName, const TString& dataTreeName,
 			 const TString& histFileName, const TString& tableFileName = "");
 
-		//! Start the slave process for simultaneous fitting
-		/*!
-			\param [in] dataFileName the name of the input data file
-			\param [in] dataTreeName the name of the tree containing the data
-			\param [in] histFileName the file name for the output histograms
-			\param [in] tableFileName the file name for the latex output file
-			\param [in] addressMaster the hostname of the machine running the master process
-			\param [in] portMaster the port number on which the master process is listening
-		*/	
-		void runSlave(const TString& dataFileName, const TString& dataTreeName,
-			      const TString& histFileName, const TString& tableFileName = "",
-			      const TString& addressMaster = "localhost", const UInt_t portMaster = 9090);
-
 		//! This function sets the parameter values from Minuit
 		/*! 
 			This function has to be public since it is called from the global FCN.
@@ -313,15 +237,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 			It should not be called otherwise!
 		*/
 		virtual Double_t getTotNegLogLikelihood();
-
-		//! Store constraint information for fit parameters
-		/*!
-			\param [in] formula the formula to be used in the LauFormulaPar
-			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
-			\param [in] mean the value of the mean of the Gaussian constraint 
-			\param [in] width the value of the width of the Gaussian constraint 
-		*/	
-		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
 	protected:
 
@@ -377,15 +292,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		*/	 
 		void fit(const TString& dataFileName, const TString& dataTreeName, const TString& histFileName, const TString& tableFileNameBase);
 
-		//! Slaves required when performing a simultaneous fit
-		/*!
-			\param [in] dataFileName the name of the data file
-			\param [in] dataTreeName the name of the tree containing the data
-			\param [in] histFileName the name of the histogram output file 
-			\param [in] tableFileNameBase the name the of latex output file
-		*/
-		void fitSlave(const TString& dataFileName, const TString& dataTreeName, const TString& histFileName, const TString& tableFileNameBase);
-
 		//! Routine to perform the actual fit for a given experiment
 		void fitExpt();
 
@@ -402,19 +308,18 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		*/	
 		void createFitToyMC(const TString& mcFileName, const TString& tableFileName);
 
-		//! Read in the data for the specified experiment
+		//! Read in the data for the current experiment
 		/*!
-			\param [in] exptIndex the experiment number to be read
 			\return the number of events read in
 		*/	
-		virtual UInt_t readExperimentData( const UInt_t exptIndex );
+		virtual UInt_t readExperimentData();
 
-		//! Store variables from the input file into the internal data storage
+		//! Open the input file and verify that all required variables are present
 		/*!
 			\param [in] dataFileName the name of the input file
 			\param [in] dataTreeName the name of the input tree
 		*/	
-		Bool_t cacheFitData(const TString& dataFileName, const TString& dataTreeName);
+		virtual Bool_t verifyFitData(const TString& dataFileName, const TString& dataTreeName);
 
 		//! Cache the input data values to calculate the likelihood during the fit
 		virtual void cacheInputFitVars() = 0;
@@ -480,6 +385,13 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		//! Update initial fit parameters if required
 		virtual void checkInitFitParams() = 0;
 
+		//! Setup saving of fit results to ntuple/LaTeX table etc.
+		/*!
+			\param [in] histFileName the file name for the output histograms
+			\param [in] tableFileName the file name for the latex output file
+		*/	
+		virtual void setupResultsOutputs( const TString& histFileName, const TString& tableFileName );
+
 		//! Package the initial fit parameters for transmission to the master
 		/*!
 			\param [out] array the array to be filled with the LauParameter objects
@@ -498,7 +410,7 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 			\param [in] covMat the fit covariance matrix
 			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
+		virtual void finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
 
 		//! Write the results of the fit into the ntuple
 		/*!
@@ -527,9 +439,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		//! Store the per-event likelihood values
                 virtual void storePerEvtLlhds() = 0;
-
-		//! Write out any fit results
-		virtual void writeOutAllFitResults();
 
 		//! Calculate the sPlot data
 		virtual void calculateSPlotData();
@@ -560,9 +469,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 			\return the class name
 		*/	
 		const TString& bkgndClassName( UInt_t classID ) const;
-
-		//! Set the number of events in the current experiment
-		void eventsPerExpt(UInt_t nEvents) {evtsPerExpt_ = nEvents;}
 
 		//! Setup the generation ntuple branches
 		virtual void setupGenNtupleBranches() = 0;
@@ -709,46 +615,40 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		*/	
 		void pdfsDependOnDP(Bool_t dependOnDP) { pdfsDependOnDP_ = dependOnDP; }
 
-		//! Access the fit variables
+		//! Const access the fit variables
 		const LauParameterPList& fitPars() const {return fitVars_;}
+		//! Access the fit variables
 		LauParameterPList& fitPars() {return fitVars_;}
 
-		//! Access the fit variables which affect the DP normalisation
+		//! Const access the fit variables which affect the DP normalisation
 		const LauParameterPSet& resPars() const {return resVars_;}
+		//! Access the fit variables which affect the DP normalisation
 		LauParameterPSet& resPars() {return resVars_;}
 
-		//! Access the extra variables
+		//! Const access the extra variables
 		const LauParameterList& extraPars() const {return extraVars_;}
+		//! Access the extra variables
 		LauParameterList& extraPars() {return extraVars_;}
 
-		//! Access the Gaussian constrained variables
+		//! Const access the Gaussian constrained variables
 		const LauAbsRValuePList& conPars() const {return conVars_;}
+		//! Access the Gaussian constrained variables
 		LauAbsRValuePList& conPars() {return conVars_;}
 
-		//! Access the fit ntuple
-		const LauFitNtuple* fitNtuple() const {return fitNtuple_;}
-		LauFitNtuple* fitNtuple() {return fitNtuple_;}
-
-		//! Access the gen ntuple
+		//! Const access the gen ntuple
 		const LauGenNtuple* genNtuple() const {return genNtuple_;}
+		//! Access the gen ntuple
 		LauGenNtuple* genNtuple() {return genNtuple_;}
 
-		//! Access the sPlot ntuple
+		//! Const access the sPlot ntuple
 		const LauGenNtuple* sPlotNtuple() const {return sPlotNtuple_;}
+		//! Access the sPlot ntuple
 		LauGenNtuple* sPlotNtuple() {return sPlotNtuple_;}
 
-		//! Access the data store
+		//! Const access the data store
 		const LauFitDataTree* fitData() const {return inputFitData_;}
+		//! Access the data store
 		LauFitDataTree* fitData() {return inputFitData_;}
-
-		//! Access the current NLL value
-		Double_t nll() const {return NLL_;}
-
-		//! Access the fit status information
-		Int_t fitStatus() const {return fitStatus_;}
-
-		//! Access the fit covariance matrix
-		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
 
 	private:
 		//! Copy constructor (not implemented)
@@ -757,15 +657,8 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 		//! Copy assignment operator (not implemented)
 		LauAbsFitModel& operator=(const LauAbsFitModel& rhs);
 
-		//! Store the constraints for fit parameters until initialisation is complete
-		std::vector<StoreConstraints> storeCon_;
-
 		// Various control booleans
 
-		//! Option to perform a two stage fit
-		Bool_t twoStageFit_; 
-		//! Option to use asymmetric errors
-		Bool_t useAsymmFitErrors_; 
 		//! Option to make toy from 1st successful experiment
 		Bool_t compareFitData_; 
 		//! Option to output a .C file of PDF's
@@ -791,15 +684,6 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		// Info on number of experiments and number of events
 
-		//! The number of the first experiment to consider 
-		UInt_t firstExpt_; 
-		//! The number of experiments to consider
-		UInt_t nExpt_; 
-		//! The number of events per experiment
-		UInt_t evtsPerExpt_; 
-		//! The number of the current experiment
-		UInt_t iExpt_;
-
 		//! Internal vector of fit parameters
 		LauParameterPList fitVars_;
 
@@ -816,35 +700,13 @@ class LauAbsFitModel : public LauFitObject, public LauSimFitSlave {
 
 		//! The input data 
 		LauFitDataTree* inputFitData_;
-		//! The fit ntuple
-		LauFitNtuple* fitNtuple_;
 		//! The generated ntuple
 		LauGenNtuple* genNtuple_;
 		//! The sPlot ntuple
 		LauGenNtuple* sPlotNtuple_;
 
-		// Fit bookeeping variables
-
-		//! The status of the fit 
-		Int_t fitStatus_;
-		//! The negative log-likelihood
-		Double_t NLL_;
-		//! The fit covariance matrix
-		TMatrixD covMatrix_;
-		//! The number of good fits 
-		UInt_t numberOKFits_; 
-		//! The number of bad fits
-		UInt_t numberBadFits_; 
-		//! The number of fit parameters
-		UInt_t nParams_; 
-		//! The number of free fit parameters
-		UInt_t nFreeParams_;
-		//! The worst LL value found so far
-		Double_t worstLogLike_;
-		//! Flag to indicate if the asymmetric error calculation (e.g. MINOS) is currently running
-		Bool_t withinAsymErrorCalc_;
-
 		// Background class names
+
 		//! The background class names
 		LauBkgndClassMap bkgndClassNames_;
 		//! An empty string

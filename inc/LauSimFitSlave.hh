@@ -17,7 +17,7 @@
 
     Implementation of the JFit method described in arXiv:1409.5080 [physics.data-an].
 
-    This class acts as the base class from which slave's should inherit.
+    This class acts as the base class from which slaves should inherit.
     This allows any fitting framework to plug in to the JFit method.
 */
 
@@ -31,9 +31,10 @@
 class TMessage;
 class TSocket;
 class TString;
+class LauFitNtuple;
 
 
-class LauSimFitSlave {
+class LauSimFitSlave : public LauFitObject {
 
 	public:
 		//! Constructor
@@ -48,6 +49,26 @@ class LauSimFitSlave {
 		//! Obtain the ID number of this slave
 		UInt_t slaveId() const {return slaveId_;}
 
+		//! Start the slave process for simultaneous fitting
+		/*!
+			\param [in] dataFileName the name of the input data file
+			\param [in] dataTreeName the name of the tree containing the data
+			\param [in] histFileName the file name for the output histograms
+			\param [in] tableFileName the file name for the latex output file
+			\param [in] addressMaster the hostname of the machine running the master process
+			\param [in] portMaster the port number on which the master process is listening
+		*/	
+		virtual void runSlave(const TString& dataFileName, const TString& dataTreeName,
+			              const TString& histFileName, const TString& tableFileName = "",
+			              const TString& addressMaster = "localhost", const UInt_t portMaster = 9090);
+
+		//! Initialise the fit model
+		/*!
+			Each class that inherits from this one must implement
+			this to do what is appropriate
+		*/
+		virtual void initialise() = 0;
+
 		//! This function sets the parameter values from Minuit
 		/*! 
 			\param [in] par an array storing the various parameter values
@@ -59,6 +80,12 @@ class LauSimFitSlave {
 		virtual Double_t getTotNegLogLikelihood() = 0;
 
 	protected:
+		//! Const access to the fit ntuple
+		const LauFitNtuple* fitNtuple() const {return fitNtuple_;}
+
+		//! Access to the fit ntuple
+		LauFitNtuple* fitNtuple() {return fitNtuple_;}
+
 		//! Establish the connection to the master process
 		/*!
 			\param [in] addressMaster the hostname of the machine running the master process
@@ -68,6 +95,16 @@ class LauSimFitSlave {
 
 		//! Listen for requests from the master and act accordingly
 		void processMasterRequests();
+
+		//! Setup saving of fit results to ntuple/LaTeX table etc.
+		/*!
+		  	Provide here a default implementation that produces an ntuple only.
+			Derived classes can override as they wish.
+
+			\param [in] histFileName the file name for the output histograms
+			\param [in] tableFileName the file name for the latex output file
+		*/	
+		virtual void setupResultsOutputs( const TString& histFileName, const TString& tableFileName );
 
 		//! Package the initial fit parameters for transmission to the master
 		/*!
@@ -87,20 +124,26 @@ class LauSimFitSlave {
 			\param [in] covMat the fit covariance matrix
 			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseResults( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster ) = 0;
+		virtual void finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster ) = 0;
 
-		//! Read in the data for the specified experiment
+		//! Open the input file and verify that all required variables are present
 		/*!
-			\param [in] exptIndex the experiment number to be read
+			\param [in] dataFileName the name of the input file
+			\param [in] dataTreeName the name of the input tree
+		*/	
+		virtual Bool_t verifyFitData(const TString& dataFileName, const TString& dataTreeName) = 0;
+
+		//! Read in the data for the current experiment
+		/*!
 			\return the number of events read in
 		*/	
-		virtual UInt_t readExperimentData( const UInt_t exptIndex ) = 0;
+		virtual UInt_t readExperimentData() = 0;
 
 		//! Cache the input data values to calculate the likelihood during the fit
 		virtual void cacheInputFitVars() = 0;
 
 		//! Write out any fit results
-		virtual void writeOutAllFitResults() = 0;
+		virtual void writeOutAllFitResults();
 
 	private:
 		//! Copy constructor (not implemented)
@@ -121,11 +164,11 @@ class LauSimFitSlave {
 		//! The total number of slaves
 		UInt_t nSlaves_;
 
-		//! The total number of fit parameters
-		UInt_t nParams_;
-
 		//! Parameter values array (for reading from the master)
 		Double_t* parValues_;
+
+		//! The fit ntuple
+		LauFitNtuple* fitNtuple_;
 
 		ClassDef(LauSimFitSlave,0);
 };

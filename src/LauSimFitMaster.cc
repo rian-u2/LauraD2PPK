@@ -14,7 +14,9 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
+#include "TMath.h"
 #include "TMatrixD.h"
 #include "TMessage.h"
 #include "TMonitor.h"
@@ -39,14 +41,6 @@ ClassImp(LauSimFitMaster)
 LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
 	nSlaves_(numSlaves),
 	reqPort_(port),
-	nParams_(0),
-	nFreeParams_(0),
-	withinAsymErrorCalc_(kFALSE),
-	numberOKFits_(0),
-	numberBadFits_(0),
-	fitStatus_(0),
-	iExpt_(0),
-	NLL_(0.0),
 	socketMonitor_(0),
 	messageFromSlave_(0),
 	fitNtuple_(0)
@@ -130,6 +124,7 @@ void LauSimFitMaster::initSockets()
 		TMessage message( kMESS_ANY );
 		message.WriteUInt(iSlave);
 		message.WriteUInt(nSlaves_);
+		message.WriteBool(this->useAsymmFitErrors());
 
 		sSlaves_[iSlave]->Send(message);
 
@@ -363,8 +358,6 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 		delete objarray; objarray = 0;
 		delete messageFromSlave_; messageFromSlave_ = 0;
 	}
-
-	nParams_ = params_.size();
 }
 
 void LauSimFitMaster::printParInfo() const
@@ -387,7 +380,7 @@ void LauSimFitMaster::printParInfo() const
 		std::cout << std::endl;
 	}
 
-	std::cout << "INFO in LauSimFitMaster::printParInfo : " << "There are " << nParams_ << " parameters in total" << std::endl;
+	std::cout << "INFO in LauSimFitMaster::printParInfo : " << "There are " << params_.size() << " parameters in total" << std::endl;
 }
 
 void LauSimFitMaster::checkParameter( const LauParameter* param, UInt_t index ) const
@@ -420,21 +413,22 @@ void LauSimFitMaster::initialise()
 	this->initSockets();
 }
 
-void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt, UInt_t firstExpt, Bool_t useAsymmErrors, Bool_t twoStageFit )
+void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, const UInt_t nExp, const UInt_t firstExp, const Bool_t useAsymmErrors, const Bool_t doTwoStageFit )
 {
 	// Routine to perform the total fit.
 
 	// First, initialise
+	this->useAsymmFitErrors(useAsymmErrors);
+	this->twoStageFit(doTwoStageFit);
 	this->initialise();
 
-	std::cout << "INFO in LauSimFitMaster::runSimFit : First experiment = " << firstExpt << std::endl;
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of experiments = " << nExpt << std::endl;
+	std::cout << "INFO in LauSimFitMaster::runSimFit : First experiment = " << firstExp << std::endl;
+	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of experiments = " << nExp << std::endl;
 
 	// Start the cumulative timer
 	cumulTimer_.Start();
 
-	numberOKFits_ = 0, numberBadFits_ = 0;
-	fitStatus_ = -1;
+	this->resetFitCounters();
 
 	// Create and setup the fit results ntuple
 	std::cout << "INFO in LauSimFitMaster::runSimFit : Creating fit ntuple." << std::endl;
@@ -442,15 +436,17 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 	fitNtuple_ = new LauFitNtuple(fitNtupleFileName, useAsymmErrors);
 
 	// Loop over the number of experiments
-	for (iExpt_ = firstExpt; iExpt_ < (firstExpt+nExpt); ++iExpt_) {
+	for (UInt_t iExp = firstExp; iExp < (firstExp+nExp); ++iExp) {
 
 		// Start the timer to see how long each fit takes
 		timer_.Start();
 
+		this->setCurrentExperiment( iExp );
+
 		// Instruct the slaves to read the data for this experiment
 		Bool_t readOK = this->readData();
 		if ( ! readOK ) {
-			std::cerr << "ERROR in LauSimFitMaster::runSimFit : One or more slaves reported problems with reading data for experiment " << iExpt_ << ", skipping..." << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::runSimFit : One or more slaves reported problems with reading data for experiment " << iExp << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
 		}
@@ -459,7 +455,7 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 		this->cacheInputData();
 
 		// Do the fit
-		this->fitExpt( useAsymmErrors, twoStageFit );
+		this->fitExpt();
 
 		// Stop the timer and see how long the program took so far
 		timer_.Stop();
@@ -467,13 +463,6 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 
 		// Instruct the slaves to finalise the results
 		this->finalise();
-
-		// Keep track of how many fits succeeded or failed
-		if (fitStatus_ == 3) {
-			++numberOKFits_;
-		} else {
-			++numberBadFits_;
-		}
 	}
 
 	// Print out total timing info.
@@ -482,14 +471,60 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, UInt_t nExpt,
 	cumulTimer_.Print();
 
 	// Print out stats on OK fits.
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of OK Fits = " << numberOKFits_ << std::endl;
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of Failed Fits = " << numberBadFits_ << std::endl;
+	const UInt_t nOKFits = this->numberOKFits();
+	const UInt_t nBadFits = this->numberBadFits();
+	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of OK Fits = " << nOKFits << std::endl;
+	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of Failed Fits = " << nBadFits << std::endl;
 	Double_t fitEff(0.0);
-	if (nExpt != 0) {fitEff = numberOKFits_/(1.0*nExpt);}
+	if (nExp != 0) {fitEff = nOKFits/(1.0*nExp);}
 	std::cout << "INFO in LauSimFitMaster::runSimFit : Fit efficiency = " << fitEff*100.0 << "%." << std::endl;
 
 	// Instruct the slaves to write out any fit results (ntuples etc...).
 	this->writeOutResults();
+}
+
+void LauSimFitMaster::withinAsymErrorCalc(const Bool_t inAsymErrCalc)
+{
+	this->LauFitObject::withinAsymErrorCalc(inAsymErrCalc);
+
+	if ( socketMonitor_ == 0 ) {
+		std::cerr << "ERROR in LauSimFitMaster::withinAsymErrorCalc : Sockets not initialised." << std::endl;
+		return;
+	}
+
+	// Construct a message, informing the slaves whether or not we are now within the asymmetric error calculation
+	TString msgStr("Asym Error Calc");
+	const Bool_t asymErrorCalc( this->withinAsymErrorCalc() );
+	TMessage message( kMESS_STRING );
+	message.WriteTString( msgStr );
+	message.WriteBool( asymErrorCalc );
+
+	// Send the message to the slaves
+	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+		sSlaves_[iSlave]->Send(message);
+	}
+
+	TSocket* sActive(0);
+	UInt_t responsesReceived(0);
+	while ( responsesReceived != nSlaves_ ) {
+
+		// Get the next queued response
+		sActive = socketMonitor_->Select();
+
+		// Extract from the message the ID of the slave and the number of events read
+		Bool_t response(kTRUE);
+		UInt_t iSlave(0);
+		sActive->Recv( messageFromSlave_ );
+		messageFromSlave_->ReadUInt( iSlave );
+		messageFromSlave_->ReadBool( response );
+
+		if ( response != asymErrorCalc ) {
+			std::cerr << "WARNING in LauSimFitMaster::withinAsymErrorCalc : Problem informing slave " << iSlave << std::endl;
+		}
+
+		++responsesReceived;
+	}
+
 }
 
 Bool_t LauSimFitMaster::readData()
@@ -501,9 +536,10 @@ Bool_t LauSimFitMaster::readData()
 
 	// Construct a message, requesting to read the data for the given experiment
 	TString msgStr("Read Expt");
+	const UInt_t iExp( this->iExpt() );
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
-	message.WriteUInt( iExpt_ );
+	message.WriteUInt( iExp );
 
 	// Send the message to the slaves
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
@@ -526,10 +562,10 @@ Bool_t LauSimFitMaster::readData()
 		messageFromSlave_->ReadUInt( nEvents );
 
 		if ( nEvents <= 0 ) {
-			std::cerr << "ERROR in LauSimFitMaster::readData : Slave " << iSlave << " reports no events found for experiment " << iExpt_ << std::endl;
+			std::cerr << "ERROR in LauSimFitMaster::readData : Slave " << iSlave << " reports no events found for experiment " << iExp << std::endl;
 			ok = kFALSE;
 		} else {
-			std::cerr << "INFO in LauSimFitMaster::readData : Slave " << iSlave << " reports " << nEvents << " events found for experiment " << iExpt_ << std::endl;
+			std::cerr << "INFO in LauSimFitMaster::readData : Slave " << iSlave << " reports " << nEvents << " events found for experiment " << iExp << std::endl;
 		}
 
 		++responsesReceived;
@@ -587,49 +623,39 @@ void LauSimFitMaster::checkInitFitParams()
 	this->printParInfo();
 }
 
-void LauSimFitMaster::fitExpt( Bool_t useAsymmErrors, Bool_t twoStageFit )
+void LauSimFitMaster::fitExpt()
 {
 	// Routine to perform the actual fit for the given experiment
 
-	// Instruct the salves to update initial fit parameters if required (e.g. if using random numbers).
+	// Instruct the slaves to update initial fit parameters if required (e.g. if using random numbers).
 	this->checkInitFitParams();
 
 	// Initialise the fitter
-	LauFitter::fitter()->useAsymmFitErrors( useAsymmErrors );
-	LauFitter::fitter()->twoStageFit( twoStageFit );
+	LauFitter::fitter()->useAsymmFitErrors( this->useAsymmFitErrors() );
+	LauFitter::fitter()->twoStageFit( this->twoStageFit() );
 	LauFitter::fitter()->initialise( this, params_ );
 
-	nParams_ = LauFitter::fitter()->nParameters();
-	nFreeParams_ = LauFitter::fitter()->nFreeParameters();
+	this->startNewFit( LauFitter::fitter()->nParameters(), LauFitter::fitter()->nFreeParameters() );
 
 	// Now ready for minimisation step
 	std::cout << "\nINFO in LauSimFitMaster::fitExpt : Start minimisation...\n";
 	std::pair<Int_t,Double_t> fitResult = LauFitter::fitter()->minimise();
 
-	fitStatus_ = fitResult.first;
-	NLL_       = fitResult.second;
-
 	// If we're doing a two stage fit we can now release (i.e. float)
 	// the 2nd stage parameters and re-fit
-	if ( twoStageFit ) {
-
-		if ( fitStatus_ != 3 ) {
+	if (this->twoStageFit()) {
+		if ( fitResult.first != 3 ) {
 			std::cerr << "ERROR in LauSimFitMaster:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
 			LauFitter::fitter()->releaseSecondStageParameters();
-			nParams_ = LauFitter::fitter()->nParameters();
-			nFreeParams_ = LauFitter::fitter()->nFreeParameters();
+			this->startNewFit( LauFitter::fitter()->nParameters(), LauFitter::fitter()->nFreeParameters() );
 			fitResult = LauFitter::fitter()->minimise();
 		}
 	}
 
-	fitStatus_ = fitResult.first;
-	NLL_       = fitResult.second;
 	const TMatrixD& covMat = LauFitter::fitter()->covarianceMatrix();
-	covMatrix_.Clear();
-	covMatrix_.ResizeTo( covMat.GetNrows(), covMat.GetNcols() );
-	covMatrix_.SetMatrixArray( covMat.GetMatrixArray() );
+	this->storeFitStatus( fitResult.first, fitResult.second, covMat );
 
 	// Store the final fit results and errors into protected internal vectors that
 	// all sub-classes can use within their own finalFitResults implementation
@@ -644,10 +670,11 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 
 	// MINOS reports different numbers of free parameters depending on the
 	// situation, so disable this check
-	if ( ! withinAsymErrorCalc_ ) {
-		if (static_cast<UInt_t>(npar) != nFreeParams_) {
+	if ( ! this->withinAsymErrorCalc() ) {
+		const UInt_t nFreePars = this->nFreeParams();
+		if (static_cast<UInt_t>(npar) != nFreePars) {
 			std::cerr << "ERROR in LauSimFitMaster::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
-			std::cerr << "                                              Expected: " << nFreeParams_ << ".\n" << std::endl;
+			std::cerr << "                                              Expected: " << nFreePars << ".\n" << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
 	}
@@ -658,7 +685,7 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 	// Update all the parameters with their new values.
 	// Change the value in the array to be sent out to the slaves and the
 	// parameters themselves (so that constraints are correctly calculated)
-	for (UInt_t i(0); i<nParams_; ++i) {
+	for (UInt_t i(0); i<this->nTotParams(); ++i) {
 		if (!params_[i]->fixed()) {
 			parValues_[i] = par[i];
 			params_[i]->value(par[i]);
@@ -696,12 +723,18 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 	Double_t negLogLike(0.0);
 	TSocket  *sActive(0);
 	UInt_t responsesReceived(0);
+	Bool_t allOK(kTRUE);
 	while ( responsesReceived != nSlaves_ ) {
 
 		sActive = socketMonitor_->Select();
 		sActive->Recv(messageFromSlave_);	    
 
 		messageFromSlave_->ReadDouble( vectorRes_[responsesReceived] );
+
+		Double_t& nLL = vectorRes_[responsesReceived];
+		if ( nLL == 0.0 || TMath::IsNaN(nLL) || !TMath::Finite(nLL) ) {
+			allOK = kFALSE;
+		}
 
 		negLogLike += vectorRes_[responsesReceived];
 
@@ -711,6 +744,15 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 	// Calculate any penalty terms from Gaussian constrained variables
 	if ( ! conVars_.empty() ){
 		negLogLike += this->getLogLikelihoodPenalty();
+	}
+
+	const Double_t worstNegLogLike = -1.0*this->worstLogLike();
+	if ( ! allOK ) {
+		std::cerr << "WARNING in LauSimFitMaster::getTotNegLogLikelihood : Strange NLL value returned by one or more slaves\n";
+		std::cerr << "                                                   : Returning worst NLL found so far to force MINUIT out of this region." << std::endl;
+		negLogLike = worstNegLogLike;
+	} else if ( negLogLike > worstNegLogLike ) {
+		this->worstLogLike( -negLogLike );
 	}
 
 	return negLogLike;
@@ -732,16 +774,6 @@ Double_t LauSimFitMaster::getLogLikelihoodPenalty()
 	return penalty;
 }
 
-void LauSimFitMaster::addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width)
-{
-	StoreConstraints newCon;
-	newCon.formula_ = formula;
-	newCon.conPars_ = pars;
-	newCon.mean_ = mean;
-	newCon.width_ = width;
-	storeCon_.push_back(newCon);
-}
-
 void LauSimFitMaster::addConParameters()
 {
 	// Add penalties from the constraints to fit parameters
@@ -755,10 +787,11 @@ void LauSimFitMaster::addConParameters()
 	}
 
 	// Second, constraints on arbitrary combinations
-	for ( std::vector<StoreConstraints>::iterator iter = storeCon_.begin(); iter != storeCon_.end(); ++iter ) {
-		std::vector<TString> names = (*iter).conPars_;
+	const std::vector<StoreConstraints>& storeCon = this->constraintsStore();
+	for ( std::vector<StoreConstraints>::const_iterator iter = storeCon.begin(); iter != storeCon.end(); ++iter ) {
+		const std::vector<TString>& names = (*iter).conPars_;
 		std::vector<LauParameter*> params;
-		for ( std::vector<TString>::iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
+		for ( std::vector<TString>::const_iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
 			for ( std::vector<LauParameter*>::const_iterator iterfit = params_.begin(); iterfit != params_.end(); ++iterfit ) {
 				if ( (*iternames) == (*iterfit)->name() ){
 					params.push_back(*iterfit);
@@ -793,6 +826,7 @@ Bool_t LauSimFitMaster::finalise()
 	}
 
 	// Prepare the covariance matrices
+	const TMatrixD& covMatrix = this->covarianceMatrix();
 	covMatrices_.resize( nSlaves_ );
 
 	LauParamFixed pred;
@@ -800,7 +834,7 @@ Bool_t LauSimFitMaster::finalise()
 	std::map<UInt_t,UInt_t> freeParIndices;
 
 	UInt_t counter(0);
-	for ( UInt_t iPar(0); iPar < nParams_; ++iPar ) {
+	for ( UInt_t iPar(0); iPar < this->nTotParams(); ++iPar ) {
 		const LauParameter* par = params_[iPar];
 		if ( ! pred(par) ) {
 			freeParIndices.insert( std::make_pair(iPar,counter) );
@@ -832,7 +866,7 @@ Bool_t LauSimFitMaster::finalise()
 			for ( UInt_t jPar(0); jPar < nFreePars; ++jPar ) {
 				UInt_t i = freeIndices[iPar];
 				UInt_t j = freeIndices[jPar];
-				covMat( iPar, jPar ) = covMatrix_( i, j );
+				covMat( iPar, jPar ) = covMatrix( i, j );
 			}
 		}
 	}
@@ -841,8 +875,6 @@ Bool_t LauSimFitMaster::finalise()
 	TObjArray array;
 
 	// Send messages to all slaves containing the final parameters and fit status, NLL
-	// TODO - at present we lose the information on the correlations between the parameters that are unique to each slave
-	//      - so should we store the full correlation matrix in an ntuple? along with all the parameters?
 	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
 
 		array.Clear();
@@ -853,12 +885,14 @@ Bool_t LauSimFitMaster::finalise()
 			array.Add( params_[ indices[iPar] ] );
 		}
 
+		const Int_t status = this->fitStatus();
+		const Double_t NLL = this->nll();
 		TMatrixD& covMat = covMatrices_[iSlave];
 
 		TMessage* message = messagesToSlaves_[iSlave];
 		message->Reset( kMESS_OBJECT );
-		message->WriteInt( fitStatus_ );
-		message->WriteDouble( NLL_ );
+		message->WriteInt( status );
+		message->WriteDouble( NLL );
 		message->WriteObject( &array );
 		message->WriteObject( &covMat );
 
@@ -943,7 +977,7 @@ Bool_t LauSimFitMaster::finalise()
 		}
 		std::vector<LauParameter> extraVars;
 		fitNtuple_->storeParsAndErrors( params_, extraVars );
-		fitNtuple_->storeCorrMatrix( iExpt_, NLL_, fitStatus_, covMatrix_ );
+		fitNtuple_->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus(), this->covarianceMatrix());
 		fitNtuple_->updateFitNtuple();
 	}
 

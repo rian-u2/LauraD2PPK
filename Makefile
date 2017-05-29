@@ -53,6 +53,10 @@ SRCDIR   = src
 INCDIR   = inc
 LIBDIR   = lib
 WORKDIR  = tmp
+# By default, don't build the LauRooFitSlave class since it depends on RooFit
+# and we don't want to pull in that library if we don't have to.
+# If you want to build it, just set the SKIPLIST variable to be empty.
+SKIPLIST = LauRooFitSlave
 
 ifeq ($(findstring linux, $(ARCH)),linux)
 # This set here should work for Linux.
@@ -82,20 +86,26 @@ INCLUDES += -I$(INCDIR)
 CXXFLAGS += $(INCLUDES)
 CXXFLAGS += $(shell $(ROOTCONFIG) --cflags)
 LDFLAGS  += $(shell $(ROOTCONFIG) --ldflags)
-SKIPLIST  = test.cc
 CINTFILE  = $(WORKDIR)/$(PACKAGE)Cint.cc
 CINTOBJ   = $(OBJDIR)/$(PACKAGE)Cint.o
 LIBFILE   = $(LIBDIR)/lib$(PACKAGE).a
 SHLIBFILE = $(LIBDIR)/lib$(PACKAGE).so
-ROOTMAPFILE := $(patsubst %.so,%.rootmap,$(SHLIBFILE))
+ROOTMAPFILE = $(patsubst %.so,%.rootmap,$(SHLIBFILE))
+
+ROOTLIBS = libCore.so libEG.so libHist.so libMathCore.so libMatrix.so libNet.so libRIO.so libTree.so
+DEFINES =
+ifeq ($(strip $(SKIPLIST)),)
+	ROOTLIBS += libRooFitCore.so libRooFit.so
+	DEFINES += -DDOLAUROOFITSLAVE
+endif
 
 default: shlib
 
 # List of all header files
-HHLIST:=$(wildcard $(INCDIR)/*.hh)
+HHLIST:=$(filter-out $(addprefix $(INCDIR)/, $(addsuffix .hh, $(SKIPLIST))),$(wildcard $(INCDIR)/*.hh))
 
 # List of all source files to build
-CCLIST:=$(filter-out $(SKIPLIST),$(wildcard $(SRCDIR)/*.cc))
+CCLIST:=$(filter-out $(addprefix $(SRCDIR)/, $(addsuffix .cc, $(SKIPLIST))),$(wildcard $(SRCDIR)/*.cc))
 
 # List of all object files to build
 OLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(CCLIST))))
@@ -123,10 +133,10 @@ $(CINTOBJ): $(HHLIST) $(INCDIR)/$(PACKAGE)_LinkDef.h
 	@mkdir -p $(LIBDIR)
 ifeq ($(ROOTVERSION),5)
 	@echo "Running rootcint"
-	@$(ROOTBINDIR)/rootcint -f $(CINTFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
+	@$(ROOTBINDIR)/rootcint -f $(CINTFILE) -c $(INCLUDES) $(DEFINES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
 else
 	@echo "Running rootcling"
-	@$(ROOTBINDIR)/rootcling -f $(CINTFILE) -s $(SHLIBFILE) -rml $(SHLIBFILE) -rml libEG.so -rml libHist.so -rml libMatrix.so -rml libNet.so -rml libRIO.so -rml libTree.so -rml libMathCore.so -rml libCore.so -rmf $(ROOTMAPFILE) -c $(INCLUDES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
+	@$(ROOTBINDIR)/rootcling -f $(CINTFILE) -s $(SHLIBFILE) -rml $(SHLIBFILE) $(addprefix -rml , $(ROOTLIBS)) -rmf $(ROOTMAPFILE) -I$(PWD)/$(INCDIR) $(DEFINES) $(notdir $(HHLIST)) $(INCDIR)/$(PACKAGE)_LinkDef.h
 endif
 	@echo "Compiling $(CINTFILE)"
 	@$(CXX) $(CXXFLAGS) -c $(CINTFILE) -o $(CINTOBJ)
@@ -151,7 +161,7 @@ $(ROOTMAPFILE): $(SHLIBFILE)
 	@echo "Making $(ROOTMAPFILE)"
 	@mkdir -p $(LIBDIR)
 	@rm -f $(ROOTMAPFILE)
-	@rlibmap -f -o $(ROOTMAPFILE) -l $(SHLIBFILE) -d libCore.so libEG.so libHist.so libMathCore.so libMatrix.so libNet.so libRIO.so libTree.so -c $(INCDIR)/$(PACKAGE)_LinkDef.h
+	@rlibmap -f -o $(ROOTMAPFILE) -l $(SHLIBFILE) -d $(ROOTLIBS) -c $(INCDIR)/$(PACKAGE)_LinkDef.h
 endif
 
 # Useful build targets

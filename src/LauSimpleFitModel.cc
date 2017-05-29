@@ -2058,7 +2058,7 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 
 	// This reads in the given dataFile and creates an input
 	// fit data tree that stores them for all events and experiments.
-	Bool_t dataOK = this->cacheFitData(dataFileName,dataTreeName);
+	Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
 	if (!dataOK) {
 		std::cerr << "ERROR in LauSimpleFitModel::weightEvents : Problem caching the data." << std::endl;
 		return;
@@ -2080,10 +2080,9 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 	weightsTuple->addIntegerBranch("iEvtWithinExpt");
 	weightsTuple->addDoubleBranch("dpModelWeight");
 
-	UInt_t iExpmt = this->iExpt();
 	UInt_t nExpmt = this->nExpt();
 	UInt_t firstExpmt = this->firstExpt();
-	for (iExpmt = firstExpmt; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
+	for (UInt_t iExpmt = firstExpmt; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
 
 		inputFitData->readExperimentData(iExpmt);
 		UInt_t nEvents = inputFitData->nEvents();

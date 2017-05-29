@@ -222,8 +222,10 @@ void LauSimFitSlave::processMasterRequests()
 
 			Int_t status(0);
 			Double_t NLL(0.0);
+			Double_t EDM(0.0);
 			messageFromMaster_->ReadInt( status );
 			messageFromMaster_->ReadDouble( NLL );
+			messageFromMaster_->ReadDouble( EDM );
 
 			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromMaster_->ReadObject( messageFromMaster_->GetClass() ) );
 			if ( ! objarray ) {
@@ -238,7 +240,8 @@ void LauSimFitSlave::processMasterRequests()
 			}
 
 			TObjArray array;
-			this->finaliseExperiment( status, NLL, objarray, covMat, array );
+			LauAbsFitter::FitStatus fitStatus { status, NLL, EDM };
+			this->finaliseExperiment( fitStatus, objarray, covMat, array );
 
 			delete objarray; objarray = 0;
 			delete covMat; covMat = 0;

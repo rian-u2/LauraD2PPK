@@ -324,10 +324,10 @@ void LauRooFitSlave::cacheInputFitVars()
 	nllVar_ = new RooNLLVar("nllVar", "", model_, *exptData_, extended_);
 }
 
-void LauRooFitSlave::finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
+void LauRooFitSlave::finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
 {
 	// Copy the fit status information
-	this->storeFitStatus( fitStat, NLL, *covMat );
+	this->storeFitStatus( fitStat, *covMat );
 
 	// Now process the parameters
 	const UInt_t nFreePars = this->nFreeParams();
@@ -371,7 +371,7 @@ void LauRooFitSlave::finaliseExperiment( const Int_t fitStat, const Double_t NLL
 	ntuple->storeParsAndErrors(fitPars_, extraVars);
 
 	// find out the correlation matrix for the parameters
-	ntuple->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus(), this->covarianceMatrix());
+	ntuple->storeCorrMatrix(this->iExpt(), this->fitStatus(), this->covarianceMatrix());
 
 	// Fill the data into ntuple
 	ntuple->updateFitNtuple();

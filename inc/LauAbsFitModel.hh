@@ -404,13 +404,12 @@ class LauAbsFitModel : public LauSimFitSlave {
 			- Perform any finalisation routines
 		  	- Package the finalised fit parameters for transmission back to the master
 
-			\param [in] fitStat the convergence/error matrix status of the fit
-			\param [in] NLL the minimised negative log likelihood
+			\param [in] fitStat the status of the fit, e.g. status code, EDM, NLL
 			\param [in] parsFromMaster the parameters at the fit minimum
 			\param [in] covMat the fit covariance matrix
 			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
+		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
 
 		//! Write the results of the fit into the ntuple
 		/*!

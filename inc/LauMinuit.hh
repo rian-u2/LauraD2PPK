@@ -84,7 +84,7 @@ class LauMinuit : public LauAbsFitter {
 		/*!
 		    \return the status code of the fit and the minimised value
 		*/
-		virtual std::pair<Int_t,Double_t> minimise();
+		virtual const FitStatus& minimise();
 
 		//! Fix parameters marked as "second stage"
 		virtual void fixSecondStageParameters();
@@ -134,10 +134,7 @@ class LauMinuit : public LauAbsFitter {
 		Bool_t useAsymmFitErrors_; 
 
 		//! The status of the fit 
-		Int_t fitStatus_;
-
-		//! The negative log-likelihood
-		Double_t NLL_;
+		FitStatus fitStatus_;
 
 		//! The covariance matrix
 		TMatrixD covMatrix_;

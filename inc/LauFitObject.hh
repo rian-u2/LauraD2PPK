@@ -25,6 +25,7 @@
 #include "TObject.h"
 #include "TString.h"
 
+#include "LauAbsFitter.hh"
 
 class LauFitObject : public TObject {
 
@@ -176,11 +177,10 @@ class LauFitObject : public TObject {
 
 		//! Store fit status information
 		/*!
-		    \param [in] status the status code of the fit
-		    \param [in] NLL the minimised negative log likelihood
+		    \param [in] status the status information of the fit
 		    \param [in] covMatrix the fit covariance matrix
 		*/
-		void storeFitStatus( const Int_t status, const Double_t NLL, const TMatrixD& covMatrix );
+		void storeFitStatus( const LauAbsFitter::FitStatus& status, const TMatrixD& covMatrix );
 
 		//! Access the total number of fit parameters
 		UInt_t nTotParams() const {return nParams_;}
@@ -188,11 +188,17 @@ class LauFitObject : public TObject {
 		//! Access the total number of fit parameters
 		UInt_t nFreeParams() const {return nFreeParams_;}
 
-		//! Access the current NLL value
-		Double_t nll() const {return NLL_;}
-
 		//! Access the fit status information
-		Int_t fitStatus() const {return fitStatus_;}
+		const LauAbsFitter::FitStatus& fitStatus() const {return fitStatus_;}
+
+		//! Access the current NLL value
+		Double_t nll() const {return fitStatus_.NLL;}
+
+		//! Access the current EDM value
+		Double_t edm() const {return fitStatus_.EDM;}
+
+		//! Access the fit status code
+		Int_t statusCode() const {return fitStatus_.status;}
 
 		//! Access the fit covariance matrix
 		const TMatrixD& covarianceMatrix() const {return covMatrix_;}
@@ -241,10 +247,7 @@ class LauFitObject : public TObject {
 		UInt_t evtsPerExpt_; 
 
 		//! The status of the current fit
-		Int_t fitStatus_;
-
-		//! The negative log-likelihood
-		Double_t NLL_;
+		LauAbsFitter::FitStatus fitStatus_;
 
 		//! The worst log likelihood value found so far
 		Double_t worstLogLike_;

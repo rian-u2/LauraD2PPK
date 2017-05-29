@@ -35,11 +35,10 @@ LauFitNtuple::LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors) :
 	fitResults_(0),
 	definedFitTree_(kFALSE),
 	storeAsymErrors_(storeAsymErrors),
-	fitStatus_(0),
+	fitStatus_({-1,0.0,0.0}),
 	nFitPars_(0),
 	nFreePars_(0),
 	nExtraPars_(0),
-	NLL_(0.0),
 	iExpt_(0)
 {
 	rootFile_ = TFile::Open(rootFileName_, "recreate");
@@ -58,11 +57,10 @@ LauFitNtuple::~LauFitNtuple()
 	delete rootFile_; rootFile_ = 0;
 }
 
-void LauFitNtuple::storeCorrMatrix( UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD& covMatrix )
+void LauFitNtuple::storeCorrMatrix(const UInt_t iExpt, const LauAbsFitter::FitStatus& fitStatus, const TMatrixD& covMatrix)
 {
 	// store the minimised NLL value, correlation matrix status and experiment number
 	iExpt_ = iExpt;
-	NLL_ = NLL;
 	fitStatus_ = fitStatus;
 
 	// make the correlation matrix the correct dimensions
@@ -226,10 +224,11 @@ void LauFitNtuple::updateFitNtuple()
 
 		// Add experiment number as a branch
 		fitResults_->Branch("iExpt", &iExpt_, "iExpt/I");
-		fitResults_->Branch("fitStatus", &fitStatus_, "fitStatus/I");
+		fitResults_->Branch("fitStatus", &fitStatus_.status, "fitStatus/I");
 
-		// Add NLL (negative log-likelihood) value from fit
-		fitResults_->Branch("NLL", &NLL_, "NLL/D");
+		// Add NLL (negative log-likelihood) and EDM values from fit
+		fitResults_->Branch("NLL", &fitStatus_.NLL, "NLL/D");
+		fitResults_->Branch("EDM", &fitStatus_.EDM, "EDM/D");
 
 		for (UInt_t i = 0; i < nFitPars_; i++) {
 
@@ -310,7 +309,10 @@ void LauFitNtuple::updateFitNtuple()
 
 	}
 
-	std::cout << "NLL = " << NLL_ << std::endl;
+	std::cout << "INFO in LauFitNtuple::updateFitNtuple : Stored fit values for experiment " << iExpt_ << "\n";
+	std::cout << "                                      : fitStatus = " << fitStatus_.status << std::endl;
+	std::cout << "                                      : NLL       = " << fitStatus_.NLL << std::endl;
+	std::cout << "                                      : EDM       = " << fitStatus_.EDM << std::endl;
 
 	fitResults_->Fill();
 }  

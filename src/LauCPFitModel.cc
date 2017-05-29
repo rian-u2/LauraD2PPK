@@ -1157,7 +1157,7 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 	ntuple->storeParsAndErrors(fitVars, extraVars);
 
 	// find out the correlation matrix for the parameters
-	ntuple->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus(), this->covarianceMatrix());
+	ntuple->storeCorrMatrix(this->iExpt(), this->fitStatus(), this->covarianceMatrix());
 
 	// Fill the data into ntuple
 	ntuple->updateFitNtuple();

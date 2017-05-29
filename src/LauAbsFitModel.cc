@@ -469,7 +469,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 
 		// Create a toy MC sample using the fitted parameters so that
 		// the user can compare the fit to the data.
-		if (compareFitData_ == kTRUE && this->fitStatus() == 3) {
+		if (compareFitData_ == kTRUE && this->statusCode() == 3) {
 			this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
 		}
 
@@ -559,12 +559,12 @@ void LauAbsFitModel::fitExpt()
 
 	// Now ready for minimisation step
 	std::cout << "\nINFO in LauAbsFitModel::fitExpt : Start minimisation...\n";
-	std::pair<Int_t,Double_t> fitResult = LauFitter::fitter()->minimise();
+	LauAbsFitter::FitStatus fitResult = LauFitter::fitter()->minimise();
 
 	// If we're doing a two stage fit we can now release (i.e. float)
 	// the 2nd stage parameters and re-fit
 	if (this->twoStageFit()) {
-		if ( fitResult.first != 3 ) {
+		if ( fitResult.status != 3 ) {
 			std::cerr << "WARNING in LauAbsFitModel:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
@@ -575,7 +575,7 @@ void LauAbsFitModel::fitExpt()
 	}
 
 	const TMatrixD& covMat = LauFitter::fitter()->covarianceMatrix();
-	this->storeFitStatus( fitResult.first, fitResult.second, covMat );
+	this->storeFitStatus( fitResult, covMat );
 
 	// Store the final fit results and errors into protected internal vectors that
 	// all sub-classes can use within their own finalFitResults implementation
@@ -983,10 +983,10 @@ void LauAbsFitModel::prepareInitialParArray( TObjArray& array )
 	this->startNewFit( nPars, nFreePars );
 }
 
-void LauAbsFitModel::finaliseExperiment( const Int_t fitStat, const Double_t NLL, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
+void LauAbsFitModel::finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
 {
 	// Copy the fit status information
-	this->storeFitStatus( fitStat, NLL, *covMat );
+	this->storeFitStatus( fitStat, *covMat );
 
 	// Now process the parameters
 	const UInt_t nPars = this->nTotParams();
@@ -1022,7 +1022,7 @@ void LauAbsFitModel::finaliseExperiment( const Int_t fitStat, const Double_t NLL
 
 	// Create a toy MC sample using the fitted parameters so that
 	// the user can compare the fit to the data.
-	if (compareFitData_ == kTRUE && fitStat == 3) {
+	if (compareFitData_ == kTRUE && fitStat.status == 3) {
 		this->createFitToyMC(fitToyMCFileName_, fitToyMCTableName_);
 	}
 

@@ -33,6 +33,8 @@
 #include "TMatrixDfwd.h"
 #include "TString.h"
 
+#include "LauAbsFitter.hh"
+
 class TFile;
 class TTree;
 
@@ -55,11 +57,10 @@ class LauFitNtuple {
 		//! Store the correlation matrix and other fit information
 		/*!
 		    \param [in] iExpt the experiment number
-		    \param [in] NLL the minimised negative log likelihood
 		    \param [in] fitStatus the status of the fit
 		    \param [in] covMatrix the fit covariance matrix
 		*/
-		void storeCorrMatrix(UInt_t iExpt, Double_t NLL, Int_t fitStatus, const TMatrixD& covMatrix);
+		void storeCorrMatrix(const UInt_t iExpt, const LauAbsFitter::FitStatus& fitStatus, const TMatrixD& covMatrix);
 
 		//! Store parameters and their errors
 		/*!
@@ -102,15 +103,13 @@ class LauFitNtuple {
 		Bool_t storeAsymErrors_;
 
 		//! Status of fit
-		Int_t fitStatus_;
+		LauAbsFitter::FitStatus fitStatus_;
 		//! Number of fit parameters
 		UInt_t nFitPars_;
 		//! Number of free parameters
 		UInt_t nFreePars_;
 		//! Number of extra parameters
 		UInt_t nExtraPars_;
-		//! Minimised negative log likelihood
-		Double_t NLL_;
 		//! Experiment number
 		Int_t iExpt_;
 

@@ -28,8 +28,7 @@ LauFitObject::LauFitObject() : TObject(),
 	nExpt_(0),
 	iExpt_(0),
 	evtsPerExpt_(0),
-	fitStatus_(0),
-	NLL_(0),
+	fitStatus_({-1,0.0,0.0}),
 	worstLogLike_(std::numeric_limits<Double_t>::max()),
 	covMatrix_(),
 	numberOKFits_(0),
@@ -41,7 +40,7 @@ void LauFitObject::resetFitCounters()
 {
 	numberOKFits_ = 0;
 	numberBadFits_ = 0;
-	fitStatus_ = -1;
+	fitStatus_ = { -1, 0.0, 0.0 };
 }
 
 void LauFitObject::startNewFit( const UInt_t nPars, const UInt_t nFreePars )
@@ -54,10 +53,9 @@ void LauFitObject::startNewFit( const UInt_t nPars, const UInt_t nFreePars )
 	nFreeParams_ = nFreePars;
 }
 
-void LauFitObject::storeFitStatus( const Int_t status, const Double_t NLL, const TMatrixD& covMatrix )
+void LauFitObject::storeFitStatus( const LauAbsFitter::FitStatus& status, const TMatrixD& covMatrix )
 {
 	fitStatus_ = status;
-	NLL_ = NLL;
 
 	covMatrix_.Clear();
 	covMatrix_.ResizeTo( covMatrix.GetNrows(), covMatrix.GetNcols() );
@@ -69,7 +67,7 @@ void LauFitObject::storeFitStatus( const Int_t status, const Double_t NLL, const
 	// 1= approximation only, not accurate
 	// 2= full matrix, but forced positive-definite
 	// 3= full accurate covariance matrix
-	if (fitStatus_ == 3) {
+	if (fitStatus_.status == 3) {
 		++numberOKFits_;
 	} else {
 		++numberBadFits_;

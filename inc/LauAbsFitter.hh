@@ -22,7 +22,6 @@
 #ifndef LAU_ABS_FITTER
 #define LAU_ABS_FITTER
 
-#include <utility>
 #include <vector>
 
 #include "Rtypes.h"
@@ -35,6 +34,19 @@ class LauParameter;
 class LauAbsFitter {
 
 	public:
+		/*!
+		    \struct FitStatus
+		    \brief Struct to store fit status information
+		*/
+		struct FitStatus {
+			//! The status code of the fit 
+			Int_t status;
+			//! The negative log-likelihood
+			Double_t NLL;
+			//! The estimated distance to the minimum
+			Double_t EDM;
+		};
+
 		//! Destructor
 		virtual ~LauAbsFitter() {}
 
@@ -83,7 +95,7 @@ class LauAbsFitter {
 		/*!
 		    \return the status code of the fit and the minimised value
 		*/
-		virtual std::pair<Int_t,Double_t> minimise() = 0;
+		virtual const FitStatus& minimise() = 0;
 
 		//! Fix parameters marked as "second stage"
 		virtual void fixSecondStageParameters() = 0;

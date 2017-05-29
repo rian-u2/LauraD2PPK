@@ -639,12 +639,12 @@ void LauSimFitMaster::fitExpt()
 
 	// Now ready for minimisation step
 	std::cout << "\nINFO in LauSimFitMaster::fitExpt : Start minimisation...\n";
-	std::pair<Int_t,Double_t> fitResult = LauFitter::fitter()->minimise();
+	LauAbsFitter::FitStatus fitResult = LauFitter::fitter()->minimise();
 
 	// If we're doing a two stage fit we can now release (i.e. float)
 	// the 2nd stage parameters and re-fit
 	if (this->twoStageFit()) {
-		if ( fitResult.first != 3 ) {
+		if ( fitResult.status != 3 ) {
 			std::cerr << "ERROR in LauSimFitMaster:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
@@ -655,7 +655,7 @@ void LauSimFitMaster::fitExpt()
 	}
 
 	const TMatrixD& covMat = LauFitter::fitter()->covarianceMatrix();
-	this->storeFitStatus( fitResult.first, fitResult.second, covMat );
+	this->storeFitStatus( fitResult, covMat );
 
 	// Store the final fit results and errors into protected internal vectors that
 	// all sub-classes can use within their own finalFitResults implementation
@@ -885,14 +885,16 @@ Bool_t LauSimFitMaster::finalise()
 			array.Add( params_[ indices[iPar] ] );
 		}
 
-		const Int_t status = this->fitStatus();
+		const Int_t status = this->statusCode();
 		const Double_t NLL = this->nll();
+		const Double_t EDM = this->edm();
 		TMatrixD& covMat = covMatrices_[iSlave];
 
 		TMessage* message = messagesToSlaves_[iSlave];
 		message->Reset( kMESS_OBJECT );
 		message->WriteInt( status );
 		message->WriteDouble( NLL );
+		message->WriteDouble( EDM );
 		message->WriteObject( &array );
 		message->WriteObject( &covMat );
 
@@ -977,7 +979,7 @@ Bool_t LauSimFitMaster::finalise()
 		}
 		std::vector<LauParameter> extraVars;
 		fitNtuple_->storeParsAndErrors( params_, extraVars );
-		fitNtuple_->storeCorrMatrix(this->iExpt(), this->nll(), this->fitStatus(), this->covarianceMatrix());
+		fitNtuple_->storeCorrMatrix(this->iExpt(), this->fitStatus(), this->covarianceMatrix());
 		fitNtuple_->updateFitNtuple();
 	}
 

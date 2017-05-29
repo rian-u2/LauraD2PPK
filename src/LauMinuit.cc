@@ -40,8 +40,7 @@ LauMinuit::LauMinuit( Int_t maxPar ) : LauAbsFitter(),
 	nFreeParams_(0),
 	twoStageFit_(kFALSE),
 	useAsymmFitErrors_(kFALSE),
-	fitStatus_(0),
-	NLL_(0.0)
+	fitStatus_({-1,0.0,0.0})
 {
 	TVirtualFitter::SetDefaultFitter( "Minuit" );
 	minuit_ = TVirtualFitter::Fitter( 0, maxPar_ );
@@ -118,10 +117,10 @@ void LauMinuit::initialise( LauFitObject* fitObj, const std::vector<LauParameter
 	// TODO - The alternative to this is to make FCN = -2log(L) rather than -log(L)
 	Double_t argL[2];
 	argL[0] = 0.5;
-	fitStatus_ = minuit_->ExecuteCommand("SET ERR", argL, 1);
+	fitStatus_.status = minuit_->ExecuteCommand("SET ERR", argL, 1);
 
 	//argL[0] = 0;
-	//fitStatus_ = minuit_->ExecuteCommand("SET STRATEGY", argL, 1);
+	//fitStatus_.status = minuit_->ExecuteCommand("SET STRATEGY", argL, 1);
 }
 
 LauFitObject* LauMinuit::getFitObject()
@@ -129,46 +128,44 @@ LauFitObject* LauMinuit::getFitObject()
 	return (minuit_!=0) ? dynamic_cast<LauFitObject*>( minuit_->GetObjectFit() ) : 0;
 }
 
-std::pair<Int_t,Double_t> LauMinuit::minimise()
+const LauAbsFitter::FitStatus& LauMinuit::minimise()
 {
 	Double_t arglist[2];
 	arglist[0] = 1000*nParams_; // maximum iterations
 	arglist[1] = 0.05; // tolerance -> min EDM = 0.001*tolerance (0.05)
-	fitStatus_ = minuit_->ExecuteCommand("MIGRAD", arglist, 2);
+	fitStatus_.status = minuit_->ExecuteCommand("MIGRAD", arglist, 2);
 
 	// Dummy variables - need to feed them to the function
-	// used for getting NLL and error matrix status
-	Double_t edm, errdef;
+	// used for getting NLL, EDM and error matrix status
+	Double_t errdef;
 	Int_t nvpar, nparx;
 
-	if (fitStatus_ != 0) {
+	if (fitStatus_.status != 0) {
 
 		std::cerr << "ERROR in LauMinuit::minimise : Error in minimising loglike." << std::endl;
 
 	} else {
 
 		// Check that the error matrix is ok
-		NLL_ = 0.0;
-		fitStatus_ = minuit_->GetStats(NLL_, edm, errdef, nvpar, nparx);
-		std::cout << "INFO in LauMinuit::minimise : Error matrix status after MIGRAD is: " << fitStatus_ << std::endl;
+		fitStatus_.status = minuit_->GetStats(fitStatus_.NLL, fitStatus_.EDM, errdef, nvpar, nparx);
+		std::cout << "INFO in LauMinuit::minimise : Error matrix status after MIGRAD is: " << fitStatus_.status << std::endl;
 		// 0= not calculated at all
 		// 1= approximation only, not accurate
 		// 2= full matrix, but forced positive-definite
 		// 3= full accurate covariance matrix
 
 		// Fit result was OK. Now get the more precise errors.
-		fitStatus_ = minuit_->ExecuteCommand("HESSE", arglist, 1);
+		fitStatus_.status = minuit_->ExecuteCommand("HESSE", arglist, 1);
 
-		if (fitStatus_ != 0) {
+		if (fitStatus_.status != 0) {
 
 			std::cerr << "ERROR in LauMinuit::minimise : Error in HESSE routine." << std::endl;
 
 		} else {
 
 			// Check that the error matrix is ok
-			NLL_ = 0.0;
-			fitStatus_ = minuit_->GetStats(NLL_, edm, errdef, nvpar, nparx);
-			std::cout << "INFO in LauMinuit::minimise : Error matrix status after HESSE is: " << fitStatus_ << std::endl;
+			fitStatus_.status = minuit_->GetStats(fitStatus_.NLL, fitStatus_.EDM, errdef, nvpar, nparx);
+			std::cout << "INFO in LauMinuit::minimise : Error matrix status after HESSE is: " << fitStatus_.status << std::endl;
 			// 0= not calculated at all
 			// 1= approximation only, not accurate
 			// 2= full matrix, but forced positive-definite
@@ -179,9 +176,9 @@ std::pair<Int_t,Double_t> LauMinuit::minimise()
 			if (useAsymmFitErrors_ == kTRUE) {
 				LauFitObject* fitObj = this->getFitObject();
 				fitObj->withinAsymErrorCalc( kTRUE );
-				fitStatus_ = minuit_->ExecuteCommand("MINOS", arglist, 1); 
+				fitStatus_.status = minuit_->ExecuteCommand("MINOS", arglist, 1); 
 				fitObj->withinAsymErrorCalc( kFALSE );
-				if (fitStatus_ != 0) {
+				if (fitStatus_.status != 0) {
 					std::cerr << "ERROR in LauMinuit::minimise : Error in MINOS routine." << std::endl;
 				}
 			}
@@ -189,15 +186,14 @@ std::pair<Int_t,Double_t> LauMinuit::minimise()
 	}
 
 	// Print results
-	NLL_ = 0.0;
-	fitStatus_ = minuit_->GetStats(NLL_, edm, errdef, nvpar, nparx);
-	std::cout << "INFO in LauMinuit::minimise : Final error matrix status is: " << fitStatus_ << std::endl;
+	fitStatus_.status = minuit_->GetStats(fitStatus_.NLL, fitStatus_.EDM, errdef, nvpar, nparx);
+	std::cout << "INFO in LauMinuit::minimise : Final error matrix status is: " << fitStatus_.status << std::endl;
 	// 0= not calculated at all
 	// 1= approximation only, not accurate
 	// 2= full matrix, but forced positive-definite
 	// 3= full accurate covariance matrix
 
-	minuit_->PrintResults(3, NLL_);
+	minuit_->PrintResults(3, fitStatus_.NLL);
 
 	// Retrieve the covariance matrix from the fitter
 	// For some reason the array returned is as if the matrix is of dimension nParams_ x nParams_
@@ -209,7 +205,7 @@ std::pair<Int_t,Double_t> LauMinuit::minimise()
 	covMatrix_.SetMatrixArray( covMatrix );
 	covMatrix_.ResizeTo( nFreeParams_, nFreeParams_ );
 
-	return std::make_pair( fitStatus_, NLL_ );
+	return fitStatus_;
 }
 
 void LauMinuit::fixSecondStageParameters()

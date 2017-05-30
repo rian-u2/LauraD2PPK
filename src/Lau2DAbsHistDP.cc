@@ -33,6 +33,15 @@ Lau2DAbsHistDP::Lau2DAbsHistDP(const LauDaughters* daughters, Bool_t useUpperHal
 	upperHalf_(useUpperHalfOnly),
 	squareDP_(squareDP)
 {
+	if ( squareDP && ! daughters->squareDP() ) {
+		// The histogram provided is defined in the square DP but the
+		// kinematics object has calculation of the square DP
+		// co-ordinates disabled, so need to enable it,
+		// which requires a bit of a unpleasant const_cast
+		std::cerr << "WARNING in Lau2DAbsHistDP constructor : forcing kinematics to calculate the required square DP co-ordinates" << std::endl;
+		LauKinematics* kine = const_cast<LauKinematics*>( kinematics_ );
+		kine->squareDP(kTRUE);
+	}
 }
 
 Lau2DAbsHistDP::~Lau2DAbsHistDP()
@@ -137,11 +146,11 @@ Double_t Lau2DAbsHistDP::computeAverageContents(const TH2* hist) const
 			Double_t binYLowerEdge = hist->GetYaxis()->GetBinLowEdge(i+1);
 			Double_t binYUpperEdge = hist->GetYaxis()->GetBinUpEdge(i+1);
 
-			if ( withinDPBoundaries( binXCentre, binYCentre ) ||
-			     withinDPBoundaries( binXLowerEdge, binYLowerEdge ) ||
-			     withinDPBoundaries( binXUpperEdge, binYUpperEdge ) ||
-			     withinDPBoundaries( binXLowerEdge, binYUpperEdge ) ||
-			     withinDPBoundaries( binXUpperEdge, binYLowerEdge ) ) {
+			if ( this->withinDPBoundaries( binXCentre, binYCentre ) ||
+			     this->withinDPBoundaries( binXLowerEdge, binYLowerEdge ) ||
+			     this->withinDPBoundaries( binXUpperEdge, binYUpperEdge ) ||
+			     this->withinDPBoundaries( binXLowerEdge, binYUpperEdge ) ||
+			     this->withinDPBoundaries( binXUpperEdge, binYLowerEdge ) ) {
 
 				totalContent += hist->GetBinContent(i+1, j+1);
 				++binsWithinDPBoundary;
@@ -169,3 +178,4 @@ void Lau2DAbsHistDP::getUpperHalf(Double_t& x, Double_t& y) const
 		}
 	}
 }
+

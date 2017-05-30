@@ -1287,7 +1287,10 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 		std::cout<<"INFO in LauIsobarDynamics::calcDPNormalisationScheme : One or more narrow resonances found in m12, integrating over whole square Dalitz plot with bin widths of "<<mPrimeBinWidth_<<" in mPrime and "<<thPrimeBinWidth_<<" in thetaPrime..."<<std::endl;
 
 		// Make sure that the kinematics will calculate the square DP co-ordinates
-		kinematics_->squareDP(kTRUE);
+		if ( ! kinematics_->squareDP() ) {
+			std::cerr << "WARNING in LauIsobarDynamics::calcDPNormalisationScheme  : forcing kinematics to calculate the required square DP co-ordinates" << std::endl;
+			kinematics_->squareDP(kTRUE);
+		}
 
 		dpPartialIntegralInfo_.push_back(new LauDPPartialIntegralInfo(0.0, 1.0, 0.0, 1.0, mPrimeBinWidth_, thPrimeBinWidth_, precision, nAmp_, nIncohAmp_, kTRUE, kinematics_));
 

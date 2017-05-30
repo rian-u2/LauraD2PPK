@@ -61,12 +61,6 @@ class LauAbsEffModel {
 		*/
 		virtual const LauDaughters* getDaughters() const=0;
 
-		//! Determine whether the efficiency histogram is in the square DP
-		/*
-		    \return kTRUE if the square DP is being used, kFALSE otherwise
-		*/
-		virtual Bool_t usingSquareDP() const=0;
-
 	private:
 		//! Copy constructor - not implemented
 		LauAbsEffModel( const LauAbsEffModel& rhs );

@@ -33,6 +33,13 @@ Lau2DAbsHistDPPdf::Lau2DAbsHistDPPdf(LauKinematics* kinematics, const LauVetoes*
 	upperHalf_(useUpperHalfOnly),
 	squareDP_(squareDP)
 {
+	if ( squareDP && ! kinematics->squareDP() ) {
+		// The histogram provided is defined in the square DP but the
+		// kinematics object has calculation of the square DP
+		// co-ordinates disabled, so need to enable it,
+		std::cerr << "WARNING in Lau2DAbsHistDPPdf constructor : forcing kinematics to calculate the required square DP co-ordinates" << std::endl;
+		kinematics->squareDP(kTRUE);
+	}
 }
 
 Lau2DAbsHistDPPdf::~Lau2DAbsHistDPPdf()

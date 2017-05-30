@@ -77,12 +77,6 @@ class LauWeightedSumEffModel : public LauAbsEffModel {
 		*/
 		const LauDaughters* getDaughters() const {return daughters_;}
 
-		//! Determine whether the efficiency histogram is in the square DP
-		/*
-		    \return kTRUE if the square DP is being used, kFALSE otherwise
-		*/
-		Bool_t usingSquareDP() const {return squareDP_;}
-
 	private:
 		//! Copy constructor - not implemented
 		LauWeightedSumEffModel( const LauWeightedSumEffModel& rhs );
@@ -99,8 +93,6 @@ class LauWeightedSumEffModel : public LauAbsEffModel {
 		//! The efficiency model objects
 		std::vector<Double_t> coeff_;
 
-		//! Use of the square Dalitz plot
-		Bool_t squareDP_;
 		//! Fluctuate histogram within the error
 		Bool_t fluctuateEffHisto_;
 

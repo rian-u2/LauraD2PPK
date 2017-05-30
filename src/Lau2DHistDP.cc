@@ -208,10 +208,10 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 
 	// If we're only using one half then flip co-ordinates
 	// appropriately for conventional or square DP
-	getUpperHalf(x,y);
+	this->getUpperHalf(x,y);
 
 	// First ask whether the point is inside the kinematic region.
-	if (withinDPBoundaries(x,y) == kFALSE) {
+	if (this->withinDPBoundaries(x,y) == kFALSE) {
 		std::cerr << "WARNING in Lau2DHistDP::interpolateXY : Given position is outside the DP boundary, returning 0.0." << std::endl;
 		return 0.0;
 	}
@@ -225,14 +225,14 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 
 	// Ask whether we want to do the interpolation, since this method is
 	// not reliable for low statistics histograms.
-	if (useInterpolation_ == kFALSE) {return getBinHistValue(i,j);}
+	if (useInterpolation_ == kFALSE) {return this->getBinHistValue(i,j);}
 
 	// Find the bin centres (actual co-ordinate positions, not histogram indices)
 	Double_t cbinx = Double_t(i+0.5)*rangeX_/nBinsX_ + minX_;
 	Double_t cbiny = Double_t(j+0.5)*rangeY_/nBinsY_ + minY_;
 
 	// If bin centres are outside kinematic region, do not extrapolate
-	if (withinDPBoundaries(cbinx,cbiny) == kFALSE) {return getBinHistValue(i,j);}
+	if (this->withinDPBoundaries(cbinx,cbiny) == kFALSE) {return this->getBinHistValue(i,j);}
 
 	// Find the adjacent bins
 	Double_t deltax = x - cbinx;
@@ -260,17 +260,17 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 	// In the corners, do no interpolation. Use entry in bin (i,j)
 	if (isXBoundary == kTRUE && isYBoundary == kTRUE) {
 
-		value = getBinHistValue(i,j);
+		value = this->getBinHistValue(i,j);
 
 	} else if (isXBoundary == kTRUE && isYBoundary == kFALSE) {
 
 		// Find the adjacent x bin centre
 		Double_t cbinx_adj = Double_t(i_adj+0.5)*rangeX_/nBinsX_ + minX_;
 
-		if (withinDPBoundaries(cbinx_adj, y) == kFALSE) {
+		if (this->withinDPBoundaries(cbinx_adj, y) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
-			value = getBinHistValue(i,j);
+			value = this->getBinHistValue(i,j);
 
 		} else {
 
@@ -278,8 +278,8 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 			Double_t dx1 = TMath::Abs(cbinx_adj - x);
 			Double_t inter_denom = dx0 + dx1;
 
-			Double_t value1 = getBinHistValue(i,j);
-			Double_t value2 = getBinHistValue(i_adj,j);
+			Double_t value1 = this->getBinHistValue(i,j);
+			Double_t value2 = this->getBinHistValue(i_adj,j);
 
 			value = (value1*dx1 + value2*dx0)/inter_denom;
 
@@ -290,10 +290,10 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 		// Find the adjacent y bin centre
 		Double_t cbiny_adj = Double_t(j_adj+0.5)*rangeY_/nBinsY_ + minY_;
 
-		if (withinDPBoundaries(x, cbiny_adj) == kFALSE) {
+		if (this->withinDPBoundaries(x, cbiny_adj) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
-			value = getBinHistValue(i,j);
+			value = this->getBinHistValue(i,j);
 
 		} else {
 
@@ -301,8 +301,8 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 			Double_t dy1 = TMath::Abs(cbiny_adj - y);
 			Double_t inter_denom = dy0 + dy1;
 
-			Double_t value1 = getBinHistValue(i,j);
-			Double_t value2 = getBinHistValue(i,j_adj);
+			Double_t value1 = this->getBinHistValue(i,j);
+			Double_t value2 = this->getBinHistValue(i,j_adj);
 
 			value = (value1*dy1 + value2*dy0)/inter_denom;
 
@@ -315,10 +315,10 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 		Double_t cbinx_adj = Double_t(i_adj+0.5)*rangeX_/nBinsX_ + minX_;
 		Double_t cbiny_adj = Double_t(j_adj+0.5)*rangeY_/nBinsY_ + minY_;
 
-		if (withinDPBoundaries(cbinx_adj, cbiny_adj) == kFALSE) {
+		if (this->withinDPBoundaries(cbinx_adj, cbiny_adj) == kFALSE) {
 
 			// The adjacent bin is outside the DP range. Don't extrapolate.
-			value = getBinHistValue(i,j);
+			value = this->getBinHistValue(i,j);
 
 		} else {
 
@@ -329,10 +329,10 @@ Double_t Lau2DHistDP::interpolateXY(Double_t x, Double_t y) const
 
 			Double_t inter_denom = (dx0 + dx1)*(dy0 + dy1);
 
-			Double_t value1 = getBinHistValue(i,j);
-			Double_t value2 = getBinHistValue(i_adj,j);
-			Double_t value3 = getBinHistValue(i,j_adj);
-			Double_t value4 = getBinHistValue(i_adj,j_adj);
+			Double_t value1 = this->getBinHistValue(i,j);
+			Double_t value2 = this->getBinHistValue(i_adj,j);
+			Double_t value3 = this->getBinHistValue(i,j_adj);
+			Double_t value4 = this->getBinHistValue(i_adj,j_adj);
 
 			value = value1*dx1*dy1 + value2*dx0*dy1 + value3*dx1*dy0 + value4*dx0*dy0;
 			value /= inter_denom;

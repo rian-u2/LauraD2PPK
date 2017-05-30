@@ -218,12 +218,6 @@ class LauEffModel : public LauAbsEffModel {
 		*/
 		const LauDaughters* getDaughters() const {return daughters_;}
 
-		//! Determine whether the efficiency histogram is in the square DP
-		/*
-		    \return kTRUE if the square DP is being used, kFALSE otherwise
-		*/
-		Bool_t usingSquareDP() const {return squareDP_;}
-
 	private:
 		//! Copy constructor - not implemented
 		LauEffModel( const LauEffModel& rhs );
@@ -231,12 +225,11 @@ class LauEffModel : public LauAbsEffModel {
 		//! Copy assignment operator - not implemented
 		LauEffModel& operator=( const LauEffModel& rhs );
 
-		//! Get the efficiency from a two-dimensional histogram by interpolating in x and y
+		//! Get the efficiency from a two-dimensional histogram
 		/*!
-		    \param [in] xVal the value to be interpolated in x 
-		    \param [in] yVal the value to be interpolated in y 
+		    \param [in] kinematics the object that defines the DP position
 		*/
-		Double_t getEffHistValue(Double_t xVal, Double_t yVal) const;
+		Double_t getEffHistValue( const LauKinematics* kinematics ) const;
 
 		//! The daughters object
 		const LauDaughters* daughters_;
@@ -247,8 +240,6 @@ class LauEffModel : public LauAbsEffModel {
 		//! The efficiency histogram objects
 		std::vector<Lau2DAbsDP*> effHisto_;
 
-		//! Use of the square Dalitz plot
-		Bool_t squareDP_;
 		//! Fluctuate histogram within the error
 		Bool_t fluctuateEffHisto_;
 

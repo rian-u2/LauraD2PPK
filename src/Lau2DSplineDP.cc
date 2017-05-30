@@ -162,10 +162,10 @@ Double_t Lau2DSplineDP::interpolateXY(Double_t x, Double_t y) const
 
 	// If we're only using one half then flip co-ordinates
 	// appropriately for conventional or square DP
-	getUpperHalf(x,y);
+	this->getUpperHalf(x,y);
 
 	// First ask whether the point is inside the kinematic region.
-	if (withinDPBoundaries(x,y) == kFALSE) {
+	if (this->withinDPBoundaries(x,y) == kFALSE) {
 		std::cerr << "WARNING in Lau2DSplineDP::interpolateXY : Given position is outside the DP boundary, returning 0.0." << std::endl;
 		return 0.0;
 	}

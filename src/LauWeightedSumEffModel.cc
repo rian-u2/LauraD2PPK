@@ -29,7 +29,6 @@ ClassImp(LauWeightedSumEffModel)
 LauWeightedSumEffModel::LauWeightedSumEffModel(const LauDaughters* daughters) :
 	daughters_( daughters ),
 	effModel_( 0 ),
-	squareDP_( kFALSE ),
 	fluctuateEffHisto_( kFALSE ),
 	lowBinWarningIssued_( kFALSE ),
 	highBinWarningIssued_( kFALSE )
@@ -51,16 +50,12 @@ void LauWeightedSumEffModel::addEffModel(const LauAbsEffModel* effModel, Double_
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
-	if( effModel_.empty() ) {
-		squareDP_=effModel->usingSquareDP();
-	} else if( effModel->usingSquareDP() != usingSquareDP() ) {
-		std::cerr << "ERROR in LauWeightedSumEffModel::addEffModel : either all efficiency models must use the normal DP or all efficiency models must use the square DP." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
-
 	effModel_.push_back(effModel);
 	coeff_.push_back(coeff);
-	if(effModel->fluctuateEffHisto()) fluctuateEffHisto_=kTRUE;
+
+	if ( effModel->fluctuateEffHisto() ) {
+		fluctuateEffHisto_ = kTRUE;
+	}
 }
 
 Double_t LauWeightedSumEffModel::calcEfficiency( const LauKinematics* kinematics ) const

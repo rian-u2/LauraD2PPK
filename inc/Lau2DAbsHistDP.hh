@@ -56,6 +56,12 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		*/
 		virtual Double_t interpolateXY(Double_t x, Double_t y) const=0;
 
+		//! Determine whether the histogram is defined in the square DP
+		/*
+		    \return kTRUE if the square DP is being used, kFALSE otherwise
+		*/
+		virtual Bool_t usingSquareDP() const { return squareDP_; };
+
 	protected:
 		//! Fluctuate the contents of each histogram bin independently, in accordance with their errors
 		/*!
@@ -116,6 +122,7 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		
 		//! Boolean for using the upper half of DP
 		Bool_t upperHalf_;
+
 		//! Boolean for using square DP variables
 		Bool_t squareDP_;
 

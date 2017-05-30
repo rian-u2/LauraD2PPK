@@ -41,6 +41,12 @@ class Lau2DAbsDP {
 		*/
 		virtual Double_t interpolateXY(Double_t x, Double_t y) const=0;
 
+		//! Determine whether the histogram is defined in the square DP
+		/*
+		    \return kTRUE if the square DP is being used, kFALSE otherwise
+		*/
+		virtual Bool_t usingSquareDP() const=0;
+
 	private:
 		//! Copy constructor - not implemented
 		Lau2DAbsDP( const Lau2DAbsDP& rhs );

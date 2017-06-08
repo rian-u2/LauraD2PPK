@@ -240,8 +240,8 @@ void LauSimFitSlave::processMasterRequests()
 			}
 
 			TObjArray array;
-			LauAbsFitter::FitStatus fitStatus { status, NLL, EDM };
-			this->finaliseExperiment( fitStatus, objarray, covMat, array );
+			LauAbsFitter::FitStatus fitStat { status, NLL, EDM };
+			this->finaliseExperiment( fitStat, objarray, covMat, array );
 
 			delete objarray; objarray = 0;
 			delete covMat; covMat = 0;

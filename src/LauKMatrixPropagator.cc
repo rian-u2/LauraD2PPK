@@ -256,6 +256,13 @@ void LauKMatrixPropagator::setParameters(const TString& inputFile)
 
 	// Loop over the (non-commented) lines
 	UInt_t nTotLines = readFile.getTotalNumLines();
+
+	if (nTotLines == 0) {
+	  std::cerr << "ERROR in LauKMatrixPropagator::setParameters : K-matrix parameter file not present - exiting." << std::endl;
+
+	  gSystem->Exit(EXIT_FAILURE);
+	}
+
 	UInt_t iLine(0);
 
 	for (iLine = 1; iLine <= nTotLines; iLine++) {

@@ -4,6 +4,92 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+21st July 2017 Thomas Latham
+* Add note to README file about compilation issue on Ubuntu 16.04 LTS
+
+21st July 2017 Thomas Latham
+* Create public functions to update the kinematics based on one invariant mass and the corresponding helicity angle 
+
+20th June 2017 Daniel O'Hanlon
+* Terminate when asked to read a non-existent K-matrix parameter file
+
+8th June 2017 Thomas Latham
+* Fix compilation error on gcc 4.9
+
+30th May 2017 Thomas Latham
+* Permit different efficiency histograms to be defined in classic/square DP and force enable calculation of square DP coords (here and for background PDFs) if required
+
+29th May 2017 Thomas Latham
+* Propagate information on EDM from the minimiser to the fit models and into the fit results ntuple
+
+29th May 2017 Thomas Latham
+* Ensure that the kinematics will calculate the square DP co-ordinates if the integration requires them
+
+29th May 2017 Thomas Latham
+* Reintegrate the RooFit-slave branch into the trunk (and delete the branch)
+
+28th March 2017 Thomas Latham
+(in branch for developing RooFit-based slave)
+* Rename cacheFitData to verifyFitData in all fit models and RF-slave
+
+28th March 2017 Daniel O'Hanlon
+* Fix bug in LauCPFitModel::weightEvents
+
+24th March 2017 Thomas Latham
+(in branch for developing RooFit-based slave)
+* Refactor code between fit models, master, slave and fit-object classes
+
+22nd March 2017 Thomas Latham
+(in branch for developing RooFit-based slave)
+* Make the compilation of the RF-based slave class, and its associated example binary, optional
+
+22nd March 2017 Thomas Latham
+(in branch for developing RooFit-based slave)
+* Complete working example of RooFit-based slave
+ - Have identified some scope for refactoring of code
+ - Also want to make the compilation of this class, and its associated example binary, optional
+
+15th March 2017 Mark Whitehead
+(in branch for developing time-dependent model)
+* Handle event-by-event mistag probabilities
+
+7th March 2017 Thomas Latham
+* Rename the command for weighting events from "reweight" to "weight"
+
+3rd March 2017 Daniel O'Hanlon
+* Implement LauCPFitModel::weightEvents based on the same function in LauSimpleFitModel
+
+1st March 2017 Thomas Latham
+(in branch for developing RooFit-based slave)
+* Fix root-cling related errors
+
+28th February 2017 Thomas Latham
+(in branch for developing RooFit-based slave)
+* Start work on creation of RooFit-based slave class
+ - Will allow RooFit-based fitters to plug-in straightforwardly to the simultaneous fitting (JFit) framework
+
+20th February 2017 Thomas Latham
+* Add warning messages to LauBkgndDPModel::setBkgndHisto when supplied backgroud histogram pointers are null
+
+31st January 2017 Thomas Latham
+* Audit of the code to automate the creation of the integration binning scheme.
+ - Fix one bug, some tidy-ups, and reintroduce a couple of lost features:
+  - the use of a single square-DP grid if a narrow resonance is found in m12
+  - extension of region down to threshold if the narrow resonance is close to threshold
+
+22nd January 2017 Daniel O'Hanlon
+* Fix bug in automated integration scheme where resonances were assumed to have been added in order of ascending mass
+
+14th December 2016 Daniel O'Hanlon
+* Add several light resonances to the list in LauResonanceMaker
+
+13th December 2016 Daniel O'Hanlon
+* Automate the determination of the integration scheme for an arbitrary number of narrow resonances in m13 and m23
+
+12th December 2016 Daniel O'Hanlon
+* Efficiency saving from modifying the behaviour of LauIsobarDynamics::calculateAmplitudes, LauIsobarDynamics::resAmp and LauIsobarDynamics::incohResAmp in the case of symmetric DPs
+ - Previously, there were 2N calls to LauKinematics::flipAndUpdateKinematics for N resonances, now reduced to 2
+
 21st November 2016 John Back
 * Added two K-matrix examples for creating pedagogical plots (with associated data files):
  - B3piKMatrixPlots for K-matrix elements, propagator, and pole and SVP production terms

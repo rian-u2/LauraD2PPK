@@ -32,6 +32,12 @@ A shared library will be created in the lib sub-directory:
 
 lib/libLaura++.so
 
+(It has been reported that when compiling on Ubuntu 16.04 LTS with gcc 5.4.0
+the build will fail due to, apparently spurious, "variable defined but not
+used" errors related to the constants defined in the LauConstants.hh header
+file. The workaround is to add the option -Wno-error=unused-variable to the
+CXXFLAGS variable in the Makefile.)
+
 
 			Examples and Documentation
 			--------------------------

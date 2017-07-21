@@ -25,7 +25,7 @@
 ClassImp(LauKinematics)
 
 
-LauKinematics::LauKinematics(Double_t m1, Double_t m2, Double_t m3, Double_t mParent, Bool_t calcSquareDPCoords) :
+LauKinematics::LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords) :
 	m1_(m1), m2_(m2), m3_(m3), mParent_(mParent),
 	m1Sq_(m1*m1), m2Sq_(m2*m2), m3Sq_(m3*m3), mParentSq_(mParent*mParent),
 	mDTot_(m1 + m2 + m3),
@@ -81,7 +81,7 @@ LauKinematics::~LauKinematics()
 	// Destructor
 }
 
-void LauKinematics::updateKinematics(Double_t m13Sq, Double_t m23Sq)
+void LauKinematics::updateKinematics(const Double_t m13Sq, const Double_t m23Sq)
 {
 	// Sets the internal private data members 
 	// m13Sq and m23Sq, as well as m13 and m23.
@@ -98,7 +98,7 @@ void LauKinematics::updateKinematics(Double_t m13Sq, Double_t m23Sq)
 	if (squareDP_) {this->calcSqDPVars();}
 }
 
-void LauKinematics::updateSqDPKinematics(Double_t mPrime, Double_t thetaPrime)
+void LauKinematics::updateSqDPKinematics(const Double_t mPrime, const Double_t thetaPrime)
 {
 	// From square DP co-ordinates, calculate remaining kinematic variables
 	this->updateSqDPMassSquares(mPrime, thetaPrime);
@@ -150,7 +150,7 @@ Double_t LauKinematics::calcSqDPJacobian(const Double_t mPrime, const Double_t t
 	return jacobian;
 }
 
-void LauKinematics::updateMassSquares(Double_t m13Sq, Double_t m23Sq)
+void LauKinematics::updateMassSquares(const Double_t m13Sq, const Double_t m23Sq)
 {
 	m13Sq_ = m13Sq;
 	if (m13Sq_ > 0.0) {
@@ -173,7 +173,7 @@ void LauKinematics::updateMassSquares(Double_t m13Sq, Double_t m23Sq)
 	this->calcParentFrameMomenta();
 }
 
-void LauKinematics::updateSqDPMassSquares(Double_t mPrime, Double_t thetaPrime)
+void LauKinematics::updateSqDPMassSquares(const Double_t mPrime, const Double_t thetaPrime)
 {
 	// From square DP co-ordinates, calculate only the mass-squares
 
@@ -239,7 +239,7 @@ void LauKinematics::calcHelicities()
 
 }
 
-Double_t LauKinematics::cFromM(Double_t mijSq, Double_t mikSq, Double_t mij, Int_t i, Int_t j, Int_t k) const
+Double_t LauKinematics::cFromM(const Double_t mijSq, const Double_t mikSq, const Double_t mij, const Int_t i, const Int_t j, const Int_t k) const
 {
 	// Routine to calculate the cos(helicity) variables from the masses of the particles.
 	// cij is helicity angle for the pair which is made from tracks i and j.
@@ -278,15 +278,17 @@ Double_t LauKinematics::cFromM(Double_t mijSq, Double_t mikSq, Double_t mij, Int
 	if (i == 1) {cosHel *= -1.0;}
 
 	return cosHel;
-
 }
 
-Double_t LauKinematics::mFromC(Double_t mijSq, Double_t cij, Double_t mij, Int_t i, Int_t j, Int_t k) const
+Double_t LauKinematics::mFromC(const Double_t mijSq, const Double_t cij, const Double_t mij, const Int_t i, const Int_t j, const Int_t k) const
 {
 	// Returns the mass-squared for a pair of particles, i,j, given their
 	// invariant mass (squared) and the helicity angle.
 	// cij is helicity angle for the pair which is made from tracks i and j.
 	// It is the angle between tracks i and k in the ij rest frame.
+
+	Double_t cosHel( cij );
+	if (i == 1) {cosHel *= -1.0;}
 
 	Double_t EiCmsij = (mijSq - mSq_[j] + mSq_[i])/(2.0*mij);
 	Double_t EkCmsij = (mParentSq_ - mijSq - mSq_[k])/(2.0*mij);
@@ -309,7 +311,7 @@ Double_t LauKinematics::mFromC(Double_t mijSq, Double_t cij, Double_t mij, Int_t
 	Double_t qk = this->pCalc(EkCmsij, mSq_[k]);
 
 	// Find mikSq
-	Double_t massSq = mSq_[i] + mSq_[k] + 2.0*EiCmsij*EkCmsij - 2.0*qi*qk*cij;
+	Double_t massSq = mSq_[i] + mSq_[k] + 2.0*EiCmsij*EkCmsij - 2.0*qi*qk*cosHel;
 
 	if (massSq < mSqMin_[j]) {
 		if (warnings_) {
@@ -319,7 +321,6 @@ Double_t LauKinematics::mFromC(Double_t mijSq, Double_t cij, Double_t mij, Int_t
 	}
 
 	return massSq;
-
 }
 
 void LauKinematics::genFlatPhaseSpace(Double_t& m13Sq, Double_t& m23Sq) const
@@ -349,7 +350,7 @@ void LauKinematics::genFlatSqDP(Double_t& mPrime, Double_t& thetaPrime) const
 	thetaPrime = LauRandom::randomFun()->Rndm();
 }
 
-Bool_t LauKinematics::withinDPLimits(Double_t m13Sq, Double_t m23Sq) const
+Bool_t LauKinematics::withinDPLimits(const Double_t m13Sq, const Double_t m23Sq) const
 {
 	// Find out whether the point (m13Sq,m23Sq) is within the limits of the
 	// Dalitz plot. The limits are specified by the invariant masses
@@ -387,7 +388,7 @@ Bool_t LauKinematics::withinDPLimits(Double_t m13Sq, Double_t m23Sq) const
 	return withinDP;
 }
 
-Bool_t LauKinematics::withinDPLimits2(Double_t m13Sq, Double_t m23Sq) const
+Bool_t LauKinematics::withinDPLimits2(const Double_t m13Sq, const Double_t m23Sq) const
 {
 	// Same as withinDPLimits, but this time testing whether the m13Sq 
 	// variable is within the kinematic boundary for the given m23Sq value
@@ -421,7 +422,7 @@ Bool_t LauKinematics::withinDPLimits2(Double_t m13Sq, Double_t m23Sq) const
 	return withinDP;
 }
 
-Bool_t LauKinematics::withinSqDPLimits(Double_t mPrime, Double_t thetaPrime) const
+Bool_t LauKinematics::withinSqDPLimits(const Double_t mPrime, const Double_t thetaPrime) const
 {
 	// Check whether m' and theta' are between 0 and 1
 	Bool_t withinDP(kFALSE);
@@ -433,7 +434,7 @@ Bool_t LauKinematics::withinSqDPLimits(Double_t mPrime, Double_t thetaPrime) con
 	return withinDP;
 }
 
-Double_t LauKinematics::calcThirdMassSq(Double_t firstMassSq, Double_t secondMassSq) const
+Double_t LauKinematics::calcThirdMassSq(const Double_t firstMassSq, const Double_t secondMassSq) const
 {
 	// Calculate one massSq from the other two
 	return mParentSq_ + mSqDTot_ - firstMassSq - secondMassSq;
@@ -444,7 +445,7 @@ Double_t LauKinematics::distanceFromDPCentre() const
 	return this->distanceFromDPCentre(m13Sq_,m23Sq_);
 }
 
-Double_t LauKinematics::distanceFromDPCentre(Double_t m13Sq, Double_t m23Sq) const
+Double_t LauKinematics::distanceFromDPCentre(const Double_t m13Sq, const Double_t m23Sq) const
 {
 	// DP centre is defined as the point where m12=m13=m23
 
@@ -460,7 +461,7 @@ Double_t LauKinematics::distanceFromDPCentre(Double_t m13Sq, Double_t m23Sq) con
 	return distance;
 }
 
-Double_t LauKinematics::pCalc(Double_t energy, Double_t massSq) const
+Double_t LauKinematics::pCalc(const Double_t energy, const Double_t massSq) const
 {
 	// Routine to calculate the momentum of a particle, given its energy and 
 	// invariant mass (squared).
@@ -495,48 +496,87 @@ void LauKinematics::rotateAndUpdateKinematics()
 	this->updateKinematics(m12Sq_, m13Sq_);
 }
 
-void LauKinematics::updateMassSq_m23(Double_t m23, Double_t c23)
+void LauKinematics::updateMassSq_m23(const Double_t m23, const Double_t c23)
 {
 	// Update the variables m12Sq_ and m13Sq_ given m23 and c23.
 	m23_ = m23; m23Sq_ = m23*m23; c23_ = c23;
 
-	Int_t zero(0), one(1), two(2);
-	m13Sq_ = this->mFromC(m23Sq_, -c23_, m23_, two, one, zero);
-	m12Sq_ = mParentSq_ - m23Sq_ - m13Sq_ + mSqDTot_;
+	const Int_t zero(0), one(1), two(2);
+	m12Sq_ = this->mFromC(m23Sq_, c23_, m23_, one, two, zero);
+	m13Sq_ = mParentSq_ - m23Sq_ - m12Sq_ + mSqDTot_;
 
-	m13_ = TMath::Sqrt(m13Sq_);
 	m12_ = TMath::Sqrt(m12Sq_);
-	//c12_ = cFromM(m12Sq_, m13Sq_, m12_, zero, one, two);
-	//c13_ = cFromM(m13Sq_, m23Sq_, m13_, two, zero, one);
+	m13_ = TMath::Sqrt(m13Sq_);
 }
 
-void LauKinematics::updateMassSq_m13(Double_t m13, Double_t c13)
+void LauKinematics::updateMassSq_m13(const Double_t m13, const Double_t c13)
 {
 	// Update the variables m12Sq_ and m23Sq_ given m13 and c13.
 	m13_ = m13; m13Sq_ = m13*m13; c13_ = c13;
 
-	Int_t zero(0), one(1), two(2);
+	const Int_t zero(0), one(1), two(2);
 	m23Sq_ = this->mFromC(m13Sq_, c13_, m13_, two, zero, one);
 	m12Sq_ = mParentSq_ - m23Sq_ - m13Sq_ + mSqDTot_;
 
 	m23_ = TMath::Sqrt(m23Sq_);
 	m12_ = TMath::Sqrt(m12Sq_);
-	//c23_ = cFromM(m23Sq_, m12Sq_, m23_, one, two, zero);
-	//c12_ = cFromM(m12Sq_, m13Sq_, m12_, zero, one, two);
 }
 
-void LauKinematics::updateMassSq_m12(Double_t m12, Double_t c12)
+void LauKinematics::updateMassSq_m12(const Double_t m12, const Double_t c12)
 {
 	// Update the variables m23Sq_ and m13Sq_ given m12 and c12.
 	m12_ = m12; m12Sq_ = m12*m12; c12_ = c12;
 
-	Int_t zero(0), one(1), two(2);
+	const Int_t zero(0), one(1), two(2);
 	m13Sq_ = this->mFromC(m12Sq_, c12_, m12_, zero, one, two);
 	m23Sq_ = mParentSq_ - m12Sq_ - m13Sq_ + mSqDTot_;
 	m13_ = TMath::Sqrt(m13Sq_);
 	m23_ = TMath::Sqrt(m23Sq_);
-	//c23_ = cFromM(m23Sq_, m12Sq_, m23_, one, two, zero);
-	//c13_ = cFromM(m13Sq_, m23Sq_, m13_, two, zero, one);
+}
+
+void LauKinematics::updateKinematicsFrom23(const Double_t m23, const Double_t c23)
+{
+	// Calculate the other mass squares
+	this->updateMassSq_m23(m23,c23);
+
+	// Calculate the remaining helicity angles
+	this->calcHelicities();
+
+	// Calculate momenta of tracks in parent (B, D etc.) rest-frame
+	this->calcParentFrameMomenta();
+
+	// Also calculate the m', theta' variables
+	if (squareDP_) {this->calcSqDPVars();}
+}
+
+void LauKinematics::updateKinematicsFrom13(const Double_t m13, const Double_t c13)
+{
+	// Calculate the other mass squares
+	this->updateMassSq_m13(m13,c13);
+
+	// Calculate the remaining helicity angles
+	this->calcHelicities();
+
+	// Calculate momenta of tracks in parent (B, D etc.) rest-frame
+	this->calcParentFrameMomenta();
+
+	// Also calculate the m', theta' variables
+	if (squareDP_) {this->calcSqDPVars();}
+}
+
+void LauKinematics::updateKinematicsFrom12(const Double_t m12, const Double_t c12)
+{
+	// Calculate the other mass squares
+	this->updateMassSq_m12(m12,c12);
+
+	// Calculate the remaining helicity angles
+	this->calcHelicities();
+
+	// Calculate momenta of tracks in parent (B, D etc.) rest-frame
+	this->calcParentFrameMomenta();
+
+	// Also calculate the m', theta' variables
+	if (squareDP_) {this->calcSqDPVars();}
 }
 
 Double_t LauKinematics::genm13Sq() const

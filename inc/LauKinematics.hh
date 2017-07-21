@@ -39,7 +39,7 @@ class LauKinematics {
 		    \param [in] mParent the parent particle mass
 		    \param [in] calcSquareDPCoords boolean flag to enable/disable calculation of the square Dalitz plot co-ordinates
 		*/
-		LauKinematics(Double_t m1, Double_t m2, Double_t m3, Double_t mParent, Bool_t calcSquareDPCoords = kFALSE);
+		LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords = kFALSE);
 
 		//! Destructor
 		virtual ~LauKinematics();
@@ -57,7 +57,7 @@ class LauKinematics {
 		inline Bool_t squareDP() const { return squareDP_; }
 
 		//! Enable/disable warning messages
-		inline void warningMessages(Bool_t boolean) { warnings_ = boolean; }
+		inline void warningMessages(const Bool_t boolean) { warnings_ = boolean; }
 
 		//! Update all kinematic quantities based on the DP co-ordinates m13Sq and m23Sq
 		/*!
@@ -66,7 +66,7 @@ class LauKinematics {
 		    \param [in] m13Sq the invariant mass squared of daughters 1 and 3
 		    \param [in] m23Sq the invariant mass squared of daughters 2 and 3
 		*/
-		void updateKinematics(Double_t m13Sq, Double_t m23Sq);
+		void updateKinematics(const Double_t m13Sq, const Double_t m23Sq);
 
 		//! Update all kinematic quantities based on the square DP co-ordinates m' and theta'
 		/*!
@@ -75,7 +75,28 @@ class LauKinematics {
 		    \param [in] mPrime the m' co-ordinate
 		    \param [in] thetaPrime the theta' co-ordinate
 		*/
-		void updateSqDPKinematics(Double_t mPrime, Double_t thetaPrime);
+		void updateSqDPKinematics(const Double_t mPrime, const Double_t thetaPrime);
+
+		//! Update all kinematic quantities based on m23 and cos(theta23)
+		/*!
+		    \param [in] m23 the invariant mass of daughters 2 and 3
+		    \param [in] c23 the cosine of the helicity angle theta23, \see getc23
+		*/
+		void updateKinematicsFrom23(const Double_t m23, const Double_t c23);
+
+		//! Update all kinematic quantities based on m13 and cos(theta13)
+		/*!
+		    \param [in] m13 the invariant mass of daughters 1 and 3
+		    \param [in] c13 the cosine of the helicity angle theta13, \see getc13
+		*/
+		void updateKinematicsFrom13(const Double_t m13, const Double_t c13);
+
+		//! Update all kinematic quantities based on m12 and cos(theta12)
+		/*!
+		    \param [in] m12 the invariant mass of daughters 1 and 2
+		    \param [in] c12 the cosine of the helicity angle theta12, \see getc12
+		*/
+		void updateKinematicsFrom12(const Double_t m12, const Double_t c12);
 
 		//! Calculate the Jacobian for the transformation m23^2, m13^2 -> m', theta' (square DP) at the given point in the square DP
 		/*!
@@ -116,7 +137,7 @@ class LauKinematics {
 		    \param [in] m23Sq the invariant mass squared of daughters 2 and 3
 		    \return kTRUE if the event is inside the kinematic limit, kFALSE otherwise
 		*/
-		Bool_t withinDPLimits(Double_t m13Sq, Double_t m23Sq) const;
+		Bool_t withinDPLimits(const Double_t m13Sq, const Double_t m23Sq) const;
 
 		//! Check whether a given (m13Sq,m23Sq) point is within the kinematic limits of the Dalitz plot (alternate method)
 		/*!
@@ -129,7 +150,7 @@ class LauKinematics {
 		    \param [in] m23Sq the m23 invariant mass pair squared
 		    \return kTRUE if the event is inside the kinematic limit, kFALSE otherwise
 		*/
-		Bool_t withinDPLimits2(Double_t m13Sq, Double_t m23Sq) const;
+		Bool_t withinDPLimits2(const Double_t m13Sq, const Double_t m23Sq) const;
 
 		//! Check whether a given (m',theta') point is within the kinematic limits of the Dalitz plot
 		/*!
@@ -137,7 +158,7 @@ class LauKinematics {
 		    \param [in] thetaPrime the theta' co-ordinate
 		    \return kTRUE if the event is inside the kinematic limit, kFALSE otherwise
 		*/
-		Bool_t withinSqDPLimits(Double_t mPrime, Double_t thetaPrime) const;
+		Bool_t withinSqDPLimits(const Double_t mPrime, const Double_t thetaPrime) const;
 
 		//! Calculate the third invariant mass square from the two provided (e.g. mjkSq from mijSq and mikSq)
 		/*!
@@ -145,7 +166,7 @@ class LauKinematics {
 		    \param [in] secondMassSq the second invariant mass squared
 		    \return the third invariant mass square
 		*/
-		Double_t calcThirdMassSq(Double_t firstMassSq, Double_t secondMassSq) const;
+		Double_t calcThirdMassSq(const Double_t firstMassSq, const Double_t secondMassSq) const;
 
 		//! Calculate the distance from the currently set (m13Sq, m23Sq) point to the centre of the Dalitz plot (which is defined as the point where m12=m13=m23)
 		/*!
@@ -157,7 +178,7 @@ class LauKinematics {
 		/*!
 		    \return the distance to the DP centre
 		*/
-		Double_t distanceFromDPCentre(Double_t m13Sq, Double_t m23Sq) const;
+		Double_t distanceFromDPCentre(const Double_t m13Sq, const Double_t m23Sq) const;
 
 		//! Get the m12 invariant mass
 		/*!
@@ -385,7 +406,7 @@ class LauKinematics {
 		    \param [in] orientation orientation used for the draw, with default set to 1323 that corresponds x = m13, y = m23
 		    \param [in] nbins number of bins for the contour to be sampled over (default = 100)
 		*/
-		void drawDPContour(Int_t orientation = 1323, Int_t nbins = 100);
+		void drawDPContour(const Int_t orientation = 1323, const Int_t nbins = 100);
 
                 //! Get covariant factor in 12 axis
                 /*!
@@ -411,19 +432,21 @@ class LauKinematics {
 		    \param [in] m12 the invariant mass m12
 		    \param [in] c12 the cosine of the helicity angle c12
 		*/
-		void updateMassSq_m12(Double_t m12, Double_t c12);
+		void updateMassSq_m12(const Double_t m12, const Double_t c12);
+
 		//! Update the variables m12Sq_ and m13Sq_ given the invariant mass m23 and the cosine of the helicity angle c23
 		/*!
 		    \param [in] m23 the invariant mass m12
 		    \param [in] c23 the cosine of the helicity angle c23
 		*/
-		void updateMassSq_m23(Double_t m23, Double_t c23);
+		void updateMassSq_m23(const Double_t m23, const Double_t c23);
+
 		//! Update the variables m12Sq_ and m23Sq_ given the invariant mass m13 and the cosine of the helicity angle c13
 		/*!
 		    \param [in] m13 the invariant mass m13
 		    \param [in] c13 the cosine of the helicity angle c13
 		*/
-		void updateMassSq_m13(Double_t m13, Double_t c13);
+		void updateMassSq_m13(const Double_t m13, const Double_t c13);
 
 		//! Update some kinematic quantities based on the DP co-ordinates m13Sq and m23Sq
 		/*!
@@ -432,7 +455,7 @@ class LauKinematics {
 		    \param [in] m13Sq the invariant mass squared of daughters 1 and 3
 		    \param [in] m23Sq the invariant mass squared of daughters 2 and 3
 		*/
-		void updateMassSquares(Double_t m13Sq, Double_t m23Sq);
+		void updateMassSquares(const Double_t m13Sq, const Double_t m23Sq);
 
 		//! Update some kinematic quantities based on the square DP co-ordinates m' and theta'
 		/*!
@@ -441,7 +464,7 @@ class LauKinematics {
 		    \param [in] mPrime the m' co-ordinate
 		    \param [in] thetaPrime the theta' co-ordinate
 		*/
-		void updateSqDPMassSquares(Double_t mPrime, Double_t thetaPrime);
+		void updateSqDPMassSquares(const Double_t mPrime, const Double_t thetaPrime);
 
 		//! General method to calculate the cos(helicity) variables from the masses of the particles
 		/*!
@@ -453,7 +476,7 @@ class LauKinematics {
 		    \param [in] k the index for the third track
 		    \return helicity angle in the ij rest frame
 		*/
-		Double_t cFromM(Double_t mijSq, Double_t mikSq, Double_t mij, Int_t i, Int_t j, Int_t k) const;
+		Double_t cFromM(const Double_t mijSq, const Double_t mikSq, const Double_t mij, const Int_t i, const Int_t j, const Int_t k) const;
 
 		//! General method to calculate mikSq given mijSq and cosHel_ij
 		/*!
@@ -465,7 +488,7 @@ class LauKinematics {
 		    \param [in] k the index for the third track
 		    \return the invariant mass square mikSq
 		*/
-		Double_t mFromC(Double_t mijSq, Double_t cij, Double_t mij, Int_t i, Int_t j, Int_t k) const;
+		Double_t mFromC(const Double_t mijSq, const Double_t cij, const Double_t mij, const Int_t i, const Int_t j, const Int_t k) const;
 
 		//! General method to calculate the momentum of a particle, given its energy and invariant mass squared.
 		/*!
@@ -473,7 +496,7 @@ class LauKinematics {
 		    \param [in] massSq the invariant mass squared of the particle
 		    \return the momentum of the particle
 		*/
-		Double_t pCalc(Double_t energy, Double_t massSq) const;
+		Double_t pCalc(const Double_t energy, const Double_t massSq) const;
 
 		//! Randomly generate the invariant mass squared m13Sq
 		/*!

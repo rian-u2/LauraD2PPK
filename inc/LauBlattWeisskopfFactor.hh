@@ -37,6 +37,12 @@ class LauBlattWeisskopfFactor {
 			ExpBarrier	/*!< expoential barrier factor (mostly used for virtual contributions) */
 		};
 
+		//! Define the rest frame in which the momentum should be calculated (only relevant for bachelor)
+		enum RestFrame {
+			ParentFrame,	/*!< momentum calculated in parent rest frame */
+			ResonanceFrame	/*!< momentum calculated in resonance rest frame */
+		};
+
 		//! Define resonance categories that will share common barrier factor radii
 		enum BlattWeisskopfCategory {
 			Default,	//*!< indicates that LauResonanceMaker should use the appropriate category for the given resonance */
@@ -57,10 +63,10 @@ class LauBlattWeisskopfFactor {
 		};
 
 		//! Constructor
-		LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const BarrierType barrierType, const BlattWeisskopfCategory category );
+		LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category );
 
 		//! Constructor
-		LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const Double_t resRadius, const BarrierType barrierType, const BlattWeisskopfCategory category );
+		LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const Double_t resRadius, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category );
 
 		//! Destructor
 		virtual ~LauBlattWeisskopfFactor();
@@ -79,6 +85,9 @@ class LauBlattWeisskopfFactor {
 
 		//! Retrieve the barrier type
 		BarrierType getBarrierType() const { return barrierType_; }
+
+		//! Retrieve the rest frame information
+		RestFrame getRestFrame() const { return restFrame_; }
 
 		//! Calculate form factor value
 		/*!
@@ -105,6 +114,9 @@ class LauBlattWeisskopfFactor {
 
 		//! Barrier type
 		const BarrierType barrierType_;
+
+		//! Rest frame
+		const RestFrame restFrame_;
 
 		ClassDef(LauBlattWeisskopfFactor, 0)
 };

@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+8th August 2017 Thomas Latham
+* Implement expressions for the spin factor based on covariant tensor formalism
+* Make it much simpler to switch between formalism options via new functions in LauResonanceMaker:
+ - setSpinFormalism, setBWType, setBWBachelorRestFrame
+ - default settings are unchanged (and are equivalent to setting LauAbsResonance::Zemach_P, LauBlattWeisskopfFactor::BWPrimeBarrier, LauBlattWeisskopfFactor::ResonanceFrame, respectively)
+
 21st July 2017 Thomas Latham
 * Add note to README file about compilation issue on Ubuntu 16.04 LTS
 
@@ -103,6 +109,10 @@
    These are specified with the useProdAdler boolean in the LauKMatrixProdPole/SVP constructors
  - Added a few helper functions for obtaining coefficients and (internal) matrices
  - Added a method to return the Lorentz-invariant transition amplitude for plots/tests
+
+1st November 2016 Wenbin Qian
+* Add calculation of so-called covariant factors for spin amplitude
+
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r1

@@ -651,7 +651,7 @@ void LauIsobarDynamics::writeIntegralsFile()
 
 }
 
-LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauBlattWeisskopfFactor::BarrierType bwType)
+LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory)
 {
 	// Function to add a resonance in a Dalitz plot.
 	// No check is made w.r.t flavour and charge conservation rules, and so
@@ -674,7 +674,7 @@ LauAbsResonance* LauIsobarDynamics::addResonance(const TString& resName, const I
 	}
 
 	LauResonanceMaker& resonanceMaker = LauResonanceMaker::get();
-	LauAbsResonance *theResonance = resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType, bwCategory, bwType);
+	LauAbsResonance *theResonance = resonanceMaker.getResonance(daughters_, resName, resPairAmpInt, resType, bwCategory);
 
 	if (theResonance == 0) {
 		std::cerr<<"ERROR in LauIsobarDynamics::addResonance : Couldn't create the resonance \""<<resName<<"\""<<std::endl;
@@ -1457,7 +1457,7 @@ void LauIsobarDynamics::calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, 
 
 		if ( integralsToBeCalculated_.find(iAmp) != intEnd ) {
 			// Calculate the dynamics for this resonance
-            ff_[iAmp] = this->resAmp(iAmp);
+			ff_[iAmp] = this->resAmp(iAmp);
 
 			// Store the new value in the integration info object
 			intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
@@ -1471,7 +1471,7 @@ void LauIsobarDynamics::calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, 
 
 		if ( integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd ) {
 			// Calculate the dynamics for this resonance
-            incohInten_[iAmp] = this->incohResAmp(iAmp);
+			incohInten_[iAmp] = this->incohResAmp(iAmp);
 
 			// Store the new value in the integration info object
 			intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
@@ -1481,38 +1481,38 @@ void LauIsobarDynamics::calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, 
 		}
 	}
 
-    // If symmetric, do as above with flipped kinematics and add to amplitude
-    // (No need to retrive the cache if this was done in the first case)
+	// If symmetric, do as above with flipped kinematics and add to amplitude
+	// (No need to retrive the cache if this was done in the first case)
 
-    if ( symmetricalDP_ == kTRUE ) {
-        kinematics_->flipAndUpdateKinematics();
+	if ( symmetricalDP_ == kTRUE ) {
+		kinematics_->flipAndUpdateKinematics();
 
-        for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
+		for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
 
-    		if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
-    			// Calculate the dynamics for this resonance
-                ff_[iAmp] += this->resAmp(iAmp);
+			if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				ff_[iAmp] += this->resAmp(iAmp);
 
-    			// Store the new value in the integration info object
-    			intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
+				// Store the new value in the integration info object
+				intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
 
-            }
-    	}
+			}
+		}
 
-        for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+		for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
 
-    		if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
-    			// Calculate the dynamics for this resonance
-                incohInten_[iAmp] += this->incohResAmp(iAmp);
+			if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				incohInten_[iAmp] += this->incohResAmp(iAmp);
 
-    			// Store the new value in the integration info object
-    			intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+				// Store the new value in the integration info object
+				intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
 
-            }
-    	}
+			}
+		}
 
-        kinematics_->flipAndUpdateKinematics();
-    }
+		kinematics_->flipAndUpdateKinematics();
+	}
 
 	// If we haven't cached the data, then we need to find out the efficiency.
 	eff_ = this->retrieveEfficiency();
@@ -1535,22 +1535,22 @@ void LauIsobarDynamics::calculateAmplitudes()
 		}
 	}
 
-    if ( symmetricalDP_ == kTRUE ) {
-        kinematics_->flipAndUpdateKinematics();
+	if ( symmetricalDP_ == kTRUE ) {
+		kinematics_->flipAndUpdateKinematics();
 
-        for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
+		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
 
-    		// Calculate the dynamics for this resonance
-    		if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
-    			ff_[*iter] += this->resAmp(*iter);
-    		} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
-    			incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
-    		}
+			// Calculate the dynamics for this resonance
+			if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
+				ff_[*iter] += this->resAmp(*iter);
+			} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+				incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
+			}
 
-    	}
+		}
 
-        kinematics_->flipAndUpdateKinematics();
-    }
+		kinematics_->flipAndUpdateKinematics();
+	}
 
 	// If we haven't cached the data, then we need to find out the efficiency.
 	eff_ = this->retrieveEfficiency();

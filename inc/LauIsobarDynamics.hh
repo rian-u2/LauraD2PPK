@@ -129,10 +129,9 @@ class LauIsobarDynamics {
 		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
 		    \param [in] resType the model for the resonance dynamics
 		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
-		    \param [in] bwType the Blatt-Weisskopf barrier type
 		    \return the newly created resonance
 		*/
-		LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory = LauBlattWeisskopfFactor::Default, const LauBlattWeisskopfFactor::BarrierType bwType = LauBlattWeisskopfFactor::BWPrimeBarrier);
+		LauAbsResonance* addResonance(const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory = LauBlattWeisskopfFactor::Default);
 
 		//! Add an incoherent resonance to the Dalitz plot
 		/*!

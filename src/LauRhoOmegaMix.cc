@@ -66,13 +66,11 @@ LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance:
     }
 
     rhoRes_ = resMaker.getResonance(daughters, resInfo->getName(), resPairAmpInt, rhoType, 
-				    LauBlattWeisskopfFactor::Light, 
-				    LauBlattWeisskopfFactor::BWPrimeBarrier);
+				    LauBlattWeisskopfFactor::Light);
 
     LauResonanceInfo* omegaInfo = resMaker.getResInfo("omega(782)");
     omegaRes_ = resMaker.getResonance(daughters, omegaInfo->getName(), resPairAmpInt, LauAbsResonance::RelBW,
-				      LauBlattWeisskopfFactor::Light, 
-				      LauBlattWeisskopfFactor::BWPrimeBarrier);
+				      LauBlattWeisskopfFactor::Light);
 
     // Check to see if we want to set the denominator factor to unity
     if (resType == LauAbsResonance::RhoOmegaMix_RBW_1 || resType == LauAbsResonance::RhoOmegaMix_GS_1) {

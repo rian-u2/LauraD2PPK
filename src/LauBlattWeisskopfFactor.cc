@@ -24,19 +24,21 @@ ClassImp(LauBlattWeisskopfFactor)
 
 
 // Constructor
-LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const BarrierType barrierType, const BlattWeisskopfCategory category ) :
+LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category ) :
 	spin_(resInfo.getSpin()),
 	radius_(new LauParameter("NEED_A_GOOD_NAME",resInfo.getBWRadius(),0.0,10.0,kTRUE)),
-	barrierType_(barrierType)
+	barrierType_(barrierType),
+	restFrame_(restFrame)
 {
 	TString categoryName = this->setRadiusName( resInfo, category );
 	std::cout << "INFO in LauBlattWeisskopfFactor constructor : creating radius parameter for category \"" << categoryName << "\", with initial value " << resInfo.getBWRadius() << std::endl;
 }
 
-LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const Double_t resRadius, const BarrierType barrierType, const BlattWeisskopfCategory category ) :
+LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const Double_t resRadius, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category ) :
 	spin_(resInfo.getSpin()),
 	radius_(new LauParameter("NEED_A_GOOD_NAME",resRadius,0.0,10.0,kTRUE)),
-	barrierType_(barrierType)
+	barrierType_(barrierType),
+	restFrame_(restFrame)
 {
 	TString categoryName = this->setRadiusName( resInfo, category );
 	std::cout << "INFO in LauBlattWeisskopfFactor constructor : creating radius parameter for category \"" << categoryName << "\", with initial value " << resRadius << std::endl;
@@ -49,7 +51,8 @@ LauBlattWeisskopfFactor::~LauBlattWeisskopfFactor()
 LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin ) :
 	spin_(newSpin),
 	radius_(other.radius_->createClone()),
-	barrierType_(other.barrierType_)
+	barrierType_(other.barrierType_),
+	restFrame_(other.restFrame_)
 {
 }
 

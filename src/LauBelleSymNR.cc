@@ -97,7 +97,7 @@ LauComplex LauBelleSymNR::amplitude(const LauKinematics* kinematics)
 		magnitude = (s <= t) ? TMath::Exp(-alpha*s) : TMath::Exp(-alpha*t);
 
 		const Double_t cosHel = (s <= t) ? kinematics->getc13() : kinematics->getc23();
-		magnitude *= this->calcSpinTerm( cosHel, 1.0 );
+		magnitude *= this->calcLegendrePoly( cosHel );
 
 	} else if ( model_ == LauAbsResonance::TaylorNR ) {
 

@@ -116,7 +116,14 @@ void LauRelBreitWignerRes::initialise()
 	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
 	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
 	FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
-	FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
+	switch ( parBWFactor->getRestFrame() ) {
+		case LauBlattWeisskopfFactor::ResonanceFrame:
+			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
+			break;
+		case LauBlattWeisskopfFactor::ParentFrame:
+			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_) : 1.0;
+			break;
+	}
 }
 
 LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
@@ -148,7 +155,7 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	const Double_t parRadius = this->getParRadius();
 	const Double_t q = this->getQ();
 	const Double_t p = this->getP();
-	//const Double_t pstar = this->getPstar();
+	const Double_t pstar = this->getPstar();
 
 	// If the mass is floating and its value has changed we need to
 	// recalculate everything that assumes that value
@@ -163,10 +170,18 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	// Get barrier scaling factors
 	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
 	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-	const Double_t fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
-	const Double_t fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
-	Double_t fFactorRRatio = fFactorR/FR0_;
-	Double_t fFactorBRatio = fFactorB/FP0_;
+	Double_t fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
+	Double_t fFactorB(1.0);
+	switch ( parBWFactor->getRestFrame() ) {
+		case LauBlattWeisskopfFactor::ResonanceFrame:
+			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
+			break;
+		case LauBlattWeisskopfFactor::ParentFrame:
+			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar) : 1.0;
+			break;
+	}
+	const Double_t fFactorRRatio = fFactorR/FR0_;
+	const Double_t fFactorBRatio = fFactorB/FP0_;
 
 	// If ignoreMomenta is set, set the total width simply as the pole width, and do
 	// not include any momentum-dependent barrier factors (set them to unity)

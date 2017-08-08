@@ -68,6 +68,14 @@ class LauAbsResonance {
 			RhoOmegaMix_RBW_1       /*!< mass mixing model using two RBWs, with denominator factor = 1 */
 		};
 
+		//! Define the allowed spin formalisms
+		enum LauSpinType {
+			Zemach_P,	/*!< Zemach tensor formalism, bachelor momentum in resonance rest frame */
+			Zemach_Pstar,	/*!< Zemach tensor formalism, bachelor momentum in parent rest frame */
+			Covariant,	/*!< Covariant tensor formalism */
+			Legendre	/*!< Legendre polynomials only */
+		};
+
 		//! Is the resonance model incoherent?
 		/*!
 			\param [in] model the resonance model
@@ -109,6 +117,12 @@ class LauAbsResonance {
                         \return the resonance model type
                 */
 		virtual LauResonanceModel getResonanceModel() const = 0;
+
+		//! Get the spin type
+		/*!
+			\return the spin formalism
+		*/
+		LauSpinType getSpinType() const {return spinType_;}
 
 		//! Get the name of the resonance
 		/*! 
@@ -192,53 +206,45 @@ class LauAbsResonance {
 	
 		//! Get the ignore momenta flag
 		/*! 
+		        Whether to ignore momenta in Zemach spin factors, as well as ignoring mass-dependent widths
 			\return the ignore momenta flag
 		*/
 		Bool_t ignoreMomenta() const {return ignoreMomenta_;}
 
-		//! Set the ignore p_ and q_ flag
+		//! Set the ignore momenta flag
 		/*!
+		        Whether to ignore momenta in Zemach spin factors, as well as ignoring mass-dependent widths
 			\param [in] boolean the ignore momenta status
 		*/
 		void ignoreMomenta(const Bool_t boolean) {ignoreMomenta_ = boolean;}
 
 		//! Get the ignore spin flag
 		/*! 
+		        Whether to set the spinTerm to unity always
 			\return the ignore spin flag
 		*/
 		Bool_t ignoreSpin() const {return ignoreSpin_;}
 
-		//! Set the ignore p_ and q_ flag
+		//! Set the ignore spin flag
 		/*!
+		        Whether to set the spinTerm to unity always
 			\param [in] boolean the ignore spin status
 		*/
 		void ignoreSpin(const Bool_t boolean) {ignoreSpin_ = boolean;}
 
-
 		//! Get the ignore barrier factor scaling flag
 		/*! 
+		        Whether to ignore barrier factor scaling in the amplitude numerator, they are still used for the mass-dependent width
 			\return the ignore barrier amplitude scaling flag
 		*/
 		Bool_t ignoreBarrierScaling() const {return ignoreBarrierScaling_;}
 
 		//! Set the ignore barrier factor scaling flag
 		/*!
+		        Whether to ignore barrier factor scaling in the amplitude numerator, they are still used for the mass-dependent width
 			\param [in] boolean the ignore barrier factor scaling status
 		*/
 		void ignoreBarrierScaling(const Bool_t boolean) {ignoreBarrierScaling_ = boolean;}
-
-                //! Get the ignore covariant flag
-                /*!
-                        \return the ignore covariant flag
-                */
-                Bool_t ignoreCovariant() const {return ignoreCovariant_;}
-
-
-                //! Set the ignore covariant flag
-                /*!
-                        \param [in] boolean the ignore covariant status
-                */
-                void ignoreCovariant(const Bool_t boolean) {ignoreCovariant_ = boolean;}
 
 		//! Allow the mass, width and spin of the resonance to be changed
 		/*!
@@ -306,6 +312,12 @@ class LauAbsResonance {
 			\return the status of resonance width (fixed or released)
 		*/
 		Bool_t fixWidth() const { return (resWidth_!=0) ? resWidth_->fixed() : kTRUE; }
+
+		//! Set the spin formalism to be used
+		/*!
+			\param [in] spinType the spin formalism
+		*/
+		void setSpinType(const LauSpinType spinType) {spinType_ = spinType;}
 
 		//! Set the form factor model and parameters
 		/*!
@@ -379,17 +391,36 @@ class LauAbsResonance {
 		//! Access the daughters object
 		const LauDaughters* getDaughters() const {return daughters_;}
 
-		//! Calculate the amplitude spin term
+		//! Calculate the amplitude spin term using the Zemach tensor formalism
 		/*!
 			\param [in] cosHel the cosine of the helicity angle
 			\param [in] pProd the momentum factor (typically q * p)
 		*/
-		Double_t calcSpinTerm( const Double_t cosHel, const Double_t pProd ) const;
+		Double_t calcZemachSpinFactor( const Double_t cosHel, const Double_t pProd ) const;
+
+		//! Calculate the amplitude spin term using the covariant tensor formalism
+		/*!
+			\param [in] cosHel the cosine of the helicity angle
+		        \param [in] erm E_ij in the parent rest-frame divided by m_ij (equivalent to sqrt(1 + p^2/mParent^2))
+		*/
+                Double_t calcCovSpinFactor( const Double_t cosHel, const Double_t erm ) const;
+
+		//! Calculate normalisation factors for covariant spin factor
+		/*!
+		       \param [in] mass the invariant mass of ij system
+		*/
+		Double_t calcCovSpinFactorNorm( const Double_t mass ) const;
+
+		//! Calculate the Legendre polynomial for the spin factor
+		/*!
+			\param [in] cosHel the cosine of the helicity angle
+		*/
+		Double_t calcLegendrePoly( const Double_t cosHel ) const;
 
 		//! Complex resonant amplitude
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance
-			\param [in] spinTerm Zemach spin term
+			\param [in] spinTerm spin term
 		*/
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm) = 0;
 
@@ -404,9 +435,6 @@ class LauAbsResonance {
 
 		//! Access the list of floating parameters
 		std::vector<LauParameter*>& getParameters() { return resParameters_; }
-
-                //! calculate covariant factor
-                Double_t calcCovFactor( const Double_t Erm) const;
 
 	private:
 		//! Copy constructor (not implemented)
@@ -473,17 +501,17 @@ class LauAbsResonance {
 		//! Blatt Weisskopf barrier for resonance decay
 		LauBlattWeisskopfFactor* resBWFactor_;
 
+		//! Spin formalism
+		LauSpinType spinType_;
+
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
-		//! Boolean to ignore q_ and p_ in spinTerm, as well as ignoring momentum dependent widths
+		//! Boolean to ignore momenta in Zemach spin factors, as well as ignoring mass-dependent widths
 		Bool_t ignoreMomenta_;
                 //! Boolean to set the spinTerm to unity always
                 Bool_t ignoreSpin_;
-                //! Boolean to ignore barrier factor amplitude scaling; they are still used for the width
+                //! Boolean to ignore barrier factor scaling in the amplitude numerator, they are still used for the mass-dependent width
                 Bool_t ignoreBarrierScaling_;
-
-                //! Boolean to ignore covariant factor
-                Bool_t ignoreCovariant_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;
@@ -493,6 +521,15 @@ class LauAbsResonance {
 		Double_t pstar_;
 
                 //! Covariant factor
+		/*!
+		    sqrt(1 + z*z), where z = p / mParent
+
+		    Can also be expressed as E_ij in the parent rest-frame divided by m_ij - indeed this is how LauKinematics calculates it.
+
+		    \see LauKinematics::getcov12
+		    \see LauKinematics::getcov13
+		    \see LauKinematics::getcov23
+		*/
                 Double_t erm_;
 
 		ClassDef(LauAbsResonance,0) // Abstract resonance class

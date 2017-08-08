@@ -135,7 +135,7 @@ class LauDabbaRes : public LauAbsResonance {
 		//! Complex resonant amplitude
 		/*!
 			\param [in] mass appropriate invariant mass for the resonance
-			\param [in] spinTerm Zemach spin term
+			\param [in] spinTerm spin term
 		*/	
 		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 

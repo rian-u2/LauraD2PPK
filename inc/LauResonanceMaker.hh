@@ -38,17 +38,29 @@ class LauResonanceMaker {
 		//! Get the factory instance
 		static LauResonanceMaker& get();
 
-		//! Create a resonance
+		//! Set the type of BW factor (for all categories)
 		/*!
-		    \param [in] daughters defines the Dalitz plot in which the resonance should be created
-		    \param [in] resName the name of the resonant particle
-		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
-		    \param [in] resType the type of the resonance
-		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    This must be used before creating any resonances
+
 		    \param [in] bwType the Blatt-Weisskopf barrier type
-		    \return the resonance
 		*/
-		LauAbsResonance* getResonance(const LauDaughters* daughters, const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory = LauBlattWeisskopfFactor::Default, const LauBlattWeisskopfFactor::BarrierType bwType = LauBlattWeisskopfFactor::BWPrimeBarrier);
+		void setBWType(const LauBlattWeisskopfFactor::BarrierType bwType);
+
+		//! Set the rest frame in which the bachelor momentum should be calculated (for all BW categories)
+		/*!
+		    This must be used before creating any resonances
+
+		    \param [in] restFrame the rest frame in which the bachelor momentum should be calculated for the Blatt-Weisskopf factors
+		*/
+		void setBWBachelorRestFrame(const LauBlattWeisskopfFactor::RestFrame restFrame);
+
+		//! Set the spin formalism to be used for all resonances
+		/*!
+		    This must be used before creating any resonances
+
+		    \param [in] spinType the spin formalism to be used
+		*/
+		void setSpinFormalism(const LauAbsResonance::LauSpinType spinType);
 
 		//! Set the BW radius for the given category
 		/*!
@@ -63,6 +75,17 @@ class LauResonanceMaker {
 		    \param [in] fixRadius new status of the radius (kTRUE = fixed, kFALSE = floating)
 		*/
 		void fixBWRadius(const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Bool_t fixRadius);
+
+		//! Create a resonance
+		/*!
+		    \param [in] daughters defines the Dalitz plot in which the resonance should be created
+		    \param [in] resName the name of the resonant particle
+		    \param [in] resPairAmpInt the index of the daughter not produced by the resonance
+		    \param [in] resType the type of the resonance
+		    \param [in] bwCategory the Blatt-Weisskopf barrier factor category
+		    \return the resonance
+		*/
+		LauAbsResonance* getResonance(const LauDaughters* daughters, const TString& resName, const Int_t resPairAmpInt, const LauAbsResonance::LauResonanceModel resType, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory = LauBlattWeisskopfFactor::Default);
 
 		//! Retrieve the integer index for the specified resonance
 		/*!
@@ -95,9 +118,25 @@ class LauResonanceMaker {
 		void createResonanceVector();
 
 		//! Retrieve Blatt-Weisskopf factor for the given category
-		LauBlattWeisskopfFactor* getBWFactor( const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauResonanceInfo* resInfo, const LauBlattWeisskopfFactor::BarrierType bwType );
+		LauBlattWeisskopfFactor* getBWFactor(const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauResonanceInfo* resInfo);
 
 	private:
+		/*!
+		  \struct BlattWeisskopfCategoryInfo
+		  \brief Data structure to store information on a given Blatt-Weisskopf category
+		*/
+		struct BlattWeisskopfCategoryInfo {
+			//! The BW factor object
+			LauBlattWeisskopfFactor* bwFactor_;
+			//! The default value for the radius in this category
+			Double_t defaultRadius_;
+			//! Whether or not the radius value for this category should be fixed in the fit
+			Bool_t radiusFixed_;
+		};
+
+		//! Define a type to hold information on each BW category
+		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,BlattWeisskopfCategoryInfo> BWFactorCategoryMap;
+
 		//! Constructor
 		LauResonanceMaker();
 
@@ -119,20 +158,23 @@ class LauResonanceMaker {
 		//! The known resonances
 		std::vector<LauResonanceInfo*> resInfo_;
 
-		//! The Blatt-Weisskopf factor objects for each category
-		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,LauBlattWeisskopfFactor*> BWFactorCategoryMap;
+		//! The type of the Blatt-Weisskopf barrier to use for all resonances
+		LauBlattWeisskopfFactor::BarrierType bwBarrierType_;
+
+		//! The rest frame in which the bachelor momentum used in the Blatt-Weisskopf factors should be calculated
+		LauBlattWeisskopfFactor::RestFrame bwRestFrame_;
+
+		//! The spin formalism that should be used for all resonances
+		LauAbsResonance::LauSpinType spinFormalism_;
+
+		//! The Blatt-Weisskopf factor objects (and related information) for each category
 		BWFactorCategoryMap bwFactors_;
-
-		//! The default radius for each Blatt-Weisskopf category
-		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,Double_t> BWRadiusCategoryMap;
-		BWRadiusCategoryMap bwDefaultRadii_;
-
-		//! The fixed/floating status of the radius for each Blatt-Weisskopf category
-		typedef std::map<LauBlattWeisskopfFactor::BlattWeisskopfCategory,Bool_t> BWRadiusFixedCategoryMap;
-		BWRadiusFixedCategoryMap bwFixRadii_;
 
 		//! The Blatt-Weisskopf factor objects for resonances in the independent category
 		std::vector<LauBlattWeisskopfFactor*> bwIndepFactors_;
+
+		//! Boolean flag to control printing a summary of the formalism to be used when the first resonance is created
+		Bool_t summaryPrinted_;
 
 		ClassDef(LauResonanceMaker,0) // Kinematic routines
 };

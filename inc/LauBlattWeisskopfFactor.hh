@@ -39,6 +39,7 @@ class LauBlattWeisskopfFactor {
 
 		//! Define the rest frame in which the momentum should be calculated (only relevant for bachelor)
 		enum RestFrame {
+			Covariant,	/*!< use expression from Covariant spin factor */
 			ParentFrame,	/*!< momentum calculated in parent rest frame */
 			ResonanceFrame	/*!< momentum calculated in resonance rest frame */
 		};

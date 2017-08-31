@@ -25,6 +25,7 @@ LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_
 	q0_(0.0),
 	p0_(0.0),
 	pstar0_(0.0),
+	erm0_(0.0),
 	resMass_(0.0),
 	resMassSq_(0.0),
 	resWidth_(0.0),
@@ -112,6 +113,9 @@ void LauRelBreitWignerRes::initialise()
 		pstar0_ = TMath::Sqrt( termStarBach );
 	}
 
+	// Covariant factor when resonance mass = rest-mass value, m_0 (PDF value)
+	erm0_ = (mParentSq_ + effResMassSq - mBachSq_)/(2.0*massParent*effResMass);
+
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
 	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
 	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
@@ -122,6 +126,9 @@ void LauRelBreitWignerRes::initialise()
 			break;
 		case LauBlattWeisskopfFactor::ParentFrame:
 			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_) : 1.0;
+			break;
+		case LauBlattWeisskopfFactor::Covariant:
+			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_*erm0_) : 1.0;
 			break;
 	}
 }
@@ -178,6 +185,10 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 			break;
 		case LauBlattWeisskopfFactor::ParentFrame:
 			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar) : 1.0;
+			break;
+		case LauBlattWeisskopfFactor::Covariant:
+			const Double_t erm = this->getCovFactor();
+			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar*erm) : 1.0;
 			break;
 	}
 	const Double_t fFactorRRatio = fFactorR/FR0_;

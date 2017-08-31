@@ -667,6 +667,9 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			case LauBlattWeisskopfFactor::ResonanceFrame :
 				std::cout << "                                        : Blatt-Weisskopf barrier factors use bachelor momentum in resonance rest frame" << std::endl;
 				break;
+			case LauBlattWeisskopfFactor::Covariant :
+				std::cout << "                                        : Blatt-Weisskopf barrier factors use covariant expression" << std::endl;
+				break;
 		}
 
 		summaryPrinted_ = kTRUE;

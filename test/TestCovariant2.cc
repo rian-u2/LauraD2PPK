@@ -93,6 +93,10 @@ int main( int argc, char** argv )
 		resMaker.setBWBachelorRestFrame( LauBlattWeisskopfFactor::ParentFrame );
 		resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     4.0 );
 		resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
+	} else if ( barrier == "covParentNumeratorBWfactor" ) {
+		resMaker.setBWBachelorRestFrame( LauBlattWeisskopfFactor::Covariant );
+		resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     4.0 );
+		resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
 	} else {
 		std::cerr << "Unknown barrier: " << barrier << std::endl;
 		return EXIT_FAILURE;

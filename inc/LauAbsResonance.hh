@@ -377,6 +377,8 @@ class LauAbsResonance {
 		Double_t getP() const {return p_;}
 		//! Get the current value of the bachelor momentum in the parent rest frame
 		Double_t getPstar() const {return pstar_;}
+		//! Get the current value of the covariant factor
+		Double_t getCovFactor() const {return erm_;}
 
 		//! Get the centrifugal barrier for the parent decay
 		LauBlattWeisskopfFactor* getParBWFactor() {return parBWFactor_;}

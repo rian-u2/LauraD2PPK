@@ -396,22 +396,17 @@ class LauAbsResonance {
 		//! Calculate the amplitude spin term using the Zemach tensor formalism
 		/*!
 			\param [in] cosHel the cosine of the helicity angle
-			\param [in] pProd the momentum factor (typically q * p)
+			\param [in] pProd the momentum factor (either q * p or q * pstar)
 		*/
 		Double_t calcZemachSpinFactor( const Double_t cosHel, const Double_t pProd ) const;
 
 		//! Calculate the amplitude spin term using the covariant tensor formalism
 		/*!
 			\param [in] cosHel the cosine of the helicity angle
+			\param [in] pProd the momentum factor (q * pstar)
 		        \param [in] erm E_ij in the parent rest-frame divided by m_ij (equivalent to sqrt(1 + p^2/mParent^2))
 		*/
-                Double_t calcCovSpinFactor( const Double_t cosHel, const Double_t erm ) const;
-
-		//! Calculate normalisation factors for covariant spin factor
-		/*!
-		       \param [in] mass the invariant mass of ij system
-		*/
-		Double_t calcCovSpinFactorNorm( const Double_t mass ) const;
+                Double_t calcCovSpinFactor( const Double_t cosHel, const Double_t pProd, const Double_t erm ) const;
 
 		//! Calculate the Legendre polynomial for the spin factor
 		/*!

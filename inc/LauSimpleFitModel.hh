@@ -130,9 +130,9 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		/*!
 			\param [in] fileName the name of the file containing the events
 			\param [in] treeName the name of the tree 
-			\param [in] reuseEventsWithinEnsemble
-			\param [in] reuseEventsWithinExperiment
-			\param [in] useReweighting
+			\param [in] reuseEventsWithinEnsemble sample with replacement but only replace events once each experiment has been generated
+			\param [in] reuseEventsWithinExperiment sample with immediate replacement
+			\param [in] useReweighting perform an accept/reject routine using the configured signal amplitude model based on the MC-truth DP coordinate
 		*/	
 		void embedSignal(const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE,
@@ -143,8 +143,8 @@ class LauSimpleFitModel : public LauAbsFitModel {
 			\param [in] bkgndClass the name of the background class
 			\param [in] fileName the name of the file containing the events
 			\param [in] treeName the name of the tree 
-			\param [in] reuseEventsWithinEnsemble
-			\param [in] reuseEventsWithinExperiment
+			\param [in] reuseEventsWithinEnsemble sample with replacement but only replace events once each experiment has been generated
+			\param [in] reuseEventsWithinExperiment sample with immediate replacement
 		*/	
 		void embedBkgnd(const TString& bkgndClass, const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE);

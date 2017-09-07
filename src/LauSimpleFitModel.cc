@@ -1986,11 +1986,6 @@ void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& tree
 		return;
 	}
 
-	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		std::cerr << "WARNING in LauSimpleFitModel::embedSignal : Conflicting options provided, will not reuse events at all." << std::endl;
-		reuseEventsWithinExperiment = kFALSE;
-	}
-
 	signalTree_ = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);
 
 	Bool_t dataOK = signalTree_->findBranches();
@@ -2022,11 +2017,6 @@ void LauSimpleFitModel::embedBkgnd(const TString& bkgndClass, const TString& fil
 	if (bkgndTree_[bkgndID]) {
 		std::cerr << "ERROR in LauSimpleFitModel::embedBkgnd : Already embedding background from a file." << std::endl;
 		return;
-	}
-
-	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		std::cerr << "WARNING in LauSimpleFitModel::embedBkgnd : Conflicting options provided, will not reuse events at all." << std::endl;
-		reuseEventsWithinExperiment = kFALSE;
 	}
 
 	bkgndTree_[bkgndID] = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);

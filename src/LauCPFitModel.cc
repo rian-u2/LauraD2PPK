@@ -2839,11 +2839,6 @@ void LauCPFitModel::embedNegSignal(const TString& fileName, const TString& treeN
 		return;
 	}
 
-	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		std::cerr << "WARNING in LauCPFitModel::embedNegSignal : Conflicting options provided, will not reuse events at all." << std::endl;
-		reuseEventsWithinExperiment = kFALSE;
-	}
-
 	negSignalTree_ = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);
 	Bool_t dataOK = negSignalTree_->findBranches();
 	if (!dataOK) {
@@ -2872,11 +2867,6 @@ void LauCPFitModel::embedNegBkgnd(const TString& bkgndClass, const TString& file
 		return;
 	}
 
-	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		std::cerr << "WARNING in LauCPFitModel::embedNegBkgnd : Conflicting options provided, will not reuse events at all." << std::endl;
-		reuseEventsWithinExperiment = kFALSE;
-	}
-
 	negBkgndTree_[bkgndID] = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);
 	Bool_t dataOK = negBkgndTree_[bkgndID]->findBranches();
 	if (!dataOK) {
@@ -2895,11 +2885,6 @@ void LauCPFitModel::embedPosSignal(const TString& fileName, const TString& treeN
 	if (posSignalTree_) {
 		std::cerr << "ERROR in LauCPFitModel::embedPosSignal : Already embedding signal from a file." << std::endl;
 		return;
-	}
-
-	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		std::cerr << "WARNING in LauCPFitModel::embedPosSignal : Conflicting options provided, will not reuse events at all." << std::endl;
-		reuseEventsWithinExperiment = kFALSE;
 	}
 
 	posSignalTree_ = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);
@@ -2928,11 +2913,6 @@ void LauCPFitModel::embedPosBkgnd(const TString& bkgndClass, const TString& file
 	if (posBkgndTree_[bkgndID]) {
 		std::cerr << "ERROR in LauCPFitModel::embedPosBkgnd : Already embedding background from a file." << std::endl;
 		return;
-	}
-
-	if (!reuseEventsWithinEnsemble && reuseEventsWithinExperiment) {
-		std::cerr << "WARNING in LauCPFitModel::embedPosBkgnd : Conflicting options provided, will not reuse events at all." << std::endl;
-		reuseEventsWithinExperiment = kFALSE;
 	}
 
 	posBkgndTree_[bkgndID] = new LauEmbeddedData(fileName,treeName,reuseEventsWithinExperiment);

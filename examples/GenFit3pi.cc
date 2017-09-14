@@ -86,6 +86,7 @@ int main( int argc, char** argv )
 	LauDaughters* daughters = new LauDaughters("B+", "pi+", "pi+", "pi-", squareDP);
 
 	// Optionally apply some vetoes to the DP
+	// (example syntax given but commented-out)
 	LauVetoes* vetoes = new LauVetoes();
 	//Double_t DMin = 1.70;
 	//Double_t DMax = 1.925;
@@ -101,9 +102,10 @@ int main( int argc, char** argv )
 	//vetoes->addMassVeto(1, psi2SMin, psi2SMax); // psi(2S) veto, m23
 
 	// Define the efficiency model (defaults to unity everywhere)
-	// Can optionally provide a histogram to model variation over DP
-	// (example syntax given in commented-out section)
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);
+
+	// Can optionally provide a histogram to model variation over DP
+	// (example syntax given but commented-out)
 	//TFile *effHistFile = TFile::Open("histoFiles/B3piNRDPEff.root", "read");
 	//TH2* effHist = dynamic_cast<TH2*>(effHistFile->Get("effHist"));
 	//Bool_t useInterpolation = kTRUE;
@@ -118,7 +120,7 @@ int main( int argc, char** argv )
 	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     5.0 );
 	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
 	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Parent,  kTRUE );
-	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Light,  kFALSE );
+	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Light,   kTRUE );
 
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 	LauAbsResonance* reson(0);
@@ -137,7 +139,7 @@ int main( int argc, char** argv )
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and
 	// error.
-	sigModel->setASqMaxValue(0.32);  
+	sigModel->setASqMaxValue(0.35);  
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
@@ -156,7 +158,7 @@ int main( int argc, char** argv )
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	const Double_t nSig = 500.0;
+	const Double_t nSig = 1500.0;
 	LauParameter * nSigEvents = new LauParameter("nSigEvents",nSig,-2.0*nSig,2.0*nSig,kFALSE);
 	fitModel->setNSigEvents(nSigEvents);
 
@@ -164,20 +166,34 @@ int main( int argc, char** argv )
 	// experiment to start with
 	fitModel->setNExpts( nExpt, firstExpt );
 
-	// Optionally load in continuum background DP model histogram
-	// (example syntax given in commented-out section)
+
+	// Set up a background model
+
+	// First declare the names of the background class(es)
 	std::vector<TString> bkgndNames(1);
 	bkgndNames[0] = "qqbar";
 	fitModel->setBkgndClassNames( bkgndNames );
-	const Double_t nBkg = 1200.0;
+
+	// Define and set the yield parameter for the background
+	const Double_t nBkg = 1250.0;
 	LauParameter* nBkgndEvents = new LauParameter("qqbar",nBkg,-2.0*nBkg,2.0*nBkg,kFALSE);
 	fitModel->setNBkgndEvents( nBkgndEvents );
+
+	// Create the background DP model
+	LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
+
+	// Load in background DP model histogram
+	// (example syntax given but commented-out - the background will be treated as being uniform in the DP in the absence of a histogram)
 	//TString qqFileName("histoFiles/offResDP.root");
 	//TFile* qqFile = TFile::Open(qqFileName.Data(), "read");
 	//TH2* qqDP = dynamic_cast<TH2*>(qqFile->Get("AllmTheta")); // m', theta'
-	LauBkgndDPModel* qqbarModel = new LauBkgndDPModel(daughters, vetoes);
 	//qqbarModel->setBkgndHisto(qqDP, useInterpolation, fluctuateBins, useUpperHalf, squareDP);
+
+	// Add the background DP model into the fit model
 	fitModel->setBkgndDPModel( "qqbar", qqbarModel );
+
+
+	// Configure various fit options
 
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
@@ -185,40 +201,41 @@ int main( int argc, char** argv )
 	// Randomise initial fit values for the signal mode
 	fitModel->useRandomInitFitPars(kTRUE);
 
+	const Bool_t haveBkgnds = ( fitModel->nBkgndClasses() > 0 );
+
 	// Switch on/off Poissonian smearing of total number of events
-	fitModel->doPoissonSmearing(kTRUE);
+	fitModel->doPoissonSmearing(haveBkgnds);
 
 	// Switch on/off Extended ML Fit option
-	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
-	fitModel->doEMLFit(emlFit);
+	fitModel->doEMLFit(haveBkgnds);
+
+	// Generate toy from the fitted parameters
+	//TString fitToyFileName("fitToyMC_");
+	//fitToyFileName += iFit;
+	//fitToyFileName += ".root";
+	//fitModel->compareFitData(100, fitToyFileName);
+
+	// Write out per-event likelihoods and sWeights
+	//TString splotFileName("splot_");
+	//splotFileName += iFit;
+	//splotFileName += ".root";
+	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Set the names of the files to read/write
 	TString dataFile("gen.root");
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
-	TString fitToyFileName("fitToyMC_");
-	TString splotFileName("splot_");
 	if (command == "fit") {
 		rootFileName = "fit"; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
 		tableFileName = "fitResults_"; tableFileName += iFit;
-		fitToyFileName += iFit;
-		fitToyFileName += ".root";
-		splotFileName += iFit;
-		splotFileName += ".root";
 	} else {
 		rootFileName = "dummy.root";
 		tableFileName = "genResults";
 	}
-
-	// Generate toy from the fitted parameters
-	//fitModel->compareFitData(100, fitToyFileName);
-
-	// Write out per-event likelihoods and sWeights
-	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Execute the generation/fit
 	fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );

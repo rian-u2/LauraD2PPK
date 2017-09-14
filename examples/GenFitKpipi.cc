@@ -79,34 +79,34 @@ int main( int argc, char** argv )
 	// If you want to use square DP histograms for efficiency,
 	// backgrounds or you just want the square DP co-ordinates
 	// stored in the toy MC ntuple then set this to kTRUE
-	Bool_t squareDP = kTRUE;
+	const Bool_t squareDP = kTRUE;
 
 	// Set this to kFALSE if you want to remove the DP from the fit
-	Bool_t doDP = kTRUE;
+	const Bool_t doDP = kTRUE;
 
 	// Set this to kTRUE if you want to fix the CPV parameters
-	Bool_t fixCP = kFALSE;
-	Bool_t doTwoStageFit = !fixCP;
+	const Bool_t fixCP = kFALSE;
+	const Bool_t doTwoStageFit = !fixCP;
 
 	// General histogram booleans
-	Bool_t useInterpolation = kTRUE;
-	Bool_t fluctuateBins = kFALSE;
-	Bool_t useUpperHalfOnly = kFALSE;
+	const Bool_t useInterpolation = kTRUE;
+	const Bool_t fluctuateBins = kFALSE;
+	const Bool_t useUpperHalfOnly = kFALSE;
 
 	// Signal and continuum yields - from Phys.Rev.D78:012004,2008
-	Double_t nSigEvents = 4585.0;
-	Bool_t fixNSigEvents = kFALSE;
-	Double_t nBgEvents = 6830.0;
-	Bool_t fixNBgEvents = kFALSE;
+	const Double_t nSigEvents = 4585.0;
+	const Bool_t fixNSigEvents = kFALSE;
+	const Double_t nBgEvents = 6830.0;
+	const Bool_t fixNBgEvents = kFALSE;
 
 	// Signal and continuum asymmetries
 	// NB the signal asymmetry value here is only used if the DP is NOT
 	// in the fit, otherwise the asymmetry is included within the
 	// isobar model.
-	Double_t sigAsym = 0.028;
-	Bool_t fixSigAsym = kFALSE;
-	Double_t bgAsym = -0.028;
-	Bool_t fixBgAsym = kFALSE;
+	const Double_t sigAsym = 0.028;
+	const Bool_t fixSigAsym = kFALSE;
+	const Double_t bgAsym = -0.028;
+	const Bool_t fixBgAsym = kFALSE;
 
 	// Define the DP (for both B+ and B- candidates)
 	LauDaughters* negDaughters = new LauDaughters("B-", "K-", "pi-", "pi+", squareDP);
@@ -114,14 +114,14 @@ int main( int argc, char** argv )
 
 	// Add some vetoes
 	LauVetoes* vetoes = new LauVetoes();
-	Double_t D_KpiMin  = 1.756;
-	Double_t D_KpiMax  = 1.931;
-	Double_t D_pipiMin = 1.660;
-	Double_t D_pipiMax = 1.800;
-	Double_t JpsiMin   = 3.019;
-	Double_t JpsiMax   = 3.179;
-	Double_t psi2SMin  = 3.627;
-	Double_t psi2SMax  = 3.747;
+	const Double_t D_KpiMin  = 1.756;
+	const Double_t D_KpiMax  = 1.931;
+	const Double_t D_pipiMin = 1.660;
+	const Double_t D_pipiMax = 1.800;
+	const Double_t JpsiMin   = 3.019;
+	const Double_t JpsiMax   = 3.179;
+	const Double_t psi2SMin  = 3.627;
+	const Double_t psi2SMax  = 3.747;
 	vetoes->addMassVeto(2, D_KpiMin, D_KpiMax); // D0 veto, m13
 	vetoes->addMassVeto(1, D_pipiMin, D_pipiMax); // D0 veto, m23
 	vetoes->addMassVeto(1, JpsiMin, JpsiMax); // J/psi veto, m23
@@ -207,7 +207,7 @@ int main( int argc, char** argv )
 	}
 
 	// Set the number of signal events and the number of experiments
-	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
+	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-1.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
 	LauParameter * signalAsym = new LauParameter("signalAsym",sigAsym,-1.0,1.0,fixSigAsym);
 
 	fitModel->setNSigEvents(signalEvents, signalAsym);
@@ -287,7 +287,7 @@ int main( int argc, char** argv )
 	LauBkgndDPModel* posqqbarModel= new LauBkgndDPModel(posDaughters, vetoes);
 	posqqbarModel->setBkgndHisto( posqqDP, useInterpolation, fluctuateBins, useUpperHalfOnly, squareDP );
 
-	LauParameter* backgroundEvents = new LauParameter("qqbar",nBgEvents,-2.0*nBgEvents,2.0*nBgEvents,fixNBgEvents);
+	LauParameter* backgroundEvents = new LauParameter("qqbar",nBgEvents,-1.0*nBgEvents,2.0*nBgEvents,fixNBgEvents);
 	LauParameter* backgroundAsym = new LauParameter("qqbar",bgAsym,-1.0,1.0,fixBgAsym);
 
 	fitModel->setNBkgndEvents( backgroundEvents, backgroundAsym );
@@ -508,6 +508,9 @@ int main( int argc, char** argv )
 		fitModel->setBkgndPdfs( BBNames[i], negBBDEPdfs[i], posBBDEPdfs[i] );
 	}
 
+
+	// Configure various fit options
+
 	// Do not calculate asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
 
@@ -523,33 +526,34 @@ int main( int argc, char** argv )
 	// Switch on/off two-stage fitting for CPV parameters
 	fitModel->twoStageFit(doTwoStageFit);
 
-	TString dataFile("data.root");
-	TString treeName("fitTree");
-	TString rootFileName("");
-	TString tableFileName("");
-	TString fitToyFileName("fitToyMC_");
-	TString splotFileName("splot_");
-	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += iFit;
-		rootFileName += "_expts"; rootFileName += firstExpt; rootFileName += "-"; rootFileName += firstExpt+nExpt-1;
-		rootFileName += ".root";
-		tableFileName = "fitResults_"; tableFileName += iFit;
-		fitToyFileName += iFit;
-		fitToyFileName += ".root";
-		splotFileName += iFit;
-		splotFileName += ".root";
-	} else {
-		rootFileName = "dummy.root";
-		tableFileName = "genResults";
-	}
-
 	// Generate toy from the fitted parameters
+	//TString fitToyFileName("fitToyMC_Kpipi_");
+	//fitToyFileName += iFit;
+	//fitToyFileName += ".root";
 	//fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
+	//TString splotFileName("splot_Kpipi_");
+	//splotFileName += iFit;
+	//splotFileName += ".root";
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
-	// Run!
+	// Set the names of the files to read/write
+	TString dataFile("gen-Kpipi.root");
+	TString treeName("genResults");
+	TString rootFileName("");
+	TString tableFileName("");
+	if (command == "fit") {
+		rootFileName = "fitKpipi_"; rootFileName += iFit;
+		rootFileName += "_expts"; rootFileName += firstExpt; rootFileName += "-"; rootFileName += firstExpt+nExpt-1;
+		rootFileName += ".root";
+		tableFileName = "fitKpipiResults_"; tableFileName += iFit;
+	} else {
+		rootFileName = "dummy.root";
+		tableFileName = "genKpipiResults";
+	}
+
+	// Execute the generation/fit
 	fitModel->run(command, dataFile, treeName, rootFileName, tableFileName);
 
 	return EXIT_SUCCESS;

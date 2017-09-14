@@ -23,8 +23,6 @@ void usage( std::ostream& out, const TString& progName )
 	out<<progName<<" gen [nExpt = 1] [firstExpt = 0]\n";
 	out<<"or\n";
 	out<<progName<<" fit <iFit> [nExpt = 1] [firstExpt = 0]"<<std::endl;
-	out<<"or\n";
-	out<<progName<<" plot"<<std::endl;
 }
 
 int main( int argc, char** argv )
@@ -62,11 +60,6 @@ int main( int argc, char** argv )
 			if ( argc > 4 ) {
 				firstExpt = atoi( argv[4] );
 			}
-		}
-	}  else if ( command == "plot" ) {
-		if ( argc > 2 ) {
-		usage( std::cerr, argv[0] );
-		return EXIT_FAILURE;
 		}
 	} else {
 		usage( std::cerr, argv[0] );
@@ -123,7 +116,10 @@ int main( int argc, char** argv )
 	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Light,   kTRUE );
 
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
+	// Add various components to the isobar model,
+	// modifying some resonance parameters
 	LauAbsResonance* reson(0);
+	// addResonance arguments: resName, resPairAmpInt, resType
 	reson = sigModel->addResonance("rho0(770)",  1, LauAbsResonance::GS);		// resPairAmpInt = 1 => resonance mass is m23.
 	reson = sigModel->addResonance("rho0(1450)", 1, LauAbsResonance::RelBW);
 	reson = sigModel->addResonance("f_0(980)",   1, LauAbsResonance::Flatte);
@@ -137,8 +133,7 @@ int main( int argc, char** argv )
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
 	// inefficiency if you get the value wrong but best to set this by
-	// hand once you've found the right value through some trial and
-	// error.
+	// hand once you've found the right value through some trial and error.
 	sigModel->setASqMaxValue(0.35);  
 
 	// Create the fit model
@@ -158,9 +153,9 @@ int main( int argc, char** argv )
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	const Double_t nSig = 1500.0;
-	LauParameter * nSigEvents = new LauParameter("nSigEvents",nSig,-2.0*nSig,2.0*nSig,kFALSE);
-	fitModel->setNSigEvents(nSigEvents);
+	const Double_t nSigEvents = 1500.0;
+	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-1.0*nSigEvents,2.0*nSigEvents,kFALSE);
+	fitModel->setNSigEvents(signalEvents);
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
@@ -210,31 +205,31 @@ int main( int argc, char** argv )
 	fitModel->doEMLFit(haveBkgnds);
 
 	// Generate toy from the fitted parameters
-	//TString fitToyFileName("fitToyMC_");
+	//TString fitToyFileName("fitToyMC_3pi_");
 	//fitToyFileName += iFit;
 	//fitToyFileName += ".root";
 	//fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
-	//TString splotFileName("splot_");
+	//TString splotFileName("splot_3pi_");
 	//splotFileName += iFit;
 	//splotFileName += ".root";
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Set the names of the files to read/write
-	TString dataFile("gen.root");
+	TString dataFile("gen-3pi.root");
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
 	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += iFit;
+		rootFileName = "fit3pi_"; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
-		tableFileName = "fitResults_"; tableFileName += iFit;
+		tableFileName = "fit3piResults_"; tableFileName += iFit;
 	} else {
 		rootFileName = "dummy.root";
-		tableFileName = "genResults";
+		tableFileName = "gen3piResults";
 	}
 
 	// Execute the generation/fit

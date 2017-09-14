@@ -16,7 +16,7 @@
 #include "LauMagPhaseCoeffSet.hh"
 #include "LauVetoes.hh"
 
-void usage( std::ostream& out, const char* progName )
+void usage( std::ostream& out, const TString& progName )
 {
 	out<<"Usage:\n";
 	out<<progName<<" gen [nExpt = 1] [firstExpt = 0]\n";
@@ -28,9 +28,9 @@ int main( int argc, char** argv )
 {
 	// Process command-line arguments
 	// Usage:
-	// ./GenFit3KS gen [nExpt = 1] [firstExpt = 0]
+	// ./GenFitDs2KKpi gen [nExpt = 1] [firstExpt = 0]
 	// or
-	// ./GenFit3KS fit <iFit> [nExpt = 1] [firstExpt = 0]
+	// ./GenFitDs2KKpi fit <iFit> [nExpt = 1] [firstExpt = 0]
 	if ( argc < 2 ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
@@ -70,33 +70,29 @@ int main( int argc, char** argv )
 	// stored in the toy MC ntuple then set this to kTRUE
 	Bool_t squareDP = kFALSE;
 
-	// This defines the DP => decay is B0 -> KS KS KS
-	// Particle 1 = KS
-	// Particle 2 = KS
-	// Particle 3 = KS
+	// This defines the DP => decay is D_s+ -> pi+ K+ K-
+	// Particle 1 = pi+
+	// Particle 2 = K+
+	// Particle 3 = K-
 	// The DP is defined in terms of m13Sq and m23Sq
-	LauDaughters* daughters = new LauDaughters("B0", "K_S0", "K_S0", "K_S0", squareDP);
-
-	// Optionally apply some vetoes to the DP
-	LauVetoes* vetoes = new LauVetoes();
+	LauDaughters* daughters = new LauDaughters("D_s+", "pi+", "K+", "K-", squareDP);
 
 	// Define the efficiency model (defaults to unity everywhere)
-	// Can optionally provide a histogram to model variation over DP
+	LauVetoes* vetoes = new LauVetoes();
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);
 
 	// Create the isobar model
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-	//LauAbsResonance* reson(0);
-	/*reson =*/ sigModel->addResonance("f_0(980)",     3, LauAbsResonance::Flatte);
-	/*reson =*/ sigModel->addResonance("f_0(1710)",    3, LauAbsResonance::RelBW);
-	/*reson =*/ sigModel->addResonance("f_2(2010)",    3, LauAbsResonance::RelBW);
-	/*reson =*/ sigModel->addResonance("chi_c0",       3, LauAbsResonance::RelBW);
+	LauAbsResonance* reson(0);
+	reson = sigModel->addResonance("phi(1020)",  1, LauAbsResonance::RelBW);		// resPairAmpInt = 1 => resonance mass is m23.
+	reson = sigModel->addResonance("K*0(892)",   2, LauAbsResonance::RelBW);
+	reson = sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and error.
-	sigModel->setASqMaxValue(0.285);  
+	sigModel->setASqMaxValue(0.27);  
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
@@ -105,17 +101,17 @@ int main( int argc, char** argv )
 	// Here we're using the magnitude and phase form:
 	// c_j = a_j exp(i*delta_j)
 	std::vector<LauAbsCoeffSet*> coeffset;
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",    1.00,  0.00,  kTRUE,  kTRUE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1710)",   0.40,  1.11, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(2010)",   0.45,  2.50, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("chi_c0",      0.40,  0.63, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("phi(1020)",  1.00,  0.00,  kTRUE,  kTRUE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)",   1.00,  0.00, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",   1.00,  0.00, kFALSE, kFALSE) );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	LauParameter * nSigEvents = new LauParameter("nSigEvents",10000.0,-50000.0,50000.0,kFALSE);
-	fitModel->setNSigEvents(nSigEvents);
+	const Double_t nSigEvents = 10000.0;
+	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-1.0*nSigEvents,2.0*nSigEvents,kFALSE);
+	fitModel->setNSigEvents(signalEvents);
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
@@ -139,31 +135,31 @@ int main( int argc, char** argv )
 	fitModel->doEMLFit(haveBkgnds);
 
 	// Generate toy from the fitted parameters
-	//TString fitToyFileName("fitToyMC_3KS_");
+	//TString fitToyFileName("fitToyMC_Ds2KKpi_");
 	//fitToyFileName += iFit;
 	//fitToyFileName += ".root";
 	//fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
-	//TString splotFileName("splot_3KS_");
+	//TString splotFileName("splot_Ds2KKpi_");
 	//splotFileName += iFit;
 	//splotFileName += ".root";
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Set the names of the files to read/write
-	TString dataFile("gen-3KS.root");
+	TString dataFile("gen-Ds2KKpi.root");
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
 	if (command == "fit") {
-		rootFileName = "fit3KS_"; rootFileName += iFit;
+		rootFileName = "fitDs2KKpi_"; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
-		tableFileName = "fit3KSResults_"; tableFileName += iFit;
+		tableFileName = "fitDs2KKpiResults_"; tableFileName += iFit;
 	} else {
 		rootFileName = "dummy.root";
-		tableFileName = "gen3KSResults";
+		tableFileName = "genDs2KKpiResults";
 	}
 
 	// Execute the generation/fit

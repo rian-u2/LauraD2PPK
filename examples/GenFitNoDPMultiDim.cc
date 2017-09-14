@@ -30,9 +30,9 @@ int main( int argc, char** argv )
 {
 	// Process command-line arguments
 	// Usage:
-	// ./GenFitKpipi gen [nExpt = 1] [firstExpt = 0]
+	// ./GenFitNoDPMultiDim gen [nExpt = 1] [firstExpt = 0]
 	// or
-	// ./GenFitKpipi fit <iFit> [nExpt = 1] [firstExpt = 0]
+	// ./GenFitNoDPMultiDim fit <iFit> [nExpt = 1] [firstExpt = 0]
 	if ( argc < 2 ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
@@ -95,14 +95,14 @@ int main( int argc, char** argv )
 	fitModel->setBkgndClassNames( bkgndClasses );
 
 	// Signal and background yields
-	Double_t nSigEvents = 5000.0;
-	Bool_t fixNSigEvents = kFALSE;
-	Double_t nCombBgEvents = 7000.0;
-	Bool_t fixNCombBgEvents = kFALSE;
+	const Double_t nSigEvents = 5000.0;
+	const Bool_t fixNSigEvents = kFALSE;
+	const Double_t nCombBgEvents = 7000.0;
+	const Bool_t fixNCombBgEvents = kFALSE;
 
 	// Set the number of signal and background events and the number of experiments
-	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
-	LauParameter* nBkg = new LauParameter("qqbar",nCombBgEvents,-2.0*nCombBgEvents,2.0*nCombBgEvents,fixNCombBgEvents);
+	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-1.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
+	LauParameter* nBkg = new LauParameter("qqbar",nCombBgEvents,-1.0*nCombBgEvents,2.0*nCombBgEvents,fixNCombBgEvents);
 	
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNBkgndEvents(nBkg);
@@ -193,6 +193,8 @@ int main( int argc, char** argv )
 	fitModel->setBkgndPdf( "qqbar", combDEPdf );
 
 
+	// Configure various fit options
+
 	// Do not calculate asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
 
@@ -208,33 +210,33 @@ int main( int argc, char** argv )
 	// Switch on/off two-stage fitting for CPV parameters
 	fitModel->twoStageFit(kFALSE);
 
-	TString dataFile("data.root");
-	TString treeName("fitTree");
-	TString rootFileName("");
-	TString tableFileName("");
-	TString fitToyFileName("fitToyMC_");
-	TString splotFileName("splot_");
-	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += iFit;
-		rootFileName += "_expts"; rootFileName += firstExpt; rootFileName += "-"; rootFileName += firstExpt+nExpt-1;
-		rootFileName += ".root";
-		tableFileName = "fitResults_"; tableFileName += iFit;
-		fitToyFileName += iFit;
-		fitToyFileName += ".root";
-		splotFileName += iFit;
-		splotFileName += ".root";
-	} else {
-		rootFileName = "dummy.root";
-		tableFileName = "genResults";
-	}
-
 	// Generate toy from the fitted parameters
+	TString fitToyFileName("fitToyMC_NoDPMultiDim_");
+	fitToyFileName += iFit;
+	fitToyFileName += ".root";
 	fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
+	TString splotFileName("splot_NoDPMultiDim_");
+	splotFileName += iFit;
+	splotFileName += ".root";
 	fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
-	// Run!
+	TString dataFile("gen-NoDPMultiDim.root");
+	TString treeName("genResults");
+	TString rootFileName("");
+	TString tableFileName("");
+	if (command == "fit") {
+		rootFileName = "fitNoDPMultiDim_"; rootFileName += iFit;
+		rootFileName += "_expts"; rootFileName += firstExpt; rootFileName += "-"; rootFileName += firstExpt+nExpt-1;
+		rootFileName += ".root";
+		tableFileName = "fitNoDPMultiDimResults_"; tableFileName += iFit;
+	} else {
+		rootFileName = "dummy.root";
+		tableFileName = "genNoDPMultiDimResults";
+	}
+
+	// Execute the generation/fit
 	fitModel->run(command, dataFile, treeName, rootFileName, tableFileName);
 
 	return EXIT_SUCCESS;

@@ -168,49 +168,51 @@ int main( int argc, char** argv )
 	//bkgndModel->setBkgndHisto(bkgndDP, useInterpolation, fluctuateBins, useUpperHalf, squareDP);
 	fitModel->setBkgndDPModel( bkgndNames[0], bkgndModel );
 
-	// Switch on/off calculation of asymmetric errors.
-	//fitModel->useAsymmFitErrors(kFALSE);
-
 	// Randomise initial fit values for the signal mode
 	fitModel->useRandomInitFitPars(kTRUE);
 
+	const Bool_t haveBkgnds = ( fitModel->nBkgndClasses() > 0 );
+
 	// Switch on/off Poissonian smearing of total number of events
-	fitModel->doPoissonSmearing(kTRUE);
+	fitModel->doPoissonSmearing(haveBkgnds);
 
 	// Switch on/off Extended ML Fit option
-	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
-	fitModel->doEMLFit(emlFit);
+	fitModel->doEMLFit(haveBkgnds);
 
 	// Activate two-stage fit
 	fitModel->twoStageFit(kTRUE);
 
-	// Set the names of the files to read/write
-	TString dataFile("gen-"); dataFile += category; dataFile += ".root";
-	TString treeName("genResults");
-	TString rootFileName("");
-	TString tableFileName("");
-	TString fitToyFileName("fitToyMC_");
-	TString splotFileName("splot_");
-	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += category; rootFileName += iFit;
-		rootFileName += "_expt_"; rootFileName += firstExpt;
-		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
-		rootFileName += ".root";
-		tableFileName = "fitResults_"; tableFileName += iFit;
-		fitToyFileName += iFit;
-		fitToyFileName += ".root";
-		splotFileName += iFit;
-		splotFileName += ".root";
-	} else {
-		rootFileName = "dummy.root";
-		tableFileName = "genResults";
-	}
-
 	// Generate toy from the fitted parameters
+	//TString fitToyFileName("fitToyMC_");
+	//fitToyFileName += category;
+	//fitToyFileName += "-Slave_";
+	//fitToyFileName += iFit;
+	//fitToyFileName += ".root";
 	//fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
+	//TString splotFileName("splot_");
+	//splotFileName += category;
+	//splotFileName += "-Slave_";
+	//splotFileName += iFit;
+	//splotFileName += ".root";
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
+
+	// Set the names of the files to read/write
+	TString dataFile("gen-"); dataFile += category; dataFile += "-Slave.root";
+	TString treeName("genResults");
+	TString rootFileName("");
+	TString tableFileName("");
+	if (command == "fit") {
+		rootFileName = "fit"; rootFileName += category; rootFileName += "-Slave_"; rootFileName += iFit;
+		rootFileName += "_expt_"; rootFileName += firstExpt;
+		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
+		rootFileName += ".root";
+		tableFileName = "fit"; tableFileName += category; tableFileName += "SlaveResults_"; tableFileName += iFit;
+	} else {
+		rootFileName = "dummy.root";
+		tableFileName = "gen"; tableFileName += category; tableFileName += "SlaveResults_";
+	}
 
 	// Execute the generation/fit
 	if ( command == "fit" ) {

@@ -162,14 +162,17 @@ int main( int argc, char** argv )
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	Int_t nSigEvents = 5000;
+	const Double_t nSigEvents = 5000.0;
 	Bool_t fixNSigEvents = kFALSE;
-	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-2*nSigEvents,2*nSigEvents,fixNSigEvents);
-	fitModel->setNSigEvents(nSig);
+	LauParameter * signalEvents = new LauParameter("signalEvents",nSigEvents,-1.0*nSigEvents,2.0*nSigEvents,fixNSigEvents);
+	fitModel->setNSigEvents(signalEvents);
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
 	fitModel->setNExpts( nExpt, firstExpt );
+
+
+	// Configure various fit options
 
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
@@ -177,43 +180,44 @@ int main( int argc, char** argv )
 	// Randomise initial fit values for the signal mode
 	fitModel->useRandomInitFitPars(kTRUE);
 
+	const Bool_t haveBkgnds = ( fitModel->nBkgndClasses() > 0 );
+
 	// Switch on/off Poissonian smearing of total number of events
-	fitModel->doPoissonSmearing(kTRUE);
+	fitModel->doPoissonSmearing(haveBkgnds);
 
 	// Switch on/off Extended ML Fit option
-	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
-	fitModel->doEMLFit(emlFit);
+	fitModel->doEMLFit(haveBkgnds);
 
 	// Switch on/off two-stage fit
 	fitModel->twoStageFit(kTRUE);
 
+	// Generate toy from the fitted parameters
+	//TString fitToyFileName("fitToyMC_BelleCPKpipi_");
+	//fitToyFileName += iFit;
+	//fitToyFileName += ".root";
+	//fitModel->compareFitData(100, fitToyFileName);
+
+	// Write out per-event likelihoods and sWeights
+	//TString splotFileName("splot_BelleCPKpipi_");
+	//splotFileName += iFit;
+	//splotFileName += ".root";
+	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
+
 	// Set the names of the files to read/write
-	TString dataFile("gen.root");
+	TString dataFile("gen-BelleCPKpipi.root");
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
-	TString fitToyFileName("fitToyMC_");
-	TString splotFileName("splot_");
 	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += iFit;
+		rootFileName = "fitBelleCPKpipi_"; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
-		tableFileName = "fitResults_"; tableFileName += iFit;
-		fitToyFileName += iFit;
-		fitToyFileName += ".root";
-		splotFileName += iFit;
-		splotFileName += ".root";
+		tableFileName = "fitBelleCPKpipiResults_"; tableFileName += iFit;
 	} else {
 		rootFileName = "dummy.root";
-		tableFileName = "genResults";
+		tableFileName = "genBelleCPKpipiResults";
 	}
-
-	// Generate toy from the fitted parameters
-	fitModel->compareFitData(100, fitToyFileName);
-
-	// Write out per-event likelihoods and sWeights
-	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Execute the generation/fit
 	fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );

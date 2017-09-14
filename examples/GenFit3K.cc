@@ -13,7 +13,8 @@
 #include "LauDaughters.hh"
 #include "LauEffModel.hh"
 #include "LauIsobarDynamics.hh"
-#include "LauMagPhaseCoeffSet.hh"
+#include "LauRealImagCoeffSet.hh"
+#include "LauResonanceMaker.hh"
 #include "LauVetoes.hh"
 
 void usage( std::ostream& out, const TString& progName )
@@ -77,35 +78,38 @@ int main( int argc, char** argv )
 	// The DP is defined in terms of m13Sq and m23Sq
 	LauDaughters* daughters = new LauDaughters("B+", "K+", "K+", "K-", squareDP);
 
-	// Optionally apply some vetoes to the DP
-	LauVetoes* vetoes = new LauVetoes();
-
 	// Define the efficiency model (defaults to unity everywhere)
-	// Can optionally provide a histogram to model variation over DP
-	// (example syntax given in commented-out section)
+	LauVetoes* vetoes = new LauVetoes();
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);
-	//TFile *effHistFile = TFile::Open("histoFiles/effHistos.root", "read");
-	//TH2* effHist = dynamic_cast<TH2*>(effHistFile->Get("effHist"));
-	//Bool_t useInterpolation = kTRUE;
-	//Bool_t fluctuateBins = kFALSE;
-	//Bool_t useUpperHalf = kTRUE;
-	//effModel->setEffHisto(effHist, useInterpolation, fluctuateBins, 0.0, 0.0, useUpperHalf, squareDP);
 
 	// Create the isobar model
+
+	// Set the spin formalism, the form and values of the Blatt-Weisskopf barrier radii and whether they are fixed or floating
+	LauResonanceMaker& resMaker = LauResonanceMaker::get();
+	resMaker.setSpinFormalism( LauAbsResonance::Covariant );
+	resMaker.setBWBachelorRestFrame( LauBlattWeisskopfFactor::Covariant );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Parent,     5.0 );
+	resMaker.setDefaultBWRadius( LauBlattWeisskopfFactor::Light,      4.0 );
+	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Parent,  kTRUE );
+	resMaker.fixBWRadius( LauBlattWeisskopfFactor::Light,   kTRUE );
+
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 
 	// Add various components to the isobar model,
-	// optionally allowing the masses and width to float in the fit
+	// modifying some resonance masses and widths
+	// and allowing them to float in the fit
 	LauAbsResonance* res(0);
 
-	//addResonance arguments: resName, resPairAmpInt, resType
+	// addResonance arguments: resName, resPairAmpInt, resType
 	res = sigModel->addResonance("phi(1020)",   1, LauAbsResonance::RelBW);
-	//changeResonance arguments: newMass, newWidth, newSpin
-	res->changeResonance(1.019, 0.0044, -1);
+	// changeResonance arguments: newMass, newWidth, newSpin
+	res->changeResonance(1.019460, 0.004247, 1);
+	// Float the mass and width parameters
 	res->fixMass(kFALSE);
 	res->fixWidth(kFALSE);
 
 	res = sigModel->addResonance("f'_2(1525)",  1, LauAbsResonance::RelBW);
+	// Float the mass and width parameters
 	res->fixMass(kFALSE);
 	res->fixWidth(kFALSE);
 
@@ -114,27 +118,25 @@ int main( int argc, char** argv )
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
 	// inefficiency if you get the value wrong but best to set this by
-	// hand once you've found the right value through some trial and
-	// error.
+	// hand once you've found the right value through some trial and error.
 	sigModel->setASqMaxValue(14.5);  
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
 
 	// Create the complex coefficients for the isobar model
-	// Here we're using the magnitude and phase form:
-	// c_j = a_j exp(i*delta_j)
+	// Here we're using the form with real and imaginary parts:
+	// c_j = x_j + i * y_j
 	std::vector<LauAbsCoeffSet*> coeffset;
-	coeffset.push_back( new LauMagPhaseCoeffSet("phi(1020)",  1.0, 0.0,  kTRUE,  kTRUE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 1.0, 0.0, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",   1.0, 0.0, kFALSE, kFALSE) );
-
+	coeffset.push_back( new LauRealImagCoeffSet("phi(1020)",  1.0, 0.0,  kTRUE,  kTRUE) );
+	coeffset.push_back( new LauRealImagCoeffSet("f'_2(1525)", 0.0, 1.0, kFALSE, kFALSE) );
+	coeffset.push_back( new LauRealImagCoeffSet("NonReson",   1.0, 0.0, kFALSE, kFALSE) );
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}
 
 	// Set the signal yield and define whether it is fixed or floated
-	Int_t nSigEvents = 5000;
+	const Double_t nSigEvents = 5000.0;
 	Bool_t fixNSigEvents = kFALSE;
 	LauParameter * signalEvents = new LauParameter("signalEvents", nSigEvents, -1.0*nSigEvents, 2.0*nSigEvents, fixNSigEvents);
 	fitModel->setNSigEvents(signalEvents);
@@ -143,49 +145,53 @@ int main( int argc, char** argv )
 	// experiment to start with
 	fitModel->setNExpts( nExpt, firstExpt );
 
+
+	// Configure various fit options
+
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);
 
 	// Randomise initial fit values for the signal mode
 	fitModel->useRandomInitFitPars(kFALSE);
 
+	const Bool_t haveBkgnds = ( fitModel->nBkgndClasses() > 0 );
+
 	// Switch on/off Poissonian smearing of total number of events
-	fitModel->doPoissonSmearing(kTRUE);
+	fitModel->doPoissonSmearing(haveBkgnds);
 
 	// Switch on/off Extended ML Fit option
-	Bool_t emlFit = ( fitModel->nBkgndClasses() > 0 );
-	fitModel->doEMLFit(emlFit);
+	fitModel->doEMLFit(haveBkgnds);
 
 	// Switch on the two-stage fit (for the resonance parameters)
 	fitModel->twoStageFit(kTRUE);
 
-	TString dataFile("data.root");
+	// Generate toy from the fitted parameters
+	//TString fitToyFileName("fitToyMC_3K_");
+	//fitToyFileName += iFit;
+	//fitToyFileName += ".root";
+	//fitModel->compareFitData(10, fitToyFileName);
 
+	// Write out per-event likelihoods and sWeights
+	//TString splotFileName("splot_3K_");
+	//splotFileName += iFit;
+	//splotFileName += ".root";
+	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
+
+	// Set the names of the files to read/write
+	TString dataFile("gen-3K.root");
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
-	TString fitToyFileName("fitToyMC_");
-	TString splotFileName("splot_");
 	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += iFit;
+		rootFileName = "fit3K_"; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
-		tableFileName = "fitResults_"; tableFileName += iFit;
-		fitToyFileName += iFit;
-		fitToyFileName += ".root";
-		splotFileName += iFit;
-		splotFileName += ".root";
+		tableFileName = "fit3KResults_"; tableFileName += iFit;
 	} else {
 		rootFileName = "dummy.root";
-		tableFileName = "genResults";
+		tableFileName = "gen3KResults";
 	}
-
-	// Generate toy from the fitted parameters
-	fitModel->compareFitData(10, fitToyFileName);
-
-	// Write out per-event likelihoods and sWeights
-	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Execute the generation/fit
 	fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );

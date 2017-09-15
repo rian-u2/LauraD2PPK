@@ -83,10 +83,10 @@ int main( int argc, char** argv )
 
 	// Create the isobar model
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
-	LauAbsResonance* reson(0);
-	reson = sigModel->addResonance("phi(1020)",  1, LauAbsResonance::RelBW);		// resPairAmpInt = 1 => resonance mass is m23.
-	reson = sigModel->addResonance("K*0(892)",   2, LauAbsResonance::RelBW);
-	reson = sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
+	//LauAbsResonance* reson(0);
+	/*reson =*/ sigModel->addResonance("phi(1020)",  1, LauAbsResonance::RelBW);		// resPairAmpInt = 1 => resonance mass is m23.
+	/*reson =*/ sigModel->addResonance("K*0(892)",   2, LauAbsResonance::RelBW);
+	/*reson =*/ sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme

@@ -119,7 +119,7 @@ int main( int argc, char** argv )
 	// This will be automatically adjusted to avoid bias or extreme
 	// inefficiency if you get the value wrong but best to set this by
 	// hand once you've found the right value through some trial and error.
-	sigModel->setASqMaxValue(14.5);  
+	sigModel->setASqMaxValue(15.8);  
 
 	// Create the fit model
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);

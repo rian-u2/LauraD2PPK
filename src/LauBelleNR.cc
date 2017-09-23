@@ -28,7 +28,8 @@ LauBelleNR::LauBelleNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauReso
 		       const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	alpha_(0),
-	model_(resType)
+	model_(resType),
+	forceLegendre_(kTRUE)
 {
 	TString parName = this->getSanitisedName();
 	parName += "_alpha";
@@ -57,8 +58,10 @@ void LauBelleNR::initialise()
 		model_ = LauAbsResonance::BelleNR;
 	}
 
-	// Make the spin term purely the Legendre polynomial of the cos(helicity angle), do not include the p and q factors
-	this->ignoreMomenta(kTRUE);
+	// Make the spin term purely the Legendre polynomial of the cos(helicity angle)
+	if ( forceLegendre_ ) {
+		this->setSpinType( LauAbsResonance::Legendre );
+	}
 }
 
 LauComplex LauBelleNR::resAmp(Double_t mass, Double_t spinTerm)

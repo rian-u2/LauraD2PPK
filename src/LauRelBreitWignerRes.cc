@@ -115,21 +115,35 @@ void LauRelBreitWignerRes::initialise()
 
 	// Covariant factor when resonance mass = rest-mass value, m_0 (PDF value)
 	erm0_ = (mParentSq_ + effResMassSq - mBachSq_)/(2.0*massParent*effResMass);
+	this->calcCovFactor( erm0_ );
 
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
-	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
-	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-	FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
-	switch ( parBWFactor->getRestFrame() ) {
-		case LauBlattWeisskopfFactor::ResonanceFrame:
-			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
-			break;
-		case LauBlattWeisskopfFactor::ParentFrame:
-			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_) : 1.0;
-			break;
-		case LauBlattWeisskopfFactor::Covariant:
-			FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_*erm0_) : 1.0;
-			break;
+	FR0_ = 1.0;
+	FP0_ = 1.0;
+	const Int_t resSpin = this->getSpin();
+	if ( resSpin > 0 ) {
+		const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+		FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
+		switch ( parBWFactor->getRestFrame() ) {
+			case LauBlattWeisskopfFactor::ResonanceFrame:
+				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
+				break;
+			case LauBlattWeisskopfFactor::ParentFrame:
+				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_) : 1.0;
+				break;
+			case LauBlattWeisskopfFactor::Covariant:
+				{
+				Double_t covFactor = this->getCovFactor();
+				if ( resSpin > 2 ) {
+					covFactor = TMath::Power( covFactor, 1.0/resSpin );
+				} else if ( resSpin == 2 ) {
+					covFactor = TMath::Sqrt( covFactor );
+				}
+				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_*covFactor) : 1.0;
+				break;
+				}
+		}
 	}
 }
 
@@ -155,14 +169,10 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	// pstar is the momentum of the bachelor in the parent rest-frame.
 	// These quantities have been calculate in LauAbsResonance::amplitude(...)
 
-	const Int_t resSpin = this->getSpin();
 	const Double_t resMass = this->getMass();
 	const Double_t resWidth = this->getWidth();
 	const Double_t resRadius = this->getResRadius();
 	const Double_t parRadius = this->getParRadius();
-	const Double_t q = this->getQ();
-	const Double_t p = this->getP();
-	const Double_t pstar = this->getPstar();
 
 	// If the mass is floating and its value has changed we need to
 	// recalculate everything that assumes that value
@@ -174,22 +184,37 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 		this->initialise();
 	}
 
+	const Int_t resSpin = this->getSpin();
+	const Double_t q = this->getQ();
+	const Double_t p = this->getP();
+	const Double_t pstar = this->getPstar();
+
 	// Get barrier scaling factors
-	const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
-	const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-	Double_t fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
+	Double_t fFactorR(1.0);
 	Double_t fFactorB(1.0);
-	switch ( parBWFactor->getRestFrame() ) {
-		case LauBlattWeisskopfFactor::ResonanceFrame:
-			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
-			break;
-		case LauBlattWeisskopfFactor::ParentFrame:
-			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar) : 1.0;
-			break;
-		case LauBlattWeisskopfFactor::Covariant:
-			const Double_t erm = this->getCovFactor();
-			fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar*erm) : 1.0;
-			break;
+	if ( resSpin > 0 ) {
+		const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+		fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
+		switch ( parBWFactor->getRestFrame() ) {
+			case LauBlattWeisskopfFactor::ResonanceFrame:
+				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
+				break;
+			case LauBlattWeisskopfFactor::ParentFrame:
+				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar) : 1.0;
+				break;
+			case LauBlattWeisskopfFactor::Covariant:
+				{
+				Double_t covFactor = this->getCovFactor();
+				if ( resSpin > 2 ) {
+					covFactor = TMath::Power( covFactor, 1.0/resSpin );
+				} else if ( resSpin == 2 ) {
+					covFactor = TMath::Sqrt( covFactor );
+				}
+				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar*covFactor) : 1.0;
+				break;
+				}
+		}
 	}
 	const Double_t fFactorRRatio = fFactorR/FR0_;
 	const Double_t fFactorBRatio = fFactorB/FP0_;

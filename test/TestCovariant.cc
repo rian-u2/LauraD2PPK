@@ -14,6 +14,7 @@
 #include "LauEffModel.hh"
 #include "LauIsobarDynamics.hh"
 #include "LauMagPhaseCoeffSet.hh"
+#include "LauBelleNR.hh"
 #include "LauResonanceMaker.hh"
 #include "LauVetoes.hh"
 
@@ -79,6 +80,8 @@ int main( int argc, char** argv )
 	const TString nrName = TString::Format( "BelleNR_%swave", waves[spin].Data() );
 	reson = sigModel->addResonance(nrName,   2, LauAbsResonance::BelleNR);
 	reson->setResonanceParameter("alpha", 0.0);
+	LauBelleNR* belleNR = dynamic_cast<LauBelleNR*>( reson );
+	belleNR->enforceLegendreSpinFactors(kFALSE);
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme

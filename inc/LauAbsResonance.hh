@@ -110,12 +110,12 @@ class LauAbsResonance {
 			\param [in] kinematics the kinematic variables of the current event
 			\return the complex amplitude
 		*/
-                virtual LauComplex amplitude(const LauKinematics* kinematics);
+		virtual LauComplex amplitude(const LauKinematics* kinematics);
 
 		//! Get the resonance model type
-                /*!
-                        \return the resonance model type
-                */
+		/*!
+			\return the resonance model type
+		*/
 		virtual LauResonanceModel getResonanceModel() const = 0;
 
 		//! Get the spin type
@@ -206,14 +206,16 @@ class LauAbsResonance {
 	
 		//! Get the ignore momenta flag
 		/*! 
-		        Whether to ignore momenta in Zemach spin factors, as well as ignoring mass-dependent widths
+			Whether to ignore the momentum factors in both the spin factor and the mass-dependent width
+
 			\return the ignore momenta flag
 		*/
 		Bool_t ignoreMomenta() const {return ignoreMomenta_;}
 
 		//! Set the ignore momenta flag
 		/*!
-		        Whether to ignore momenta in Zemach spin factors, as well as ignoring mass-dependent widths
+			Whether to ignore the momentum factors in both the spin factor and the mass-dependent width
+
 			\param [in] boolean the ignore momenta status
 		*/
 		void ignoreMomenta(const Bool_t boolean) {ignoreMomenta_ = boolean;}
@@ -377,14 +379,14 @@ class LauAbsResonance {
 		Double_t getP() const {return p_;}
 		//! Get the current value of the bachelor momentum in the parent rest frame
 		Double_t getPstar() const {return pstar_;}
-		//! Get the current value of the covariant factor
-		Double_t getCovFactor() const {return erm_;}
+		//! Get the current value of the full spin-dependent covariant factor
+		Double_t getCovFactor() const {return covFactor_;}
 
 		//! Get the centrifugal barrier for the parent decay
 		LauBlattWeisskopfFactor* getParBWFactor() {return parBWFactor_;}
 		const LauBlattWeisskopfFactor* getParBWFactor() const {return parBWFactor_;}
 		//! Get the centrifugal barrier for the resonance decay
-                LauBlattWeisskopfFactor* getResBWFactor() {return resBWFactor_;}
+		LauBlattWeisskopfFactor* getResBWFactor() {return resBWFactor_;}
 		const LauBlattWeisskopfFactor* getResBWFactor() const {return resBWFactor_;}
 
 		//! Access the resonance info object
@@ -395,24 +397,33 @@ class LauAbsResonance {
 
 		//! Calculate the amplitude spin term using the Zemach tensor formalism
 		/*!
-			\param [in] cosHel the cosine of the helicity angle
 			\param [in] pProd the momentum factor (either q * p or q * pstar)
 		*/
-		Double_t calcZemachSpinFactor( const Double_t cosHel, const Double_t pProd ) const;
+		Double_t calcZemachSpinFactor( const Double_t pProd ) const;
 
 		//! Calculate the amplitude spin term using the covariant tensor formalism
 		/*!
-			\param [in] cosHel the cosine of the helicity angle
 			\param [in] pProd the momentum factor (q * pstar)
-		        \param [in] erm E_ij in the parent rest-frame divided by m_ij (equivalent to sqrt(1 + p^2/mParent^2))
 		*/
-                Double_t calcCovSpinFactor( const Double_t cosHel, const Double_t pProd, const Double_t erm ) const;
+		Double_t calcCovSpinFactor( const Double_t pProd );
+
+		//! Calculate the spin-dependent covariant factor
+		/*!
+			\param [in] erm E_ij in the parent rest-frame divided by m_ij (equivalent to sqrt(1 + p^2/mParent^2))
+		*/
+		void calcCovFactor( const Double_t erm );
 
 		//! Calculate the Legendre polynomial for the spin factor
 		/*!
+			Uses the current-event value of cosHel_
+		*/
+		Double_t calcLegendrePoly() const;
+
+		//! Calculate the Legendre polynomial for the spin factor (specifying the cosHel value)
+		/*!
 			\param [in] cosHel the cosine of the helicity angle
 		*/
-		Double_t calcLegendrePoly( const Double_t cosHel ) const;
+		Double_t calcLegendrePoly( const Double_t cosHel );
 
 		//! Complex resonant amplitude
 		/*!
@@ -503,12 +514,19 @@ class LauAbsResonance {
 
 		//! Boolean to flip helicity
 		Bool_t flipHelicity_;
-		//! Boolean to ignore momenta in Zemach spin factors, as well as ignoring mass-dependent widths
+		//! Boolean to ignore the momentum factors in both the spin factor and the mass-dependent width
 		Bool_t ignoreMomenta_;
-                //! Boolean to set the spinTerm to unity always
-                Bool_t ignoreSpin_;
-                //! Boolean to ignore barrier factor scaling in the amplitude numerator, they are still used for the mass-dependent width
-                Bool_t ignoreBarrierScaling_;
+		//! Boolean to set the spinTerm to unity always
+		Bool_t ignoreSpin_;
+		//! Boolean to ignore barrier factor scaling in the amplitude numerator, they are still used for the mass-dependent width
+		Bool_t ignoreBarrierScaling_;
+
+		// Event kinematics information
+
+		//! Invariant mass
+		Double_t mass_;
+		//! Helicity angle cosine
+		Double_t cosHel_;
 
 		//! Daughter momentum in resonance rest frame
 		Double_t q_;
@@ -517,7 +535,7 @@ class LauAbsResonance {
 		//! Bachelor momentum in parent rest frame
 		Double_t pstar_;
 
-                //! Covariant factor
+		//! Covariant factor
 		/*!
 		    sqrt(1 + z*z), where z = p / mParent
 
@@ -527,7 +545,10 @@ class LauAbsResonance {
 		    \see LauKinematics::getcov13
 		    \see LauKinematics::getcov23
 		*/
-                Double_t erm_;
+		Double_t erm_;
+
+		//! Covariant factor (full spin-dependent expression)
+		Double_t covFactor_;
 
 		ClassDef(LauAbsResonance,0) // Abstract resonance class
 

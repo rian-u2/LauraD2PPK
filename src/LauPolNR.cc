@@ -41,8 +41,8 @@ void LauPolNR::initialise()
 		std::cerr << "WARNING in LauPolNR::initialise : Dalitz plot is symmetric - this lineshape is not appropriate." << std::endl;
 	}
 
-	// Make the spin term purely the Legendre polynomial of the cos(helicity angle), do not include the p and q factors
-	this->ignoreMomenta(kTRUE);
+	// Make the spin term purely the Legendre polynomial of the cos(helicity angle)
+	this->setSpinType( LauAbsResonance::Legendre );
 
 	Double_t omega = 0.5*(daughters->getMassParent()+(1.0/3.0)*(daughters->getMassDaug1()+daughters->getMassDaug2()+daughters->getMassDaug3()));
 	this->setOmega( omega );

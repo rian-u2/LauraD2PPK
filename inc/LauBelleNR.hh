@@ -47,6 +47,17 @@ class LauBelleNR : public LauAbsResonance {
 		//! Destructor
 		virtual ~LauBelleNR();
 
+		//! Override the enforcement of pure Legendre polynomial spin factors
+		/*!
+			By default this model uses pure Legendre polynomial
+			spin factors, regardless of the default type set in
+			LauResonanceMaker or any specific request from the user.
+			This function allows the enforcement to be overridden.
+
+			\param [in] forceLegendre boolean flag (kTRUE, the default, implies enforcement of pure Legendre spin factors, kFALSE overrides this to allow use of other formalisms)
+		*/
+		void enforceLegendreSpinFactors( const Bool_t forceLegendre ) { forceLegendre_ = forceLegendre; }
+
 		//! Initialise the model
 		virtual void initialise();
 
@@ -120,6 +131,9 @@ class LauBelleNR : public LauAbsResonance {
 
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;
+
+		//! Force use of Legendre spin factors
+		Bool_t forceLegendre_;
 
 		ClassDef(LauBelleNR,0)
 };

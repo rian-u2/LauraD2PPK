@@ -9,8 +9,8 @@
 // Paul Harrison
 
 /*! \file LauAbsResonance.cc
-  \brief File containing implementation of LauAbsResonance class.
- */
+	\brief File containing implementation of LauAbsResonance class.
+*/
 
 #include <iostream>
 
@@ -49,10 +49,10 @@ bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
 		case PolNR:
 		case MIPW_MagPhase: 
 		case MIPW_RealImag: 
-         	case RhoOmegaMix_GS:
-         	case RhoOmegaMix_RBW:
-         	case RhoOmegaMix_GS_1:
-         	case RhoOmegaMix_RBW_1:
+		case RhoOmegaMix_GS:
+		case RhoOmegaMix_RBW:
+		case RhoOmegaMix_GS_1:
+		case RhoOmegaMix_RBW_1:
 			break;
 		case GaussIncoh:
 			return true;
@@ -81,10 +81,13 @@ LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairA
 	ignoreMomenta_(kFALSE),
 	ignoreSpin_(kFALSE),
 	ignoreBarrierScaling_(kFALSE),
+	mass_(0.0),
+	cosHel_(0.0),
 	q_(0.0),
 	p_(0.0),
 	pstar_(0.0),
-        erm_(1.0)
+	erm_(1.0),
+	covFactor_(1.0)
 {
 	if ( resInfo == 0 ) {
 		std::cerr << "ERROR in LauAbsResonance constructor : null LauResonanceInfo object provided" << std::endl;
@@ -138,10 +141,13 @@ LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpI
 	ignoreMomenta_(kFALSE),
 	ignoreSpin_(kFALSE),
 	ignoreBarrierScaling_(kFALSE),
+	mass_(0.0),
+	cosHel_(0.0),
 	q_(0.0),
 	p_(0.0),
 	pstar_(0.0), 
-        erm_(1.0)
+	erm_(1.0),
+	covFactor_(1.0)
 {
 	if ( daughters_ == 0 ) {
 		std::cerr << "ERROR in LauAbsResonance constructor : null LauDaughters object provided" << std::endl;
@@ -177,41 +183,42 @@ LauAbsResonance::~LauAbsResonance()
 LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 {
 	// Use LauKinematics interface for amplitude
-	Double_t mass(0.0), cosHel(0.0);
+
 	// For resonance made from tracks i, j, we need the momenta
 	// of tracks i and k in the i-j rest frame for spin helicity calculations
 	// in the Zemach tensor formalism.
 	// Also need the momentum of track k in the parent rest-frame for
 	// calculation of the Blatt-Weisskopf factors.
+	mass_ = 0.0; cosHel_ = 0.0;
 	q_ = 0.0;  p_ = 0.0;  pstar_ = 0.0;
-        erm_ = 1.0;
+	erm_ = 1.0; covFactor_ = 1.0;
 
 	if (resPairAmpInt_ == 1) {
 
-		mass   = kinematics->getm23();
-		cosHel = kinematics->getc23();
-		q_ = kinematics->getp2_23();
-		p_ = kinematics->getp1_23();
-		pstar_ = kinematics->getp1_Parent();
-                erm_ = kinematics->getcov23();
+		mass_   = kinematics->getm23();
+		cosHel_ = kinematics->getc23();
+		q_      = kinematics->getp2_23();
+		p_      = kinematics->getp1_23();
+		pstar_  = kinematics->getp1_Parent();
+		erm_    = kinematics->getcov23();
 
 	} else if (resPairAmpInt_ == 2) {
 
-		mass   = kinematics->getm13();
-		cosHel = kinematics->getc13();
-		q_ = kinematics->getp1_13();
-		p_ = kinematics->getp2_13();
-		pstar_ = kinematics->getp2_Parent();
-                erm_ = kinematics->getcov13();
+		mass_   = kinematics->getm13();
+		cosHel_ = kinematics->getc13();
+		q_      = kinematics->getp1_13();
+		p_      = kinematics->getp2_13();
+		pstar_  = kinematics->getp2_Parent();
+		erm_    = kinematics->getcov13();
 
 	} else if (resPairAmpInt_ == 3) {
 
-		mass   = kinematics->getm12();
-		cosHel = kinematics->getc12();
-		q_ = kinematics->getp1_12();
-		p_ = kinematics->getp3_12();
-		pstar_ = kinematics->getp3_Parent();
-                erm_ = kinematics->getcov12();
+		mass_   = kinematics->getm12();
+		cosHel_ = kinematics->getc12();
+		q_      = kinematics->getp1_12();
+		p_      = kinematics->getp3_12();
+		pstar_  = kinematics->getp3_Parent();
+		erm_    = kinematics->getcov12();
 
 	} else {
 		std::cerr << "ERROR in LauAbsResonance::amplitude : Nonsense setup of resPairAmp array." << std::endl;
@@ -219,13 +226,14 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 	}
 
 	if (this->flipHelicity()) {
-		cosHel *= -1.0;
+		cosHel_ *= -1.0;
 	}
 
 	if (this->ignoreMomenta()) {
 		q_ = 1.0;
 		p_ = 1.0;
 		pstar_ = 1.0;
+		erm_ = 1.0;
 	}
 
 	// Calculate the spin factors
@@ -237,62 +245,73 @@ LauComplex LauAbsResonance::amplitude(const LauKinematics* kinematics)
 
 			case Zemach_P:
 				pProd = q_*p_;
-				spinTerm = this->calcZemachSpinFactor( cosHel, pProd );
+				spinTerm = this->calcZemachSpinFactor( pProd );
 				break;
 
 			case Zemach_Pstar:
 				pProd = q_*pstar_;
-				spinTerm = this->calcZemachSpinFactor( cosHel, pProd );
+				spinTerm = this->calcZemachSpinFactor( pProd );
 				break;
 
 			case Covariant:
 				pProd = q_*pstar_;
-				spinTerm = this->calcCovSpinFactor( cosHel, pProd, erm_ );
+				spinTerm = this->calcCovSpinFactor( pProd );
 				break;
 
 			case Legendre:
-				spinTerm = this->calcLegendrePoly( cosHel );
+				spinTerm = this->calcLegendrePoly();
 				break;
 		}
 	}
 
 	// Calculate the full amplitude
-	LauComplex resAmplitude = this->resAmp(mass, spinTerm);
+	LauComplex resAmplitude = this->resAmp(mass_, spinTerm);
 
 	return resAmplitude;
 }
 
-Double_t LauAbsResonance::calcCovSpinFactor( const Double_t cosHel, const Double_t pProd, const Double_t erm ) const
+void LauAbsResonance::calcCovFactor( const Double_t erm )
 {
 	if (resSpin_ == 0) {
+		covFactor_ = 1.0;
+	} else if (resSpin_ == 1) {
+		covFactor_ = erm;
+	} else if (resSpin_ == 2) {
+		covFactor_ = erm*erm + 0.5;
+	} else if (resSpin_ == 3) {
+		covFactor_ = erm*(erm*erm + 1.5);
+	} else if (resSpin_ == 4) {
+		covFactor_ = (8.*erm*erm*erm*erm + 24.*erm*erm + 3.)/35.;
+	} else if (resSpin_ > 4) {
+		std::cerr << "WARNING in LauAbsResonance::calcCovFactor : covariant spin factor cannot (yet) be fully calculated for spin >= 5" << std::endl;                
+		std::cerr << "                                          : the function of sqrt(1 + (p/mParent)^2) part will be missing" << std::endl;                
+		covFactor_ = 1.0;
+	}
+}
+
+Double_t LauAbsResonance::calcCovSpinFactor( const Double_t pProd )
+{
+	if (resSpin_ == 0) {
+		covFactor_ = 1.0;
 		return 1.0;
 	}
 
 	// Covariant spin factor is (p* q)^L * f_L(erm) * P_L(cosHel)
-        Double_t spinFactor(pProd);
+	Double_t spinFactor(pProd);
 	for ( Int_t i(1); i < resSpin_; ++i ) {
 		spinFactor *= pProd;
 	}
 
-        if (resSpin_ == 1) {
-                spinFactor *= erm;
-        } else if (resSpin_ == 2) {
-                spinFactor *= erm*erm + 0.5;
-        } else if (resSpin_ == 3) {
-                spinFactor *= erm*(erm*erm + 1.5);
-        } else if (resSpin_ == 4) {
-                spinFactor *= (8.*erm*erm*erm*erm + 24.*erm*erm + 3.)/35.;
-        } else if (resSpin_ > 4) {
-                std::cerr << "WARNING in LauAbsResonance::calcCovFactor : covariant spin factor cannot (yet) be fully calculated for spin >= 5" << std::endl;                
-                std::cerr << "                                          : the function of sqrt(1 + (p/mParent)^2) part will be missing" << std::endl;                
-        }
+	this->calcCovFactor( erm_ );
 
-	spinFactor *= this->calcLegendrePoly( cosHel );
+	spinFactor *= covFactor_;
 
-        return spinFactor;
+	spinFactor *= this->calcLegendrePoly();
+
+	return spinFactor;
 }
 
-Double_t LauAbsResonance::calcZemachSpinFactor( const Double_t cosHel, const Double_t pProd ) const
+Double_t LauAbsResonance::calcZemachSpinFactor( const Double_t pProd ) const
 {
 	// Calculate the spin factors
 	//
@@ -313,32 +332,38 @@ Double_t LauAbsResonance::calcZemachSpinFactor( const Double_t cosHel, const Dou
 		spinFactor *= pProd;
 	}
 
-	spinFactor *= this->calcLegendrePoly( cosHel );
+	spinFactor *= this->calcLegendrePoly();
 
 	return spinFactor;
 }
 
-Double_t LauAbsResonance::calcLegendrePoly( const Double_t cosHel ) const
+Double_t LauAbsResonance::calcLegendrePoly( const Double_t cosHel )
+{
+	cosHel_ = cosHel;
+	return this->calcLegendrePoly();
+}
+
+Double_t LauAbsResonance::calcLegendrePoly() const
 {
 	Double_t legPol = 1.0;
 
 	if (resSpin_ == 1) {
 		// Calculate vector resonance Legendre polynomial
-		legPol = -2.0*cosHel;
+		legPol = -2.0*cosHel_;
 	} else if (resSpin_ == 2) {
 		// Calculate tensor resonance Legendre polynomial
-		legPol = 4.0*(3.0*cosHel*cosHel - 1.0)/3.0;
+		legPol = 4.0*(3.0*cosHel_*cosHel_ - 1.0)/3.0;
 	} else if (resSpin_ == 3) {
 		// Calculate spin 3 resonance Legendre polynomial
-		legPol = -8.0*(5.0*cosHel*cosHel*cosHel - 3.0*cosHel)/5.0;
+		legPol = -8.0*(5.0*cosHel_*cosHel_*cosHel_ - 3.0*cosHel_)/5.0;
 	} else if (resSpin_ == 4) {
 		// Calculate spin 4 resonance Legendre polynomial
-		legPol = 16.0*(35.0*cosHel*cosHel*cosHel*cosHel - 30.0*cosHel*cosHel + 3.0)/35.0;
+		legPol = 16.0*(35.0*cosHel_*cosHel_*cosHel_*cosHel_ - 30.0*cosHel_*cosHel_ + 3.0)/35.0;
 	} else if (resSpin_ == 5) {
 		// Calculate spin 5 resonance Legendre polynomial
-		legPol = -32.0*(63.0*cosHel*cosHel*cosHel*cosHel*cosHel - 70.0*cosHel*cosHel*cosHel + 15.0*cosHel)/63.0;
+		legPol = -32.0*(63.0*cosHel_*cosHel_*cosHel_*cosHel_*cosHel_ - 70.0*cosHel_*cosHel_*cosHel_ + 15.0*cosHel_)/63.0;
 	} else if (resSpin_ > 5) {
-                std::cerr << "WARNING in LauAbsResonance::calcLegendrePoly : Legendre polynomials not (yet) implemented for spin > 5" << std::endl;                
+		std::cerr << "WARNING in LauAbsResonance::calcLegendrePoly : Legendre polynomials not (yet) implemented for spin > 5" << std::endl;                
 	}
 
 	return legPol;

@@ -8,6 +8,22 @@
 * Make symmetrisation of vetoes automatic in LauVetoes for symmetric DPs
   - but add new allowed indices (4 and 5) to allow vetoes to be applied to mMin or mMax if desired
 
+23rd September 2017 Thomas Latham
+* Fix expressions for Covariant option for Blatt-Weisskopf momentum for spin > 1
+* Make use of setSpinFormalism to set the formalism to Legendre for NR types (instead of kludging with ignoreMomentum)
+
+15th September 2017 Thomas Latham
+* Various improvements to the examples
+
+6th September 2017 Thomas Latham
+* Improve doxygen comments for event-embedding functions in fit models
+
+5th September 2017 Thomas Latham
+* Improve efficiency of Covariant spin factor calculations
+
+31st August 2017 Thomas Latham
+* Add further option for parent Blatt-Weisskopf momentum - Covariant (corresponding to Covariant spin factor)
+
 8th August 2017 Thomas Latham
 * Implement expressions for the spin factor based on covariant tensor formalism
 * Make it much simpler to switch between formalism options via new functions in LauResonanceMaker:

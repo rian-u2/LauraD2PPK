@@ -16,7 +16,7 @@
 // Square DP co-ordinates can also be included by changing the 5th argument of
 // the LauDaughters ctor to kTRUE and uncommenting the appropriate lines.
 
-void makeFitFile(const TString& inputFileName, const TString& inputTreeName, const TString& outputFileName)
+void makeFitFile(const TString& inputFileName, const TString& inputTreeName, const TString& outputFileName, const Long64_t nEvents = 0)
 {
 	gSystem->Load("../lib/libLaura++.so");
 
@@ -52,7 +52,7 @@ void makeFitFile(const TString& inputFileName, const TString& inputTreeName, con
 	//outputTree->Branch("mPrime",&mPrime,"mPrime/D");
 	//outputTree->Branch("thPrime",&thPrime,"thPrime/D");
 
-	if (nEvents == 0) {
+	if (nEvents <= 0 || nEvents > inputTree->GetEntries()) {
 		nEvents = inputTree->GetEntries();
 	}
 
@@ -63,11 +63,12 @@ void makeFitFile(const TString& inputFileName, const TString& inputTreeName, con
 		m13Sq = m13*m13;
 		m23Sq = m23*m23;
 
-		kinematics->updateKinematics( m13Sq, m23Sq );
-		if ( ! kinematics->withinDPLimits() ) {
+		if ( ! kinematics->withinDPLimits( m13Sq, m23Sq ) ) {
 			cerr << "WARNING : Reconstructed position of event " << iEntry << " not within DP boundary, skipping it." << endl;
 			continue;
 		}
+
+		kinematics->updateKinematics( m13Sq, m23Sq );
 
 		m12Sq = kinematics->getm12Sq();
 		m12 = kinematics->getm12();

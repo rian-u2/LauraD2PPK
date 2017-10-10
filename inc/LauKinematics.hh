@@ -38,9 +38,11 @@ class LauKinematics {
 		    \param [in] m3 the third daughter mass
 		    \param [in] mParent the parent particle mass
 		    \param [in] calcSquareDPCoords boolean flag to enable/disable calculation of the square Dalitz plot co-ordinates
-		    \param [in] symmetricalDP boolean flag to indicate whether the DP is symmetric
+		    \param [in] symmetricalDP boolean flag to indicate whether the DP is symmetric (i.e. two identical particle in final state)
+		    \param [in] fullySymmetricDP boolean flag to indicate whether the DP is fully symmetric (i.e. all three final-state particles are identical)
 		*/
-		LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords = kFALSE, const Bool_t symmetricalDP = kFALSE);
+		LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent,
+			      const Bool_t calcSquareDPCoords = kFALSE, const Bool_t symmetricalDP = kFALSE, const Bool_t fullySymmetricDP = kFALSE);
 
 		//! Destructor
 		virtual ~LauKinematics();
@@ -61,7 +63,13 @@ class LauKinematics {
 		/*!
 		    \return kTRUE if the DP is symmetric (i.e. daughters 1 and 2 are identical), kFALSE otherwise
 		*/
-		inline Bool_t gotSymmetricalDP() const { return symmetricalDP_; }
+		inline Bool_t gotSymmetricalDP() const { return (symmetricalDP_ && ! fullySymmetricDP_); }
+
+		//! Is the DP fully symmetric?
+		/*!
+		    \return kTRUE if the DP is fully symmetric (i.e. daughters 1, 2 and 3 are identical), kFALSE otherwise
+		*/
+		inline Bool_t gotFullySymmetricDP() const { return fullySymmetricDP_; }
 
 		//! Enable/disable warning messages
 		inline void warningMessages(const Bool_t boolean) { warnings_ = boolean; }
@@ -542,6 +550,8 @@ class LauKinematics {
 
 		//! Symmetrical DP
 		const Bool_t symmetricalDP_;
+		//! Fully-symmetrical DP
+		const Bool_t fullySymmetricDP_;
 
 		//! Mass of particle 1
 		const Double_t m1_;

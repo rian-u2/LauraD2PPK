@@ -7,6 +7,8 @@
 10th October 2017 Thomas Latham
 * Make symmetrisation of vetoes automatic in LauVetoes for symmetric DPs
   - but add new allowed indices (4 and 5) to allow vetoes to be applied to mMin or mMax if desired
+* Also apply to fully symmetric DPs
+* In addition implement the more efficient calculation of the amplitude in the fully symmetric case
 
 23rd September 2017 Thomas Latham
 * Fix expressions for Covariant option for Blatt-Weisskopf momentum for spin > 1

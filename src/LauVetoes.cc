@@ -113,11 +113,12 @@ Bool_t LauVetoes::passVeto(const LauKinematics* kinematics) const
 	const Double_t m23Sq = kinematics->getm23Sq();
 	const Double_t m13Sq = kinematics->getm13Sq();
 	const Bool_t symmetricDP = kinematics->gotSymmetricalDP();
+	const Bool_t fullySymmetricDP = kinematics->gotFullySymmetricDP();
 
-	return this->passVeto(m12Sq, m23Sq, m13Sq, symmetricDP);
+	return this->passVeto(m12Sq, m23Sq, m13Sq, symmetricDP, fullySymmetricDP);
 }
 
-Bool_t LauVetoes::passVeto(const Double_t m12Sq, const Double_t m23Sq, const Double_t m13Sq, const Bool_t symmetricDP) const 
+Bool_t LauVetoes::passVeto(const Double_t m12Sq, const Double_t m23Sq, const Double_t m13Sq, const Bool_t symmetricDP, const Bool_t fullySymmetricDP) const 
 {
 	// Routine to ask whether the given Dalitz plot point passes any specified vetoes.
 
@@ -129,10 +130,15 @@ Bool_t LauVetoes::passVeto(const Double_t m12Sq, const Double_t m23Sq, const Dou
 			if (m23Sq > vetoMinMass_[i] && m23Sq < vetoMaxMass_[i]) {
 				return kFALSE;
 			}
-
 			// If the DP is symmetric we need to test m13 combination as well
-			if ( symmetricDP ) {
+			if ( symmetricDP || fullySymmetricDP ) {
 				if (m13Sq > vetoMinMass_[i] && m13Sq < vetoMaxMass_[i]) {
+					return kFALSE;
+				}
+			}
+			// If it's fully symmetric we need to check all 3 combinations
+			if ( fullySymmetricDP ) {
+				if (m12Sq > vetoMinMass_[i] && m12Sq < vetoMaxMass_[i]) {
 					return kFALSE;
 				}
 			}
@@ -141,10 +147,15 @@ Bool_t LauVetoes::passVeto(const Double_t m12Sq, const Double_t m23Sq, const Dou
 			if (m13Sq > vetoMinMass_[i] && m13Sq < vetoMaxMass_[i]) {
 				return kFALSE;
 			}
-
 			// If the DP is symmetric we need to test m23 combination as well
-			if ( symmetricDP ) {
+			if ( symmetricDP || fullySymmetricDP ) {
 				if (m23Sq > vetoMinMass_[i] && m23Sq < vetoMaxMass_[i]) {
+					return kFALSE;
+				}
+			}
+			// If it's fully symmetric we need to check all 3 combinations
+			if ( fullySymmetricDP ) {
+				if (m12Sq > vetoMinMass_[i] && m12Sq < vetoMaxMass_[i]) {
 					return kFALSE;
 				}
 			}
@@ -152,6 +163,15 @@ Bool_t LauVetoes::passVeto(const Double_t m12Sq, const Double_t m23Sq, const Dou
 			// Veto m12 combination
 			if (m12Sq > vetoMinMass_[i] && m12Sq < vetoMaxMass_[i]) {
 				return kFALSE;
+			}
+			// If it's fully symmetric we need to check all 3 combinations
+			if ( fullySymmetricDP ) {
+				if (m13Sq > vetoMinMass_[i] && m13Sq < vetoMaxMass_[i]) {
+					return kFALSE;
+				}
+				if (m23Sq > vetoMinMass_[i] && m23Sq < vetoMaxMass_[i]) {
+					return kFALSE;
+				}
 			}
 		} else if (vetoPair_[i] == 4) {
 			if (!symmetricDP) {

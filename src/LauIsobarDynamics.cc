@@ -1514,6 +1514,109 @@ void LauIsobarDynamics::calculateAmplitudes( LauDPPartialIntegralInfo* intInfo, 
 		kinematics_->flipAndUpdateKinematics();
 	}
 
+
+	if (fullySymmetricDP_ == kTRUE) {
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				ff_[iAmp] += this->resAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
+			}
+		}
+		for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				incohInten_[iAmp] += this->incohResAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+			}
+		}
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				ff_[iAmp] += this->resAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
+			}
+		}
+		for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				incohInten_[iAmp] += this->incohResAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+			}
+		}
+
+		// rotate, flip and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+		for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				ff_[iAmp] += this->resAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
+			}
+		}
+		for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				incohInten_[iAmp] += this->incohResAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+			}
+		}
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				ff_[iAmp] += this->resAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
+			}
+		}
+		for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				incohInten_[iAmp] += this->incohResAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+			}
+		}
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for (UInt_t iAmp = 0; iAmp < nAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				ff_[iAmp] += this->resAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeAmplitude( m13Point, m23Point, iAmp, ff_[iAmp] );
+			}
+		}
+		for (UInt_t iAmp = 0; iAmp < nIncohAmp_; ++iAmp) {
+			if ( (integralsToBeCalculated_.find(iAmp+nAmp_) != intEnd) && !sigResonances_[iAmp]->preSymmetrised() ) {
+				// Calculate the dynamics for this resonance
+				incohInten_[iAmp] += this->incohResAmp(iAmp);
+				// Store the new value in the integration info object
+				intInfo->storeIntensity( m13Point, m23Point, iAmp, incohInten_[iAmp] );
+			}
+		}
+
+		// rotate and flip to get us back to where we started
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+	}
+
 	// If we haven't cached the data, then we need to find out the efficiency.
 	eff_ = this->retrieveEfficiency();
 
@@ -1549,6 +1652,63 @@ void LauIsobarDynamics::calculateAmplitudes()
 
 		}
 
+		kinematics_->flipAndUpdateKinematics();
+	}
+
+	if ( fullySymmetricDP_ == kTRUE ) {
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
+			if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
+				ff_[*iter] += this->resAmp(*iter);
+			} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+				incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
+			}
+		}
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
+			if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
+				ff_[*iter] += this->resAmp(*iter);
+			} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+				incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
+			}
+		}
+
+		// rotate, flip and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		kinematics_->flipAndUpdateKinematics();
+		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
+			if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
+				ff_[*iter] += this->resAmp(*iter);
+			} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+				incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
+			}
+		}
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
+			if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
+				ff_[*iter] += this->resAmp(*iter);
+			} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+				incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
+			}
+		}
+
+		// rotate and evaluate
+		kinematics_->rotateAndUpdateKinematics();
+		for ( iter = integralsToBeCalculated_.begin(); iter != intEnd; ++iter) {
+			if(*iter < nAmp_ && !sigResonances_[*iter]->preSymmetrised() ) {
+				ff_[*iter] += this->resAmp(*iter);
+			} else if (*iter >= nAmp_ && !sigResonances_[*iter-nAmp_]->preSymmetrised() ){
+				incohInten_[*iter-nAmp_] += this->incohResAmp(*iter-nAmp_);
+			}
+		}
+
+		// rotate and flip to get us back to where we started
+		kinematics_->rotateAndUpdateKinematics();
 		kinematics_->flipAndUpdateKinematics();
 	}
 
@@ -1644,7 +1804,7 @@ LauComplex LauIsobarDynamics::resAmp(const UInt_t index)
 	// Routine to calculate the resonance dynamics (amplitude)
 	// using the appropriate Breit-Wigner/Form Factors.
 
-    LauComplex amp = LauComplex(0.0, 0.0);
+	LauComplex amp = LauComplex(0.0, 0.0);
 
 	if ( index >= nAmp_ ) {
 		std::cerr<<"ERROR in LauIsobarDynamics::resAmp : index = "<<index<<" is not within the range 0 to "<<nAmp_-1<<std::endl;
@@ -1661,35 +1821,7 @@ LauComplex LauIsobarDynamics::resAmp(const UInt_t index)
 
 	amp = sigResonance->amplitude(kinematics_);
 
-	// If we have a fully symmetric DP we need to calculate the amplitude at 6 points
-	if (fullySymmetricDP_ == kTRUE) {
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		amp += sigResonance->amplitude(kinematics_);
-
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		amp += sigResonance->amplitude(kinematics_);
-
-		// rotate, flip and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		kinematics_->flipAndUpdateKinematics();
-		amp += sigResonance->amplitude(kinematics_);
-
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		amp += sigResonance->amplitude(kinematics_);
-
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		amp += sigResonance->amplitude(kinematics_);
-
-		// rotate and flip to get us back to where we started
-		kinematics_->rotateAndUpdateKinematics();
-		kinematics_->flipAndUpdateKinematics();
-	}
-
-    return amp;
+	return amp;
 }
 
 Double_t LauIsobarDynamics::incohResAmp(const UInt_t index)
@@ -1697,7 +1829,7 @@ Double_t LauIsobarDynamics::incohResAmp(const UInt_t index)
 	// Routine to calculate the resonance dynamics (amplitude)
 	// using the appropriate Breit-Wigner/Form Factors.
 
-    Double_t intensity = 0.;
+	Double_t intensity = 0.;
 
 	if ( index >= nIncohAmp_ ) {
 		std::cerr<<"ERROR in LauIsobarDynamics::incohResAmp : index = "<<index<<" is not within the range 0 to "<<nIncohAmp_-1<<std::endl;
@@ -1715,40 +1847,7 @@ Double_t LauIsobarDynamics::incohResAmp(const UInt_t index)
 	LauComplex ff = sigResonance->amplitude(kinematics_);
 	intensity = sigResonance->intensityFactor(kinematics_)*ff.abs2();
 
-	// If we have a fully symmetric DP we need to calculate the amplitude at 6 points
-	if (fullySymmetricDP_ == kTRUE) {
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		ff = sigResonance->amplitude(kinematics_);
-		intensity += sigResonance->intensityFactor(kinematics_)*ff.abs2();
-
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		ff = sigResonance->amplitude(kinematics_);
-		intensity += sigResonance->intensityFactor(kinematics_)*ff.abs2();
-
-		// rotate, flip and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		kinematics_->flipAndUpdateKinematics();
-		ff = sigResonance->amplitude(kinematics_);
-		intensity += sigResonance->intensityFactor(kinematics_)*ff.abs2();
-
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		ff = sigResonance->amplitude(kinematics_);
-		intensity += sigResonance->intensityFactor(kinematics_)*ff.abs2();
-
-		// rotate and evaluate
-		kinematics_->rotateAndUpdateKinematics();
-		ff = sigResonance->amplitude(kinematics_);
-		intensity += sigResonance->intensityFactor(kinematics_)*ff.abs2();
-
-		// rotate and flip to get us back to where we started
-		kinematics_->rotateAndUpdateKinematics();
-		kinematics_->flipAndUpdateKinematics();
-	}
-
-    return intensity;
+	return intensity;
 
 }
 

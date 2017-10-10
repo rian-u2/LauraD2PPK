@@ -85,9 +85,10 @@ class LauVetoes {
 		    \param [in] m23Sq the mass-squared of the second and third daughters
 		    \param [in] m13Sq the mass-squared of the first and third daughters
 		    \param [in] symmetricDP is the DP symmetric
+		    \param [in] fullySymmetricDP is the DP fully symmetric
 		    \return true if the specified Dalitz plot point is outside all veto regions, false otherwise
 		*/
-		Bool_t passVeto(const Double_t m12Sq, const Double_t m23Sq, const Double_t m13Sq, const Bool_t symmetricDP) const;
+		Bool_t passVeto(const Double_t m12Sq, const Double_t m23Sq, const Double_t m13Sq, const Bool_t symmetricDP, const Bool_t fullySymmetricDP) const;
 
 		//! Retrieve the number of vetoes
 		/*!

@@ -25,8 +25,9 @@
 ClassImp(LauKinematics)
 
 
-LauKinematics::LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords, const Bool_t symmetricalDP) :
+LauKinematics::LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords, const Bool_t symmetricalDP, const Bool_t fullySymmetricDP) :
 	symmetricalDP_(symmetricalDP),
+	fullySymmetricDP_(fullySymmetricDP),
 	m1_(m1), m2_(m2), m3_(m3), mParent_(mParent),
 	m1Sq_(m1*m1), m2Sq_(m2*m2), m3Sq_(m3*m3), mParentSq_(mParent*mParent),
 	mDTot_(m1 + m2 + m3),

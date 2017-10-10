@@ -48,16 +48,16 @@ LauVetoes& LauVetoes::operator=(const LauVetoes& other)
 	return *this;
 }
 
-void LauVetoes::addMassVeto(Int_t resPairAmpInt, Double_t minMass, Double_t maxMass)
+void LauVetoes::addMassVeto(const Int_t resPairAmpInt, const Double_t minMass, const Double_t maxMass)
 {
 
-	Double_t minMassSq = minMass*minMass;
-	Double_t maxMassSq = maxMass*maxMass;
+	const Double_t minMassSq = minMass*minMass;
+	const Double_t maxMassSq = maxMass*maxMass;
 
 	this->addMassSqVeto(resPairAmpInt, minMassSq, maxMassSq);
 }
 
-void LauVetoes::addMassSqVeto(Int_t resPairAmpInt, Double_t minMassSq, Double_t maxMassSq) 
+void LauVetoes::addMassSqVeto(const Int_t resPairAmpInt, const Double_t minMassSq, const Double_t maxMassSq) 
 {
 	// Routine to add a veto in the Dalitz plot. The function takes as input the
 	// bachelor track number (1, 2 or 3) and the mass-squared range of the veto.
@@ -77,8 +77,18 @@ void LauVetoes::addMassSqVeto(Int_t resPairAmpInt, Double_t minMassSq, Double_t 
 		// The bachelor track is the third track
 		std::cout << "INFO in LauVetoes::addMassSqVeto : Adding the veto for resPairAmpInt = 3, with " << minMassSq << " < m^2_12 < " << maxMassSq << std::endl;
 
+	} else if (resPairAmpInt == 4) {
+
+		// Special case for symmetric DPs - the veto will be applied on the minimum of m13Sq and m23Sq
+		std::cout << "INFO in LauVetoes::addMassSqVeto : Adding the veto for resPairAmpInt = 4, with " << minMassSq << " < m^2_min < " << maxMassSq << std::endl;
+
+	} else if (resPairAmpInt == 5) {
+
+		// Special case for symmetric DPs - the veto will be applied on the maximum of m13Sq and m23Sq
+		std::cout << "INFO in LauVetoes::addMassSqVeto : Adding the veto for resPairAmpInt = 5, with " << minMassSq << " < m^2_max < " << maxMassSq << std::endl;
+
 	} else {
-		std::cerr << "ERROR in LauVetoes::addMassSqVeto : Invalid resPairAmpInt. Please use 1, 2 or 3 to specify bachelor daughter track. Veto is not added." << std::endl;
+		std::cerr << "ERROR in LauVetoes::addMassSqVeto : Invalid resPairAmpInt. Please use 1, 2 or 3 to specify bachelor daughter track (or 4 or 5 to specify a veto on mMinSq or mMaxSq in a symmetric DP). Veto is not added." << std::endl;
 		return;
 	}
 
@@ -99,33 +109,68 @@ Bool_t LauVetoes::passVeto(const LauKinematics* kinematics) const
 		return kFALSE;
 	}
 
-	Double_t m12Sq = kinematics->getm12Sq();
-	Double_t m23Sq = kinematics->getm23Sq();
-	Double_t m13Sq = kinematics->getm13Sq();
+	const Double_t m12Sq = kinematics->getm12Sq();
+	const Double_t m23Sq = kinematics->getm23Sq();
+	const Double_t m13Sq = kinematics->getm13Sq();
+	const Bool_t symmetricDP = kinematics->gotSymmetricalDP();
 
-	return passVeto(m12Sq, m23Sq, m13Sq);
+	return this->passVeto(m12Sq, m23Sq, m13Sq, symmetricDP);
 }
 
-Bool_t LauVetoes::passVeto(Double_t& m12Sq, Double_t& m23Sq, Double_t& m13Sq) const 
+Bool_t LauVetoes::passVeto(const Double_t m12Sq, const Double_t m23Sq, const Double_t m13Sq, const Bool_t symmetricDP) const 
 {
 	// Routine to ask whether the given Dalitz plot point passes any specified vetoes.
 
 	// Loop over the number of possible vetoes
-	for ( Int_t i(0); i < nVetoes_; ++i) {
+	for ( UInt_t i(0); i < nVetoes_; ++i) {
 
 		if (vetoPair_[i] == 1) {
 			// Veto m23 combination
 			if (m23Sq > vetoMinMass_[i] && m23Sq < vetoMaxMass_[i]) {
 				return kFALSE;
 			}
+
+			// If the DP is symmetric we need to test m13 combination as well
+			if ( symmetricDP ) {
+				if (m13Sq > vetoMinMass_[i] && m13Sq < vetoMaxMass_[i]) {
+					return kFALSE;
+				}
+			}
 		} else if (vetoPair_[i] == 2) {
 			// Veto m13 combination
 			if (m13Sq > vetoMinMass_[i] && m13Sq < vetoMaxMass_[i]) {
 				return kFALSE;
 			}
+
+			// If the DP is symmetric we need to test m23 combination as well
+			if ( symmetricDP ) {
+				if (m23Sq > vetoMinMass_[i] && m23Sq < vetoMaxMass_[i]) {
+					return kFALSE;
+				}
+			}
 		} else if (vetoPair_[i] == 3) {
 			// Veto m12 combination
 			if (m12Sq > vetoMinMass_[i] && m12Sq < vetoMaxMass_[i]) {
+				return kFALSE;
+			}
+		} else if (vetoPair_[i] == 4) {
+			if (!symmetricDP) {
+				std::cerr << "WARNING in LauVetoes::passVeto : resPairAmpInt of 4 is only valid for symmetric DPs, will ignore this veto" << std::endl;
+				continue;
+			}
+			// Veto mMin combination
+			const Double_t mMinSq = TMath::Min( m13Sq, m23Sq );
+			if (mMinSq > vetoMinMass_[i] && mMinSq < vetoMaxMass_[i]) {
+				return kFALSE;
+			}
+		} else if (vetoPair_[i] == 5) {
+			if (!symmetricDP) {
+				std::cerr << "WARNING in LauVetoes::passVeto : resPairAmpInt of 5 is only valid for symmetric DPs, will ignore this veto" << std::endl;
+				continue;
+			}
+			// Veto mMax combination
+			const Double_t mMaxSq = TMath::Max( m13Sq, m23Sq );
+			if (mMaxSq > vetoMinMass_[i] && mMaxSq < vetoMaxMass_[i]) {
 				return kFALSE;
 			}
 		}

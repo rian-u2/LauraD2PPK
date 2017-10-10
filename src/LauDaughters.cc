@@ -40,7 +40,7 @@ LauDaughters::LauDaughters(Int_t codeParent, Int_t code1, Int_t code2, Int_t cod
 	this->setDaugType(name1, name2, name3);
 
 	// Create kinematics object
-	kinematics_ = new LauKinematics(this->getMassDaug1(), this->getMassDaug2(), this->getMassDaug3(), this->getMassParent(), useSquareDP);
+	kinematics_ = new LauKinematics(this->getMassDaug1(), this->getMassDaug2(), this->getMassDaug3(), this->getMassParent(), useSquareDP, symmetricalDP_);
 }
 
 LauDaughters::LauDaughters(const TString& nameParent, const TString& name1, const TString& name2, const TString& name3, Bool_t useSquareDP) :
@@ -55,7 +55,7 @@ LauDaughters::LauDaughters(const TString& nameParent, const TString& name1, cons
 	this->setDaugType(name1, name2, name3);
 
 	// Create kinematics object
-	kinematics_ = new LauKinematics(this->getMassDaug1(), this->getMassDaug2(), this->getMassDaug3(), this->getMassParent(), useSquareDP);
+	kinematics_ = new LauKinematics(this->getMassDaug1(), this->getMassDaug2(), this->getMassDaug3(), this->getMassParent(), useSquareDP, symmetricalDP_);
 }
 
 LauDaughters::~LauDaughters()
@@ -75,7 +75,7 @@ LauDaughters::LauDaughters( const LauDaughters& rhs ) :
 	this->setDaugType( rhs.getNameDaug1() ,  rhs.getNameDaug2() ,  rhs.getNameDaug3() );
 
 	// Create kinematics object
-	kinematics_ = new LauKinematics(this->getMassDaug1(), this->getMassDaug2(), this->getMassDaug3(), this->getMassParent(), rhs.squareDP());
+	kinematics_ = new LauKinematics(this->getMassDaug1(), this->getMassDaug2(), this->getMassDaug3(), this->getMassParent(), rhs.squareDP(), rhs.gotSymmetricalDP());
 }
 
 void LauDaughters::createParticleLists()

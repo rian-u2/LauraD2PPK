@@ -87,12 +87,9 @@ int main( int argc, char** argv )
 	//Double_t JpsiMax = 3.222;
 	//Double_t psi2SMin = 3.676;
 	//Double_t psi2SMax = 3.866;
-	//vetoes->addMassVeto(2, DMin, DMax); // D0 veto, m13
-	//vetoes->addMassVeto(2, JpsiMin, JpsiMax); // J/psi veto, m13
-	//vetoes->addMassVeto(2, psi2SMin, psi2SMax); // psi(2S) veto, m13
-	//vetoes->addMassVeto(1, DMin, DMax); // D0 veto, m23
-	//vetoes->addMassVeto(1, JpsiMin, JpsiMax); // J/psi veto, m23
-	//vetoes->addMassVeto(1, psi2SMin, psi2SMax); // psi(2S) veto, m23
+	//vetoes->addMassVeto(1, DMin, DMax); // D0 veto, m23 (and automatically m13)
+	//vetoes->addMassVeto(1, JpsiMin, JpsiMax); // J/psi veto, m23 (and automatically m13)
+	//vetoes->addMassVeto(1, psi2SMin, psi2SMax); // psi(2S) veto, m23 (and automatically m13)
 
 	// Define the efficiency model (defaults to unity everywhere)
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);

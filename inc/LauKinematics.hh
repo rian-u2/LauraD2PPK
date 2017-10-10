@@ -38,8 +38,9 @@ class LauKinematics {
 		    \param [in] m3 the third daughter mass
 		    \param [in] mParent the parent particle mass
 		    \param [in] calcSquareDPCoords boolean flag to enable/disable calculation of the square Dalitz plot co-ordinates
+		    \param [in] symmetricalDP boolean flag to indicate whether the DP is symmetric
 		*/
-		LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords = kFALSE);
+		LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords = kFALSE, const Bool_t symmetricalDP = kFALSE);
 
 		//! Destructor
 		virtual ~LauKinematics();
@@ -55,6 +56,12 @@ class LauKinematics {
 		    \return kTRUE if the square Dalitz plot co-ordinates are being calculated, kFALSE otherwise
 		*/
 		inline Bool_t squareDP() const { return squareDP_; }
+
+		//! Is the DP symmetric?
+		/*!
+		    \return kTRUE if the DP is symmetric (i.e. daughters 1 and 2 are identical), kFALSE otherwise
+		*/
+		inline Bool_t gotSymmetricalDP() const { return symmetricalDP_; }
 
 		//! Enable/disable warning messages
 		inline void warningMessages(const Bool_t boolean) { warnings_ = boolean; }
@@ -532,6 +539,9 @@ class LauKinematics {
 
 		//! Copy assignment operator (not implemented)
 		LauKinematics& operator=(const LauKinematics& rhs);
+
+		//! Symmetrical DP
+		const Bool_t symmetricalDP_;
 
 		//! Mass of particle 1
 		const Double_t m1_;

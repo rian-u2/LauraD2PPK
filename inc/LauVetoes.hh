@@ -15,9 +15,12 @@
 /*! \class LauVetoes
     \brief Class for defining vetoes within the Dalitz plot.
 
-    Class for defining vetoes within the Dalitz plot.
     Each veto is defined by an index corresponding to one of the three invariant mass-squared variables, and maximum and minimum values for the veto's range in the specified variable.
+
     Each mass-squared variable is numbered according to the index of the daughter not involved in the vetoed mass-squared variable. For example a veto in m12 squared would receive the index 3.
+
+    Since v3r2, in the case of a symmetric DP, vetoes in m13 or m23 will automatically be symmetrised to the other variable (so only one needs to be specified).
+    However, if one wants to veto a region from a symmetric DP in the already-symmetrised co-ordinates, the special indices 4 and 5 can be used that will apply the veto to mMin or mMax, respectively.
 */
 
 #ifndef LAU_VETOES
@@ -54,28 +57,19 @@ class LauVetoes {
 
 		//! Add a veto to the Dalitz plot
 		/*!
-		    \param [in] resPairAmpInt the index of the mass-squared variable to be vetoed
+		    \param [in] resPairAmpInt the index of the mass-squared variable to be vetoed (in the case of symmetric DPs the special indices 4 and 5 can be used to indicate that a veto should be applied to mMin or mMax)
 		    \param [in] minMass the minimum mass of the veto
 		    \param [in] maxMass the maximum mass of the veto
 		*/
-		void addMassVeto(Int_t resPairAmpInt, Double_t minMass, Double_t maxMass);
+		void addMassVeto(const Int_t resPairAmpInt, const Double_t minMass, const Double_t maxMass);
 
 		//! Add a veto to the Dalitz plot
 		/*!
-		    \param [in] resPairAmpInt the index of the mass-squared variable to be vetoed
+		    \param [in] resPairAmpInt the index of the mass-squared variable to be vetoed (in the case of symmetric DPs the special indices 4 and 5 can be used to indicate that a veto should be applied to mMinSq or mMaxSq)
 		    \param [in] minMassSq the minimum mass-squared of the veto
 		    \param [in] maxMassSq the maximum mass-squared of the veto
 		*/
-		void addMassSqVeto(Int_t resPairAmpInt, Double_t minMassSq, Double_t maxMassSq);
-
-		//! Check whether the specified Dalitz plot point passes the vetoes
-		/*!
-		    \param [in] m12Sq the mass-squared of the first and second daughters
-		    \param [in] m23Sq the mass-squared of the second and third daughters
-		    \param [in] m13Sq the mass-squared of the first and third daughters
-		    \return true if the specified Dalitz plot point is outside all veto regions, false otherwise
-		*/
-		Bool_t passVeto(Double_t& m12Sq, Double_t& m23Sq, Double_t& m13Sq) const;
+		void addMassSqVeto(const Int_t resPairAmpInt, const Double_t minMassSq, const Double_t maxMassSq);
 
 		//! Check whether the specified Dalitz plot point passes the vetoes
 		/*!
@@ -84,11 +78,22 @@ class LauVetoes {
 		*/
 		Bool_t passVeto(const LauKinematics* kinematics) const;
 
+	protected:
+		//! Check whether the specified Dalitz plot point passes the vetoes
+		/*!
+		    \param [in] m12Sq the mass-squared of the first and second daughters
+		    \param [in] m23Sq the mass-squared of the second and third daughters
+		    \param [in] m13Sq the mass-squared of the first and third daughters
+		    \param [in] symmetricDP is the DP symmetric
+		    \return true if the specified Dalitz plot point is outside all veto regions, false otherwise
+		*/
+		Bool_t passVeto(const Double_t m12Sq, const Double_t m23Sq, const Double_t m13Sq, const Bool_t symmetricDP) const;
+
 		//! Retrieve the number of vetoes
 		/*!
 		    \return the number of vetoes
 		*/
-		Int_t getNVetoes() const {return nVetoes_;}
+		UInt_t getNVetoes() const {return nVetoes_;}
 
 		//! Retrieve the index of the vetoed mass-squared variable for each veto
 		/*!
@@ -110,7 +115,7 @@ class LauVetoes {
 
 	private:
 		//! The number of vetoes
-		Int_t nVetoes_;
+		UInt_t nVetoes_;
 
 		//! The index of the vetoed mass-squared variable for each veto
 		std::vector<Int_t> vetoPair_;

@@ -221,10 +221,6 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 
     // Apply some vetoes to the DP
     LauVetoes* vetoes = new LauVetoes();
-    /*Double_t DMin = 1.740;
-    Double_t DMax = 1.894;
-    vetoes->addMassVeto(2, DMin, DMax); // D0 veto, m13
-    vetoes->addMassVeto(1, DMin, DMax); // D0 veto, m23*/
 
     // Define the efficiency model
     LauEffModel* theEffModel = new LauEffModel(theDaughters, vetoes);

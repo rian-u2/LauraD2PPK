@@ -4,6 +4,10 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+10th October 2017 Thomas Latham
+* Make symmetrisation of vetoes automatic in LauVetoes for symmetric DPs
+  - but add new allowed indices (4 and 5) to allow vetoes to be applied to mMin or mMax if desired
+
 8th August 2017 Thomas Latham
 * Implement expressions for the spin factor based on covariant tensor formalism
 * Make it much simpler to switch between formalism options via new functions in LauResonanceMaker:

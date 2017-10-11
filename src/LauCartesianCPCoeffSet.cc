@@ -24,7 +24,6 @@
 #include "LauConstants.hh"
 #include "LauParameter.hh"
 #include "LauPrint.hh"
-#include "LauRandom.hh"
 
 ClassImp(LauCartesianCPCoeffSet)
 
@@ -159,22 +158,22 @@ void LauCartesianCPCoeffSet::randomiseInitValues()
 {
 	if (x_->fixed() == kFALSE) {
 		// Choose a value for "X" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		x_->initValue(value); x_->value(value);
 	}
 	if (y_->fixed() == kFALSE) {
 		// Choose a value for "Y" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		y_->initValue(value);  y_->value(value);
 	}
 	if (deltaX_->fixed() == kFALSE && deltaX_->secondStage() == kFALSE) {
 		// Choose a value for "Delta X" between -0.5 and 0.5
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*1.0 - 0.5;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*1.0 - 0.5;
 		deltaX_->initValue(value); deltaX_->value(value);
 	}
 	if (deltaY_->fixed() == kFALSE && deltaY_->secondStage() == kFALSE) {
 		// Choose a value for "Delta Y" between -0.5 and 0.5
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*1.0 - 0.5;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*1.0 - 0.5;
 		deltaY_->initValue(value); deltaY_->value(value);
 	}
 }

@@ -27,6 +27,7 @@
 
 #include "TString.h"
 
+class TRandom;
 class LauComplex;
 class LauParameter;
 
@@ -232,6 +233,21 @@ class LauAbsCoeffSet {
 		*/
 		static void setCPParRange(Double_t minPar, Double_t maxPar) { minDelta_ = minPar;  maxDelta_ = maxPar; }
 
+		//! Set the randomiser
+		/*!
+		    Set the random number generator to use for randomising parameter starting values.
+		    Will default to LauRandom::zeroSeedRandom if not explicitly supplied via this function.
+
+		    \param [in] randomiser the random number generator to use for randomising parameter starting values
+		*/
+		static void setRandomiser(TRandom* randomiser) { randomiser_ = randomiser; }
+
+		//! Access the randomiser
+		/*!
+		    \return the random number generator to use for randomising parameter starting values
+		*/
+		static TRandom* getRandomiser();
+
 	protected:
 		//! Constructor
 		/*! 
@@ -284,6 +300,9 @@ class LauAbsCoeffSet {
 		LauAbsCoeffSet& operator=(const LauAbsCoeffSet& rhs);
 
 	private:
+		//! Random number generator to use for randomising parameter starting values
+		static TRandom* randomiser_;
+
 		//! The name of the coefficient set
 		TString name_;
 

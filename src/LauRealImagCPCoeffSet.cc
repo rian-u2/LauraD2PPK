@@ -24,7 +24,6 @@
 #include "LauConstants.hh"
 #include "LauParameter.hh"
 #include "LauPrint.hh"
-#include "LauRandom.hh"
 
 ClassImp(LauRealImagCPCoeffSet)
 
@@ -139,22 +138,22 @@ void LauRealImagCPCoeffSet::randomiseInitValues()
 {
 	if (x_->fixed() == kFALSE) {
 		// Choose a value for "X" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		x_->initValue(value); x_->value(value);
 	}
 	if (y_->fixed() == kFALSE) {
 		// Choose a value for "Y" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		y_->initValue(value);  y_->value(value);
 	}
 	if (xbar_->fixed() == kFALSE) {
 		// Choose a value for "Xbar" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		xbar_->initValue(value); xbar_->value(value);
 	}
 	if (ybar_->fixed() == kFALSE) {
 		// Choose a value for "Ybar" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		ybar_->initValue(value); ybar_->value(value);
 	}
 }

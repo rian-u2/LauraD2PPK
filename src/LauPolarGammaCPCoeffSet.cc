@@ -24,7 +24,6 @@
 #include "LauConstants.hh"
 #include "LauParameter.hh"
 #include "LauPrint.hh"
-#include "LauRandom.hh"
 
 LauParameter* LauPolarGammaCPCoeffSet::gammaGlobal_ = 0;
 LauParameter* LauPolarGammaCPCoeffSet::rDGlobal_ = 0;
@@ -379,40 +378,40 @@ void LauPolarGammaCPCoeffSet::randomiseInitValues()
 {
 	if (x_->fixed() == kFALSE) {
 		// Choose a value for "X" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		x_->initValue(value); x_->value(value);
 	}
 	if (y_->fixed() == kFALSE) {
 		// Choose a value for "Y" between -3.0 and 3.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*6.0 - 3.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*6.0 - 3.0;
 		y_->initValue(value);  y_->value(value);
 	}
 	if (gamma_->fixed() == kFALSE && gamma_->secondStage() == kFALSE) {
 		// Choose a value for "gamma" between +-pi
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		gamma_->initValue(value); gamma_->value(value);
 	}
 	if ( decayType_ == ADS_Favoured || decayType_ == ADS_Suppressed || decayType_ == GLW_CPOdd || decayType_ == GLW_CPEven ) {
 		if (rB_->fixed() == kFALSE && rB_->secondStage() == kFALSE) {
 			// Choose a value for "rB" between 0.0 and 2.0
-			Double_t value = LauRandom::zeroSeedRandom()->Rndm()*2.0;
+			Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*2.0;
 			rB_->initValue(value); rB_->value(value);
 		}
 		if (deltaB_->fixed() == kFALSE && deltaB_->secondStage() == kFALSE) {
 			// Choose a value for "deltaB" between +- pi
-			Double_t value = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
+			Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 			deltaB_->initValue(value); deltaB_->value(value);
 		}
 	}
 	if ( decayType_ == ADS_Favoured || decayType_ == ADS_Suppressed || decayType_ == ADS_Favoured_btouOnly ) {
 		if (rD_->fixed() == kFALSE && rD_->secondStage() == kFALSE) {
 			// Choose a value for "rD" between 0.0 and 2.0
-			Double_t value = LauRandom::zeroSeedRandom()->Rndm()*2.0;
+			Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*2.0;
 			rD_->initValue(value); rD_->value(value);
 		}
 		if (deltaD_->fixed() == kFALSE && deltaD_->secondStage() == kFALSE) {
 			// Choose a value for "deltaD" between +- pi
-			Double_t value = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
+			Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 			deltaD_->initValue(value); deltaD_->value(value);
 		}
 	}

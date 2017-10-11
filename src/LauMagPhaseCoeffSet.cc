@@ -24,7 +24,6 @@
 #include "LauMagPhaseCoeffSet.hh"
 #include "LauParameter.hh"
 #include "LauPrint.hh"
-#include "LauRandom.hh"
 
 ClassImp(LauMagPhaseCoeffSet)
 
@@ -104,12 +103,12 @@ void LauMagPhaseCoeffSet::randomiseInitValues()
 {
 	if (magnitude_->fixed() == kFALSE) {
 		// Choose a magnitude between 0.0 and 2.0
-		Double_t mag = LauRandom::zeroSeedRandom()->Rndm()*2.0;
+		Double_t mag = LauAbsCoeffSet::getRandomiser()->Rndm()*2.0;
 		magnitude_->initValue(mag); magnitude_->value(mag);
 	}
 	if (phase_->fixed() == kFALSE) {
 		// Choose a phase between +- pi
-		Double_t phase = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
+		Double_t phase = LauAbsCoeffSet::getRandomiser()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		phase_->initValue(phase); phase_->value(phase);
 	}
 }

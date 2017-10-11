@@ -24,7 +24,6 @@
 #include "LauConstants.hh"
 #include "LauParameter.hh"
 #include "LauPrint.hh"
-#include "LauRandom.hh"
 
 ClassImp(LauMagPhaseCPCoeffSet)
 
@@ -139,22 +138,22 @@ void LauMagPhaseCPCoeffSet::randomiseInitValues()
 {
 	if (mag_->fixed() == kFALSE) {
 		// Choose a value for "magnitude" between 0.0 and 2.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*2.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*2.0;
 		mag_->initValue(value); mag_->value(value);
 	}
 	if (phase_->fixed() == kFALSE) {
 		// Choose a phase between +- pi
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		phase_->initValue(value); phase_->value(value);
 	}
 	if (magBar_->fixed() == kFALSE) {
 		// Choose a value for "magnitude" between 0.0 and 2.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*2.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*2.0;
 		magBar_->initValue(value); magBar_->value(value);
 	}
 	if (phaseBar_->fixed() == kFALSE) {
 		// Choose a phase between +- pi
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*LauConstants::twoPi - LauConstants::pi;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*LauConstants::twoPi - LauConstants::pi;
 		phaseBar_->initValue(value); phaseBar_->value(value);
 	}
 }

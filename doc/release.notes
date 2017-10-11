@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+11th October 2017 Thomas Latham
+* Allow the user to specify the randomiser to be used to randomise the initial values of the isobar parameters
+  - simply use the new static function LauAbsCoeffSet::setRandomiser
+  - if not specified it defaults to the current use of LauRandom::zeroSeedRandom
+
 10th October 2017 Thomas Latham
 * Make symmetrisation of vetoes automatic in LauVetoes for symmetric DPs
   - but add new allowed indices (4 and 5) to allow vetoes to be applied to mMin or mMax if desired

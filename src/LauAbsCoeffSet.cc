@@ -19,9 +19,11 @@
 #include "LauAbsCoeffSet.hh"
 #include "LauConstants.hh"
 #include "LauParameter.hh"
+#include "LauRandom.hh"
 
 ClassImp(LauAbsCoeffSet);
 
+TRandom* LauAbsCoeffSet::randomiser_ = 0;
 Double_t LauAbsCoeffSet::minMagnitude_ = -10.0;
 Double_t LauAbsCoeffSet::maxMagnitude_ =  10.0;
 Double_t LauAbsCoeffSet::minPhase_ = -LauConstants::threePi;
@@ -53,6 +55,14 @@ LauAbsCoeffSet& LauAbsCoeffSet::operator=(const LauAbsCoeffSet& rhs)
 		index_ = rhs.index_;
 	}
 	return *this;
+}
+
+TRandom* LauAbsCoeffSet::getRandomiser()
+{
+	if ( randomiser_ == 0 ) {
+		randomiser_ = LauRandom::zeroSeedRandom();
+	}
+	return randomiser_;
 }
 
 void LauAbsCoeffSet::index(UInt_t newIndex)

@@ -24,7 +24,6 @@
 #include "LauRealImagCoeffSet.hh"
 #include "LauParameter.hh"
 #include "LauPrint.hh"
-#include "LauRandom.hh"
 
 ClassImp(LauRealImagCoeffSet)
 
@@ -104,12 +103,12 @@ void LauRealImagCoeffSet::randomiseInitValues()
 {
 	if (x_->fixed() == kFALSE) {
 		// Choose a value between -10.0 and 10.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*20.0 - 10.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*20.0 - 10.0;
 		x_->initValue(value); x_->value(value);
 	}
 	if (y_->fixed() == kFALSE) {
 		// Choose a value between -10.0 and 10.0
-		Double_t value = LauRandom::zeroSeedRandom()->Rndm()*20.0 - 10.0;
+		Double_t value = LauAbsCoeffSet::getRandomiser()->Rndm()*20.0 - 10.0;
 		y_->initValue(value); y_->value(value);
 	}
 }

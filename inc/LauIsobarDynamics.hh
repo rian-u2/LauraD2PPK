@@ -119,6 +119,14 @@ class LauIsobarDynamics {
 		*/
 		void setIntegralBinningFactor(const Double_t binningFactor) { binningFactor_ = binningFactor; }
 
+		//! Force the symmetrisation of the integration in m13 <-> m23 for non-symmetric but flavour-conjugate final states
+		/*!
+		    This can be necessary for time-dependent fits (where interference terms between A and Abar need to be integrated)
+
+		    \param [in] force toggle forcing symmetrisation of the integration for apparently flavour-conjugate final states
+		*/
+		void forceSymmetriseIntegration(const Bool_t force) { forceSymmetriseIntegration_ = force; }
+
 		//! Add a resonance to the Dalitz plot
 		/*!
 		    NB the stored order of resonances is:
@@ -816,11 +824,17 @@ class LauIsobarDynamics {
 		//! Whether the Dalitz plot is fully symmetric
 		Bool_t fullySymmetricDP_;
 
+		//! Whether the Dalitz plot is a flavour-conjugate final state
+		Bool_t flavConjDP_;
+
 		//! Whether the integrals have been performed
 		Bool_t integralsDone_;
 
 		//! Whether the scheme for the integration has been determined
 		Bool_t normalizationSchemeDone_;
+
+		//! Force the symmetrisation of the integration in m13 <-> m23 for non-symmetric but flavour-conjugate final states
+		Bool_t forceSymmetriseIntegration_;
 
 		//! The storage of the integration scheme
 		std::vector<LauDPPartialIntegralInfo*> dpPartialIntegralInfo_;

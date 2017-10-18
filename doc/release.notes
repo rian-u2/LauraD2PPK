@@ -9,6 +9,7 @@
   - produce an ERROR message and exit if the symmetric DP does not have its daughters arranged correctly
   - detect also flavour-conjugate DPs and set a corresponding flag that can be retrieved via LauDaughters::gotFlavourConjugateDP
     - in this case if the daughters are sub-optimally arranged print a WARNING
+* Modify LauIsobarDynamics::calcDPNormalisationScheme so that any narrow resonance regions are symmetrised appropriately if the DP is fully-symmetric, symmetric or is flavour-conjugate (and in this last case, symmetrisation of the integration has been forced via a new boolean function)
 
 11th October 2017 Thomas Latham
 * Allow the user to specify the randomiser to be used to randomise the initial values of the isobar parameters

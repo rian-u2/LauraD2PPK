@@ -59,8 +59,10 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	currentEvent_(0),
 	symmetricalDP_(kFALSE),
 	fullySymmetricDP_(kFALSE),
+	flavConjDP_(kFALSE),
 	integralsDone_(kFALSE),
 	normalizationSchemeDone_(kFALSE),
+	forceSymmetriseIntegration_(kFALSE),
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
@@ -88,6 +90,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
 		fullySymmetricDP_ = daughters->gotFullySymmetricDP();
+		flavConjDP_ = daughters->gotFlavourConjugateDP();
 		typDaug_.push_back(daughters->getTypeDaug1());
 		typDaug_.push_back(daughters->getTypeDaug2());
 		typDaug_.push_back(daughters->getTypeDaug3());
@@ -119,8 +122,10 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	currentEvent_(0),
 	symmetricalDP_(kFALSE),
 	fullySymmetricDP_(kFALSE),
+	flavConjDP_(kFALSE),
 	integralsDone_(kFALSE),
 	normalizationSchemeDone_(kFALSE),
+	forceSymmetriseIntegration_(kFALSE),
 	intFileName_("integ.dat"),
 	m13BinWidth_(0.005),
 	m23BinWidth_(0.005),
@@ -149,6 +154,7 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
 		fullySymmetricDP_ = daughters->gotFullySymmetricDP();
+		flavConjDP_ = daughters->gotFlavourConjugateDP();
 		typDaug_.push_back(daughters->getTypeDaug1());
 		typDaug_.push_back(daughters->getTypeDaug2());
 		typDaug_.push_back(daughters->getTypeDaug3());
@@ -1221,18 +1227,34 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
 				m23NarrowRes.push_back( std::make_pair(mass,width) );
+				if ( fullySymmetricDP_ ) {
+					m13NarrowRes.push_back( std::make_pair(mass,width) );
+					m12NarrowRes.push_back( std::make_pair(mass,width) );
+				} else if ( symmetricalDP_ || ( flavConjDP_ && forceSymmetriseIntegration_ ) ) {
+					m13NarrowRes.push_back( std::make_pair(mass,width) );
+				}
 			}
 		} else if ( pair == 2 ) {
 			if ( mass < minm13 || mass > maxm13 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
 				m13NarrowRes.push_back( std::make_pair(mass,width) );
+				if ( fullySymmetricDP_ ) {
+					m23NarrowRes.push_back( std::make_pair(mass,width) );
+					m12NarrowRes.push_back( std::make_pair(mass,width) );
+				} else if ( symmetricalDP_ || ( flavConjDP_ && forceSymmetriseIntegration_ ) ) {
+					m23NarrowRes.push_back( std::make_pair(mass,width) );
+				}
 			}
 		} else if ( pair == 3 ) {
 			if ( mass < minm12 || mass > maxm12 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
 				m12NarrowRes.push_back( std::make_pair(mass,width) );
+				if ( fullySymmetricDP_ ) {
+					m13NarrowRes.push_back( std::make_pair(mass,width) );
+					m12NarrowRes.push_back( std::make_pair(mass,width) );
+				}
 			}
 		} else {
 			std::cerr << "WARNING in LauIsobarDynamics::calcDPNormalisationScheme : strange pair integer, " << pair << ", for resonance \"" << (*iter)->getResonanceName() << std::endl;
@@ -1257,18 +1279,34 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
 				m23NarrowRes.push_back( std::make_pair(mass,width) );
+				if ( fullySymmetricDP_ ) {
+					m13NarrowRes.push_back( std::make_pair(mass,width) );
+					m12NarrowRes.push_back( std::make_pair(mass,width) );
+				} else if ( symmetricalDP_ || ( flavConjDP_ && forceSymmetriseIntegration_ ) ) {
+					m13NarrowRes.push_back( std::make_pair(mass,width) );
+				}
 			}
 		} else if ( pair == 2 ) {
 			if ( mass < minm13 || mass > maxm13 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
 				m13NarrowRes.push_back( std::make_pair(mass,width) );
+				if ( fullySymmetricDP_ ) {
+					m23NarrowRes.push_back( std::make_pair(mass,width) );
+					m12NarrowRes.push_back( std::make_pair(mass,width) );
+				} else if ( symmetricalDP_ || ( flavConjDP_ && forceSymmetriseIntegration_ ) ) {
+					m23NarrowRes.push_back( std::make_pair(mass,width) );
+				}
 			}
 		} else if ( pair == 3 ) {
 			if ( mass < minm12 || mass > maxm12 ){
 				std::cout << std::string(53, ' ') << ": But its pole is outside the kinematically allowed range, so will not consider it narrow for the purposes of integration" << std::endl;
 			} else {
 				m12NarrowRes.push_back( std::make_pair(mass,width) );
+				if ( fullySymmetricDP_ ) {
+					m13NarrowRes.push_back( std::make_pair(mass,width) );
+					m12NarrowRes.push_back( std::make_pair(mass,width) );
+				}
 			}
 		} else {
 			std::cerr << "WARNING in LauIsobarDynamics::calcDPNormalisationScheme : strange pair integer, " << pair << ", for resonance \"" << (*iter)->getResonanceName() << std::endl;

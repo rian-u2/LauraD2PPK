@@ -4,6 +4,12 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+18th October 2017 Thomas Latham
+* Modify LauDaughters::testDPSymmetry to:
+  - produce an ERROR message and exit if the symmetric DP does not have its daughters arranged correctly
+  - detect also flavour-conjugate DPs and set a corresponding flag that can be retrieved via LauDaughters::gotFlavourConjugateDP
+    - in this case if the daughters are sub-optimally arranged print a WARNING
+
 11th October 2017 Thomas Latham
 * Allow the user to specify the randomiser to be used to randomise the initial values of the isobar parameters
   - simply use the new static function LauAbsCoeffSet::setRandomiser

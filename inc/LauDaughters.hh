@@ -71,6 +71,12 @@ class LauDaughters {
 		*/
 		Bool_t gotFullySymmetricDP() const {return fullySymmetricDP_;}
 
+		//! Is Dalitz plot flavour-conjugate, i.e. CP(d1) = d2 and CP(d3) = d3
+		/*!
+		    \return true/false whether the DP is flavour-conjugate
+		*/
+		Bool_t gotFlavourConjugateDP() const {return flavourConjugateDP_;}
+
 		//! Determine to use or not the square Dalitz plot
 		/*!
 		    \return true/false to use the squareDP model
@@ -179,6 +185,9 @@ class LauDaughters {
 
 		//! Boolean flag for fully symmetric Dalitz plot
 		Bool_t fullySymmetricDP_;
+
+		//! Flavour-conjugate Dalitz plot
+		Bool_t flavourConjugateDP_;
 
 		ClassDef(LauDaughters, 0)
 

@@ -28,7 +28,8 @@ LauDaughters::LauDaughters(Int_t codeParent, Int_t code1, Int_t code2, Int_t cod
 	kinematics_(0),
 	parent_(0),
 	symmetricalDP_(kFALSE),
-	fullySymmetricDP_(kFALSE)
+	fullySymmetricDP_(kFALSE),
+	flavourConjugateDP_(kFALSE)
 {
 	this->createParticleLists();
 
@@ -47,7 +48,8 @@ LauDaughters::LauDaughters(const TString& nameParent, const TString& name1, cons
 	kinematics_(0),
 	parent_(0),
 	symmetricalDP_(kFALSE),
-	fullySymmetricDP_(kFALSE)
+	fullySymmetricDP_(kFALSE),
+	flavourConjugateDP_(kFALSE)
 {
 	this->createParticleLists();
 
@@ -67,7 +69,8 @@ LauDaughters::LauDaughters( const LauDaughters& rhs ) :
 	kinematics_(0),
 	parent_(0),
 	symmetricalDP_(kFALSE),
-	fullySymmetricDP_(kFALSE)
+	fullySymmetricDP_(kFALSE),
+	flavourConjugateDP_(kFALSE)
 {
 	this->createParticleLists();
 
@@ -166,10 +169,11 @@ void LauDaughters::setDaugType(const TString& name1, const TString& name2, const
 
 void LauDaughters::testDPSymmetry() 
 {
-	// Check to see if we have a symmetrical DP.
+	// Check to see if we have a symmetrical or flavour-conjugate DP.
 
 	symmetricalDP_ = kFALSE;
 	fullySymmetricDP_ = kFALSE;
+	flavourConjugateDP_ = kFALSE;
 
         if ( daughters_[0]->code() == daughters_[1]->code() && daughters_[0]->code() == daughters_[2]->code() ) {
 		std::cout<<"INFO in LauDaughters::testDPSymmetry : We have a fully symmetric DP. "<<std::endl;
@@ -178,11 +182,19 @@ void LauDaughters::testDPSymmetry()
 		std::cout<<"INFO in LauDaughters::testDPSymmetry : We have a symmetrical DP. "<<std::endl;
 		symmetricalDP_ = kTRUE;
 	} else if ( daughters_[0]->code() == daughters_[2]->code() ) {
-		std::cerr<<"WARNING in LauDaughters::testDPSymmetry : daughter 0 and daughter 2 are both "<<daughters_[0]->string()<<" but DP can only fold on daughers 0 and 1."<<std::endl;
+		std::cerr<<"ERROR in LauDaughters::testDPSymmetry : daughter 1 and daughter 3 are both "<<daughters_[0]->string()<<" but DP can only fold on daughters 1 and 2."<<std::endl;
+		gSystem->Exit(EXIT_FAILURE);
 	} else if ( daughters_[1]->code() == daughters_[2]->code() ) {
-		std::cerr<<"WARNING in LauDaughters::testDPSymmetry : daughter 1 and daughter 2 are both "<<daughters_[1]->string()<<" but DP can only fold on daughers 0 and 1."<<std::endl;
+		std::cerr<<"ERROR in LauDaughters::testDPSymmetry : daughter 2 and daughter 3 are both "<<daughters_[1]->string()<<" but DP can only fold on daughters 1 and 2."<<std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	} else if ( daughters_[0]->type() == daughters_[1]->type() && daughters_[2]->charge() == 0 ) {
+		std::cout<<"INFO in LauDaughters::testDPSymmetry : We have a flavour-conjugate DP. "<<std::endl;
+		flavourConjugateDP_ = kTRUE;
+	} else if ( daughters_[0]->type() == daughters_[2]->type() && daughters_[1]->charge() == 0 ) {
+		std::cerr<<"WARNING in LauDaughters::testDPSymmetry : it looks like we have a flavour-conjugate DP but the "<<daughters_[0]->string()<<" and "<<daughters_[2]->string()<<" are not positioned as daughters 1 and 2." << std::endl;
+	} else if ( daughters_[1]->type() == daughters_[2]->type() && daughters_[0]->charge() == 0 ) {
+		std::cerr<<"WARNING in LauDaughters::testDPSymmetry : it looks like we have a flavour-conjugate DP but the "<<daughters_[1]->string()<<" and "<<daughters_[2]->string()<<" are not positioned as daughters 1 and 2." << std::endl;
 	}
-
 }
 
 void LauDaughters::sanityCheck()

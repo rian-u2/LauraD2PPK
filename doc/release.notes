@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v3r2
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 18th October 2017 Thomas Latham
 * Modify LauDaughters::testDPSymmetry to:
   - produce an ERROR message and exit if the symmetric DP does not have its daughters arranged correctly

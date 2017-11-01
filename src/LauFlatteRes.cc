@@ -180,7 +180,9 @@ LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 	}
 
 	Double_t massFactor = resMass;
-	if(useAdlerTerm_) massFactor = ( s - sA_ ) / ( resMassSq - sA_ );
+	if (useAdlerTerm_) {
+		massFactor *= ( s - sA_ ) / ( resMassSq - sA_ );
+	}
 	const Double_t width1 = g1Val*rho1*massFactor;
 	const Double_t width2 = g2Val*rho2*massFactor;
 	const Double_t widthTerm = width1 + width2;

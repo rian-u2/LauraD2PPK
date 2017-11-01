@@ -4,6 +4,9 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+1st November 2017 Thomas Latham
+* Fix bug in LauFlatteRes where the m_0 factor multiplying the width was, if useAdlerTerm_ is true, is replaced by f_Adler rather than being multiplied by it
+  - only affected case where using LauFlatteRes to describe K_0*(1430)
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r2

@@ -9,11 +9,11 @@ using std::endl;
 
 #include "LauDaughters.hh"
 #include "LauVetoes.hh"
+#include "LauEffModel.hh"
 #include "LauIsobarDynamics.hh"
 #include "LauSimpleFitModel.hh"
 #include "LauAbsCoeffSet.hh"
-#include "LauCartesianCPCoeffSet.hh"
-#include "LauEffModel.hh"
+#include "LauRealImagCoeffSet.hh"
 
 #include "TString.h"
 
@@ -83,79 +83,56 @@ int main( int argc, char** argv )
 
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 
-	// Define the "S-wave" K-matrix propagator
-	Int_t resPairInt = 3;
-	Int_t nChannels = 5;
-	Int_t nPoles = 5;
-	Int_t KMatrixIndex = 1; // for S-wave, use only the first "row"
+	// Add relativistic BWs for the rho and K* resonances
+	sigModel->addResonance("rho0(770)",   3, LauAbsResonance::RelBW);
+	sigModel->addResonance("K*+(892)",    2, LauAbsResonance::RelBW);
+	sigModel->addResonance("K*+_2(1430)", 2, LauAbsResonance::RelBW);
 
+	// Define the pi+ pi- "S-wave" K-matrix propagator
 	// The defineKMatrixPropagator requires four arguments
 	// name of propagator, parameter file, mass pair index (1,2,3) for "s" variable, number of channels, number of
 	// mass poles and the row index defining the K-matrix state (e.g. index = 1 for the first row -> S-wave).
-	sigModel->defineKMatrixPropagator("KMSWave", "LauKMatrixCoeff.dat", resPairInt, nChannels, nPoles, KMatrixIndex);
+	Int_t resPairInt = 3;
+	Int_t nChannels = 5;
+	Int_t nPoles = 5;
+	Int_t KMatrixIndex = 1;
+	sigModel->defineKMatrixPropagator("KM_pipi", "LauKMatrixCoeff.dat", resPairInt, nChannels, nPoles, KMatrixIndex);
 
 	// Now define the pole and "slowly-varying part" (SVP) amplitudes for this K-matrix.
 	// Each part will have their own complex coefficients which can (should) be fitted.
 	// The addKMatrixProd functions need: name of pole/SVP, name of propagator and the index 
 	// number of the amplitude (from 1 to nPoles or nChannels)
-	sigModel->addKMatrixProdPole("KMPole1", "KMSWave", 1);
-	sigModel->addKMatrixProdPole("KMPole2", "KMSWave", 2);
-	sigModel->addKMatrixProdPole("KMPole3", "KMSWave", 3);
-	sigModel->addKMatrixProdPole("KMPole4", "KMSWave", 4);
-	sigModel->addKMatrixProdPole("KMPole5", "KMSWave", 5);
+	sigModel->addKMatrixProdPole("KM_pipi_Pole1", "KM_pipi", 1);
+	sigModel->addKMatrixProdPole("KM_pipi_Pole2", "KM_pipi", 2);
+	sigModel->addKMatrixProdPole("KM_pipi_Pole3", "KM_pipi", 3);
+	sigModel->addKMatrixProdPole("KM_pipi_Pole4", "KM_pipi", 4);
+	sigModel->addKMatrixProdPole("KM_pipi_Pole5", "KM_pipi", 5);
 
-	sigModel->addKMatrixProdSVP("KMSVP1", "KMSWave", 1);
-	sigModel->addKMatrixProdSVP("KMSVP2", "KMSWave", 2);
-	sigModel->addKMatrixProdSVP("KMSVP3", "KMSWave", 3);
-	sigModel->addKMatrixProdSVP("KMSVP4", "KMSWave", 4);
-	sigModel->addKMatrixProdSVP("KMSVP5", "KMSWave", 5);
+	sigModel->addKMatrixProdSVP("KM_pipi_SVP1", "KM_pipi", 1);
+	sigModel->addKMatrixProdSVP("KM_pipi_SVP2", "KM_pipi", 2);
+	sigModel->addKMatrixProdSVP("KM_pipi_SVP3", "KM_pipi", 3);
 
-	// Define another K-matrix propagator and its three poles. This uses another coefficient data file.
-	// Note that the name of this propagator must be different from the previous one.
-	Int_t nChannels2 = 3;
-	Int_t nPoles2 = 3;  
-	sigModel->defineKMatrixPropagator("KMatrix2", "LauKMatrixCoeff2.dat", resPairInt, nChannels2, nPoles2, KMatrixIndex);
-	// Add three poles for this new K-matrix
-	sigModel->addKMatrixProdPole("KMP1", "KMatrix2", 1);
-	sigModel->addKMatrixProdPole("KMP2", "KMatrix2", 2);
-	sigModel->addKMatrixProdPole("KMP3", "KMatrix2", 3);
-
-	//sigModel->addKMatrixProdSVP("KMS1", "KMatrix2", 1);
-	//sigModel->addKMatrixProdSVP("KMS2", "KMatrix2", 1);  
-	//sigModel->addKMatrixProdSVP("KMS3", "KMatrix2", 1);  
-
-	// Add a normal relativistic BW
-	sigModel->addResonance("rho0(770)", 3, LauAbsResonance::RelBW);
-
-	sigModel->setASqMaxValue(3.0);
+	sigModel->setASqMaxValue(3.1);
 
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
 
 	std::vector<LauAbsCoeffSet*> coeffset;
 
+	// Define the coefficients for the P-wave rho and K* resonances
+	coeffset.push_back(new LauRealImagCoeffSet("rho0(770)",      1.00,  0.00,  kTRUE,  kTRUE));
+	coeffset.push_back(new LauRealImagCoeffSet("K*+(892)",       0.97, -1.10, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("K*+_2(1430)",    0.38, -0.54, kFALSE, kFALSE));
+
 	// Define the coefficients for the K-matrix amplitudes defined above ("beta" and "f" production coeffs)
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMPole1",   0.1822, -0.9120,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMPole2",   -1.017, -0.389,  0.0, 0.0, kFALSE, kFALSE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMPole3",   -2.367, 0.503,  0.0, 0.0, kFALSE, kFALSE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMPole4",   -0.008, .916,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMPole5",   0.00, 0.00,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_Pole1", -0.18, -0.91, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_Pole2", -1.02, -0.38, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_Pole3", -0.37,  0.50, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_Pole4", -0.01,  0.92, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_Pole5",  0.01, -0.05, kFALSE, kFALSE));
 
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMSVP1",   0.220, 0.763,  0.0, 0.0, kFALSE, kFALSE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMSVP2",   0.890, 1.315,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMSVP3",   -0.973, 3.931,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMSVP4",   0.502, 2.510,  0.0, 0.0, kFALSE, kFALSE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMSVP5",   0.00, 0.00,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMP1",   1.5822, 0.5120,  0.0, 0.0, kFALSE, kTRUE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMP2",   1.2822, -0.2120,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-	coeffset.push_back(new LauCartesianCPCoeffSet("KMP3",   1.2822, 0.3120,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-
-	//coeffset.push_back(new LauCartesianCPCoeffSet("KMS1",   1.5822, 0.5120,  0.0, 0.0, kFALSE, kTRUE, kTRUE, kTRUE));
-	//coeffset.push_back(new LauCartesianCPCoeffSet("KMS2",   1.2822, -0.2120,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-	//coeffset.push_back(new LauCartesianCPCoeffSet("KMS3",   1.2822, 0.3120,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
-
-	// Define the amplitude for the normal rho resonance
-	coeffset.push_back(new LauCartesianCPCoeffSet("rho0(770)",  2.00, 0.00,  0.0, 0.0, kTRUE, kTRUE, kTRUE, kTRUE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_SVP1",   0.22,  0.76, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_SVP2",   0.89, -0.31, kFALSE, kFALSE));
+	coeffset.push_back(new LauRealImagCoeffSet("KM_pipi_SVP3",  -0.97,  0.93, kFALSE, kFALSE));
 
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);

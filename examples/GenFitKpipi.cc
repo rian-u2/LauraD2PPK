@@ -150,7 +150,7 @@ int main( int argc, char** argv )
 
 	LauIsobarDynamics* negSigModel = new LauIsobarDynamics(negDaughters, negEffModel);
 	negSigModel->setIntFileName("integ_neg.dat");
-	negSigModel->setASqMaxValue(3.00);
+	negSigModel->setASqMaxValue(0.45);
 
 	LauAbsResonance* res(0);
 	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
@@ -169,7 +169,7 @@ int main( int argc, char** argv )
 
 	LauIsobarDynamics* posSigModel = new LauIsobarDynamics(posDaughters, posEffModel);
 	posSigModel->setIntFileName("integ_pos.dat");
-	posSigModel->setASqMaxValue(3.00);
+	posSigModel->setASqMaxValue(0.45);
 
 	res = posSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
 	res = posSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS);

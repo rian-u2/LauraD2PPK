@@ -211,16 +211,16 @@ int main( int argc, char** argv )
 	fitModel->twoStageFit(kFALSE);
 
 	// Generate toy from the fitted parameters
-	TString fitToyFileName("fitToyMC_NoDPMultiDim_");
-	fitToyFileName += iFit;
-	fitToyFileName += ".root";
-	fitModel->compareFitData(100, fitToyFileName);
+	//TString fitToyFileName("fitToyMC_NoDPMultiDim_");
+	//fitToyFileName += iFit;
+	//fitToyFileName += ".root";
+	//fitModel->compareFitData(100, fitToyFileName);
 
 	// Write out per-event likelihoods and sWeights
-	TString splotFileName("splot_NoDPMultiDim_");
-	splotFileName += iFit;
-	splotFileName += ".root";
-	fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
+	//TString splotFileName("splot_NoDPMultiDim_");
+	//splotFileName += iFit;
+	//splotFileName += ".root";
+	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	TString dataFile("gen-NoDPMultiDim.root");
 	TString treeName("genResults");
@@ -228,7 +228,7 @@ int main( int argc, char** argv )
 	TString tableFileName("");
 	if (command == "fit") {
 		rootFileName = "fitNoDPMultiDim_"; rootFileName += iFit;
-		rootFileName += "_expts"; rootFileName += firstExpt; rootFileName += "-"; rootFileName += firstExpt+nExpt-1;
+		rootFileName += "_expt_"; rootFileName += firstExpt; rootFileName += "-"; rootFileName += firstExpt+nExpt-1;
 		rootFileName += ".root";
 		tableFileName = "fitNoDPMultiDimResults_"; tableFileName += iFit;
 	} else {

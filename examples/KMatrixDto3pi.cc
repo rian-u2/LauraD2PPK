@@ -17,7 +17,54 @@ using std::endl;
 
 #include "TString.h"
 
+void usage( std::ostream& out, const TString& progName )
+{
+	out<<"Usage:\n";
+	out<<progName<<" gen [nExpt = 1] [firstExpt = 0]\n";
+	out<<"or\n";
+	out<<progName<<" fit <iFit> [nExpt = 1] [firstExpt = 0]"<<std::endl;
+}
+
 int main(const int argc, const  char ** argv) {
+
+	// Process command-line arguments
+	// Usage:
+	// ./KMatrixDto3pi gen [nExpt = 1] [firstExpt = 0]
+	// or
+	// ./KMatrixDto3pi fit <iFit> [nExpt = 1] [firstExpt = 0]
+	if ( argc < 2 ) {
+		usage( std::cerr, argv[0] );
+		return EXIT_FAILURE;
+	}
+
+	TString command = argv[1];
+	command.ToLower();
+	Int_t iFit(0);
+	Int_t nExpt(1);
+	Int_t firstExpt(0);
+	if ( command == "gen" ) {
+		if ( argc > 2 ) {
+			nExpt = atoi( argv[2] );
+			if ( argc > 3 ) {
+				firstExpt = atoi( argv[3] );
+			}
+		}
+	} else if ( command == "fit" ) {
+		if ( argc < 3 ) {
+			usage( std::cerr, argv[0] );
+			return EXIT_FAILURE;
+		}
+		iFit = atoi( argv[2] );
+		if ( argc > 3 ) {
+			nExpt = atoi( argv[3] );
+			if ( argc > 4 ) {
+				firstExpt = atoi( argv[4] );
+			}
+		}
+	} else {
+		usage( std::cerr, argv[0] );
+		return EXIT_FAILURE;
+	}
 
 	// Generate K-matrix amplitude distribution across the DP
 	LauDaughters* daughters = new LauDaughters("D+", "pi+", "pi+", "pi-", kFALSE);
@@ -49,7 +96,7 @@ int main(const int argc, const  char ** argv) {
 	sigModel->addResonance("rho0(770)", 1, LauAbsResonance::RelBW);
 	sigModel->addResonance("f_2(1270)", 1, LauAbsResonance::RelBW);
 
-	sigModel->setASqMaxValue(10.0);
+	sigModel->setASqMaxValue(2.1);
 
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
 
@@ -76,9 +123,6 @@ int main(const int argc, const  char ** argv) {
 
 	Double_t nSigEvents = 20000;
 	Bool_t fixSigEvents = kTRUE;
-	Int_t nExpt = 1;
-	Int_t firstExpt = 0;
-
 	LauParameter * nSig = new LauParameter("signalEvents",nSigEvents,-2.0*nSigEvents,2.0*nSigEvents,fixSigEvents);
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNExpts(nExpt, firstExpt);
@@ -95,15 +139,22 @@ int main(const int argc, const  char ** argv) {
 	// Switch on Extended ML Fit option - only really use if Poisson smearing is also enabled
 	fitModel->doEMLFit(kFALSE);
 
-	int mode(0);
-	if (argc > 1) {mode = atoi(argv[1]);}
-
-	// Run
-	if (mode == 0) {
-		fitModel->run("gen", "gen.root", "fitTree", "dummy.root", "genResults");
+	// Set the names of the files to read/write
+	TString dataFile("gen-KMatrixDto3pi.root");
+	TString treeName("genResults");
+	TString rootFileName("");
+	TString tableFileName("");
+	if (command == "fit") {
+		rootFileName = "fitKMatrixDto3pi_"; rootFileName += iFit;
+		rootFileName += "_expt_"; rootFileName += firstExpt;
+		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
+		rootFileName += ".root";
+		tableFileName = "fitKMatrixDto3piResults_"; tableFileName += iFit;
 	} else {
-		//fitModel->compareFitData(1);
-		fitModel->run("fit", "gen.root", "fitTree", "fit.root", "fitResults");
+		rootFileName = "dummy.root";
+		tableFileName = "genKMatrixDto3piResults";
 	}
 
+	// Execute the generation/fit
+	fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );
 }

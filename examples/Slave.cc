@@ -22,7 +22,7 @@ void usage( std::ostream& out, const TString& progName )
 	out<<"Usage:\n";
 	out<<progName<<" gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]\n";
 	out<<"or\n";
-	out<<progName<<" fit <category = DD or LL> <iFit> <port> [nExpt = 1] [firstExpt = 0]"<<std::endl;
+	out<<progName<<" fit <category = DD or LL> <iFit> <port> [hostname] [nExpt = 1] [firstExpt = 0]"<<std::endl;
 }
 
 int main( int argc, char** argv )
@@ -39,13 +39,16 @@ int main( int argc, char** argv )
 
 	TString command = argv[1];
 	command.ToLower();
+
 	TString category = argv[2];
 	if ( category != "DD" && category != "LL" ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
 	}
+
 	Int_t iFit(0);
 	UInt_t port(5000);
+	TString hostname("localhost");
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
 	if ( command == "gen" ) {
@@ -63,9 +66,12 @@ int main( int argc, char** argv )
 		iFit = atoi( argv[3] );
 		port = atoi( argv[4] );
 		if ( argc > 5 ) {
-			nExpt = atoi( argv[5] );
+			hostname = argv[5];
 			if ( argc > 6 ) {
-				firstExpt = atoi( argv[6] );
+				nExpt = atoi( argv[6] );
+				if ( argc > 7 ) {
+					firstExpt = atoi( argv[7] );
+				}
 			}
 		}
 	} else {
@@ -216,7 +222,7 @@ int main( int argc, char** argv )
 
 	// Execute the generation/fit
 	if ( command == "fit" ) {
-		fitModel->runSlave( dataFile, treeName, rootFileName, tableFileName, "localhost", port );
+		fitModel->runSlave( dataFile, treeName, rootFileName, tableFileName, hostname, port );
 	} else {
 		fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );
 	}

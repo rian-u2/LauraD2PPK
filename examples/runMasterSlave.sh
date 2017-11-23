@@ -2,7 +2,7 @@
 
 if [ $# -lt 1 ]
 then
-    echo "Usage: $0 <nExpt> [firstExpt = 0] [numSlaves = 2]"
+    echo "Usage: $0 <nExpt> [firstExpt = 0]"
     exit 1
 fi
 
@@ -13,10 +13,6 @@ numslaves=2
 if [ $# -gt 1 ]
 then
     firstexpt=$2
-    if [ $# -gt 2 ]
-    then
-        numslaves=$3
-    fi
 fi
 
 # Do whatever you need to do to setup your ROOT environment
@@ -24,10 +20,16 @@ fi
 
 
 # Generate the toy MC
-echo "Generating MC"
-./Slave gen DD $nexpt $firstexpt > gen-log-DD.out 2>&1
-./Slave gen LL $nexpt $firstexpt > gen-log-LL.out 2>&1
-
+if [ ! -e gen-DD-Slave.root ]
+then
+    echo "Generating MC for DD category"
+    ./Slave gen DD $nexpt $firstexpt > gen-log-DD.out 2>&1
+fi
+if [ ! -e gen-LL-Slave.root ]
+then
+    echo "Generating MC for LL category"
+    ./Slave gen LL $nexpt $firstexpt > gen-log-LL.out 2>&1
+fi
 
 # Do the simultaneous fit
 for ifit in `seq 0 19`
@@ -37,11 +39,18 @@ do
     ./Master $ifit $nexpt $firstexpt $numslaves > master-log-$ifit.out 2>&1 &
     sleep 5
 
+    NUMOFLINES=$(wc -l < "master-log-$ifit.out")
+    while [ $NUMOFLINES -lt 1 ]
+    do
+        sleep 5
+        NUMOFLINES=$(wc -l < "master-log-$ifit.out")
+    done
+
     port=`tail -1 master-log-$ifit.out | awk '{print $NF}'`
 
-    ./Slave fit DD $ifit $port > slave-dd-log-$ifit.out 2>&1 &
+    ./Slave fit DD $ifit $port localhost > slave-dd-log-$ifit.out 2>&1 &
     sleep 1
-    ./Slave fit LL $ifit $port > slave-ll-log-$ifit.out 2>&1
+    ./Slave fit LL $ifit $port localhost > slave-ll-log-$ifit.out 2>&1
 done
 
 # Extract the best fit

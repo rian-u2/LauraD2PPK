@@ -4,8 +4,23 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v3r3
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+23rd November 2017 Thomas Latham
+* Add an example written as a python script: GenFit3pi.py
+* Various improvements to the other example code
+
+23rd November 2017 Thomas Latham
+* Fix bug in the LauAbsResonance constructor used by the K-matrix
+  - "resonance" charge is now set to the sum of the daughter charges
+
 1st November 2017 Thomas Latham
-* Fix bug in LauFlatteRes where the m_0 factor multiplying the width was, if useAdlerTerm_ is true, is replaced by f_Adler rather than being multiplied by it
+* Fix bug in LauFlatteRes
+  - m_0 factor multiplying the width was, if useAdlerTerm_ is true, replaced by
+    f_Adler rather than being multiplied by it
   - only affected case where using LauFlatteRes to describe K_0*(1430)
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

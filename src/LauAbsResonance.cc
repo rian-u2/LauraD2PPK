@@ -167,12 +167,9 @@ LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpI
 	chargeDaug2_ = this->getChargeDaug2();
 	chargeBachelor_ = this->getChargeBachelor();
 
-	// check that the total charge adds up to that of the resonance
-	Int_t totalCharge = chargeDaug1_ + chargeDaug2_;
-	if ( (totalCharge != resCharge_) && (resPairAmpInt_ != 0) ) {
-		std::cerr << "ERROR in LauAbsResonance : Total charge of daughters = " << totalCharge << ". Resonance charge = " << resCharge_ << "." << std::endl;
-		gSystem->Exit(EXIT_FAILURE);
-	}
+	// Since we haven't been provided with a LauResonanceInfo object we can just
+	// set the change of the resonance to be the sum of the daughter charges
+	resCharge_ = chargeDaug1_ + chargeDaug2_;
 }
 
 // Destructor

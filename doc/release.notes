@@ -4,6 +4,8 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+29th November 2017 Thomas Latham
+* Improve error messages in LauCPFitModel::weightEvents
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r3

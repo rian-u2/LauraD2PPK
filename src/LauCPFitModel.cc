@@ -2932,23 +2932,27 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
   // in the DP (or square DP) so as to reproduce the given DP model
 
   if ( posKinematics_->squareDP() ) {
-    std::cout << "INFO in LauSimpleFitModel::weightEvents : will create weights assuming events were generated flat in the square DP" << std::endl;
+    std::cout << "INFO in LauCPFitModel::weightEvents : will create weights assuming events were generated flat in the square DP" << std::endl;
   } else {
-    std::cout << "INFO in LauSimpleFitModel::weightEvents : will create weights assuming events were generated flat in phase space" << std::endl;
+    std::cout << "INFO in LauCPFitModel::weightEvents : will create weights assuming events were generated flat in phase space" << std::endl;
   }
 
   // This reads in the given dataFile and creates an input
   // fit data tree that stores them for all events and experiments.
   Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
   if (!dataOK) {
-    std::cerr << "ERROR in LauSimpleFitModel::weightEvents : Problem caching the data." << std::endl;
+    std::cerr << "ERROR in LauCPFitModel::weightEvents : Problem caching the data." << std::endl;
     return;
   }
 
   LauFitDataTree* inputFitData = this->fitData();
 
-  if ( ! inputFitData->haveBranch( "m13Sq_MC" ) || ! inputFitData->haveBranch( "m23Sq_MC" ) || ! inputFitData->haveBranch( "charge" )) {
-    std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Cannot find MC truth DP coordinate branches in supplied data, aborting." << std::endl;
+  if ( ! inputFitData->haveBranch( "m13Sq_MC" ) || ! inputFitData->haveBranch( "m23Sq_MC" ) ) {
+    std::cerr << "WARNING in LauCPFitModel::weightEvents : Cannot find MC truth DP coordinate branches in supplied data, aborting." << std::endl;
+    return;
+  }
+  if ( ! inputFitData->haveBranch( "charge" ) ) {
+    std::cerr << "WARNING in LauCPFitModel::weightEvents : Cannot find branch specifying event charge in supplied data, aborting." << std::endl;
     return;
   }
 
@@ -2970,7 +2974,7 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
     UInt_t nEvents = inputFitData->nEvents();
 
     if (nEvents < 1) {
-      std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Zero events in experiment " << iExpmt << ", skipping..." << std::endl;
+      std::cerr << "WARNING in LauCPFitModel::weightEvents : Zero events in experiment " << iExpmt << ", skipping..." << std::endl;
       continue;
     }
 
@@ -3013,7 +3017,7 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
 	dpModelWeight /= norm;
 
 	if (LauIsobarDynamics::GenOK != dpModel->checkToyMC(kTRUE,kFALSE)) {
-	  std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
+	  std::cerr << "WARNING in LauCPFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
 	  delete weightsTuple;
 	  return;
 	}
@@ -3162,7 +3166,7 @@ void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
 	TString xLabel = "s13";
    	TString yLabel = "s23";
 
-	std::cout << "LauSimpleFitModel::savePDFPlotsWave: "<< tStrResID << std::endl;
+	std::cout << "LauCPFitModel::savePDFPlotsWave: "<< tStrResID << std::endl;
 
 	Double_t minm13 = 0.0;
 	Double_t maxm13 = negSigModel_->getKinematics()->getm13Max();

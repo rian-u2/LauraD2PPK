@@ -4,6 +4,11 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+30th November 2017 Thomas Latham
+* In LauFitDataTree::readExperimentData add a check that the tree contains the branch "iExpt" and if not:
+  - If the requested experiment is 0 then read all data in the tree (and print a warning)
+  - Otherwise print an error message and return
+
 29th November 2017 Thomas Latham
 * Improve error messages in LauCPFitModel::weightEvents
 

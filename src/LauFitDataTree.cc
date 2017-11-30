@@ -143,6 +143,7 @@ Bool_t LauFitDataTree::findBranches()
 
 void LauFitDataTree::readExperimentData(UInt_t iExpt)
 {
+	// Check that we have a valid tree to read from
 	if (!rootTree_) {
 		std::cerr << "ERROR in LauFitDataTree::readExperimentData : Invalid pointer to data tree." << std::endl;
 		return;
@@ -150,11 +151,31 @@ void LauFitDataTree::readExperimentData(UInt_t iExpt)
 
 	rootFile_->cd();
 
+	// If the event list doesn't exist, create it
 	if (!eventList_) {
 		eventList_ = new TEventList("elist","elist");
 		eventList_->SetDirectory(rootFile_);
 	}
 
+	// Reset the event list so it contains no entries
+	eventList_->Reset();
+
+	// Check that the tree contains the iExpt branch
+	if (!this->haveBranch("iExpt")) {
+		// If it doesn't, check which experiment we've been asked to read
+		if ( iExpt == 0 ) {
+			// If it's experiment 0, assume that we should read all events in the tree (but print a warning since this is an assumption)
+			std::cerr << "WARNING in LauFitDataTree::readExperimentData : Tree does not contain \"iExpt\" branch, will read all data in the tree" << std::endl;
+			this->readAllData();
+			return;
+		} else {
+			// Otherwise we can't really do anything, so print an error and return
+			std::cerr << "ERROR in LauFitDataTree::readExperimentData : Tree does not contain \"iExpt\" branch and experiment requested is > 0, will not read anything" << std::endl;
+			return;
+		}
+	}
+
+	// Fill the event list with the entries for the requested experiment
 	TString listName(eventList_->GetName());
 	listName.Prepend(">>");
 	TString selection("iExpt==");
@@ -164,6 +185,7 @@ void LauFitDataTree::readExperimentData(UInt_t iExpt)
 	rootTree_->Draw(listName,selection);
 	std::cout << "                                           : Found " << this->nEvents() << " events." << std::endl;
 
+	// Load the data
 	this->loadData();
 }
 
@@ -219,7 +241,7 @@ void LauFitDataTree::appendFakePoints( const std::vector<Double_t>& xCoords, con
 		std::cerr << "ERROR in LauFitDataTree::appendFakePoints : Can't find entry \"tagCat\" in event data map." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
-	UInt_t m23SqIdx = iter->second;
+	UInt_t tagCatIdx = iter->second;
 	 */
 
 	for (UInt_t iEvt = 0; iEvt < xCoords.size() ; ++iEvt) {

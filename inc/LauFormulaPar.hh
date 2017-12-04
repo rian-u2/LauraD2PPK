@@ -64,11 +64,29 @@ class LauFormulaPar : public LauAbsRValue {
 		*/
 		Double_t unblindValue() const;
 
+		//! The value generated for the parameter
+		/*!
+		    \return the value generated for the parameter
+		*/
+		Double_t genValue() const;
+
+		//! The initial value of the parameter
+		/*!
+		    \return the initial value of the parameter given to the fitter
+		*/
+		Double_t initValue() const;
+
 		//! The parameter name
 		/*!
 		  \return the name of the parameter
 		*/
 		inline const TString& name() const {return name_;}
+
+		//! Set the parameter name
+		/*!
+		    \param [in] newName the name of the parameter
+		*/
+		inline void name(const TString& newName) {name_ = newName;};
 
 		//! Get the LauParameters used in LauFormulaPar
 		/*!
@@ -87,6 +105,12 @@ class LauFormulaPar : public LauAbsRValue {
 		  \return kFALSE unless all LauParameters in the formula are fixed
 		*/
 		Bool_t fixed() const;
+
+		//! The blinding state
+		/*!
+		    \return kTRUE if any of the LauParameters in the formula are blinded, kFALSE otherwise
+		*/
+		Bool_t blind() const;
 
 		//! Check whether a Gaussian constraints is applied
 		/*!

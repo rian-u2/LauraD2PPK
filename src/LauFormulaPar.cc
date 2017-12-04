@@ -140,12 +140,44 @@ Double_t LauFormulaPar::unblindValue() const
 	return formula_.EvalPar(dummy_,paramArray_);
 }
 
+Double_t LauFormulaPar::genValue() const
+{
+	//Assign vector values to array
+	Int_t nPars = paramVec_.size();
+
+	for(Int_t i=0; i<nPars; ++i){
+		paramArray_[i] = paramVec_[i]->genValue();
+	}
+
+	return formula_.EvalPar(dummy_,paramArray_);
+}
+
+Double_t LauFormulaPar::initValue() const
+{
+	//Assign vector values to array
+	Int_t nPars = paramVec_.size();
+
+	for(Int_t i=0; i<nPars; ++i){
+		paramArray_[i] = paramVec_[i]->initValue();
+	}
+
+	return formula_.EvalPar(dummy_,paramArray_);
+}
+
 Bool_t LauFormulaPar::fixed() const
 {
 	for ( std::vector<LauParameter*>::const_iterator iter = paramVec_.begin(); iter != paramVec_.end(); ++iter ) {
 		if ( !(*iter)->fixed() ) { return kFALSE; }
 	}
 	return kTRUE;
+}
+
+Bool_t LauFormulaPar::blind() const
+{
+	for ( std::vector<LauParameter*>::const_iterator iter = paramVec_.begin(); iter != paramVec_.end(); ++iter ) {
+		if ( (*iter)->blind() ) { return kTRUE; }
+	}
+	return kFALSE;
 }
 
 void LauFormulaPar::addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth)

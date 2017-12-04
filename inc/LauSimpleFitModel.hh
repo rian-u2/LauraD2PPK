@@ -66,7 +66,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 
 			\param [in] nBkgndEvents contains the name, yield and option to fix the background yield
 		*/	
-		virtual void setNBkgndEvents(LauParameter* nBkgndEvents);
+		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents);
 
 		//! Set the background DP models
 		/*!
@@ -170,7 +170,7 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		typedef std::vector<LauPdfList> LauBkgndPdfsList;
 
 		//! Typedef for a vector of background yields
-		typedef std::vector<LauParameter*> LauBkgndYieldList;
+		typedef std::vector<LauAbsRValue*> LauBkgndYieldList;
 
 		//! Typedef for a vector of embedded data objects
 		typedef std::vector<LauEmbeddedData*> LauBkgndEmbDataList;

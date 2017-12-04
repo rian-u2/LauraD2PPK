@@ -47,6 +47,12 @@ class LauAbsRValue {
 		*/
 		virtual const TString& name() const =0;
 
+		//! Set the parameter name
+		/*!
+		    \param [in] newName the name of the parameter
+		*/
+		virtual void name(const TString& newName) =0;
+
 		//! Return the value of the parameter
 		/*!
 		  \return the value of the parameter
@@ -58,6 +64,18 @@ class LauAbsRValue {
 		  \return the unblinded value of the parameter
 		*/
 		virtual Double_t unblindValue() const =0;
+
+		//! The value generated for the parameter
+		/*!
+		    \return the value generated for the parameter
+		*/
+		virtual Double_t genValue() const =0;
+
+		//! The initial value of the parameter
+		/*!
+		    \return the initial value of the parameter given to the fitter
+		*/
+		virtual Double_t initValue() const =0;
 
 		//! Check whether a Gaussian constraints is applied
 		/*!
@@ -95,6 +113,11 @@ class LauAbsRValue {
 		*/    
 		virtual Bool_t fixed() const =0;
 
+		//! The blinding state
+		/*!
+		    \return the blinding state: kTRUE means that it is blinded, kFALSE that it is not blinded
+		*/
+		virtual Bool_t blind() const =0;
 
 	private:
 

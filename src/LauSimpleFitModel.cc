@@ -120,7 +120,7 @@ void LauSimpleFitModel::setNSigEvents(LauParameter* nSigEvents)
 	signalEvents_->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 }
 
-void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
+void LauSimpleFitModel::setNBkgndEvents(LauAbsRValue* nBkgndEvents)
 {
 	if ( nBkgndEvents == 0 ) {
 		std::cerr << "ERROR in LauSimpleFitModel::setNBkgndEvents : The background yield LauParameter pointer is null." << std::endl;
@@ -140,10 +140,13 @@ void LauSimpleFitModel::setNBkgndEvents(LauParameter* nBkgndEvents)
 		return;
 	}
 
+	nBkgndEvents->name( nBkgndEvents->name()+"Events" );
+	if ( nBkgndEvents->isLValue() ) {
+		Double_t value = nBkgndEvents->value();
+		LauParameter* yield = dynamic_cast<LauParameter*>( nBkgndEvents );
+		yield->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+	}
 	bkgndEvents_[bkgndID] = nBkgndEvents;
-	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
-	Double_t value = nBkgndEvents->value();
-	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 }
 
 void LauSimpleFitModel::splitSignalComponent( const TH2* dpHisto, const Bool_t upperHalf, const Bool_t fluctuateBins, LauScfMap* scfMap )
@@ -502,9 +505,13 @@ void LauSimpleFitModel::setFitNEvents()
 
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			LauParameter* parameter = (*iter);
-			fitVars.push_back(parameter);
-			++nNormPar_;
+			std::vector<LauParameter*> parameters = (*iter)->getPars();
+			for ( LauParameter* parameter : parameters ) {
+				if ( ! parameter->clone() ) {
+					fitVars.push_back(parameter);
+					++nNormPar_;
+				}
+			}
 		}
 	}
 }
@@ -600,7 +607,10 @@ void LauSimpleFitModel::finaliseFitResults(const TString& tablePrefixName)
 	}
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			(*iter)->updatePull();
+			std::vector<LauParameter*> parameters = (*iter)->getPars();
+			for ( LauParameter* parameter : parameters ) {
+				parameter->updatePull();
+			}
 		}
 	}
 
@@ -845,7 +855,7 @@ std::pair<LauSimpleFitModel::LauGenInfo,Bool_t> LauSimpleFitModel::eventsToGener
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
+		const LauAbsRValue* evtsPar = bkgndEvents_[bkgndID];
 		evtWeight = 1.0;
 		nEvts = TMath::FloorNint( evtsPar->genValue() );
 		if ( nEvts < 0 ) {
@@ -1266,7 +1276,11 @@ void LauSimpleFitModel::updateSigEvents()
 
 	signalEvents_->range(-2.0*nTotEvts,2.0*nTotEvts);
 	for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		(*iter)->range(-2.0*nTotEvts,2.0*nTotEvts);
+		LauAbsRValue* nBkgndEvents = (*iter);
+		if ( nBkgndEvents->isLValue() ) {
+			LauParameter* yield = dynamic_cast<LauParameter*>( nBkgndEvents );
+			yield->range(-2.0*nTotEvts,2.0*nTotEvts);
+		}
 	}
 
 	if ( signalEvents_->fixed() ) {
@@ -1775,9 +1789,12 @@ LauSPlot::NumbMap LauSimpleFitModel::freeSpeciesNames() const
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter* par = bkgndEvents_[iBkgnd];
+			const LauAbsRValue* par = bkgndEvents_[iBkgnd];
 			if (!par->fixed()) {
 				numbMap[bkgndClass] = par->genValue();
+				if ( ! par->isLValue() ) {
+					std::cerr << "WARNING in LauSimpleFitModel::freeSpeciesNames : \"" << par->name() << "\" is a LauFormulaPar, which implies it is perhaps not entirely free to float in the fit, so the sWeight calculation may not be reliable" << std::endl;
+				}
 			}
 		}
 	}
@@ -1794,7 +1811,7 @@ LauSPlot::NumbMap LauSimpleFitModel::fixdSpeciesNames() const
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter* par = bkgndEvents_[iBkgnd];
+			const LauAbsRValue* par = bkgndEvents_[iBkgnd];
 			if (par->fixed()) {
 				numbMap[bkgndClass] = par->genValue();
 			}

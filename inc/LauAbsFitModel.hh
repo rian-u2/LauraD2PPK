@@ -186,7 +186,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 
 		*/	
-		virtual void setNBkgndEvents(LauParameter* nBkgndEvents) = 0;
+		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents) = 0;
 
 		//! Set the DP amplitude coefficients
 		/*!

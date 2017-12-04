@@ -182,7 +182,7 @@ void LauCPFitModel::setNSigEvents( LauParameter* nSigEvents, LauParameter* sigAs
 	forceAsym_ = forceAsym;
 }
 
-void LauCPFitModel::setNBkgndEvents( LauParameter* nBkgndEvents )
+void LauCPFitModel::setNBkgndEvents( LauAbsRValue* nBkgndEvents )
 {
 	if ( nBkgndEvents == 0 ) {
 		std::cerr << "ERROR in LauCPFitModel::setNBgkndEvents : The background yield LauParameter pointer is null." << std::endl;
@@ -207,15 +207,18 @@ void LauCPFitModel::setNBkgndEvents( LauParameter* nBkgndEvents )
 		return;
 	}
 
+	nBkgndEvents->name( nBkgndEvents->name()+"Events" );
+	if ( nBkgndEvents->isLValue() ) {
+		Double_t value = nBkgndEvents->value();
+		LauParameter* yield = dynamic_cast<LauParameter*>( nBkgndEvents );
+		yield->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+	}
 	bkgndEvents_[bkgndID] = nBkgndEvents;
-	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
-	Double_t value = nBkgndEvents->value();
-	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 
 	bkgndAsym_[bkgndID] = new LauParameter(nBkgndEvents->name()+"Asym",0.0,-1.0,1.0,kTRUE);
 }
 
-void LauCPFitModel::setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bkgndAsym)
+void LauCPFitModel::setNBkgndEvents(LauAbsRValue* nBkgndEvents, LauAbsRValue* bkgndAsym)
 {
 	if ( nBkgndEvents == 0 ) {
 		std::cerr << "ERROR in LauCPFitModel::setNBkgndEvents : The background yield LauParameter pointer is null." << std::endl;
@@ -245,14 +248,20 @@ void LauCPFitModel::setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bk
 		return;
 	}
 
+	nBkgndEvents->name( nBkgndEvents->name()+"Events" );
+	if ( nBkgndEvents->isLValue() ) {
+		Double_t value = nBkgndEvents->value();
+		LauParameter* yield = dynamic_cast<LauParameter*>( nBkgndEvents );
+		yield->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
+	}
 	bkgndEvents_[bkgndID] = nBkgndEvents;
-	bkgndEvents_[bkgndID]->name( nBkgndEvents->name()+"Events" );
-	Double_t value = nBkgndEvents->value();
-	bkgndEvents_[bkgndID]->range(-2.0*(TMath::Abs(value)+1.0), 2.0*(TMath::Abs(value)+1.0));
 
+	bkgndAsym->name( nBkgndEvents->name()+"Asym" );
+	if ( bkgndAsym->isLValue() ) {
+		LauParameter* asym = dynamic_cast<LauParameter*>( bkgndAsym );
+		asym->range(-1.0, 1.0);
+	}
 	bkgndAsym_[bkgndID] = bkgndAsym;
-	bkgndAsym_[bkgndID]->name( nBkgndEvents->name()+"Asym" );
-	bkgndAsym_[bkgndID]->range(-1.0,1.0);
 }
 
 void LauCPFitModel::splitSignalComponent( const TH2* dpHisto, const Bool_t upperHalf, const Bool_t fluctuateBins, LauScfMap* scfMap )
@@ -725,17 +734,21 @@ void LauCPFitModel::setFitNEvents()
 
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			LauParameter* parameter = (*iter);
-			if(!parameter->fixed()) {
-				fitVars.push_back(parameter);
-				++nNormPar_;
+			std::vector<LauParameter*> parameters = (*iter)->getPars();
+			for ( LauParameter* parameter : parameters ) {
+				if(!parameter->clone()) {
+					fitVars.push_back(parameter);
+					++nNormPar_;
+				}
 			}
 		}
 		for (LauBkgndYieldList::iterator iter = bkgndAsym_.begin(); iter != bkgndAsym_.end(); ++iter) {
-			LauParameter* parameter = (*iter);
-			if(!parameter->fixed()) {
-				fitVars.push_back(parameter);
-				++nNormPar_;
+			std::vector<LauParameter*> parameters = (*iter)->getPars();
+			for ( LauParameter* parameter : parameters ) {
+				if(!parameter->clone()) {
+					fitVars.push_back(parameter);
+					++nNormPar_;
+				}
 			}
 		}
 	}
@@ -998,10 +1011,16 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 	}
 	if (usingBkgnd_ == kTRUE) {
 		for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-			(*iter)->updatePull();
+			std::vector<LauParameter*> parameters = (*iter)->getPars();
+			for ( LauParameter* parameter : parameters ) {
+				parameter->updatePull();
+			}
 		}
 		for (LauBkgndYieldList::iterator iter = bkgndAsym_.begin(); iter != bkgndAsym_.end(); ++iter) {
-			(*iter)->updatePull();
+			std::vector<LauParameter*> parameters = (*iter)->getPars();
+			for ( LauParameter* parameter : parameters ) {
+				parameter->updatePull();
+			}
 		}
 	}
 
@@ -1392,8 +1411,8 @@ std::pair<LauCPFitModel::LauGenInfo,Bool_t> LauCPFitModel::eventsToGenerate()
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		const LauParameter* evtsPar = bkgndEvents_[bkgndID];
-		const LauParameter* asymPar = bkgndAsym_[bkgndID];
+		const LauAbsRValue* evtsPar = bkgndEvents_[bkgndID];
+		const LauAbsRValue* asymPar = bkgndAsym_[bkgndID];
 		if ( evtsPar->blind() || asymPar->blind() ) {
 			blind = kTRUE;
 		}
@@ -1420,8 +1439,8 @@ std::pair<LauCPFitModel::LauGenInfo,Bool_t> LauCPFitModel::eventsToGenerate()
 		std::cout << "                                        : Signal asymmetry  = " << sigAsym << " and number of signal events = " << signalEvents_->genValue() << std::endl;
 		for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
 			const TString& bkgndClass = this->bkgndClassName(bkgndID);
-			const LauParameter* evtsPar = bkgndEvents_[bkgndID];
-			const LauParameter* asymPar = bkgndAsym_[bkgndID];
+			const LauAbsRValue* evtsPar = bkgndEvents_[bkgndID];
+			const LauAbsRValue* asymPar = bkgndAsym_[bkgndID];
 			std::cout << "                                        : " << bkgndClass << " asymmetry  = " << asymPar->genValue() << " and number of " << bkgndClass << " events = " << evtsPar->genValue() << std::endl;
 		}
 	}
@@ -1953,7 +1972,11 @@ void LauCPFitModel::updateSigEvents()
 
 	signalEvents_->range(-2.0*nTotEvts,2.0*nTotEvts);
 	for (LauBkgndYieldList::iterator iter = bkgndEvents_.begin(); iter != bkgndEvents_.end(); ++iter) {
-		(*iter)->range(-2.0*nTotEvts,2.0*nTotEvts);
+		LauAbsRValue* nBkgndEvents = (*iter);
+		if ( nBkgndEvents->isLValue() ) {
+			LauParameter* yield = dynamic_cast<LauParameter*>( nBkgndEvents );
+			yield->range(-2.0*nTotEvts,2.0*nTotEvts);
+		}
 	}
 
 	if (signalEvents_->fixed()) {
@@ -2587,9 +2610,12 @@ LauSPlot::NumbMap LauCPFitModel::freeSpeciesNames() const
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter* par = bkgndEvents_[iBkgnd];
+			const LauAbsRValue* par = bkgndEvents_[iBkgnd];
 			if (!par->fixed()) {
 				numbMap[bkgndClass] = par->genValue();
+				if ( ! par->isLValue() ) {
+					std::cerr << "WARNING in LauCPFitModel::freeSpeciesNames : \"" << par->name() << "\" is a LauFormulaPar, which implies it is perhaps not entirely free to float in the fit, so the sWeight calculation may not be reliable" << std::endl;
+				}
 			}
 		}
 	}
@@ -2606,7 +2632,7 @@ LauSPlot::NumbMap LauCPFitModel::fixdSpeciesNames() const
 		const UInt_t nBkgnds = this->nBkgndClasses();
 		for ( UInt_t iBkgnd(0); iBkgnd < nBkgnds; ++iBkgnd ) {
 			const TString& bkgndClass = this->bkgndClassName(iBkgnd);
-			const LauParameter* par = bkgndEvents_[iBkgnd];
+			const LauAbsRValue* par = bkgndEvents_[iBkgnd];
 			if (par->fixed()) {
 				numbMap[bkgndClass] = par->genValue();
 			}

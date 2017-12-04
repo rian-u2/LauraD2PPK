@@ -80,7 +80,7 @@ class LauCPFitModel : public LauAbsFitModel {
 
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 		*/	
-		virtual void setNBkgndEvents(LauParameter* nBkgndEvents);
+		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents);
 
 		//! Set the background event yield(s)
 		/*!
@@ -89,7 +89,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 			\param [in] bkgndAsym contains the background asymmetry and option to fix it
 		*/	
-		virtual void setNBkgndEvents(LauParameter* nBkgndEvents, LauParameter* bkgndAsym);
+		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents, LauAbsRValue* bkgndAsym);
 
 		//! Set the background DP models
 		/*!
@@ -221,7 +221,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		typedef std::vector<LauPdfList> LauBkgndPdfsList;
 
 		//! Typedef for a vector of background yields
-		typedef std::vector<LauParameter*> LauBkgndYieldList;
+		typedef std::vector<LauAbsRValue*> LauBkgndYieldList;
 
 		//! Typedef for a vector of embedded data objects
 		typedef std::vector<LauEmbeddedData*> LauBkgndEmbDataList;

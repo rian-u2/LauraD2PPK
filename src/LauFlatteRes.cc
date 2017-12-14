@@ -32,71 +32,140 @@ LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt,
 	mSumSq2_(0.0),
 	mSumSq3_(0.0),
 	useAdlerTerm_(kFALSE),
-	sA_(0.0)
+	sA_(0.0),
+	absorbM0_(kFALSE)
 {
-	Double_t g1Val(0.);
-	Double_t g2Val(0.);
+	Double_t resMass(0.0);
+	Double_t g1Val(0.0);
+	Double_t g2Val(0.0);
 
 	const TString& resName = this->getResonanceName();
 
 	if ( resName == "f_0(980)" ) {
+
+		// Set the mass threshold values
 		mSumSq0_ = (LauConstants::mPi0 + LauConstants::mPi0) * (LauConstants::mPi0 + LauConstants::mPi0);
 		mSumSq1_ = (LauConstants::mPi + LauConstants::mPi) * (LauConstants::mPi + LauConstants::mPi);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
 		mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
-		// constant factors from BES - Phys. Lett. B 607, 243 (2005)
-		// resMass should be 0.965 +/- 0.008 +/- 0.006 GeV/c^2
-		g1Val = 0.165;       // +/- 0.010 +/- 0.015 GeV^2
-		g2Val = g1Val*4.21;  // +/- 0.25 +/- 0.21
 
-		// or from E791
-		//g1Val = 0.09;
-		//g2Val = 0.02;
+		// Set values of mass and coupling constants from:
+		// Phys. Lett. B 607, 243 (2005)
+		resMass = 0.965;      // 0.965 +/- 0.008 +/- 0.006 GeV/c^2
+		g1Val   = 0.165;      // 0.165 +/- 0.010 +/- 0.015 GeV^2
+		g2Val   = 4.21*g1Val; // 4.21  +/- 0.25  +/- 0.21
 
-		// or from CERN/WA76
-		//g1Val = 0.28;
-		//g2Val = 0.56;
+		useAdlerTerm_ = kFALSE;
+		sA_ = 0.0;
+
+		absorbM0_ = kTRUE;
+
 	} else if ( resName == "K*0_0(1430)" ) {
+
+		// Set the mass threshold values
 		mSumSq0_ = (LauConstants::mK0 + LauConstants::mPi0) * (LauConstants::mK0 + LauConstants::mPi0);
 		mSumSq1_ = (LauConstants::mK + LauConstants::mPi) * (LauConstants::mK + LauConstants::mPi);
 		mSumSq2_ = (LauConstants::mK0 + LauConstants::mEtaPrime) * (LauConstants::mK0 + LauConstants::mEtaPrime);
 		mSumSq3_ = (LauConstants::mK0 + LauConstants::mEtaPrime) * (LauConstants::mK0 + LauConstants::mEtaPrime);
-		//Phys. Lett. B 572, 1 (2003)
-		// resMass should be 1.513 GeV/c^2
-		g1Val = 0.304;
-		g2Val = 0.380;
+
+		// Set values of mass and coupling constants from:
+		// Phys. Lett. B 572, 1 (2003)
+		resMass = 1.513; // GeV/c^2
+		g1Val   = 0.304; // GeV
+		g2Val   = 0.380; // GeV
+
 		useAdlerTerm_ = kTRUE;
 		sA_ = 0.234;
+
+		absorbM0_ = kFALSE;
+
 	} else if ( resName == "K*+_0(1430)" || resName == "K*-_0(1430)" ) {
+
+		// Set the mass threshold values
 		mSumSq0_ = (LauConstants::mK + LauConstants::mPi0) * (LauConstants::mK + LauConstants::mPi0);
 		mSumSq1_ = (LauConstants::mK0 + LauConstants::mPi) * (LauConstants::mK0 + LauConstants::mPi);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mEtaPrime) * (LauConstants::mK + LauConstants::mEtaPrime);
 		mSumSq3_ = (LauConstants::mK + LauConstants::mEtaPrime) * (LauConstants::mK + LauConstants::mEtaPrime);
-		//Phys. Lett. B 572, 1 (2003)
-		// resMass should be 1.513 GeV/c^2
-		g1Val = 0.304;
-		g2Val = 0.380;
+
+		// Set values of mass and coupling constants from:
+		// Phys. Lett. B 572, 1 (2003)
+		resMass = 1.513; // GeV/c^2
+		g1Val   = 0.304; // GeV
+		g2Val   = 0.380; // GeV
+
 		useAdlerTerm_ = kTRUE;
 		sA_ = 0.234;
+
+		absorbM0_ = kFALSE;
+
 	} else if ( resName == "a0_0(980)" ) {
+
+		// Set the mass threshold values
 		mSumSq0_ = (LauConstants::mEta + LauConstants::mPi0) * (LauConstants::mEta + LauConstants::mPi0);
 		mSumSq1_ = (LauConstants::mEta + LauConstants::mPi0) * (LauConstants::mEta + LauConstants::mPi0);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mK) * (LauConstants::mK + LauConstants::mK);
 		mSumSq3_ = (LauConstants::mK0 + LauConstants::mK0) * (LauConstants::mK0 + LauConstants::mK0);
-		//Phys. Rev. D 57, 3860 (1998)
-		// resMass should be 0.982 +/- 0.003 GeV/c^2
-		g1Val = 0.353;
-		g2Val = g1Val*1.03;
+
+		// Set values of mass and coupling constants from:
+		// Phys. Rev. D 57, 3860 (1998)
+		resMass = 0.982;       // 0.982 +/- 0.003 GeV/c^2
+		g1Val   = 0.324*0.324; // 0.324 +/- 0.015 GeV     (NB this value needs to be squared since the paper uses g_1^2 and g_2^2)
+		g2Val   = 1.03*g1Val;  // 1.03  +/- 0.14          (NB this is indeed the ratio of what the paper refers to as g_2^2 and g_1^2, so can be used unchanged here)
+
+		useAdlerTerm_ = kFALSE;
+		sA_ = 0.0;
+
+		absorbM0_ = kTRUE;
+
 	} else if ( resName == "a+_0(980)" || resName == "a-_0(980)" ) {
+
+		// Set the mass threshold values
 		mSumSq0_ = (LauConstants::mEta + LauConstants::mPi) * (LauConstants::mEta + LauConstants::mPi);
 		mSumSq1_ = (LauConstants::mEta + LauConstants::mPi) * (LauConstants::mEta + LauConstants::mPi);
 		mSumSq2_ = (LauConstants::mK + LauConstants::mK0) * (LauConstants::mK + LauConstants::mK0);
 		mSumSq3_ = (LauConstants::mK + LauConstants::mK0) * (LauConstants::mK + LauConstants::mK0);
-		//Phys. Rev. D 57, 3860 (1998)
-		g1Val = 0.353;
-		g2Val = g1Val*1.03;
+
+		// Set values of mass and coupling constants from:
+		// Phys. Rev. D 57, 3860 (1998)
+		resMass = 0.982;       // 0.982 +/- 0.003 GeV/c^2
+		g1Val   = 0.324*0.324; // 0.324 +/- 0.015 GeV     (NB this value needs to be squared since the paper uses g_1^2 and g_2^2)
+		g2Val   = 1.03*g1Val;  // 1.03  +/- 0.14          (NB this is indeed the ratio of what the paper refers to as g_2^2 and g_1^2, so can be used unchanged here)
+
+		useAdlerTerm_ = kFALSE;
+		sA_ = 0.0;
+
+		absorbM0_ = kTRUE;
+
 	}
 
+	const TString couplingUnits = (absorbM0_) ? "GeV^2" : "GeV";
+	std::cout << "INFO in LauFlatteRes::LauFlatteRes : Setting default parameters for " << resName << ":\n";
+	std::cout << "                                   : mass = " << resMass << " GeV/c^2\n";
+	std::cout << "                                   : g1   = " << g1Val << " " << couplingUnits << "\n";
+	std::cout << "                                   : g2   = " << g2Val << " " << couplingUnits << "\n";
+	if ( absorbM0_ ) {
+		std::cout << "                                   : Will absorb m0 into couplings\n";
+	} else {
+		std::cout << "                                   : Will not absorb m0 into couplings\n";
+	}
+	if ( useAdlerTerm_ ) {
+		std::cout << "                                   : Will use Adler zero term\n";
+		std::cout << "                                   : sA   = " << sA_ << " GeV^2/c^4\n";
+	} else {
+		std::cout << "                                   : Will not use Adler zero term\n";
+	}
+
+	// Set the mass value
+	LauParameter* massPar = this->getMassPar();
+	if ( massPar ) {
+		massPar->valueAndRange(resMass,0.0,3.0*resMass);
+		massPar->initValue(resMass);
+		massPar->genValue(resMass);
+	} else {
+		std::cerr << "ERROR in LauFlatteRes::LauFlatteRes : Unable to retrieve mass parameter" << std::endl;
+	}
+
+	// Create the parameters for the coupling constants
 	const TString& parNameBase = this->getSanitisedName();
 
 	TString g1Name(parNameBase);
@@ -179,7 +248,10 @@ LauComplex LauFlatteRes::resAmp(Double_t mass, Double_t spinTerm)
 		}
 	}
 
-	Double_t massFactor = resMass;
+	Double_t massFactor = 1.0;
+	if ( ! absorbM0_ ) {
+		massFactor = resMass;
+	}
 	if (useAdlerTerm_) {
 		massFactor *= ( s - sA_ ) / ( resMassSq - sA_ );
 	}

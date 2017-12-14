@@ -4,6 +4,13 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+14th December 2017 Thomas Latham
+* Correct LauFlatteRes to use the exact formulae from the papers that report the default parameter values for each supported resonance
+  - Deals correctly now with the cases where the m0 is absorbed into the couplings
+  - Now uses the correct value of g1 for the a_0(980) (needed to be squared)
+  - Also sets the mass values to those reported in those papers
+  - Added printout to specify what is being done in each case
+
 4th December 2017 Thomas Latham
 * Allow background yields to be specified as any LauAbsRValue (i.e. LauParameter or now also LauFormulaPar)
 

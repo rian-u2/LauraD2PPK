@@ -3039,14 +3039,8 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
 	  dpModelWeight *= kinematics->calcSqDPJacobian();
 	}
 
-	Double_t norm = negSigModel_->getDPNorm() + posSigModel_->getDPNorm();
+	const Double_t norm = (negSigModel_->getDPNorm() + posSigModel_->getDPNorm())/2.0;
 	dpModelWeight /= norm;
-
-	if (LauIsobarDynamics::GenOK != dpModel->checkToyMC(kTRUE,kFALSE)) {
-	  std::cerr << "WARNING in LauCPFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
-	  delete weightsTuple;
-	  return;
-	}
       }
 
       weightsTuple->setDoubleBranchValue( "dpModelWeight", dpModelWeight );

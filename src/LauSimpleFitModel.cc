@@ -2122,11 +2122,7 @@ void LauSimpleFitModel::weightEvents( const TString& dataFileName, const TString
 					dpModelWeight *= kinematics_->calcSqDPJacobian();
 				}
 
-				if (LauIsobarDynamics::GenOK != sigDPModel_->checkToyMC(kTRUE,kFALSE)) {
-					std::cerr << "WARNING in LauSimpleFitModel::weightEvents : Problem in calculating the weight, aborting." << std::endl;
-					delete weightsTuple;
-					return;
-				}
+				dpModelWeight /= sigDPModel_->getDPNorm();
 			}
 
 			weightsTuple->setDoubleBranchValue( "dpModelWeight", dpModelWeight );

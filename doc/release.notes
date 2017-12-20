@@ -10,6 +10,8 @@
   - Now uses the correct value of g1 for the a_0(980) (needed to be squared)
   - Also sets the mass values to those reported in those papers
   - Added printout to specify what is being done in each case
+* Improve the consistency between the weightEvents functions in LauSimpleFitModel and LauCPFitModel
+  - Also remove the unecessary division by ASqMax in LauIsobarDynamics::getEventWeight
 
 4th December 2017 Thomas Latham
 * Allow background yields to be specified as any LauAbsRValue (i.e. LauParameter or now also LauFormulaPar)

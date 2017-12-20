@@ -2499,14 +2499,12 @@ Double_t LauIsobarDynamics::getEventWeight()
 {
 	// calculate the ff_ terms and retrieves eff_ from the efficiency model
 	this->calculateAmplitudes();
+
 	// then calculate totAmp_ and finally ASq_ = totAmp_.abs2() (without the efficiency correction!)
 	this->calcTotalAmp(kFALSE);
 
-	if (ASq_ > aSqMaxVar_) {aSqMaxVar_ = ASq_;}
-
-	// return the event weight = the value of the squared amplitude divided
-	// by the user-defined ceiling
-	return ASq_ / aSqMaxSet_;
+	// return the event weight = the value of the squared amplitude
+	return ASq_;
 }
 
 void LauIsobarDynamics::updateCoeffs(const std::vector<LauComplex>& coeffs)

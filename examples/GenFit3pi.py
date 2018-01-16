@@ -1,4 +1,25 @@
 
+"""
+Copyright 2017 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+"""
+
 import sys
 
 # Process the command-line arguments
@@ -112,7 +133,7 @@ reson.setResonanceParameter("alpha", 0.2)
 # This will be automatically adjusted to avoid bias or extreme
 # inefficiency if you get the value wrong but best to set this by
 # hand once you've found the right value through some trial and error.
-sigModel.setASqMaxValue(0.35)  
+sigModel.setASqMaxValue(0.35)
 
 # Create the fit model
 fitModel = ROOT.LauSimpleFitModel(sigModel)

@@ -1,17 +1,41 @@
+
+/*
+Copyright 2015 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 // Code to perform the mixed sample unbinned goodness of fit test on the data and simulation provided.
 //
 // If the data and simulation are derived from the same underlying PDF then they will mix optimally.
 // This is used to define the test statistic T = (1 / n_k (n_d + n_s) ) SUM_i^(n_d+n_s) SUM_k^(n_k) I(i,k)
 // where I(i,k) is 1 if the ith event and its kth nearest neighbour are from the same sample and zero otherwise,
-// n_d is the number of events in the data sample, n_s is the number of events in the simulation sample and 
+// n_d is the number of events in the data sample, n_s is the number of events in the simulation sample and
 // n_k is the number of nearest neighbours to consider.
 //
 // For optimal mixing T should be Gaussian distributed with mean and width given by:
 // mu_T      = n_d(n_d - 1) + n_s(n_s - 1) / (n_d + n_s)(n_d + n_s - 1)
 // sigma_T^2 = ( 1 / n_k(n_d+n_s) ) ( (n_d n_s)/(n_d + n_s)^2 + 4(n_d^2 n_s^2)/(n_d + n_s)^4 )
 //
-// This script uses 500 bootstrapped samples taken from the data and simulation provided, 
-// calculates T from each sample, performs a Gaussian fit to (T-mu_T)/sigma_T and reports the 
+// This script uses 500 bootstrapped samples taken from the data and simulation provided,
+// calculates T from each sample, performs a Gaussian fit to (T-mu_T)/sigma_T and reports the
 // chi^2 of that fit.
 
 
@@ -83,7 +107,7 @@ Double_t calcT(TString file0Name, TString tree0Name, TString file1Name, TString 
    for(Int_t i=0; i<nd; ++i) {
       entries1.push_back((Int_t)(r->Rndm()*n1));
    }
-   
+
    //Sort entries to speed up extraction
    std::sort(entries0.begin(),entries0.end());
    std::sort(entries1.begin(),entries1.end());

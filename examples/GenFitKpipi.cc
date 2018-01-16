@@ -1,4 +1,27 @@
 
+/*
+Copyright 2005 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -438,18 +461,18 @@ int main( int argc, char** argv )
 	Double_t deMax = 4.0;
 
 	// Signal PDF is a double Gaussian
-	LauParameter* de_sig_mean1_neg  = new LauParameter("de_sig_mean1_neg",  de_mean1_value,  -4.0, 4.0, kTRUE); 
-	LauParameter* de_sig_sigma1_neg = new LauParameter("de_sig_sigma1_neg", de_sigma1_value,  0.0, 4.0, kTRUE); 
+	LauParameter* de_sig_mean1_neg  = new LauParameter("de_sig_mean1_neg",  de_mean1_value,  -4.0, 4.0, kTRUE);
+	LauParameter* de_sig_sigma1_neg = new LauParameter("de_sig_sigma1_neg", de_sigma1_value,  0.0, 4.0, kTRUE);
 	LauParameter* de_sig_mean2_neg  = new LauParameter("de_sig_mean2_neg",  de_mean2_value,  -4.0, 4.0, kTRUE);
 	LauParameter* de_sig_sigma2_neg = new LauParameter("de_sig_sigma2_neg", de_sigma2_value,  0.0, 4.0, kTRUE);
 	LauParameter* de_sig_frac_neg   = new LauParameter("de_sig_frac_neg",   de_frac_value,    0.0, 1.0, kTRUE);
 	std::vector<LauAbsRValue*> dePars; dePars.reserve(2);
-	dePars.push_back(de_sig_mean1_neg); 
-	dePars.push_back(de_sig_sigma1_neg); 
+	dePars.push_back(de_sig_mean1_neg);
+	dePars.push_back(de_sig_sigma1_neg);
 	LauAbsPdf* sigNegDE1Pdf = new LauGaussPdf("deltaEsig", dePars, deMin, deMax);
 	dePars.clear();
-	dePars.push_back(de_sig_mean2_neg); 
-	dePars.push_back(de_sig_sigma2_neg); 
+	dePars.push_back(de_sig_mean2_neg);
+	dePars.push_back(de_sig_sigma2_neg);
 	LauAbsPdf* sigNegDE2Pdf = new LauGaussPdf("deltaEsig", dePars, deMin, deMax);
 	LauAbsPdf* sigNegDEPdf = new LauSumPdf(sigNegDE1Pdf, sigNegDE2Pdf, de_sig_frac_neg);
 
@@ -459,12 +482,12 @@ int main( int argc, char** argv )
 	LauParameter* de_sig_mean2_pos  = de_sig_mean2_neg->createClone();
 	LauParameter* de_sig_sigma2_pos = de_sig_sigma2_neg->createClone();
 	LauParameter* de_sig_frac_pos   = de_sig_frac_neg->createClone();
-	dePars.push_back(de_sig_mean1_pos); 
-	dePars.push_back(de_sig_sigma1_pos); 
+	dePars.push_back(de_sig_mean1_pos);
+	dePars.push_back(de_sig_sigma1_pos);
 	LauAbsPdf* sigPosDE1Pdf = new LauGaussPdf("deltaEsig", dePars, deMin, deMax);
 	dePars.clear();
-	dePars.push_back(de_sig_mean2_pos); 
-	dePars.push_back(de_sig_sigma2_pos); 
+	dePars.push_back(de_sig_mean2_pos);
+	dePars.push_back(de_sig_sigma2_pos);
 	LauAbsPdf* sigPosDE2Pdf = new LauGaussPdf("deltaEsig", dePars, deMin, deMax);
 	LauAbsPdf* sigPosDEPdf = new LauSumPdf(sigPosDE1Pdf, sigPosDE2Pdf, de_sig_frac_pos);
 

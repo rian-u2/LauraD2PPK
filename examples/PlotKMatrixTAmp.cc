@@ -1,3 +1,27 @@
+
+/*
+Copyright 2014 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 // Code to plot the transition amplitude T for the K-matrix pi pi S-wave
 
 #include <iostream>
@@ -25,8 +49,8 @@ int main(const int /*argc*/, const char** /*argv*/) {
 	Int_t nPoles = 5;
 	Int_t resPairInt = 1;
 	Int_t KMatrixIndex = 1; // for S-wave
-	LauKMatrixPropagator* propagator = new LauKMatrixPropagator("KMSWave", "DToKspipiKMatrixCoeff.dat", 
-								    resPairInt, nChannels, 
+	LauKMatrixPropagator* propagator = new LauKMatrixPropagator("KMSWave", "DToKspipiKMatrixCoeff.dat",
+								    resPairInt, nChannels,
 								    nPoles, KMatrixIndex);
 
 	// Find the transition amplitude T for the pi pi mode for
@@ -122,7 +146,7 @@ int main(const int /*argc*/, const char** /*argv*/) {
 	lineA3.SetLineStyle(kDotted);
 	lineA3.SetLineWidth(1);
 	lineA3.Draw();
-	
+
 	// Intensity
         theCanvas->cd(2);
 	TSqGraph->SetTitle("Transition amplitude intensity");
@@ -153,7 +177,7 @@ int main(const int /*argc*/, const char** /*argv*/) {
 	TArrow arrow1(0.98, 1.0, 0.98, 0.8, 0.01);
 	arrow1.SetLineWidth(1);
 	arrow1.Draw();
-	
+
 	// f0(1370)
 	text.DrawLatex(1.25, 0.91, "f_{0}(1370)");
 	TArrow arrow2(1.37, 0.9, 1.37, 0.7, 0.01);

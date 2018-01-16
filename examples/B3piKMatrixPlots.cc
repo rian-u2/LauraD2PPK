@@ -1,3 +1,27 @@
+
+/*
+Copyright 2016 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 // Code to plot amplitudes for the pi pi K matrix used for B -> 3pi:
 // K-matrix itself, propagator terms and production amplitudes
 
@@ -57,25 +81,25 @@ void doKScattPlots() {
     // Propagator with only the pole terms
     TString KFile1("B3piKMPoles.dat");
     LauKMatrixPropagator* propPoles = new LauKMatrixPropagator("propPoles", KFile1,
-							       resPairInt, nChannels, 
+							       resPairInt, nChannels,
 							       nPoles, KMatrixIndex);
 
     // Propagator with only the SVP terms
     TString KFile2("B3piKMSVPs.dat");
     LauKMatrixPropagator* propSVPs = new LauKMatrixPropagator("propSVPs", KFile2,
-							      resPairInt, nChannels, 
+							      resPairInt, nChannels,
 							      0, KMatrixIndex);
 
     // Propagator with poles and SVP terms, but no Adler zero scaling factor
     TString KFile3("B3piKMNoAdler.dat");
     LauKMatrixPropagator* propNoAdler = new LauKMatrixPropagator("propNoAdler", KFile3,
-								 resPairInt, nChannels, 
+								 resPairInt, nChannels,
 								 nPoles, KMatrixIndex);
 
     // Full K-matrix parameterisation with Adler zero
     TString KFile4("B3piKMatrixCoeff.dat");
     LauKMatrixPropagator* propFull = new LauKMatrixPropagator("propFull", KFile4,
-							       resPairInt, nChannels, 
+							       resPairInt, nChannels,
 							       nPoles, KMatrixIndex);
 
     // For each K_ij, there are 4 graphs. Therefore, need 15 K_ij multigraphs
@@ -95,12 +119,12 @@ void doKScattPlots() {
 
 	for (jChannel = iChannel; jChannel < nChannels; jChannel++) {
 
-	    TString label("Graphs_"); label += iChannel; 
+	    TString label("Graphs_"); label += iChannel;
 	    label += "_"; label += jChannel;
 
 	    TString multiName("KMatrix"); multiName += label;
 	    TMultiGraph* multiGraph = new TMultiGraph();
-	    multiGraph->SetName(multiName.Data()); 
+	    multiGraph->SetName(multiName.Data());
 
 	    // To limit the graphs abscissas getting to large (pole "singularities")
 	    multiGraph->SetMaximum(yLimit);
@@ -108,11 +132,11 @@ void doKScattPlots() {
 
 	    // Add to the storage vector
 	    multiGraphVect.push_back(multiGraph);
-	    
+
 	    // Graph with poles only
 	    TGraph* poleGraph = new TGraph(nSteps);
 	    TString poleName("Pole"); poleName += label;
-	    poleGraph->SetName(poleName.Data()); 
+	    poleGraph->SetName(poleName.Data());
 	    poleGraph->SetMarkerColor(iColours[0]);
 	    poleGraph->SetLineColor(iColours[0]);
 	    poleGraph->SetLineWidth(1);
@@ -121,7 +145,7 @@ void doKScattPlots() {
 	    // Graph with SVPs only
 	    TGraph* SVPGraph = new TGraph(nSteps);
 	    TString SVPName("SVP"); SVPName += label;
-	    SVPGraph->SetName(SVPName.Data()); 
+	    SVPGraph->SetName(SVPName.Data());
 	    SVPGraph->SetMarkerColor(iColours[1]);
 	    SVPGraph->SetLineColor(iColours[1]);
 	    SVPGraph->SetLineWidth(1);
@@ -130,7 +154,7 @@ void doKScattPlots() {
 	    // Graph with poles and SVP, but no Adler zero factor
 	    TGraph* noAdlerGraph = new TGraph(nSteps);
 	    TString noAdlerName("NoAdler"); noAdlerName += label;
-	    noAdlerGraph->SetName(noAdlerName.Data()); 
+	    noAdlerGraph->SetName(noAdlerName.Data());
 	    noAdlerGraph->SetMarkerColor(iColours[2]);
 	    noAdlerGraph->SetLineColor(iColours[2]);
 	    noAdlerGraph->SetLineWidth(1);
@@ -139,7 +163,7 @@ void doKScattPlots() {
 	    // Full K matrix graphs
 	    TGraph* fullGraph = new TGraph(nSteps);
 	    TString fullName("Full"); fullName += label;
-	    fullGraph->SetName(fullName.Data()); 
+	    fullGraph->SetName(fullName.Data());
 	    fullGraph->SetMarkerColor(iColours[3]);
 	    fullGraph->SetLineColor(iColours[3]);
 	    fullGraph->SetLineWidth(1);
@@ -192,10 +216,10 @@ void doKScattPlots() {
 
 		TGraph* SVPGraph = dynamic_cast<TGraph*>(graphList->At(1));
 		SVPGraph->SetPoint(iM, m, KMSVPs[iChannel][jChannel]);
-		
+
 		TGraph* noAdlerGraph = dynamic_cast<TGraph*>(graphList->At(2));
 		noAdlerGraph->SetPoint(iM, m, KMNoAdler[iChannel][jChannel]);
-		
+
 		TGraph* fullGraph = dynamic_cast<TGraph*>(graphList->At(3));
 		fullGraph->SetPoint(iM, m, KMFull[iChannel][jChannel]);
 
@@ -236,7 +260,7 @@ void doKScattPlots() {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	// Update the canvas with the new axes settings
 	theCanvas->Update();
 
@@ -267,7 +291,7 @@ void doKScattPlots() {
 	xAxis->SetTitleSize(0.05);
 	xAxis->CenterTitle(kTRUE);
 	xAxis->SetTitleOffset(0.9);
-	    
+
 	TString yLabel("K(2,"); yLabel += (iL+2); yLabel += ")";
 	TAxis* yAxis = graphs->GetYaxis();
 	yAxis->SetTitleOffset(0.9);
@@ -275,7 +299,7 @@ void doKScattPlots() {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	// Update the canvas with the new axes settings
 	theCanvas->Update();
 
@@ -289,7 +313,7 @@ void doKScattPlots() {
     theCanvas->Divide(2,3);
 
     for (Int_t iL = 0; iL < 6; iL++) {
-       
+
 	theCanvas->cd(iL+1);
 	TMultiGraph* graphs = multiGraphVect[iL+9];
 	graphs->Draw("a");
@@ -301,10 +325,10 @@ void doKScattPlots() {
 	xAxis->SetTitleSize(0.05);
 	xAxis->CenterTitle(kTRUE);
 	xAxis->SetTitleOffset(0.9);
-	    
+
 	TString yLabel("K(");
 
-	if (iL == 0) {	    
+	if (iL == 0) {
 	    yLabel += "3,3)";
 	} else if (iL == 1) {
 	    yLabel += "3,4)";
@@ -324,7 +348,7 @@ void doKScattPlots() {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	// Update the canvas with the new axes settings
 	theCanvas->Update();
 
@@ -354,7 +378,7 @@ void doKScattPlots() {
 
 void doPropagatorPlots() {
 
-    // Create plots of the s variation of the elements of the 
+    // Create plots of the s variation of the elements of the
     // propagator (I - i K rho)^-1
 
     Int_t resPairInt(1);
@@ -375,7 +399,7 @@ void doPropagatorPlots() {
     massPoints.push_back(mMin); massPoints.push_back(0.5); massPoints.push_back(0.75);
     massPoints.push_back(1.0); massPoints.push_back(1.25); massPoints.push_back(1.5);
     massPoints.push_back(1.75); massPoints.push_back(1.99999);
-    
+
     Int_t NMain = static_cast<Int_t>(massPoints.size());
     for (Int_t iP = 0; iP < NMain; iP++) {
 
@@ -403,7 +427,7 @@ void doPropagatorPlots() {
     // Full K-matrix parameterisation
     TString KFile("B3piKMatrixCoeff.dat");
     LauKMatrixPropagator* propFull = new LauKMatrixPropagator("propFull", KFile,
-							       resPairInt, nChannels, 
+							       resPairInt, nChannels,
 							       nPoles, KMatrixIndex);
 
     // Maps of <channel row, vector of graph for channel column>
@@ -417,7 +441,7 @@ void doPropagatorPlots() {
     TLegend* argLegend = new TLegend(0.1, 0.1, 0.7, 0.995);
     argLegend->SetHeader("m(#pi^{+}#pi^{-}) points (GeV/c^{2})");
     argLegend->SetTextSize(0.075);
-    Bool_t initArgLegend(kFALSE);    
+    Bool_t initArgLegend(kFALSE);
 
     // Legend for the amplitude graphs (same for all multigraphs)
     TLegend* ampLegend = new TLegend(0.2, 0.2, 0.8, 0.7);
@@ -525,7 +549,7 @@ void doPropagatorPlots() {
 
 	Double_t m = dm*iM + mMin;
 	Double_t s = m*m;
-	
+
 	propFull->updatePropagator(s);
 
 	TMatrixD realPropMatrix = propFull->getRealPropMatrix();
@@ -549,10 +573,10 @@ void doPropagatorPlots() {
 
 		TGraph* argGraph = dynamic_cast<TGraph*>(argList->At(0));
 		argGraph->SetPoint(iM, realProp, imagProp);
-		
+
 		// Graphs showing specific points
 		for (Int_t iP = 0; iP < NMain; iP++) {
-		    
+
 		    if (points[iP] == iM) {
 			TGraph* pointGraph = dynamic_cast<TGraph*>(argList->At(iP+1));
 			pointGraph->SetPoint(0, realProp, imagProp);
@@ -572,7 +596,7 @@ void doPropagatorPlots() {
 
 		TGraph* magGraph = dynamic_cast<TGraph*>(ampList->At(2));
 		magGraph->SetPoint(iM, m, magProp);
-		
+
 	    }
 
 	}
@@ -638,11 +662,11 @@ void doPropagatorPlots() {
 	theCanvas->Clear();
 	theCanvas->UseCurrentStyle();
 	theCanvas->Divide(2,3);
-	
+
 	for (jChannel = 0; jChannel < nChannels; jChannel++) {
 
 	    theCanvas->cd(jChannel+1);
-	    
+
 	    TMultiGraph* ampGraphs = ampGraphVect[jChannel];
 	    ampGraphs->Draw("a");
 
@@ -749,7 +773,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
     massPoints.push_back(mMin); massPoints.push_back(0.5); massPoints.push_back(0.75);
     massPoints.push_back(1.0); massPoints.push_back(1.25); massPoints.push_back(1.5);
     massPoints.push_back(1.75); massPoints.push_back(1.99999);
-    
+
     Int_t NMain = static_cast<Int_t>(massPoints.size());
     for (Int_t iP = 0; iP < NMain; iP++) {
 
@@ -783,7 +807,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
     // Full K-matrix parameterisation
     TString KFile("B3piKMatrixCoeff.dat");
     LauKMatrixPropagator* propFull = new LauKMatrixPropagator("propFull", KFile,
-							      resPairInt, nChannels, 
+							      resPairInt, nChannels,
 							      nPoles, KMatrixIndex);
 
     // Define kinematics pointer
@@ -814,7 +838,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
     TLegend* argLegend = new TLegend(0.1, 0.1, 0.7, 0.995);
     argLegend->SetHeader("m(#pi^{+}#pi^{-}) points (GeV/c^{2})");
     argLegend->SetTextSize(0.075);
-    Bool_t initArgLegend(kFALSE);    
+    Bool_t initArgLegend(kFALSE);
 
     // Legend for the graphs (same for all multigraphs)
     TLegend* ampLegend = new TLegend(0.2, 0.2, 0.8, 0.7);
@@ -840,15 +864,15 @@ void doProdPolePlots(Bool_t useProdAdler) {
 
 	    TGraph* pointGraph = new TGraph(1);
 	    TString pointLabel("PolePoint_"); pointLabel += iG;
-	    
+
 	    pointGraph->SetName(pointLabel.Data());
 	    pointGraph->SetMarkerColor(colours[iG]);
 	    pointGraph->SetMarkerSize(1.1);
 	    pointGraph->SetMarkerStyle(styles[iG]);
 	    argGraphs->Add(pointGraph, "p");
-	    
+
 	}
-	
+
 	if (!initArgLegend) {
 	    TList* argList = argGraphs->GetListOfGraphs();
 	    for (Int_t iG = 0; iG < NMain; iG++) {
@@ -879,7 +903,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
 	imagGraph->SetMarkerColor(kBlue);
 	imagGraph->SetLineWidth(1);
 	ampGraphs->Add(imagGraph, "lp");
-	
+
 	TGraph* magGraph = new TGraph(nSteps);
 	TString magLabel("PoleMag_"); magLabel += iPole;
 	magGraph->SetName(magLabel.Data());
@@ -887,24 +911,24 @@ void doProdPolePlots(Bool_t useProdAdler) {
 	magGraph->SetMarkerColor(kBlack);
 	magGraph->SetLineWidth(1);
 	ampGraphs->Add(magGraph, "lp");
-	
+
 	if (!initLegend) {
-	    
+
 	    ampLegend->AddEntry(realGraph, "Real part", "l");
 	    ampLegend->AddEntry(imagGraph, "Imag part", "l");
 	    ampLegend->AddEntry(magGraph,  "Magnitude", "l");
-	    
+
 	    initLegend = kTRUE;
-	    
+
 	}
-	
+
     }
 
     for (Int_t iM = 0; iM < nSteps; iM++) {
 
 	Double_t m = dm*iM + mMin;
 	Double_t s = m*m;
-	
+
 	// Update kinematics. The K-matrix only really needs s = m23Sq, i.e. m13Sq is "ignored".
 	// Here, take the diagonal where m12Sq = 0.5*(mB^2 + 3mpi^2), the DP centre and use
 	// m13Sq = mBSq + 3mPiSq - m12Sq - m23Sq
@@ -926,27 +950,27 @@ void doProdPolePlots(Bool_t useProdAdler) {
 
 	    TGraph* argGraph = dynamic_cast<TGraph*>(argList->At(0));
 	    argGraph->SetPoint(iM, reAmp, imAmp);
-		
+
 	    // Graphs showing specific points
 	    for (Int_t iP = 0; iP < NMain; iP++) {
-		
+
 		if (points[iP] == iM) {
 		    TGraph* pointGraph = dynamic_cast<TGraph*>(argList->At(iP+1));
 		    pointGraph->SetPoint(0, reAmp, imAmp);
 		}
-		
+
 	    }
-	    
+
 	    // Amplitude multigraphs
 	    TMultiGraph* ampGraphs = ampGraphVect[iPole];
 	    TList* graphList = ampGraphs->GetListOfGraphs();
 
 	    TGraph* realGraph = dynamic_cast<TGraph*>(graphList->At(0));
 	    realGraph->SetPoint(iM, m, reAmp);
-	    
+
 	    TGraph* imagGraph = dynamic_cast<TGraph*>(graphList->At(1));
 	    imagGraph->SetPoint(iM, m, imAmp);
-	    
+
 	    TGraph* magGraph = dynamic_cast<TGraph*>(graphList->At(2));
 	    magGraph->SetPoint(iM, m, magAmp);
 
@@ -957,7 +981,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
     // Create plots
     TCanvas* theCanvas = new TCanvas("theCanvas", "", 1000, 1000);
     gROOT->SetStyle("Plain");
-    gStyle->SetOptStat(0);  
+    gStyle->SetOptStat(0);
 
     theCanvas->Clear();
     theCanvas->UseCurrentStyle();
@@ -985,7 +1009,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	theCanvas->Update();
 
     }
@@ -1004,7 +1028,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
     for (iPole = 0; iPole < nPoles; iPole++) {
 
 	theCanvas->cd(iPole+1);
-	    
+
 	TMultiGraph* ampGraphs = ampGraphVect[iPole];
 	ampGraphs->Draw("a");
 
@@ -1016,7 +1040,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
 	xAxis->SetTitleOffset(0.9);
 
 	TAxis* yAxis = ampGraphs->GetYaxis();
-	
+
 	TString yLabel("Production Pole "); yLabel += iPole+1;
 
 	yAxis->SetTitleOffset(0.9);
@@ -1024,7 +1048,7 @@ void doProdPolePlots(Bool_t useProdAdler) {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	theCanvas->Update();
 
     }
@@ -1092,7 +1116,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
     massPoints.push_back(mMin); massPoints.push_back(0.5); massPoints.push_back(0.75);
     massPoints.push_back(1.0); massPoints.push_back(1.25); massPoints.push_back(1.5);
     massPoints.push_back(1.75); massPoints.push_back(1.99999);
-    
+
     Int_t NMain = static_cast<Int_t>(massPoints.size());
     for (Int_t iP = 0; iP < NMain; iP++) {
 
@@ -1126,7 +1150,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
     // Full K-matrix parameterisation
     TString KFile("B3piKMatrixCoeff.dat");
     LauKMatrixPropagator* propFull = new LauKMatrixPropagator("propFull", KFile,
-							      resPairInt, nChannels, 
+							      resPairInt, nChannels,
 							      nSVPs, KMatrixIndex);
 
     // Define kinematics pointer
@@ -1157,7 +1181,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
     TLegend* argLegend = new TLegend(0.1, 0.1, 0.7, 0.995);
     argLegend->SetHeader("m(#pi^{+}#pi^{-}) points (GeV/c^{2})");
     argLegend->SetTextSize(0.075);
-    Bool_t initArgLegend(kFALSE);    
+    Bool_t initArgLegend(kFALSE);
 
     // Legend for the graphs (same for all multigraphs)
     TLegend* ampLegend = new TLegend(0.2, 0.2, 0.8, 0.7);
@@ -1183,15 +1207,15 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 
 	    TGraph* pointGraph = new TGraph(1);
 	    TString pointLabel("SVPPoint_"); pointLabel += iG;
-	    
+
 	    pointGraph->SetName(pointLabel.Data());
 	    pointGraph->SetMarkerColor(colours[iG]);
 	    pointGraph->SetMarkerSize(1.1);
 	    pointGraph->SetMarkerStyle(styles[iG]);
 	    argGraphs->Add(pointGraph, "p");
-	    
+
 	}
-	
+
 	if (!initArgLegend) {
 	    TList* argList = argGraphs->GetListOfGraphs();
 	    for (Int_t iG = 0; iG < NMain; iG++) {
@@ -1222,7 +1246,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 	imagGraph->SetMarkerColor(kBlue);
 	imagGraph->SetLineWidth(1);
 	ampGraphs->Add(imagGraph, "lp");
-	
+
 	TGraph* magGraph = new TGraph(nSteps);
 	TString magLabel("SVPMag_"); magLabel += iSVP;
 	magGraph->SetName(magLabel.Data());
@@ -1230,24 +1254,24 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 	magGraph->SetMarkerColor(kBlack);
 	magGraph->SetLineWidth(1);
 	ampGraphs->Add(magGraph, "lp");
-	
+
 	if (!initLegend) {
-	    
+
 	    ampLegend->AddEntry(realGraph, "Real part", "l");
 	    ampLegend->AddEntry(imagGraph, "Imag part", "l");
 	    ampLegend->AddEntry(magGraph,  "Magnitude", "l");
-	    
+
 	    initLegend = kTRUE;
-	    
+
 	}
-	
+
     }
 
     for (Int_t iM = 0; iM < nSteps; iM++) {
 
 	Double_t m = dm*iM + mMin;
 	Double_t s = m*m;
-	
+
 	// Update kinematics. The K-matrix only really needs s = m23Sq, i.e. m13Sq is "ignored".
 	// Here, take the diagonal where m12Sq = 0.5*(mB^2 + 3mpi^2), the DP centre and use
 	// m13Sq = mBSq + 3mPiSq - m12Sq - m23Sq
@@ -1269,27 +1293,27 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 
 	    TGraph* argGraph = dynamic_cast<TGraph*>(argList->At(0));
 	    argGraph->SetPoint(iM, reAmp, imAmp);
-		
+
 	    // Graphs showing specific points
 	    for (Int_t iP = 0; iP < NMain; iP++) {
-		
+
 		if (points[iP] == iM) {
 		    TGraph* pointGraph = dynamic_cast<TGraph*>(argList->At(iP+1));
 		    pointGraph->SetPoint(0, reAmp, imAmp);
 		}
-		
+
 	    }
-	    
+
 	    // Amplitude multigraphs
 	    TMultiGraph* ampGraphs = ampGraphVect[iSVP];
 	    TList* graphList = ampGraphs->GetListOfGraphs();
 
 	    TGraph* realGraph = dynamic_cast<TGraph*>(graphList->At(0));
 	    realGraph->SetPoint(iM, m, reAmp);
-	    
+
 	    TGraph* imagGraph = dynamic_cast<TGraph*>(graphList->At(1));
 	    imagGraph->SetPoint(iM, m, imAmp);
-	    
+
 	    TGraph* magGraph = dynamic_cast<TGraph*>(graphList->At(2));
 	    magGraph->SetPoint(iM, m, magAmp);
 
@@ -1300,7 +1324,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
     // Create plots
     TCanvas* theCanvas = new TCanvas("theCanvas", "", 1000, 1000);
     gROOT->SetStyle("Plain");
-    gStyle->SetOptStat(0);  
+    gStyle->SetOptStat(0);
 
     theCanvas->Clear();
     theCanvas->UseCurrentStyle();
@@ -1328,7 +1352,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	theCanvas->Update();
 
     }
@@ -1338,7 +1362,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 
     theCanvas->Print("ProdSVPArgand.png");
     if (doEPS) {theCanvas->Print("ProdSVPArgand.eps");}
-    
+
     // Amplitude plots
     theCanvas->Clear();
     theCanvas->UseCurrentStyle();
@@ -1347,7 +1371,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
     for (iSVP = 0; iSVP < nSVPs; iSVP++) {
 
 	theCanvas->cd(iSVP+1);
-	    
+
 	TMultiGraph* ampGraphs = ampGraphVect[iSVP];
 	ampGraphs->Draw("a");
 
@@ -1357,9 +1381,9 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 	xAxis->SetTitleSize(0.05);
 	xAxis->CenterTitle(kTRUE);
 	xAxis->SetTitleOffset(0.9);
-		    
+
 	TAxis* yAxis = ampGraphs->GetYaxis();
-	
+
 	TString yLabel("Production SVP "); yLabel += iSVP+1;
 
 	yAxis->SetTitleOffset(0.9);
@@ -1367,7 +1391,7 @@ void doProdSVPPlots(Bool_t useProdAdler) {
 	yAxis->SetLabelSize(0.05);
 	yAxis->SetTitleSize(0.05);
 	yAxis->CenterTitle(kTRUE);
-	
+
 	theCanvas->Update();
 
     }

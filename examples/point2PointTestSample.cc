@@ -1,9 +1,33 @@
+
+/*
+Copyright 2015 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 // Code to perform the point to point similarity unbinned goodness of fit test on a subsample of the data and simulation provided.
 //
 // A test statistic is constructed, T = (1/n_d^2) SUM_(i,j>i)^(n_d) psi(|x_i^d - x_j^d|) - 1/(n_d * n_s) SUM_(i,j)^(n_d,n_s) psi(|x_i^d - x_j^s|),
-// where x_i^d is the position of the ith data entry in the phase space and x_i^s is the position of the ith simulated entry, 
-// n_d and n_s are the number of data and simulation entries, respectively, 
-// and psi is a function that drops off for larger distances. This script uses exp(-(m'^2+theat'^2)/(2sigma^2)) where sigma should be set to roughly the 
+// where x_i^d is the position of the ith data entry in the phase space and x_i^s is the position of the ith simulated entry,
+// n_d and n_s are the number of data and simulation entries, respectively,
+// and psi is a function that drops off for larger distances. This script uses exp(-(m'^2+theat'^2)/(2sigma^2)) where sigma should be set to roughly the
 // size of the narrowest structure in the square Dalitz plot.
 //
 // The distribution of this test statistic is unknown so the permutation test is used.

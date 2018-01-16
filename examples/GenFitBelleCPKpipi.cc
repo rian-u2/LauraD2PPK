@@ -1,4 +1,27 @@
 
+/*
+Copyright 2005 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -113,15 +136,15 @@ int main( int argc, char** argv )
 	// hand once you've found the right value through some trial and
 	// error.
 	Double_t aSqMaxValue = 1.62;
-	negSigModel->setASqMaxValue(aSqMaxValue);  
-	posSigModel->setASqMaxValue(aSqMaxValue);  
+	negSigModel->setASqMaxValue(aSqMaxValue);
+	posSigModel->setASqMaxValue(aSqMaxValue);
 
 	// Create the fit model, giving it both isobar models
 	LauCPFitModel* fitModel = new LauCPFitModel( negSigModel, posSigModel );
 
 	// Create the complex coefficients for the isobar model
 	// Here we're using the "Belle" form:
-	// The amplitude has the form a * exp(i*delta) * ( 1 +/- b * exp(i*phi) ) where 
+	// The amplitude has the form a * exp(i*delta) * ( 1 +/- b * exp(i*phi) ) where
 	// a is a CP conserving magnitude,
 	// b is a CP violating magnitude,
 	// delta is the strong phase

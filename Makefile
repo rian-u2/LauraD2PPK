@@ -1,33 +1,44 @@
- ########################################################################## 
- # Copyright University of Warwick 2004 - 2013.                           #
- # Distributed under the Boost Software License, Version 1.0.             #
- # (See accompanying file LICENSE_1_0.txt or copy at                      #
- # http://www.boost.org/LICENSE_1_0.txt)                                  #
- #                                                                        #
- # Authors:                                                               #
- # Thomas Latham                                                          #
- # John Back                                                              #
- # Paul Harrison                                                          #
- #                                                                        #
- # -------------------------------                                        #
- # Standalone Makefile for Laura++                                        #
- # -------------------------------                                        #
- #                                                                        #
- # Instructions                                                           #
- #     - Review 'external configuration' section below                    #
- #       to match systems compilers setup                                 #
- #                                                                        #
- #     - Make sure the ROOTSYS environment variable is set and points     #
- #       to your ROOT release or the root-config script is in your PATH   #
- #                                                                        #
- #     - run 'make <target>'                                              #
- #                                                                        #
- # Build targets                                                          #
- #   lib   - make libLaura++.a                                            #
- #   shlib - make libLaura++.so (default)                                 #
- #   clean - delete all intermediate and final build objects              #
- #                                                                        #
- ########################################################################## 
+ ############################################################################
+ # Copyright 2004 University of Warwick                                     #
+ #                                                                          #
+ # Licensed under the Apache License, Version 2.0 (the "License");          #
+ # you may not use this file except in compliance with the License.         #
+ # You may obtain a copy of the License at                                  #
+ #                                                                          #
+ #     http://www.apache.org/licenses/LICENSE-2.0                           #
+ #                                                                          #
+ # Unless required by applicable law or agreed to in writing, software      #
+ # distributed under the License is distributed on an "AS IS" BASIS,        #
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. #
+ # See the License for the specific language governing permissions and      #
+ # limitations under the License.                                           #
+ #                                                                          #
+ # Laura++ package authors:                                                 #
+ # John Back                                                                #
+ # Paul Harrison                                                            #
+ # Thomas Latham                                                            #
+ #                                                                          #
+ ############################################################################
+ #                                                                          #
+ # -------------------------------                                          #
+ # Standalone Makefile for Laura++                                          #
+ # -------------------------------                                          #
+ #                                                                          #
+ # Instructions                                                             #
+ #     - Review 'external configuration' section below                      #
+ #       to match systems compilers setup                                   #
+ #                                                                          #
+ #     - Make sure the ROOTSYS environment variable is set and points       #
+ #       to your ROOT release or the root-config script is in your PATH     #
+ #                                                                          #
+ #     - run 'make <target>'                                                #
+ #                                                                          #
+ # Build targets                                                            #
+ #   lib   - make libLaura++.a                                              #
+ #   shlib - make libLaura++.so (default)                                   #
+ #   clean - delete all intermediate and final build objects                #
+ #                                                                          #
+ ############################################################################
 
 
 # --- External configuration ----------------------------------

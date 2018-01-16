@@ -1,6 +1,30 @@
+
+/*
+Copyright 2008 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 // Code to produce an adaptive binning scheme and calculate the 2D chi-square between
 // two datasets (e.g. low-stat data and high-stat toyMC).
-// To run the code, do "./CalcChiSq chiSqInput.txt", where chiSqInput.txt is 
+// To run the code, do "./CalcChiSq chiSqInput.txt", where chiSqInput.txt is
 // an input control file, and contains the following lines:
 // Low_stat_file_name      Low_stat_histo_name
 // High_stat_file_name     High_stat_histo_name
@@ -9,14 +33,14 @@
 // Note that the low and high stat histograms must have the same bin axes
 // ranges and number of bins.
 
-// It works by using the low stat (first) histogram to find a binning scheme such 
-// that the total number of entries in each bin is >= Min_bin_content. The number 
-// of entries in the histogram is divided by the desired minimum bin content to 
-// give a target number of bins. The largest number of bins that can be expressed 
-// as a product of powers of four, nine, 25, 49 and 121 that does not exceed the 
-// target value is chosen. The histogram is the recursively subdivided in 2x2, 3x3, 
-// 5x5, 7x7 or 11x11 bins. For each stage of the subdivision, each bin is first 
-// divided into equally populated bins in x then each of these is further divded 
+// It works by using the low stat (first) histogram to find a binning scheme such
+// that the total number of entries in each bin is >= Min_bin_content. The number
+// of entries in the histogram is divided by the desired minimum bin content to
+// give a target number of bins. The largest number of bins that can be expressed
+// as a product of powers of four, nine, 25, 49 and 121 that does not exceed the
+// target value is chosen. The histogram is the recursively subdivided in 2x2, 3x3,
+// 5x5, 7x7 or 11x11 bins. For each stage of the subdivision, each bin is first
+// divided into equally populated bins in x then each of these is further divded
 // into equally popiulated bins in y.
 
 // The (Pearson) chi-squared is then the sum of the chi-squared contributions
@@ -67,7 +91,7 @@ CalcChiSq::CalcChiSq(TString inputFileName) :
 	nParams_(0),
 	scaleFactor_(1.0),
 	verbose_(kFALSE)
-	
+
 {
 }
 
@@ -99,7 +123,7 @@ void CalcChiSq::run()
 
 	outFile->Write();
 	outFile->Close();
-	
+
 	cout<<"Done"<<endl;
 
 }
@@ -112,7 +136,7 @@ void CalcChiSq::calculateChiSq()
 	Float_t diff(0.), chiSq(0.), totalChiSq(0.);
 
 	minContent = histo1_->GetBinContent(1);
-	
+
 	for(Int_t i=1; i<=histo1_->GetNumberOfBins(); ++i) {
 		//keep track of actual minimum
 		if(histo1_->GetBinContent(i)<minContent) {
@@ -140,7 +164,7 @@ void CalcChiSq::calculateChiSq()
 	}
 
 	ndof = histo1_->GetNumberOfBins()-nParams_-1;
-	
+
 	cout<<"Total ChiSq/nDof = "<<totalChiSq<<"/"<<ndof<<" = "<<totalChiSq/ndof<<endl;
 	std::cout << "Actual minimum entries per bin: " << minContent << std::endl;
 }
@@ -231,7 +255,7 @@ void CalcChiSq::makePlots() {
    chiSqSignedHisto_->SetYTitle(yName1_);
    chiSqSignedHisto_->Draw("colz");
    can.SaveAs("chiSqSigned.pdf");
-  
+
 }
 
 void CalcChiSq::initialiseHistos()
@@ -286,7 +310,7 @@ void CalcChiSq::initialiseHistos()
 
 		tree2 = dynamic_cast<TTree*>(file2->Get(treeName2_.Data()));
 	}
-	
+
 	if (tree2 == 0) {
 		cerr<<"Error. Could not find the tree "<<treeName2_
 		    <<" in the file "<<fileName2_<<endl;
@@ -462,12 +486,12 @@ void CalcChiSq::getHisto(Double_t xMin, Double_t xMax, Double_t yMin, Double_t y
 
 	if(verbose_) std::cout << "Dividing bin from (" << xMin << "," << yMin << ") to (" << xMax << "," << yMax << ") into " << n_divx << " by " << n_divy << " subbins" << std::endl;
 
-	Double_t *xIn = new Double_t[nEntries]; 
-	Double_t *yIn = new Double_t[nEntries]; 
+	Double_t *xIn = new Double_t[nEntries];
+	Double_t *yIn = new Double_t[nEntries];
 	Int_t *xIndex = new Int_t [nEntries+2];
 	Int_t *yIndex = new Int_t [nEntries+2];
 
-	Int_t xCountIn = 0; 
+	Int_t xCountIn = 0;
 	for(Int_t i = 0; i<nEntries; ++i) {
 		if ((xs[i]<xMin)||(xs[i]>xMax)||(ys[i]<yMin)||(ys[i]>yMax)) continue;
 		xIn[xCountIn] = xs[i];
@@ -490,7 +514,7 @@ void CalcChiSq::getHisto(Double_t xMin, Double_t xMax, Double_t yMin, Double_t y
 
 		//for each bin in x divide into equally populated bins in y
 		yLimits[nDivx][0] = yMin;
-		yLimits[nDivx][n_divy] = yMax;    
+		yLimits[nDivx][n_divy] = yMax;
 		Int_t yCountIn = 0;
 
 		for(Int_t i = 0; i<nEntries; ++i) {

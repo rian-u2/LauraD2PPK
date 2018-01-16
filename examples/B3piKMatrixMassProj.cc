@@ -1,3 +1,27 @@
+
+/*
+Copyright 2016 University of Warwick
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
+
 // Plot the mass projections of K-matrix amplitude terms generated over the Dalitz plot so that
 // we can see what shapes the poles and SVP components have. Also show the rho for comparison
 
@@ -50,7 +74,7 @@ int main(const int argc, const char** argv) {
 
     std::string rootFileName("KMatrixMassHistos.root");
     if (histFlag) {createHistos(rootFileName);}
-    
+
     plotHistos(rootFileName);
 
 }
@@ -68,8 +92,8 @@ void plotHistos(const std::string& rootFileName) {
 
     TFile* rootFile = TFile::Open(rootFileName.c_str(), "read");
     rootFile->cd();
-    
-    // Plot rho with K-matrix poles    
+
+    // Plot rho with K-matrix poles
     TLegend* poleLegend = new TLegend(0.7, 0.5, 0.90, 0.90, "");
     poleLegend->SetFillColor(0);
     poleLegend->SetTextSize(0.03);
@@ -90,7 +114,7 @@ void plotHistos(const std::string& rootFileName) {
 
 	Int_t j = i + 1;
 	TString poleName("KMPole"); poleName += j; poleName += "_m13";
-	
+
 	TH1* poleHist = dynamic_cast<TH1*>(rootFile->Get(poleName.Data()));
 	poleHist->SetLineColor(colours[i]);
 	poleHist->SetLineWidth(2);
@@ -103,7 +127,7 @@ void plotHistos(const std::string& rootFileName) {
 	poleLegend->AddEntry(poleHist, poleLabel, "l");
 
     }
-    
+
     poleStack->Draw("nostackc");
 
     TAxis* poleXAxis = poleStack->GetXaxis();
@@ -133,7 +157,7 @@ void plotHistos(const std::string& rootFileName) {
 
 	Int_t j = i + 1;
 	TString SVPName("KMSVP"); SVPName += j; SVPName += "_m13";
-	
+
 	TH1* SVPHist = dynamic_cast<TH1*>(rootFile->Get(SVPName.Data()));
 	SVPHist->SetLineColor(colours[i]);
 	SVPHist->SetLineWidth(2);
@@ -147,7 +171,7 @@ void plotHistos(const std::string& rootFileName) {
     }
 
     SVPStack->Draw("nostackc");
- 
+
     TAxis* SVPXAxis = SVPStack->GetXaxis();
     SVPXAxis->SetTitle("m(#pi^{+}#pi^{-}) (GeV/c^{2})");
     SVPXAxis->CenterTitle(kTRUE);
@@ -224,7 +248,7 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 
     // Define the efficiency model
     LauEffModel* theEffModel = new LauEffModel(theDaughters, vetoes);
- 
+
     // Create the isobar model
     LauResonanceMaker& resMaker = LauResonanceMaker::get();
     resMaker.setDefaultBWRadius(LauBlattWeisskopfFactor::Parent, 4.0);
@@ -266,20 +290,20 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 
 	// Rho resonance
 	cout<<"Using rho(770)"<<endl;
-	
+
 	theName = "Rho";
 	parName = "rho0(770)";
 	theSigModel->addResonance("rho0(770)",  1, LauAbsResonance::GS);
-	
+
     } else {
 
 	// K-matrix amplitude
-	theSigModel->defineKMatrixPropagator("KMSWave", "B3piKMatrixCoeff.dat", resPairInt, 
+	theSigModel->defineKMatrixPropagator("KMSWave", "B3piKMatrixCoeff.dat", resPairInt,
 					     nChannels, nPoles, KMatrixIndex);
-	
-	
+
+
 	cout<<"Implementing K matrix term number "<<index<<", name = "<<theName<<endl;
-	
+
 	Int_t j = index%5 + 1;
 	theName += j;
 	parName = theName;
@@ -291,44 +315,44 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 	}
 
     }
-    
+
     // Create the fit model
     LauSimpleFitModel* fitModel = new LauSimpleFitModel(theSigModel);
-    
+
     std::vector<LauCartesianCPCoeffSet*> coeffSet;
     Bool_t fixPar = kTRUE;
     Bool_t fixCP = kTRUE;
     Bool_t doTwoStageFit = kFALSE;
-    
+
     coeffSet.push_back(new LauCartesianCPCoeffSet(parName.Data(), 1.0, 0.0, 0.0, 0.0,
 						  fixPar, fixPar, fixCP, fixCP,
 						  doTwoStageFit, doTwoStageFit));
-    
-    std::vector<LauCartesianCPCoeffSet*>::iterator coeffIter;    
+
+    std::vector<LauCartesianCPCoeffSet*>::iterator coeffIter;
     for (coeffIter = coeffSet.begin(); coeffIter != coeffSet.end(); ++coeffIter) {
 	fitModel->setAmpCoeffSet(*coeffIter);
     }
-    
+
     // Set the number of signal events and the number of experiments
     LauParameter* signalEvents = new LauParameter("signalEvents", nSigEvents, -2.0*nSigEvents,
-						  2.0*nSigEvents, fixNSigEvents);		
+						  2.0*nSigEvents, fixNSigEvents);
     fitModel->setNSigEvents(signalEvents);
     fitModel->setNExpts(nExpt, firstExpt);
-    
+
     // Execute the generation/fit
     TString treeName("");
     TString dummyName("");
     TString tableFileName("");
-    
+
     TString dataFileName("Gen");
     dataFileName += theName;
     dataFileName += ".root";
-    
+
     fitModel->run("gen", dataFileName, treeName, dummyName, tableFileName);
-    
+
     // Create DP and mass projection plots so that we can see the K matrix
     // amplitude term shapes
-    
+
     // Histogram of the invariant mass for pi+ pi- pairs: m13 & m23
     TString m13Name(theName); m13Name += "_m13";
     TH1D* m13Hist = new TH1D(m13Name.Data(), "", 100, 0.0, 5.5);
@@ -336,7 +360,7 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 
     m13Hist->SetDirectory(0);
     histVect.push_back(m13Hist);
-    
+
     // Histogram of the wrong sign invariant mass pi+ pi+: m12
     TString m12Name(theName); m12Name += "_m12";
     TH1D* m12Hist = new TH1D(m12Name.Data(), "", 100, 0.0, 5.5);
@@ -354,7 +378,7 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 
     DPHist->SetDirectory(0);
     histVect.push_back(DPHist);
-    
+
     // Simulation results file
     TFile* genFile = TFile::Open(dataFileName.Data(), "read");
     genFile->cd();
@@ -363,45 +387,45 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
     genTree->SetBranchStatus("m12", 1);
     genTree->SetBranchStatus("m23", 1);
     genTree->SetBranchStatus("m13", 1);
-    
+
     Double_t m12, m23, m13;
     genTree->SetBranchAddress("m12", &m12);
     genTree->SetBranchAddress("m23", &m23);
     genTree->SetBranchAddress("m13", &m13);
-    
+
     Int_t nEntries = genTree->GetEntries();
     cout<<"nEntries = "<<nEntries<<endl;
     Int_t k;
-    
+
     // Fill mass and DP histograms
     for (k = 0; k < nEntries; k++) {
 
 	genTree->GetEntry(k);
-	
+
 	Double_t mMin = m13;
 	Double_t mMax = m23;
 	if (m23 < m13) {
 	    mMin = m23; mMax = m13;
 	}
-	
+
 	m13Hist->Fill(mMin);
 	m13Hist->Fill(mMax);
-	
+
 	m12Hist->Fill(m12);
-	
+
 	DPHist->Fill(mMin*mMin, mMax*mMax);
-	
+
     }
-    
+
     // Cleanup
-    genFile->Close();       
+    genFile->Close();
 
     delete signalEvents;
-    
+
     for (coeffIter = coeffSet.begin(); coeffIter != coeffSet.end(); ++coeffIter) {
 	delete *coeffIter;
     }
-    
+
     delete fitModel;
     delete theSigModel;
     delete theEffModel;

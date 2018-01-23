@@ -79,7 +79,7 @@ LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance:
 	rhoType = LauAbsResonance::GS;
     }
 
-    rhoRes_ = resMaker.getResonance(daughters, resInfo->getName(), resPairAmpInt, rhoType, 
+    rhoRes_ = resMaker.getResonance(daughters, resInfo->getName(), resPairAmpInt, rhoType,
 				    LauBlattWeisskopfFactor::Light);
 
     LauResonanceInfo* omegaInfo = resMaker.getResInfo("omega(782)");
@@ -146,14 +146,14 @@ LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance:
     // In theory, this parameter can be complex, but we only use its magnitude
     // in the mixing amplitude, since its usually very small: (2.15 +- 0.35) MeV/c^2
     const Double_t deltaVal = 2.15e-3;
-    
+
     TString deltaName(parNameBase); deltaName += "_delta";
     delta_ = resInfo->getExtraParameter(deltaName);
     if (!delta_) {
 	delta_ = new LauParameter(deltaName, deltaVal, 0.0, 100.0, kTRUE);
 	delta_->secondStage(kTRUE);
 	resInfo->addExtraParameter(delta_);
-    }    
+    }
 
 }
 
@@ -187,7 +187,7 @@ void LauRhoOmegaMix::initialiseRho()
 
 void LauRhoOmegaMix::initialiseOmega()
 {
-    // Set the pole mass and width of the omega resonance if this has changed 
+    // Set the pole mass and width of the omega resonance if this has changed
     // using the parameters mOmega_ and wOmega_
 
     Double_t newOmegaM(-1.0), newOmegaW(-1.0);
@@ -204,7 +204,7 @@ void LauRhoOmegaMix::initialiseOmega()
     if (fabs(tmpOmegaW - wOmegaCur_) > 1e-10) {
 	newOmegaW = tmpOmegaW;
     }
-    
+
     // If any parameter is negative, they are unchanged
     omegaRes_->changeResonance(newOmegaM, newOmegaW, newOmegaSpin);
 
@@ -212,7 +212,7 @@ void LauRhoOmegaMix::initialiseOmega()
     if (newOmegaM > -1.0) {
 	changedOmegaM = kTRUE;
     }
-    
+
     // Let the omega resonance pointer know if the mass or width are fixed or floating
     if (doneFirstInit_ == kFALSE) {
 
@@ -253,9 +253,9 @@ void LauRhoOmegaMix::initialiseOmega()
 
 LauComplex LauRhoOmegaMix::amplitude(const LauKinematics* kinematics) {
 
-    // This function overrides and returns the complex dynamical amplitude for the 
+    // This function overrides and returns the complex dynamical amplitude for the
     // rho-omega mass mixing amplitude given the kinematics
-    
+
     // Check to see if we need to reinitialise the rho resonance pointer
     const Double_t resMass = rhoRes_->getMass();
     const Double_t resRadius = rhoRes_->getResRadius();
@@ -264,23 +264,23 @@ LauComplex LauRhoOmegaMix::amplitude(const LauKinematics* kinematics) {
     if ( ( (!this->fixMass()) && fabs(resMass - rhoMass_) > 1e-10) ||
 	 ( (!this->fixResRadius()) && fabs(resRadius - rhoResRadius_) > 1e-10 ) ||
 	 ( (!this->fixParRadius()) && fabs(parRadius - rhoParRadius_) > 1e-10 ) ) {
-	
+
 	this->initialiseRho();
-	 
+
     }
 
-    // Always check the initialisaton of the omega resonance in case we have varied 
+    // Always check the initialisaton of the omega resonance in case we have varied
     // its mass/width via the fit parameters
     this->initialiseOmega();
 
-    // First, get the amplitude of the first (rho) resonance. 
+    // First, get the amplitude of the first (rho) resonance.
     // This will include the full barrier and spin terms
     const LauComplex rhoAmp = rhoRes_->amplitude(kinematics);
- 
+
     // Next, get the amplitude of the second (omega) resonance. This ignores barrier
     // and spin terms, and uses the pole width only (no momentum dependence)
     const LauComplex omegaAmp = omegaRes_->amplitude(kinematics);
- 
+
     // The Delta parameter, which we assume is purely real. Theoretically, delta can
     // be complex, but in practice we only use its (usually small) magnitude
     const Double_t Delta = (resMass + mOmegaCur_)*this->getdeltaValue();
@@ -293,14 +293,14 @@ LauComplex LauRhoOmegaMix::amplitude(const LauKinematics* kinematics) {
     // The mass mixing term
     const LauComplex unity(1.0, 0.0);
     const LauComplex mixingTerm = BTerm*omegaAmp + unity;
-    
+
     // Now form the full amplitude
     LauComplex resAmplitude = rhoAmp*mixingTerm;
 
     // Add the mixing correction denominator term if required
     if (useDenom_) {
 
-	// Here, we need to disable the rho barrier & spin factors, since they are 
+	// Here, we need to disable the rho barrier & spin factors, since they are
 	// only needed for the numerator term of the full amplitude. Note that we still
 	// need to use the momentum-dependent width (with its resonance barrier term)
 
@@ -308,9 +308,9 @@ LauComplex LauRhoOmegaMix::amplitude(const LauKinematics* kinematics) {
 	rhoRes_->ignoreBarrierScaling(kTRUE);
 	// Also ignore spin terms for now
 	rhoRes_->ignoreSpin(kTRUE);
-	
+
 	const LauComplex rhoAmp2 = rhoRes_->amplitude(kinematics);
-	
+
 	// Reinstate barrier scaling and spin term flags
 	rhoRes_->ignoreBarrierScaling(kFALSE);
 	rhoRes_->ignoreSpin(kFALSE);
@@ -321,6 +321,18 @@ LauComplex LauRhoOmegaMix::amplitude(const LauKinematics* kinematics) {
 
 	// Modify the full amplitude
 	resAmplitude = resAmplitude/denomTerm;
+
+    if (this->whichAmpSq_ == 1) {
+        // For omega fit fraction
+
+        return LauComplex(sqrt(omegaAmp.abs() * Delta * magBVal), 0.0);
+
+    } else if (this->whichAmpSq_ == 2) {
+        // For rho fit fraction
+
+        return rhoAmp;
+
+    }
 
     }
 
@@ -338,7 +350,7 @@ LauComplex LauRhoOmegaMix::resAmp(Double_t mass, Double_t spinTerm)
 const std::vector<LauParameter*>& LauRhoOmegaMix::getFloatingParameters() {
 
     this->clearFloatingParameters();
-    
+
     if ( ! this->fixmOmegaValue() ) {
 	this->addFloatingParameter( mOmega_ );
     }
@@ -358,7 +370,7 @@ const std::vector<LauParameter*>& LauRhoOmegaMix::getFloatingParameters() {
     if ( ! this->fixdeltaValue() ) {
 	this->addFloatingParameter( delta_ );
     }
-   
+
     if ( ! this->fixMass() ) {
 	this->addFloatingParameter( this->getMassPar() );
     }
@@ -374,7 +386,7 @@ const std::vector<LauParameter*>& LauRhoOmegaMix::getFloatingParameters() {
     if ( ! this->fixParRadius() ) {
 	this->addFloatingParameter( this->getParBWFactor()->getRadiusParameter() );
     }
- 
+
     return this->getParameters();
 }
 
@@ -490,4 +502,3 @@ void LauRhoOmegaMix::setdeltaValue(const Double_t delta) {
     delta_->genValue( delta );
     delta_->initValue( delta );
 }
-

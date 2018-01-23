@@ -526,6 +526,9 @@ class LauIsobarDynamics {
 		*/
 		inline std::vector<LauParameter*>& getFloatingParameters() {return resonancePars_;}
 
+		//! Whether to calculate separate rho and omega fit-fractions from LauRhoOmegaMix
+        inline void calculateRhoOmegaFitFractions(Bool_t calcFF) { calculateRhoOmegaFitFractions_ = calcFF; }
+
 	protected:
 		//! Print a summary of the model to be used
 		void initSummary();
@@ -574,7 +577,7 @@ class LauIsobarDynamics {
 				                                 const UInt_t nAmp,
 				                                 const UInt_t nIncohAmp) const;
 
-		//! Correct regions to ensure that the finest integration grid takes precedence                             
+		//! Correct regions to ensure that the finest integration grid takes precedence
 		/*!
 		    \param [in] regions the windows in invariant mass
 		    \param [in] binnings the corresponding binnings for each window
@@ -963,6 +966,9 @@ class LauIsobarDynamics {
 
 		//! Resonance indices for which the amplitudes and integrals should be recalculated
 		std::set<UInt_t> integralsToBeCalculated_;
+
+        //! Whether to calculate separate rho and omega fit fractions from the LauRhoOmegaMix model
+        Bool_t calculateRhoOmegaFitFractions_;
 
 		ClassDef(LauIsobarDynamics,0)
 };

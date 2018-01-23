@@ -57,6 +57,7 @@ Thomas Latham
 #include "LauRandom.hh"
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
+#include "LauRhoOmegaMix.hh"
 
 ClassImp(LauIsobarDynamics)
 
@@ -2108,6 +2109,96 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 
 	}
 
+	// Calculate rho and omega fit fractions from LauRhoOmegaMix
+
+	// In principle the presence of LauRhoOmegaMix can be detected, however
+	// working out the index of the correct component is hard.
+
+	// To prevent unwanted effects, this has to be manually turned on, with the
+	// assumption that the first two components are rho and rho_COPY in a LauCPFitModel
+
+	if (this->calculateRhoOmegaFitFractions_) {
+
+		int omegaID = 0;
+		int storeID = 1;
+
+	    // Check which B flavour (and therefore which rho_COPY we are) by whether the FF is non-zero
+	    // Only for CP fit though - for a 'simple' fit this is more complicated
+	    if (fitFrac_[omegaID][omegaID].value() < 1E-4) {
+	        omegaID = 1;
+	        storeID = 0;
+	    }
+
+		// Check this is really the correct model
+
+	    LauRhoOmegaMix * rhomega = dynamic_cast<LauRhoOmegaMix *>(getResonance(omegaID));
+
+	    if (rhomega != NULL) { // Bail out
+
+			std::cout << "INFO in LauIsobarDynamics::calcExtraInfo : Calculating omega fit fraction from resonance " << omegaID << std::endl;
+			std::cout << "INFO in LauIsobarDynamics::calcExtraInfo : Storing omega fit fraction in resonance " << storeID << std::endl;
+
+			// Tell the RhoOmegaMix model only to give us the omega amplitude-squared
+
+			rhomega->setWhichAmpSq(1);
+
+			// Recalculate the integrals for the omega fit-fraction
+
+			integralsDone_ = kFALSE;
+
+			this->resetNormVectors();
+			for ( UInt_t k(0); k < nAmp_+nIncohAmp_; ++k ) {
+				integralsToBeCalculated_.insert(k);
+			}
+			this->calcDPNormalisation();
+
+			integralsDone_ = kTRUE;
+
+			Double_t fifjSumRealOmega = fifjSum_[omegaID][omegaID].re();
+
+			// Recalculate the integrals for the rho fit-fraction
+
+			rhomega->setWhichAmpSq(2);
+
+			integralsDone_ = kFALSE;
+
+			this->resetNormVectors();
+			for ( UInt_t k(0); k < nAmp_+nIncohAmp_; ++k ) {
+				integralsToBeCalculated_.insert(k);
+			}
+			this->calcDPNormalisation();
+
+			integralsDone_ = kTRUE;
+
+			Double_t fitFracPartRho = Amp_[omegaID].abs2()*fifjSum_[omegaID][omegaID].re();
+
+			// Reset the RhoOmegaMix model and the integrals
+
+			rhomega->setWhichAmpSq(0);
+
+			integralsDone_ = kFALSE;
+
+			this->resetNormVectors();
+			for ( UInt_t k(0); k < nAmp_+nIncohAmp_; ++k ) {
+				integralsToBeCalculated_.insert(k);
+			}
+			this->calcDPNormalisation();
+
+			integralsDone_ = kTRUE;
+
+			// Store the omega fit-fraction in the rho_COPY location (which is otherwise empty)
+			// Store the rho fit-fraction in the rho location (overwriting the combined FF)
+
+			Double_t omegaFF = fifjSumRealOmega * fitFrac_[omegaID][omegaID].value();
+
+			fitFrac_[storeID][storeID].value(omegaFF);
+			fitFrac_[omegaID][omegaID].value(fitFracPartRho * fNorm_[omegaID] * fNorm_[omegaID]);
+
+	    } else {
+			std::cout << "INFO in LauIsobarDynamics::calcExtraInfo : calculateRhoOmegaFitFractions is set, but the RhoOmegaMix model isn't in the right place. Ignoring this option." << std::endl;
+		}
+
+	}
 
 }
 

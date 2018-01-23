@@ -56,7 +56,7 @@ public:
       \param [in] resType the model of the resonance
       \param [in] resPairAmpInt the number of the daughter not produced by the resonance
       \param [in] daughters the daughter particles
-    */	
+    */
     LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,
 		   const Int_t resPairAmpInt, const LauDaughters* daughters);
 
@@ -73,7 +73,7 @@ public:
     void initialiseOmega();
 
     //! Get the complex dynamical amplitude
-    /*! 
+    /*!
       \param [in] kinematics the kinematic variables of the current event
       \return the complex amplitude
     */
@@ -97,34 +97,37 @@ public:
       \param [in] name the name of the parameter to be floated
     */
     virtual void floatResonanceParameter(const TString& name);
-    
+
     //! Access the given resonance parameter
     /*!
       \param [in] name the name of the parameter
       \return the corresponding parameter
     */
     virtual LauParameter* getResonanceParameter(const TString& name);
-    
+
     //! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
     /*!
       \return floating parameters of the resonance
     */
     virtual const std::vector<LauParameter*>& getFloatingParameters();
-    
+
+    //! Set which rho/omega amplitude to calculate for FF
+    void setWhichAmpSq(Int_t which) { whichAmpSq_ = which; }
+
 protected:
 
     //! Set the omega pole mass parameter
     /*!
       \param [in] mOmega new value for the omega mass parameter
     */
-    void setmOmegaValue(const Double_t mOmega);    
-    
+    void setmOmegaValue(const Double_t mOmega);
+
     //! Get the omega pole mass parameter value
     /*!
       \return value of the omega pole mass parameter
     */
     Double_t getmOmegaValue() const { return (mOmega_!=0) ? mOmega_->unblindValue() : 0.0; }
-    
+
     //! Fix the omega pole mass parameter value
     /*!
       \return kTRUE if the omega pole mass parameter is fixed, kFALSE otherwise
@@ -137,20 +140,20 @@ protected:
       \param [in] wOmega new value for the omega width parameter
     */
     void setwOmegaValue(const Double_t wOmega);
-        
+
     //! Get the omega pole width parameter value
     /*!
       \return value of the omega pole width parameter
     */
     Double_t getwOmegaValue() const { return (wOmega_!=0) ? wOmega_->unblindValue() : 0.0; }
-    
+
     //! Fix the omega pole width parameter value
     /*!
       \return kTRUE if the omega pole width parameter is fixed, kFALSE otherwise
     */
     Bool_t fixwOmegaValue() const { return (wOmega_!=0) ? wOmega_->fixed() : 0.0; }
 
-    
+
     //! Set the omega B magnitude mixing parameter
     /*!
       \param [in] magB new value for the omega B magnitude mixing parameter
@@ -162,7 +165,7 @@ protected:
       \return value of the omega B magnitude mixing parameter
     */
     Double_t getmagBValue() const { return (magB_!=0) ? magB_->unblindValue() : 0.0; }
-    
+
     //! Fix the omega B magnitude mixing parameter value
     /*!
       \return kTRUE if the omega B magnitude mixing parameter is fixed, kFALSE otherwise
@@ -181,7 +184,7 @@ protected:
       \return value of the omega B phase mixing parameter
     */
     Double_t getphiBValue() const { return (phiB_!=0) ? phiB_->unblindValue() : 0.0; }
-    
+
     //! Fix the omega B phase mixing parameter value
     /*!
       \return kTRUE if the omega B phase mixing parameter is fixed, kFALSE otherwise
@@ -200,16 +203,16 @@ protected:
       \return value of the omega mixing parameter delta
     */
     Double_t getdeltaValue() const { return (delta_!=0) ? delta_->unblindValue() : 0.0; }
-    
+
     //! Fix the omega mixing parameter delta value
     /*!
       \return kTRUE if the omega mixing parameter delta is fixed, kFALSE otherwise
     */
     Bool_t fixdeltaValue() const { return (delta_!=0) ? delta_->fixed() : 0.0; }
-   
+
     //! This is not called, amplitude is used directly instead
     virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
-    
+
     //! Check that both daughters are the same type of particle
     void checkDaughterTypes() const;
 
@@ -217,10 +220,10 @@ private:
 
     //! Copy constructor (not implemented)
     LauRhoOmegaMix(const LauRhoOmegaMix& rhs);
-    
+
     //! Copy assignment operator (not implemented)
     LauRhoOmegaMix& operator=(const LauRhoOmegaMix& rhs);
-    
+
     //! The model to use
     LauAbsResonance::LauResonanceModel model_;
 
@@ -271,6 +274,9 @@ private:
 
     //! Pointer to the omega (second) resonance lineshape
     LauAbsResonance* omegaRes_;
+
+    //! Which amplitude to calculate for rho/omega fit fractions
+    Int_t whichAmpSq_;
 
     ClassDef(LauRhoOmegaMix,0) // Rho-omega mixing model
 

@@ -68,7 +68,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] posModel DP model for the particle
 			\param [in] tagged is the analysis tagged or untagged?
 			\param [in] tagVarName the variable name in the data tree that specifies the event tag
-		*/	
+		*/
 		LauCPFitModel(LauIsobarDynamics* negModel, LauIsobarDynamics* posModel, Bool_t tagged = kTRUE, const TString& tagVarName = "charge");
 
 		//! Destructor
@@ -77,7 +77,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Set the signal event yield
 		/*!
 		        \param [in] nSigEvents contains the signal yield and option to fix it
-		*/	
+		*/
 		virtual void setNSigEvents(LauParameter* nSigEvents);
 
 		//! Set the signal event yield if there is an asymmetry
@@ -85,7 +85,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		        \param [in] nSigEvents contains the signal yield and option to fix it
 			\param [in] sigAsym contains the signal asymmetry and option to fix it
 			\param [in] forceAsym the option to force there to be an asymmetry
-		*/	
+		*/
 		virtual void setNSigEvents(LauParameter* nSigEvents, LauParameter* sigAsym, Bool_t forceAsym = kFALSE);
 
 		//! Set the background event yield(s)
@@ -93,7 +93,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		  	The name of the parameter must be that of the corresponding background category (so that it can be correctly assigned)
 
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
-		*/	
+		*/
 		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents);
 
 		//! Set the background event yield(s)
@@ -102,7 +102,7 @@ class LauCPFitModel : public LauAbsFitModel {
 
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 			\param [in] bkgndAsym contains the background asymmetry and option to fix it
-		*/	
+		*/
 		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents, LauAbsRValue* bkgndAsym);
 
 		//! Set the background DP models
@@ -110,7 +110,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] bkgndClass the name of the background class
 			\param [in] negModel the DP model of the B- background
 			\param [in] posModel the DP model of the B+ background
-		*/	
+		*/
 		void setBkgndDPModels(const TString& bkgndClass, LauAbsBkgndDPModel* negModel, LauAbsBkgndDPModel* posModel);
 
 		//! Split the signal component into well-reconstructed and mis-reconstructed parts
@@ -150,14 +150,14 @@ class LauCPFitModel : public LauAbsFitModel {
 		/*!
 			\param [in] negPdf the PDF to be added to the B- signal model
 			\param [in] posPdf the PDF to be added to the B+ signal model
-		*/	
+		*/
 		void setSignalPdfs(LauAbsPdf* negPdf, LauAbsPdf* posPdf);
 
 		//! Set the SCF PDF for a given variable
 		/*!
 			\param [in] negPdf the PDF to be added to the B- signal model
 			\param [in] posPdf the PDF to be added to the B+ signal model
-		*/	
+		*/
 		void setSCFPdfs(LauAbsPdf* negPdf, LauAbsPdf* posPdf);
 
 		//! Set the background PDFs
@@ -165,7 +165,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] bkgndClass the name of the background class
 			\param [in] negPdf the PDF to be added to the B- background model
 			\param [in] posPdf the PDF to be added to the B+ background model
-		*/	
+		*/
 		void setBkgndPdfs(const TString& bkgndClass, LauAbsPdf* negPdf, LauAbsPdf* posPdf);
 
 		//! Embed full simulation events for the B- signal, rather than generating toy from the PDFs
@@ -175,7 +175,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] reuseEventsWithinEnsemble sample with replacement but only replace events once each experiment has been generated
 			\param [in] reuseEventsWithinExperiment sample with immediate replacement
 			\param [in] useReweighting perform an accept/reject routine using the configured signal amplitude model based on the MC-truth DP coordinate
-		*/	
+		*/
 		void embedNegSignal(const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE,
                                 Bool_t useReweighting = kFALSE);
@@ -187,7 +187,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] treeName the name of the tree
 			\param [in] reuseEventsWithinEnsemble sample with replacement but only replace events once each experiment has been generated
 			\param [in] reuseEventsWithinExperiment sample with immediate replacement
-		*/	
+		*/
 		void embedNegBkgnd(const TString& bgClass, const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE);
 
@@ -198,7 +198,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] reuseEventsWithinEnsemble sample with replacement but only replace events once each experiment has been generated
 			\param [in] reuseEventsWithinExperiment sample with immediate replacement
 			\param [in] useReweighting perform an accept/reject routine using the configured signal amplitude model based on the MC-truth DP coordinate
-		*/	
+		*/
 		void embedPosSignal(const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE,
                                 Bool_t useReweighting = kFALSE);
@@ -210,7 +210,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] treeName the name of the tree
 			\param [in] reuseEventsWithinEnsemble sample with replacement but only replace events once each experiment has been generated
 			\param [in] reuseEventsWithinExperiment sample with immediate replacement
-		*/	
+		*/
 		void embedPosBkgnd(const TString& bgClass, const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE);
 
@@ -248,7 +248,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		/*!
 			\param [in] dataFileName the name of the data file
 			\param [in] dataTreeName the name of the data tree
-		*/	
+		*/
 		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName );
 
 		//! Initialise the fit
@@ -278,38 +278,38 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Get the fit results and store them
 		/*!
 			\param [in] tablePrefixName prefix for the name of the output file
-		*/	
+		*/
 		virtual void finaliseFitResults(const TString& tablePrefixName);
 
 		//! Print the fit fractions, total DP rate and mean efficiency
 		/*!
 			\param [out] output the stream to which to print
-		*/	
+		*/
 		virtual void printFitFractions(std::ostream& output);
 
 		//! Print the asymmetries
 		/*!
 			\param [out] output the stream to which to print
-		*/	
+		*/
 		virtual void printAsymmetries(std::ostream& output);
 
 		//! Write the fit results in latex table format
 		/*!
 			\param [in] outputFile the name of the output file
-		*/	
+		*/
 		virtual void writeOutTable(const TString& outputFile);
 
 		//! Save the pdf Plots for all the resonances
 		/*!
 			\param [in] label  prefix for the file name to be saved
-		*/	
+		*/
 		virtual void savePDFPlots(const TString& label);
 
 		//! Save the pdf Plots for the sum of resonances of a given spin
 		/*!
 			\param [in] label  prefix for the file name to be saved
 			\param [in] spin   spin of the wave to be saved
-		*/	
+		*/
 		virtual void savePDFPlotsWave(const TString& label, const Int_t& spin);
 
 
@@ -321,31 +321,31 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Get the total likelihood for each event
 		/*!
 			\param [in] iEvt the event number
-		*/	
+		*/
 		virtual Double_t getTotEvtLikelihood(UInt_t iEvt);
-		
+
 		//! Calculate the signal and background likelihoods for the DP for a given event
 		/*!
 			\param [in] iEvt the event number
-		*/	
+		*/
 		virtual void getEvtDPLikelihood(UInt_t iEvt);
 
 		//! Calculate the SCF likelihood for the DP for a given event
 		/*!
 			\param [in] iEvt the event number
-		*/	
+		*/
 		virtual Double_t getEvtSCFDPLikelihood(UInt_t iEvt);
 
 		//! Determine the signal and background likelihood for the extra variables for a given event
 		/*!
 			\param [in] iEvt the event number
-		*/	
+		*/
 		virtual void getEvtExtraLikelihoods(UInt_t iEvt);
-		
+
 		//! Get the total number of events
 		/*!
 			\return the total number of events
-		*/	
+		*/
 		virtual Double_t getEventSum() const;
 
 		//! Set the fit parameters for the DP model
@@ -366,13 +366,13 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Calculate the CP-conserving and CP-violating fit fractions
 		/*!
 			\param [in] initValues is this before or after the fit
-		*/	
+		*/
 		void calcExtraFractions(Bool_t initValues = kFALSE);
 
 		//! Calculate the CP asymmetries
 		/*!
 			\param [in] initValues is this before or after the fit
-		*/	
+		*/
 		void calcAsymmetries(Bool_t initValues = kFALSE);
 
 		//! Define the length of the background vectors
@@ -387,7 +387,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Generate background event
 		/*!
 			\param [in] bgID ID number of the background class
-		*/	
+		*/
 		Bool_t generateBkgndEvent(UInt_t bgID);
 
 		//! Setup the required ntuple branches
@@ -400,20 +400,20 @@ class LauCPFitModel : public LauAbsFitModel {
 		/*!
 			\param [in] extraPdfs the list of extra PDFs
 			\param [in] embeddedData the embedded data sample
-		*/	
+		*/
 		void generateExtraPdfValues(LauPdfList* extraPdfs, LauEmbeddedData* embeddedData);
 
 		//! Store the MC truth info on the TM/SCF nature of the embedded signal event
 		/*!
 			\param [in] embeddedData the full simulation information
-		*/	
+		*/
  	        Bool_t storeSignalMCMatch(LauEmbeddedData* embeddedData);
 
 		//! Add sPlot branches for the extra PDFs
 		/*!
 			\param [in] extraPdfs the list of extra PDFs
 			\param [in] prefix the list of prefixes for the branch names
-		*/	
+		*/
 		void addSPlotNtupleBranches(const LauPdfList* extraPdfs, const TString& prefix);
 
 		//! Set the branches for the sPlot ntuple with extra PDFs
@@ -421,7 +421,7 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] extraPdfs the list of extra PDFs
 			\param [in] prefix the list of prefixes for the branch names
 			\param [in] iEvt the event number
-		*/	
+		*/
 		Double_t setSPlotNtupleBranchValues(LauPdfList* extraPdfs, const TString& prefix, UInt_t iEvt);
 
 		//! Update the signal events after Minuit sets background parameters
@@ -464,6 +464,27 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauIsobarDynamics* getNegSigModel() {return negSigModel_;}
 		LauIsobarDynamics* getPosSigModel() {return posSigModel_;}
 
+        //! Retrieve a named parameter from a TTree
+		/*!
+			\param [in] tree a reference to the tree from which to obtain the parameters
+			\param [in] name the name of the parameter to retrive
+		*/
+        Double_t getParamFromTree(TTree & tree, TString name);
+
+		//! Set a LauParameter to a given value
+		/*!
+			\param [in] param a pointer to the LauParameter to set
+			\param [in] val the value to set
+			\param [in] fix whether to fix the LauParameter or leave it floating
+		*/
+        void fixParam(LauParameter * param, Double_t val, Bool_t fix);
+
+		//! Set a vector of LauParameters according to the specified method
+		/*!
+			\param [in] params the vector of pointers to LauParameter to set values of
+		*/
+        void fixParams(std::vector<LauParameter *> params);
+
 	private:
 		//! Copy constructor (not implemented)
 		LauCPFitModel(const LauCPFitModel& rhs);
@@ -472,13 +493,13 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauCPFitModel& operator=(const LauCPFitModel& rhs);
 
 		//! The B- signal Dalitz plot model
-		LauIsobarDynamics *negSigModel_; 
+		LauIsobarDynamics *negSigModel_;
 
 		//! The B+ signal Dalitz plot model
 		LauIsobarDynamics *posSigModel_;
 
 		//! The B- background Dalitz plot models
-		LauBkgndDPModelList negBkgndDPModels_; 
+		LauBkgndDPModelList negBkgndDPModels_;
 
 		//! The B+ background Dalitz plot models
 		LauBkgndDPModelList posBkgndDPModels_;
@@ -490,19 +511,19 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauKinematics *posKinematics_;
 
 		//! The B- signal PDFs
-		LauPdfList negSignalPdfs_; 
+		LauPdfList negSignalPdfs_;
 
 		//! The B+ signal PDFs
 		LauPdfList posSignalPdfs_;
 
 		//! The B- SCF PDFs
-		LauPdfList negScfPdfs_; 
+		LauPdfList negScfPdfs_;
 
 		//! The B+ SCF PDFs
 		LauPdfList posScfPdfs_;
 
 		//! The B- background PDFs
-		LauBkgndPdfsList negBkgndPdfs_; 
+		LauBkgndPdfsList negBkgndPdfs_;
 
 		//! The B+ background PDFs
 		LauBkgndPdfsList posBkgndPdfs_;
@@ -526,10 +547,10 @@ class LauCPFitModel : public LauAbsFitModel {
 		std::vector<LauAbsCoeffSet*> coeffPars_;
 
 		//! The B- fit fractions
-		LauParArray negFitFrac_; 
+		LauParArray negFitFrac_;
 
 		//! The B+ fit fractions
-		LauParArray posFitFrac_; 
+		LauParArray posFitFrac_;
 
 		//! Fit B- fractions (uncorrected for the efficiency)
 		LauParArray negFitFracEffUnCorr_;
@@ -538,19 +559,19 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauParArray posFitFracEffUnCorr_;
 
 		//! The CP violating fit fraction
-		LauParArray CPVFitFrac_; 
+		LauParArray CPVFitFrac_;
 
 		//! The CP conserving fit fraction
 		LauParArray CPCFitFrac_;
 
 		//! The fit fraction asymmetries
-		std::vector<LauParameter> fitFracAsymm_; 
+		std::vector<LauParameter> fitFracAsymm_;
 
 		//! A_CP parameter
 		std::vector<LauParameter> acp_;
 
 		//! The mean efficiency for B- model
-		LauParameter negMeanEff_; 
+		LauParameter negMeanEff_;
 
 		//! The mean efficiency for B+ model
 		LauParameter posMeanEff_;
@@ -562,7 +583,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauParameter posDPRate_;
 
 		//! Signal yield
-		LauParameter* signalEvents_; 
+		LauParameter* signalEvents_;
 
 		//! Signal asymmetry
 		LauParameter* signalAsym_;
@@ -571,7 +592,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		Bool_t forceAsym_;
 
 		//! Background yield(s)
-		LauBkgndYieldList bkgndEvents_; 
+		LauBkgndYieldList bkgndEvents_;
 
 		//! Background asymmetries(s)
 		LauBkgndYieldList bkgndAsym_;
@@ -632,14 +653,14 @@ class LauCPFitModel : public LauAbsFitModel {
 
 		// Embedding full simulation events
 
-		//! The B- signal event tree 
-		LauEmbeddedData *negSignalTree_; 
-		
-		//! The B+ signal event tree 
+		//! The B- signal event tree
+		LauEmbeddedData *negSignalTree_;
+
+		//! The B+ signal event tree
 		LauEmbeddedData *posSignalTree_;
 
 		//! The B- background event tree
-		LauBkgndEmbDataList negBkgndTree_; 
+		LauBkgndEmbDataList negBkgndTree_;
 
 		//! The B+ background event tree
 		LauBkgndEmbDataList posBkgndTree_;
@@ -648,7 +669,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		Bool_t reuseSignal_;
 
 		//! Boolean to use reweighting for B-
-                Bool_t useNegReweighting_; 
+        Bool_t useNegReweighting_;
 
 		//! Boolean to use reweighting for B+
 		Bool_t usePosReweighting_;

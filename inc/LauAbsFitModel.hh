@@ -99,7 +99,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Switch on/off the Dalitz plot term in the Likelihood (allows fits to other quantities, e.g. B mass)
 		/*!
 			\param [in] usingDP the boolean flag
-		*/	
+		*/
 		void useDP(Bool_t usingDP) { usingDP_ = usingDP; }
 
 		//! Return the flag to store the status of using an sFit or not
@@ -109,7 +109,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		/*!
 			\param [in] sWeightBranchName name of the branch of the tree containing the sWeights
 			\param [in] scaleFactor scaling factor to get the uncertainties correct
-		*/	
+		*/
 		void doSFit( const TString& sWeightBranchName, Double_t scaleFactor = 1.0 );
 
 		//! Determine whether an extended maximum likelihood fit it being performed
@@ -118,7 +118,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Choice to perform an extended maximum likelihood fit
 		/*!
 			\param [in] emlFit boolean specifying whether or not to perform the EML
-		*/	
+		*/
 		void doEMLFit(Bool_t emlFit) {emlFit_ = emlFit;}
 
 		//! Determine whether Poisson smearing is enabled for the toy MC generation
@@ -127,7 +127,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Turn Poisson smearing (for the toy MC generation) on or off
 		/*!
 			\param [in] poissonSmear boolean specifying whether or not to do Poisson smearing
-		*/	
+		*/
 		void doPoissonSmearing(Bool_t poissonSmear) {poissonSmear_ = poissonSmear;}
 
 		//! Determine whether embedding of events is enabled in the generation
@@ -136,7 +136,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Turn on or off embedding of events in the generation
 		/*!
 			\param [in] enable boolean specifying whether to embed events
-		*/	
+		*/
 	        void enableEmbedding(Bool_t enable) {enableEmbedding_ = enable;}
 
 		//! Determine whether writing out of the latex table is enabled
@@ -145,7 +145,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Turn on or off the writing out of the latex table
 		/*!
 			\param [in] writeTable boolean specifying whether or not the latex table should be written out
-		*/	
+		*/
 		void writeLatexTable(Bool_t writeTable) {writeLatexTable_ = writeTable;}
 
 		//! save files containing graphs of the resonance's PDFs
@@ -154,16 +154,16 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Turn on or off the save of files containing graphs of the resonance's PDFs
 		/*!
 			\param [in] savePDF boolean specifying whether or not the save of files containing graphs of the resonance's PDFs
-		*/	
+		*/
 		void saveFilePDF(Bool_t savePDF) {savePDF_ = savePDF;}
 
 		//! Set up the sPlot ntuple
-		/*! 
+		/*!
 			\param [in] fileName the sPlot file name
 			\param [in] treeName the sPlot tree name
 			\param [in] storeDPEfficiency whether or not to store the efficiency information too
 			\param [in] verbosity define the level of output
-		*/	
+		*/
 		void writeSPlotData(const TString& fileName, const TString& treeName, Bool_t storeDPEfficiency, const TString& verbosity = "q");
 
 		//! Determine whether the sPlot data is to be written out
@@ -199,7 +199,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 			\param [in] nBkgndEvents contains the name, yield and option to fix the yield of the background
 
-		*/	
+		*/
 		virtual void setNBkgndEvents(LauAbsRValue* nBkgndEvents) = 0;
 
 		//! Set the DP amplitude coefficients
@@ -220,7 +220,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] mcFileName the file name where the toy sample will be stored
 			\param [in] tableFileName name of the output tex file
 			\param [in] poissonSmearing turn smearing on or off
-		*/	
+		*/
 		void compareFitData(UInt_t toyMCScale = 10, const TString& mcFileName = "fitToyMC.root",
 				const TString& tableFileName = "fitToyMCTable.tex", Bool_t poissonSmearing = kTRUE);
 
@@ -231,12 +231,12 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] dataTreeName the name of the tree containing the data
 			\param [in] histFileName the file name for the output histograms
 			\param [in] tableFileName the file name for the latex output file
-		*/	
+		*/
 		void run(const TString& applicationCode, const TString& dataFileName, const TString& dataTreeName,
 			 const TString& histFileName, const TString& tableFileName = "");
 
 		//! This function sets the parameter values from Minuit
-		/*! 
+		/*!
 			This function has to be public since it is called from the global FCN.
 			It should not be called otherwise!
 
@@ -246,11 +246,56 @@ class LauAbsFitModel : public LauSimFitSlave {
 		virtual void setParsFromMinuit(Double_t* par, Int_t npar);
 
 		//! Calculates the total negative log-likelihood
-		/*! 
+		/*!
 			This function has to be public since it is called from the global FCN.
 			It should not be called otherwise!
 		*/
 		virtual Double_t getTotNegLogLikelihood();
+
+		//! Set model parameters from a file
+		/*!
+			\param [in] fileName the name of the file with parameters to set
+			\param [in] treeName the name of the tree in the file corresponding to the parameters to set
+			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
+		*/
+        void setParametersFromFile(TString fileName, TString treeName, Bool_t fix);
+
+		//! Set model parameters from a given std::map
+		/*!
+
+			Only parameters named in the map are imported, all others are set to their values specified
+			in the model configuration.
+
+			\param [in] parameters map from parameter name to imported value
+			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
+		*/
+        void setParametersFromMap(std::map<std::string, Double_t> parameters, Bool_t fix);
+
+		//! Set named model parameters from a file
+		/*!
+
+			Identical to setParametersFromFile, but only import parameters named from parameters set.
+			All others are set to their values specified in the model configuration.
+
+			\param [in] fileName the name of the file with parameters to set
+			\param [in] treeName the name of the tree in the file corresponding to the parameters to set
+			\param [in] parameters the set of parameters to import from the file
+			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
+		*/
+        void setNamedParameters(TString fileName, TString treeName, std::set<std::string> parameters, Bool_t fix);
+
+		//! Set named model parameters from a given std::map, with fallback to those from a file
+		/*!
+
+			Parameters named in the map are imported with their specified values. All other parameters are set
+			to the values corresponding to the value in the given file.
+
+			\param [in] fileName the name of the file with parameters to set
+			\param [in] treeName the name of the tree in the file corresponding to the parameters to set
+			\param [in] parameters map from parameter name to imported value (override parameters form the file)
+			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
+		*/
+        void setParametersFileFallback(TString fileName, TString treeName, std::map<std::string, Double_t> parameters, Bool_t fix);
 
 	protected:
 
@@ -266,7 +311,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		typedef std::set<LauParameter*> LauParameterPSet;
 		//! List of parameters
 		typedef std::vector<LauParameter> LauParameterList;
-		//! A type to store background classes 
+		//! A type to store background classes
 		typedef std::map<UInt_t,TString> LauBkgndClassMap;
 
 		//! Clear the vectors containing fit parameters
@@ -276,19 +321,19 @@ class LauAbsFitModel : public LauSimFitSlave {
 		void clearExtraVarVectors();
 
 		//! Weighting - allows e.g. MC events to be weighted by the DP model
-		/*! 
+		/*!
 			\param [in] dataFileName the name of the data file
 			\param [in] dataTreeName the name of the tree containing the data
 		*/
 		virtual void weightEvents( const TString& dataFileName, const TString& dataTreeName ) = 0;
 
-		//! Generate toy MC 
+		//! Generate toy MC
 		/*!
 			\param [in] dataFileName the name of the file where the generated events are stored
 			\param [in] dataTreeName the name of the tree used to store the variables
 			\param [in] histFileName the name of the histogram output file (currently not used)
 			\param [in] tableFileNameBase the name the latex output file
-		*/	
+		*/
 		virtual void generate(const TString& dataFileName, const TString& dataTreeName, const TString& histFileName, const TString& tableFileNameBase);
 
 		//! The method that actually generates the toy MC events for the given experiment
@@ -299,11 +344,11 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 		//! Perform the total fit
 		/*!
-			\param [in] dataFileName the name of the data file 
+			\param [in] dataFileName the name of the data file
 			\param [in] dataTreeName the name of the tree containing the data
-			\param [in] histFileName the name of the histogram output file 
+			\param [in] histFileName the name of the histogram output file
 			\param [in] tableFileNameBase the name the of latex output file
-		*/	 
+		*/
 		void fit(const TString& dataFileName, const TString& dataTreeName, const TString& histFileName, const TString& tableFileNameBase);
 
 		//! Routine to perform the actual fit for a given experiment
@@ -319,20 +364,20 @@ class LauAbsFitModel : public LauSimFitSlave {
 		/*!
 			\param [in] mcFileName the file name where the toy sample will be stored
 			\param [in] tableFileName name of the output tex file
-		*/	
+		*/
 		void createFitToyMC(const TString& mcFileName, const TString& tableFileName);
 
 		//! Read in the data for the current experiment
 		/*!
 			\return the number of events read in
-		*/	
+		*/
 		virtual UInt_t readExperimentData();
 
 		//! Open the input file and verify that all required variables are present
 		/*!
 			\param [in] dataFileName the name of the input file
 			\param [in] dataTreeName the name of the input tree
-		*/	
+		*/
 		virtual Bool_t verifyFitData(const TString& dataFileName, const TString& dataTreeName);
 
 		//! Cache the input data values to calculate the likelihood during the fit
@@ -372,7 +417,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		/*!
 			\param [in] iStart the event number of the first event to be considered
 			\param [in] iEnd the event number of the final event to be considered
-		*/	
+		*/
 		Double_t getLogLikelihood( UInt_t iStart, UInt_t iEnd );
 
 		//! Calculate the penalty terms to the log likelihood from Gaussian constraints
@@ -390,7 +435,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Prints the values of all the fit variables for the specified event - useful for diagnostics
 		/*!
 			\param [in] iEvt the event number
-		*/	
+		*/
 		virtual void printEventInfo(UInt_t iEvt) const;
 
 		//! Same as printEventInfo, but printing out the values of the variables in the fit
@@ -403,13 +448,13 @@ class LauAbsFitModel : public LauSimFitSlave {
 		/*!
 			\param [in] histFileName the file name for the output histograms
 			\param [in] tableFileName the file name for the latex output file
-		*/	
+		*/
 		virtual void setupResultsOutputs( const TString& histFileName, const TString& tableFileName );
 
 		//! Package the initial fit parameters for transmission to the master
 		/*!
 			\param [out] array the array to be filled with the LauParameter objects
-		*/	
+		*/
 		virtual void prepareInitialParArray( TObjArray& array );
 
 		//! Perform all finalisation actions
@@ -422,32 +467,32 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] parsFromMaster the parameters at the fit minimum
 			\param [in] covMat the fit covariance matrix
 			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
-		*/	
+		*/
 		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
 
 		//! Write the results of the fit into the ntuple
 		/*!
 			\param [in] tableFileName the structure containing the results of the fit
-		*/	
+		*/
 		virtual void finaliseFitResults(const TString& tableFileName) = 0;
 
 		//! Save the pdf Plots for all the resonances of experiment number fitExp
 		/*!
 			\param [in] label  prefix for the file name to be saved
-		*/	
+		*/
 		virtual void savePDFPlots(const TString& label) = 0;
 
 		//! Save the pdf Plots for the sum of ressonances correspondint to "sin" of experiment number fitExp
 		/*!
 			\param [in] label  prefix for the file name to be saved
 			\param [in] spin   spin of the wave to be saved
-		*/	
+		*/
 		virtual void savePDFPlotsWave(const TString& label, const Int_t& spin) = 0;
 
 		//! Write the latex table
-		/*! 
+		/*!
 			\param [in] outputFile the name of the output file
-		*/	
+		*/
 		virtual void writeOutTable(const TString& outputFile) = 0;
 
 		//! Store the per-event likelihood values
@@ -463,24 +508,24 @@ class LauAbsFitModel : public LauSimFitSlave {
 		virtual void setupBkgndVectors() = 0;
 
 		//! Check if the given background class is in the list
-		/*! 
+		/*!
 			\param [in] className the name of the class to check
 			\return true or false
-		*/	
+		*/
 		Bool_t validBkgndClass( const TString& className ) const;
 
 		//! The number assigned to a background class
 		/*!
 			\param [in] className the name of the class to check
 			\return the background class ID number
-		*/	
+		*/
 		UInt_t bkgndClassID( const TString& className ) const;
 
 		//! Get the name of a background class from the number
 		/*!
 			\param [in] classID the ID number of the background class
 			\return the class name
-		*/	
+		*/
 		const TString& bkgndClassName( UInt_t classID ) const;
 
 		//! Setup the generation ntuple branches
@@ -489,41 +534,41 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Add a branch to the gen tree for storing an integer
 		/*!
 			\param [in] name the name of the branch
-		*/	
+		*/
 		virtual void addGenNtupleIntegerBranch(const TString& name);
 
 		//! Add a branch to the gen tree for storing a double
 		/*!
 			\param [in] name the name of the branch
-		*/	
+		*/
 		virtual void addGenNtupleDoubleBranch(const TString& name);
 
-		//! Set the value of an integer branch in the gen tree 
-		/*! 
+		//! Set the value of an integer branch in the gen tree
+		/*!
 			\param [in] name the name of the branch
 			\param [in] value the value to be stored
-		*/	
+		*/
 		virtual void setGenNtupleIntegerBranchValue(const TString& name, Int_t value);
 
 		//! Set the value of a double branch in the gen tree
-		/*! 
+		/*!
 			\param [in] name the name of the branch
 			\param [in] value the value to be stored
-		*/	
+		*/
 		virtual void setGenNtupleDoubleBranchValue(const TString& name, Double_t value);
 
 		//! Get the value of an integer branch in the gen tree
-		/*! 
+		/*!
 			\param [in] name the name of the branch
 			\return the value of the parameter
-		*/	
+		*/
 		virtual Int_t getGenNtupleIntegerBranchValue(const TString& name) const;
 
 		//! Get the value of a double branch in the gen tree
-		/*! 
+		/*!
 			\param [in] name the name of the branch
 			\return the value of the parameter
-		*/	
+		*/
 		virtual Double_t getGenNtupleDoubleBranchValue(const TString& name) const;
 
 		//! Fill the gen tuple branches
@@ -535,27 +580,27 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Add a branch to the sPlot tree for storing an integer
 		/*!
 			\param [in] name the name of the branch
-		*/	
+		*/
 		virtual void addSPlotNtupleIntegerBranch(const TString& name);
 
 		//! Add a branch to the sPlot tree for storing a double
 		/*!
 			\param [in] name the name of the branch
-		*/	
+		*/
 		virtual void addSPlotNtupleDoubleBranch(const TString& name);
 
-		//! Set the value of an integer branch in the sPlot tree 
-		/*! 
+		//! Set the value of an integer branch in the sPlot tree
+		/*!
 			\param [in] name the name of the branch
 			\param [in] value the value to be stored
-		*/	
+		*/
 		virtual void setSPlotNtupleIntegerBranchValue(const TString& name, Int_t value);
 
-		//! Set the value of a double branch in the sPlot tree 
-		/*! 
+		//! Set the value of a double branch in the sPlot tree
+		/*!
 			\param [in] name the name of the branch
 			\param [in] value the value to be stored
-		*/	
+		*/
 		virtual void setSPlotNtupleDoubleBranchValue(const TString& name, Double_t value);
 
 		//! Fill the sPlot tuple
@@ -580,10 +625,10 @@ class LauAbsFitModel : public LauSimFitSlave {
 		virtual Bool_t scfDPSmear() const = 0;
 
 		//! Add parameters of the PDFs in the list to the list of all fit parameters
-		/*! 
-			\param [in] pdfList a list of Pdfs 
+		/*!
+			\param [in] pdfList a list of Pdfs
 			\return the number of parameters added
-		*/	
+		*/
 		UInt_t addFitParameters(LauPdfList& pdfList);
 
 		//! Add parameters to the list of Gaussian constrained parameters
@@ -593,39 +638,39 @@ class LauAbsFitModel : public LauSimFitSlave {
 		/*!
 			\param [in] pdfList a list of Pdfs
 			\param [in] fout the output stream to write to
-		*/	
+		*/
 		void printFitParameters(const LauPdfList& pdfList, std::ostream& fout) const;
 
 		//! Update the fit parameters for all PDFs in the list
-		/*! 
-			\param [in] pdfList a list of Pdfs 
-		*/	
+		/*!
+			\param [in] pdfList a list of Pdfs
+		*/
 		void updateFitParameters(LauPdfList& pdfList);
 
 		//! Have all PDFs in the list cache the data
-		/*! 
+		/*!
 			\param [in] pdfList the list of pdfs
 			\param [in] theData the data from the fit
-		*/	
+		*/
 		void cacheInfo(LauPdfList& pdfList, const LauFitDataTree& theData);
 
 		//! Calculate the product of the per-event likelihoods of the PDFs in the list
 		/*!
 			\param [in] pdfList the list of pdfs
 			\param [in] iEvt the event number
-		*/	
+		*/
 		Double_t prodPdfValue(LauPdfList& pdfList, UInt_t iEvt);
 
 		//! Do any of the PDFs have a dependence on the DP?
 		/*!
-			\return the flag to indicated if there is a DP dependence 
-		*/	
+			\return the flag to indicated if there is a DP dependence
+		*/
 		Bool_t pdfsDependOnDP() const {return pdfsDependOnDP_;}
 
 		//! Do any of the PDFs have a dependence on the DP?
 		/*!
-			\param [in] dependOnDP the flag to indicated if there is a DP dependence 
-		*/	
+			\param [in] dependOnDP the flag to indicated if there is a DP dependence
+		*/
 		void pdfsDependOnDP(Bool_t dependOnDP) { pdfsDependOnDP_ = dependOnDP; }
 
 		//! Const access the fit variables
@@ -663,6 +708,25 @@ class LauAbsFitModel : public LauSimFitSlave {
 		//! Access the data store
 		LauFitDataTree* fitData() {return inputFitData_;}
 
+		//! Imported parameters file name
+		TString fixParamFileName_;
+
+		//! Imported parameters tree name
+        TString fixParamTreeName_;
+
+		//! Map from imported parameter name to value
+        std::map<std::string, Double_t> fixParamMap_;
+
+		//! Imported parameter names
+        std::set<std::string> fixParamNames_;
+
+		//! Whether to fix the loaded parameters (kTRUE) or leave them floating (kFALSE)
+        Bool_t fixParams_;
+
+		//! The set of parameters that are imported (either from a file or by value) and not
+		//  set to be fixed in the fit. In addition to those from fixParamNames_, these
+		//   include those imported from a file
+		std::set<LauParameter *> allImportedFreeParams_;
 	private:
 		//! Copy constructor (not implemented)
 		LauAbsFitModel(const LauAbsFitModel& rhs);
@@ -673,25 +737,25 @@ class LauAbsFitModel : public LauSimFitSlave {
 		// Various control booleans
 
 		//! Option to make toy from 1st successful experiment
-		Bool_t compareFitData_; 
+		Bool_t compareFitData_;
 		//! Option to output a .C file of PDF's
-		Bool_t savePDF_; 
+		Bool_t savePDF_;
 		//! Option to output a Latex format table
-		Bool_t writeLatexTable_; 
+		Bool_t writeLatexTable_;
 		//! Option to write sPlot data
-		Bool_t writeSPlotData_; 
+		Bool_t writeSPlotData_;
 		//! Option to store DP efficiencies in the sPlot ntuple
-		Bool_t storeDPEff_; 
+		Bool_t storeDPEff_;
 		//! Option to randomise the initial values of the fit parameters
-		Bool_t randomFit_; 
+		Bool_t randomFit_;
 		//! Option to perform an extended ML fit
-		Bool_t emlFit_; 
+		Bool_t emlFit_;
 		//! Option to perform Poisson smearing
-		Bool_t poissonSmear_; 
+		Bool_t poissonSmear_;
 		//! Option to enable embedding
-		Bool_t enableEmbedding_; 
+		Bool_t enableEmbedding_;
 		//! Option to include the DP as part of the fit
-		Bool_t usingDP_; 
+		Bool_t usingDP_;
 		//! Option to state if pdfs depend on DP position
 		Bool_t pdfsDependOnDP_;
 
@@ -711,7 +775,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 		// Input data and output ntuple
 
-		//! The input data 
+		//! The input data
 		LauFitDataTree* inputFitData_;
 		//! The generated ntuple
 		LauGenNtuple* genNtuple_;
@@ -727,7 +791,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 		// sFit related variables
 
-		//! Option to perfom the sFit 
+		//! Option to perfom the sFit
 		Bool_t doSFit_;
 		//! The name of the sWeight branch
 		TString sWeightBranchName_;
@@ -738,8 +802,8 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 		// Fit timers
 
-		//! The fit timer 
-		TStopwatch timer_; 
+		//! The fit timer
+		TStopwatch timer_;
 		//! The total fit timer
 		TStopwatch cumulTimer_;
 
@@ -748,8 +812,8 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 		// Comparison toy MC related variables
 
-		//! The output file name for Toy MC 
-		TString fitToyMCFileName_; 
+		//! The output file name for Toy MC
+		TString fitToyMCFileName_;
 		//! The output table name for Toy MC
 		TString fitToyMCTableName_;
 		//! The scaling factor (toy vs data statistics)
@@ -760,9 +824,9 @@ class LauAbsFitModel : public LauSimFitSlave {
 		// sPlot related variables
 
 		//! The name of the sPlot file
-		TString sPlotFileName_; 
+		TString sPlotFileName_;
 		//! The name of the sPlot tree
-		TString sPlotTreeName_; 
+		TString sPlotTreeName_;
 		//! Control the verbosity of the sFit
 		TString sPlotVerbosity_;
 

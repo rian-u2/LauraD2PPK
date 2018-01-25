@@ -264,16 +264,9 @@ void LauIsobarDynamics::findIntegralsToBeRecalculated()
 	}
 }
 
-void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
+void LauIsobarDynamics::collateResonanceParameters()
 {
-	// Check whether we have a valid set of integration constants for
-	// the normalisation of the signal likelihood function.
-	this->initialiseVectors();
-
-	// Mark the DP integrals as undetermined
-	integralsDone_ = kFALSE;
-
-	// Initialise all resonance models
+        // Initialise all resonance models
 	resonancePars_.clear();
 	resonanceParValues_.clear();
 	resonanceParResIndex_.clear();
@@ -349,6 +342,18 @@ void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
 
 		++resIndex;
 	}
+}
+
+void LauIsobarDynamics::initialise(const std::vector<LauComplex>& coeffs)
+{
+	// Check whether we have a valid set of integration constants for
+	// the normalisation of the signal likelihood function.
+	this->initialiseVectors();
+
+	// Mark the DP integrals as undetermined
+	integralsDone_ = kFALSE;
+
+	this->collateResonanceParameters();
 
 	if ( resonancePars_.empty() ) {
 		recalcNormalisation_ = kFALSE;

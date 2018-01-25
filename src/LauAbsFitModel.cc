@@ -456,8 +456,8 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 
 		// Now the sub-classes must implement whatever they need to do
 		// to cache any more input fit data they need in order to
-		// calculate the likelihoods during the fit. 
-		// They need to use the inputFitData_ tree as input. For example, 
+		// calculate the likelihoods during the fit.
+		// They need to use the inputFitData_ tree as input. For example,
 		// inputFitData_ contains m13Sq and m23Sq. The appropriate fit model
 		// then caches the resonance dynamics for the signal model, as
 		// well as the background likelihood values in the Dalitz plot
@@ -610,7 +610,7 @@ void LauAbsFitModel::calculateSPlotData()
 	}
 }
 
-void LauAbsFitModel::compareFitData(UInt_t toyMCScale, const TString& mcFileName, const TString& tableFileName, Bool_t poissonSmearing) 
+void LauAbsFitModel::compareFitData(UInt_t toyMCScale, const TString& mcFileName, const TString& tableFileName, Bool_t poissonSmearing)
 {
 	compareFitData_ = kTRUE;
 	fitToyMCScale_ = toyMCScale;
@@ -792,7 +792,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 			this->printEventInfo(iEvt);
 			this->printVarsInfo();	//Write the values of the floated variables for which the likelihood is zero
 			break;
-		}	
+		}
 	}
 
 	if (!ok) {
@@ -885,7 +885,7 @@ void LauAbsFitModel::addConParameters()
 	for ( std::vector<StoreConstraints>::const_iterator iter = storeCon.begin(); iter != storeCon.end(); ++iter ) {
 		const std::vector<TString>& names = (*iter).conPars_;
 		std::vector<LauParameter*> params;
-		for ( std::vector<TString>::const_iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
+		for ( std::vector<TString>::const_iterator iternames = names.begin(); iternames != names.end(); ++iternames ) {
 			for ( LauParameterPList::const_iterator iterfit = fitVars_.begin(); iterfit != fitVars_.end(); ++iterfit ) {
 				if ( (*iternames) == (*iterfit)->name() ){
 					params.push_back(*iterfit);
@@ -909,7 +909,7 @@ void LauAbsFitModel::addConParameters()
 			std::cout << "                                         : Parameter: " << (*iterparam)->name() << std::endl;
 		}
 	}
-	
+
 }
 
 void LauAbsFitModel::updateFitParameters(LauPdfList& pdfList)
@@ -1056,3 +1056,31 @@ UInt_t LauAbsFitModel::readExperimentData()
 	return nEvent;
 }
 
+void LauAbsFitModel::setParametersFromFile(TString fileName, TString treeName, Bool_t fix)
+{
+    this->fixParamFileName_ = fileName;
+    this->fixParamTreeName_ = treeName;
+    this->fixParams_ = fix;
+}
+
+void LauAbsFitModel::setParametersFromMap(std::map<std::string, Double_t> parameters, Bool_t fix)
+{
+    this->fixParamMap_ = parameters;
+    this->fixParams_ = fix;
+}
+
+void LauAbsFitModel::setNamedParameters(TString fileName, TString treeName, std::set<std::string> parameters, Bool_t fix)
+{
+    this->fixParamFileName_ = fileName;
+    this->fixParamTreeName_ = treeName;
+    this->fixParamNames_ = parameters;
+    this->fixParams_ = fix;
+}
+
+void LauAbsFitModel::setParametersFileFallback(TString fileName, TString treeName, std::map<std::string, Double_t> parameters, Bool_t fix)
+{
+    this->fixParamFileName_ = fileName;
+    this->fixParamTreeName_ = treeName;
+    this->fixParamMap_ = parameters;
+    this->fixParams_ = fix;
+}

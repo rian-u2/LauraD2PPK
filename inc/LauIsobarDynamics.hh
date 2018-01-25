@@ -430,6 +430,13 @@ class LauIsobarDynamics {
 		*/
 		void updateCoeffs(const std::vector<LauComplex>& coeffs);
 
+                //! Collate the resonance parameters to initialise (or re-initialise) the model
+		/*!
+		    NB: This has been factored out of the initialise() method to allow for use in the
+                    importation of parameters in LauAbsFitModel
+		*/
+                void collateResonanceParameters();
+
 		//! Set the helicity flip flag for new amplitude components
 		/*!
 		    \param [in] boolean the helicity flip flag

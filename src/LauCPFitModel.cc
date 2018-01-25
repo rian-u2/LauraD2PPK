@@ -201,7 +201,7 @@ void LauCPFitModel::setNBkgndEvents( LauAbsRValue* nBkgndEvents )
 	if ( nBkgndEvents == 0 ) {
 		std::cerr << "ERROR in LauCPFitModel::setNBgkndEvents : The background yield LauParameter pointer is null." << std::endl;
 		gSystem->Exit(EXIT_FAILURE);
-	} 
+	}
 
 	if ( ! this->validBkgndClass( nBkgndEvents->name() ) ) {
 		std::cerr << "ERROR in LauCPFitModel::setNBkgndEvents : Invalid background class \"" << nBkgndEvents->name() << "\"." << std::endl;
@@ -517,6 +517,27 @@ void LauCPFitModel::initialise()
 			gSystem->Exit(EXIT_FAILURE);
 		}
 
+        if( !this->fixParamFileName_.IsNull() || !this->fixParamMap_.empty() ) {
+            std::vector<LauAbsCoeffSet*>::iterator itr;
+
+            // Set coefficients
+
+            std::vector<LauParameter *> params;
+            for (itr = coeffPars_.begin(); itr!= coeffPars_.end(); itr++) {
+                std::vector<LauParameter*> p = (*itr)->getParameters();
+                params.insert(params.end(), p.begin(), p.end());
+            }
+
+            this->fixParams(params);
+
+            // Set resonance parameters (if they exist)
+
+            negSigModel_->collateResonanceParameters();
+            posSigModel_->collateResonanceParameters();
+
+            this->fixParams(negSigModel_->getFloatingParameters());
+            this->fixParams(posSigModel_->getFloatingParameters());
+        }
 
 		// From the initial parameter values calculate the coefficients
 		// so they can be passed to the signal model
@@ -1195,7 +1216,7 @@ void LauCPFitModel::finaliseFitResults(const TString& tablePrefixName)
 	// Fill the data into ntuple
 	ntuple->updateFitNtuple();
 
-	// Print out the partial fit fractions, phases and the 
+	// Print out the partial fit fractions, phases and the
 	// averaged efficiency, reweighted by the dynamics (and anything else)
 	if (this->writeLatexTable()) {
 		TString sigOutFileName(tablePrefixName);
@@ -1371,8 +1392,25 @@ void LauCPFitModel::randomiseInitFitPars()
 	// Only randomise those parameters that are not fixed!
 	std::cout << "INFO in LauCPFitModel::randomiseInitFitPars : Randomising the initial fit magnitudes and phases of the components..." << std::endl;
 
-	for (UInt_t i = 0; i < nSigComp_; i++) {
-		coeffPars_[i]->randomiseInitValues();
+	if (this->fixParamFileName_.IsNull() && this->fixParamMap_.empty()) {
+		// No params are imported - randomise as normal
+		for (UInt_t i = 0; i < nSigComp_; i++) {
+			coeffPars_[i]->randomiseInitValues();
+		}
+	} else {
+		// Only randomise those that are not imported (i.e., not found in allImportedFreeParams_)
+		// by temporarily fixing all imported parameters, and then freeing those not set to be fixed when imported.
+		// Convoluted, but beats changing the behaviour of functions that call checkInitFitParams or the coeffSet
+		// itself.
+
+		for (auto p : allImportedFreeParams_) { p->fixed(kTRUE); }
+
+		for (UInt_t i = 0; i < nSigComp_; i++) {
+			coeffPars_[i]->randomiseInitValues();
+		}
+
+		for (auto p : allImportedFreeParams_) { p->fixed(kFALSE); }
+
 	}
 }
 
@@ -1506,7 +1544,7 @@ Bool_t LauCPFitModel::genExpt()
 					this->setGenNtupleIntegerBranchValue( bkgndClassNamesGen[iBkgnd], 0 );
 				}
 				genOK = this->generateSignalEvent();
-				if ( curEvtCharge_ > 0 ){ 
+				if ( curEvtCharge_ > 0 ){
 					this->setGenNtupleDoubleBranchValue( "efficiency", posSigModel_->getEvtEff() );
 				} else {
 					this->setGenNtupleDoubleBranchValue( "efficiency", negSigModel_->getEvtEff() );
@@ -1677,7 +1715,7 @@ Bool_t LauCPFitModel::generateSignalEvent()
 				// as the embedded data.
 				genOK = embeddedData->getReweightedEvent(model);
 			} else {
-				// Just get the information of a (randomly) selected event in the 
+				// Just get the information of a (randomly) selected event in the
 				// embedded data
 				embeddedData->getEmbeddedEvent(kinematics);
 			}
@@ -2103,7 +2141,7 @@ void LauCPFitModel::appendBinCentres( LauFitDataTree* inputData )
 	// minus the total number of events corresponding to the number of the histogram for that
 	// given true bin in the LauScfMap object. (What this means is that when Laura is provided with
 	// the LauScfMap object by the user, it's the latter who has to make sure that it contains the
-	// right number of histograms and in exactly the right order!) 
+	// right number of histograms and in exactly the right order!)
 
 	// Get the x and y co-ordinates of the bin centres
 	std::vector<Double_t> binCentresXCoords;
@@ -2412,7 +2450,7 @@ void LauCPFitModel::getEvtExtraLikelihoods(UInt_t iEvt)
 	}
 }
 
-void LauCPFitModel::updateCoeffs() 
+void LauCPFitModel::updateCoeffs()
 {
 	negCoeffs_.clear(); posCoeffs_.clear();
 	negCoeffs_.reserve(nSigComp_); posCoeffs_.reserve(nSigComp_);
@@ -2871,7 +2909,7 @@ void LauCPFitModel::storePerEvtLlhds()
 }
 
 void LauCPFitModel::embedNegSignal(const TString& fileName, const TString& treeName,
-		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment, 
+		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
 		Bool_t useReweighting)
 {
 	if (negSignalTree_) {
@@ -3080,7 +3118,7 @@ void LauCPFitModel::savePDFPlots(const TString& label)
    std::cout << "LauCPFitModel::plot" << std::endl;
 //	((LauIsobarDynamics*)negSigModel_)->plot();
 
-   
+
 
    //Double_t minm13 = negSigModel_->getKinematics()->getm13Min();
    Double_t minm13 = 0.0;
@@ -3232,10 +3270,10 @@ void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
 	UInt_t nAmp = negSigModel_->getnCohAmp();
 
 	Int_t count=0;
-	for (Int_t i=0; i<n13; i++) 
+	for (Int_t i=0; i<n13; i++)
 	{
 		s13 = mins13 + i*delta13;
-		for (Int_t j=0; j<n23; j++) 
+		for (Int_t j=0; j<n23; j++)
 		{
 			s23 = mins23 + j*delta23;
 			if (negSigModel_->getKinematics()->withinDPLimits2(s23, s13))
@@ -3261,7 +3299,7 @@ void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
 
 				negChPdf = negChAmp.abs2();
 				posChPdf = posChAmp.abs2();
-				
+
 				negDt->SetPoint(count,s23,s13,negChPdf); // s23=sHigh, s13 = sLow
 				posDt->SetPoint(count,s23,s13,posChPdf); // s23=sHigh, s13 = sLow
 				acpDt->SetPoint(count,s23,s13, negChPdf - posChPdf); // s23=sHigh, s13 = sLow
@@ -3298,9 +3336,108 @@ void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
 
 }
 
+Double_t LauCPFitModel::getParamFromTree(TTree & tree, TString name)
+{
+    if ( tree.FindBranch(name) ) {
+        Double_t val;
+
+        tree.SetBranchAddress(name, &val);
+        tree.GetEntry(0);
+
+        return val;
+    } else {
+        std::cout << "ERROR in LauCPFitModel::getParamFromTree : Branch name " + name + " not found in parameter file!" << std::endl;
+    }
+
+    return -1.1;
+}
+
+void LauCPFitModel::fixParam(LauParameter * param, Double_t val, Bool_t fix)
+{
+    std::cout << "INFO in LauCPFitModel::fixParam : Setting " << param->name() << " to " << val << std::endl;
+
+    param->value(val);
+    param->genValue(val);
+    param->initValue(val);
+
+    if (fix) {
+        param->fixed(kTRUE);
+    } else {
+		// Add parameter name to list to indicate that this should not be randomised by randomiseInitFitPars
+		// (otherwise only those that are fixed are not randomised)
+
+		allImportedFreeParams_.insert(param);
+	}
+}
+
+void LauCPFitModel::fixParams(std::vector<LauParameter *> params)
+{
+    Bool_t fix = this->fixParams_;
+
+    // TODO: Allow some parameters to be fixed and some to remain floating (but initialised)
+
+    if (!this->fixParamFileName_.IsNull()) {
+
+        // Take param values from a file
+
+        TFile * paramFile = TFile::Open(this->fixParamFileName_, "READ");
+        TTree * paramTree = dynamic_cast<TTree *>(paramFile->Get(this->fixParamTreeName_));
+
+        if (!paramTree) {
+            std::cout << "ERROR in LauCPFitModel::fixParams : Tree '" + this->fixParamTreeName_ + "' not found in parameter file!" << std::endl;
+            return;
+        }
+
+        if (!this->fixParamNames_.empty()) {
+
+            // Fix params from file, according to vector of names
+
+            std::set<std::string>::iterator itrName;
+            std::vector<LauParameter *>::iterator itr;
+
+            for(itr = params.begin(); itr != params.end(); itr++) {
+                if ( (itrName = this->fixParamNames_.find((*itr)->name().Data()))  != this->fixParamNames_.end() ) {
+                    this->fixParam(*itr, this->getParamFromTree(*paramTree, *itrName), fix);
+                }
+            }
 
 
+        } else {
+
+            // Fix some (unspecified) parameters from file, prioritising the map (if it exists)
+
+            std::vector<LauParameter *>::iterator itr;
+
+            for(itr = params.begin(); itr != params.end(); itr++) {
+
+                TString name = (*itr)->name();
+
+                std::map<std::string, Double_t>::iterator nameValItr;
+
+                if ( !this->fixParamMap_.empty() && (nameValItr = this->fixParamMap_.find(name.Data())) != this->fixParamMap_.end() ) {
+                    this->fixParam(*itr, nameValItr->second, fix);
+                } else {
+                    this->fixParam(*itr, this->getParamFromTree(*paramTree, name), fix);
+                }
+
+            }
+
+        } // Vector of names?
+
+    } else {
+
+        // Fix param names fom map, leave others floating
+
+        std::vector<LauParameter *>::iterator itr;
+        std::map<std::string, Double_t>::iterator nameValItr;
+
+        for(itr = params.begin(); itr != params.end(); itr++) {
+            if ( (nameValItr = this->fixParamMap_.find((*itr)->name().Data())) != this->fixParamMap_.end() ) {
+                this->fixParam(*itr, nameValItr->second, fix);
+            }
+        }
+
+    }
 
 
-
-
+}

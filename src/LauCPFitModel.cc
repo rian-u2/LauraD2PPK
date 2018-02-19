@@ -1399,7 +1399,8 @@ void LauCPFitModel::randomiseInitFitPars()
 		}
 	} else {
 		// Only randomise those that are not imported (i.e., not found in allImportedFreeParams_)
-		// by temporarily fixing all imported parameters, and then freeing those not set to be fixed when imported.
+		// by temporarily fixing all imported parameters, and then freeing those not set to be fixed when imported,
+	        // except those that are previously set to be fixed anyhow.
 		// Convoluted, but beats changing the behaviour of functions that call checkInitFitParams or the coeffSet
 		// itself.
 
@@ -3359,15 +3360,16 @@ void LauCPFitModel::fixParam(LauParameter * param, Double_t val, Bool_t fix)
     param->value(val);
     param->genValue(val);
     param->initValue(val);
-
+    
     if (fix) {
         param->fixed(kTRUE);
-    } else {
+    } else if (!param->fixed()){
 		// Add parameter name to list to indicate that this should not be randomised by randomiseInitFitPars
-		// (otherwise only those that are fixed are not randomised)
+		// (otherwise only those that are fixed are not randomised).
+                // This is only done to those that are not already fixed (see randomiseInitFitPars).
 
 		allImportedFreeParams_.insert(param);
-	}
+    }
 }
 
 void LauCPFitModel::fixParams(std::vector<LauParameter *> params)

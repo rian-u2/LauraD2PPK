@@ -58,7 +58,8 @@ LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance:
     useDenom_(kTRUE),
     doneFirstInit_(kFALSE),
     rhoRes_(0),
-    omegaRes_(0)
+    omegaRes_(0),
+    whichAmpSq_(0)
 {
 
     // Create the rho and omega lineshapes depending on the resonance type enumeration.

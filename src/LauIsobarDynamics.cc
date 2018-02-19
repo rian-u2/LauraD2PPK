@@ -2122,7 +2122,7 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 	// To prevent unwanted effects, this has to be manually turned on, with the
 	// assumption that the first two components are rho and rho_COPY in a LauCPFitModel
 
-	if (this->calculateRhoOmegaFitFractions_) {
+	if (this->calculateRhoOmegaFitFractions_ && !init) {
 
 		int omegaID = 0;
 		int storeID = 1;

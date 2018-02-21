@@ -240,10 +240,21 @@ void LauKinematics::calcParentFrameMomenta()
 void LauKinematics::calcHelicities()
 {
 	// Calculate helicity angle cosines, given m12Sq, m13Sq and m23Sq.
-	// The notation is confusing for the helicity angle cosines:
-	// cij is helicity angle for the pair which is made from tracks i and j.
-	// It is the angle between tracks i and k in the ij rest frame  
-	// Make sure that setMassSqVars is run first.
+	// cij_ is the cosine of the helicity angle in the rest frame of the
+	// system of particles i and j.
+	// It is (but note the caveat below) the angle between tracks i and k
+	// in the ij rest frame with indices permuted cyclically.
+	// However, it is important to note that it is not exactly a cyclic
+	// permutation (there is a special treatment for c23 inside the cFromM
+	// function) for reasons of preserving the symmetry about m13=m23 for
+	// symmetric final states.
+	// The precise definitions are:
+	// theta12 is defined as the angle between 1&3 in the rest frame of 1&2
+	// theta23 is defined as the angle between 3&1 in the rest frame of 2&3
+	// theta13 is defined as the angle between 3&2 in the rest frame of 1&3
+	//
+	// It is a prerequisite that all mij_ and mijSq_ variables be correctly set.
+
 	Int_t zero(0), one(1), two(2);
 
 	c12_ = cFromM(m12Sq_, m13Sq_, m12_, zero, one, two);
@@ -258,8 +269,8 @@ void LauKinematics::calcHelicities()
 Double_t LauKinematics::cFromM(const Double_t mijSq, const Double_t mikSq, const Double_t mij, const Int_t i, const Int_t j, const Int_t k) const
 {
 	// Routine to calculate the cos(helicity) variables from the masses of the particles.
-	// cij is helicity angle for the pair which is made from tracks i and j.
-	// It is the angle between tracks i and k in the ij rest frame.
+	// (See comment in LauKinematics::calcHelicities for futher information.)
+
 	Double_t EiCmsij = (mijSq - mSq_[j] + mSq_[i])/(2.0*mij);
 	Double_t EkCmsij = (mParentSq_ - mijSq - mSq_[k])/(2.0*mij);
 

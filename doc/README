@@ -16,6 +16,301 @@ This C++ version was originally developed by John Back and is now mainly
 developed by Tom Latham with continuting contributions from John Back and
 others.
 
+			Structure of the Package
+			------------------------
+
+The package consists of the following directories and files:
+
+.
+├── Doxyfile - configuration file for building Doxygen documentation
+├── Makefile - GNU make configuration file for building the Laura++ (shared) library
+├── doc - directory containing documentation-related files
+│   ├── LICENSE-2.0 - the Apache License, Version 2.0
+│   ├── README - this README file
+│   ├── mainpage.dox - front page of the Doxygen documents
+│   └── release.notes - history of commits to the package
+├── examples - directory containing code examples and their associated data files and job scripts
+│   ├── B3piKMNoAdler.dat
+│   ├── B3piKMPoles.dat
+│   ├── B3piKMSVPs.dat
+│   ├── B3piKMatrixCoeff.dat
+│   ├── B3piKMatrixMassProj.cc
+│   ├── B3piKMatrixPlots.cc
+│   ├── CalcChiSq.cc
+│   ├── CalcChiSq.hh
+│   ├── CalcChiSqMain.cc
+│   ├── DToKspipiKMatrixCoeff.dat
+│   ├── FOCUSD3pi.dat
+│   ├── GenFit3K.cc
+│   ├── GenFit3KS.cc
+│   ├── GenFit3pi.cc
+│   ├── GenFit3pi.py
+│   ├── GenFitBelleCPKpipi.cc
+│   ├── GenFitDs2KKpi.cc
+│   ├── GenFitEFKLLM.cc
+│   ├── GenFitKpipi.cc
+│   ├── GenFitNoDP.cc
+│   ├── GenFitNoDPMultiDim.cc
+│   ├── KMatrixDto3pi.cc
+│   ├── KMatrixExample.cc
+│   ├── LauKMatrixCoeff.dat
+│   ├── LauKMatrixCoeff2.dat
+│   ├── Makefile - GNU make configuration file for building the code examples
+│   ├── Master.cc
+│   ├── MergeDataFiles.cc
+│   ├── MergeDataFiles.hh
+│   ├── MergeDataFilesMain.cc
+│   ├── PlotKMatrixTAmp.cc
+│   ├── PlotResults.cc
+│   ├── ResultsExtractor.cc
+│   ├── ResultsExtractor.hh
+│   ├── ResultsExtractorMain.cc
+│   ├── Slave.cc
+│   ├── SlaveRooFit.cc
+│   ├── chiSqInput.txt
+│   ├── mixedSampleTest.cc
+│   ├── point2PointTestSample.cc
+│   ├── runMasterRooFitSlave.sh
+│   ├── runMasterSlave.sh
+│   ├── runPoint2PointTest.sh
+│   └── usfactor.dat
+├── inc - directory containing the header files for the Laura++ library
+│   ├── Lau1DCubicSpline.hh
+│   ├── Lau1DHistPdf.hh
+│   ├── Lau2DAbsDP.hh
+│   ├── Lau2DAbsDPPdf.hh
+│   ├── Lau2DAbsHistDP.hh
+│   ├── Lau2DAbsHistDPPdf.hh
+│   ├── Lau2DCubicSpline.hh
+│   ├── Lau2DHistDP.hh
+│   ├── Lau2DHistDPPdf.hh
+│   ├── Lau2DHistPdf.hh
+│   ├── Lau2DSplineDP.hh
+│   ├── Lau2DSplineDPPdf.hh
+│   ├── LauAbsBkgndDPModel.hh
+│   ├── LauAbsCoeffSet.hh
+│   ├── LauAbsEffModel.hh
+│   ├── LauAbsFitModel.hh
+│   ├── LauAbsFitter.hh
+│   ├── LauAbsIncohRes.hh
+│   ├── LauAbsModIndPartWave.hh
+│   ├── LauAbsPdf.hh
+│   ├── LauAbsRValue.hh
+│   ├── LauAbsResonance.hh
+│   ├── LauArgusPdf.hh
+│   ├── LauAsymmCalc.hh
+│   ├── LauBelleCPCoeffSet.hh
+│   ├── LauBelleNR.hh
+│   ├── LauBelleSymNR.hh
+│   ├── LauBifurcatedGaussPdf.hh
+│   ├── LauBkgndDPModel.hh
+│   ├── LauBlattWeisskopfFactor.hh
+│   ├── LauBlind.hh
+│   ├── LauBreitWignerRes.hh
+│   ├── LauCPFitModel.hh
+│   ├── LauCacheData.hh
+│   ├── LauCartesianCPCoeffSet.hh
+│   ├── LauCartesianGammaCPCoeffSet.hh
+│   ├── LauChebychevPdf.hh
+│   ├── LauCleoCPCoeffSet.hh
+│   ├── LauComplex.hh
+│   ├── LauConstants.hh
+│   ├── LauCruijffPdf.hh
+│   ├── LauCrystalBallPdf.hh
+│   ├── LauDPDepBifurGaussPdf.hh
+│   ├── LauDPDepCruijffPdf.hh
+│   ├── LauDPDepGaussPdf.hh
+│   ├── LauDPDepMapPdf.hh
+│   ├── LauDPDepSumPdf.hh
+│   ├── LauDPPartialIntegralInfo.hh
+│   ├── LauDabbaRes.hh
+│   ├── LauDatabasePDG.hh
+│   ├── LauDaughters.hh
+│   ├── LauEFKLLMRes.hh
+│   ├── LauEffModel.hh
+│   ├── LauEmbeddedData.hh
+│   ├── LauExponentialPdf.hh
+│   ├── LauFitDataTree.hh
+│   ├── LauFitNtuple.hh
+│   ├── LauFitObject.hh
+│   ├── LauFitter.hh
+│   ├── LauFlatNR.hh
+│   ├── LauFlatteRes.hh
+│   ├── LauFormulaPar.hh
+│   ├── LauGaussIncohRes.hh
+│   ├── LauGaussPdf.hh
+│   ├── LauGenNtuple.hh
+│   ├── LauGounarisSakuraiRes.hh
+│   ├── LauIntegrals.hh
+│   ├── LauIsobarDynamics.hh
+│   ├── LauKMatrixProdPole.hh
+│   ├── LauKMatrixProdSVP.hh
+│   ├── LauKMatrixPropFactory.hh
+│   ├── LauKMatrixPropagator.hh
+│   ├── LauKappaRes.hh
+│   ├── LauKinematics.hh
+│   ├── LauLASSBWRes.hh
+│   ├── LauLASSNRRes.hh
+│   ├── LauLASSRes.hh
+│   ├── LauLinearPdf.hh
+│   ├── LauMagPhaseCPCoeffSet.hh
+│   ├── LauMagPhaseCoeffSet.hh
+│   ├── LauMinuit.hh
+│   ├── LauModIndPartWaveMagPhase.hh
+│   ├── LauModIndPartWaveRealImag.hh
+│   ├── LauNRAmplitude.hh
+│   ├── LauNovosibirskPdf.hh
+│   ├── LauParamFixed.hh
+│   ├── LauParameter.hh
+│   ├── LauParametricStepFuncPdf.hh
+│   ├── LauParticlePDG.hh
+│   ├── LauPolNR.hh
+│   ├── LauPolarGammaCPCoeffSet.hh
+│   ├── LauPrint.hh
+│   ├── LauRandom.hh
+│   ├── LauRealImagCPCoeffSet.hh
+│   ├── LauRealImagCoeffSet.hh
+│   ├── LauRealImagGammaCPCoeffSet.hh
+│   ├── LauRelBreitWignerRes.hh
+│   ├── LauResonanceInfo.hh
+│   ├── LauResonanceMaker.hh
+│   ├── LauRhoOmegaMix.hh
+│   ├── LauRooFitSlave.hh
+│   ├── LauSPlot.hh
+│   ├── LauScfMap.hh
+│   ├── LauSigmaRes.hh
+│   ├── LauSigmoidPdf.hh
+│   ├── LauSimFitMaster.hh
+│   ├── LauSimFitSlave.hh
+│   ├── LauSimpleFitModel.hh
+│   ├── LauString.hh
+│   ├── LauSumPdf.hh
+│   ├── LauTextFileParser.hh
+│   ├── LauVetoes.hh
+│   ├── LauWeightedSumEffModel.hh
+│   └── Laura++_LinkDef.h
+├── macros - directory containing some ROOT macro files for plotting results, etc.
+│   ├── makeFitFile.C
+│   ├── plotComplexVars.C
+│   ├── plotCorrs.C
+│   ├── plotCorrsFromToy.C
+│   └── plotDataIsobars.C
+├── src - directory containing the source files for the Laura++ library
+│   ├── Lau1DCubicSpline.cc
+│   ├── Lau1DHistPdf.cc
+│   ├── Lau2DAbsHistDP.cc
+│   ├── Lau2DAbsHistDPPdf.cc
+│   ├── Lau2DCubicSpline.cc
+│   ├── Lau2DHistDP.cc
+│   ├── Lau2DHistDPPdf.cc
+│   ├── Lau2DHistPdf.cc
+│   ├── Lau2DSplineDP.cc
+│   ├── Lau2DSplineDPPdf.cc
+│   ├── LauAbsBkgndDPModel.cc
+│   ├── LauAbsCoeffSet.cc
+│   ├── LauAbsFitModel.cc
+│   ├── LauAbsIncohRes.cc
+│   ├── LauAbsModIndPartWave.cc
+│   ├── LauAbsPdf.cc
+│   ├── LauAbsResonance.cc
+│   ├── LauArgusPdf.cc
+│   ├── LauAsymmCalc.cc
+│   ├── LauBelleCPCoeffSet.cc
+│   ├── LauBelleNR.cc
+│   ├── LauBelleSymNR.cc
+│   ├── LauBifurcatedGaussPdf.cc
+│   ├── LauBkgndDPModel.cc
+│   ├── LauBlattWeisskopfFactor.cc
+│   ├── LauBlind.cc
+│   ├── LauBreitWignerRes.cc
+│   ├── LauCPFitModel.cc
+│   ├── LauCacheData.cc
+│   ├── LauCartesianCPCoeffSet.cc
+│   ├── LauCartesianGammaCPCoeffSet.cc
+│   ├── LauChebychevPdf.cc
+│   ├── LauCleoCPCoeffSet.cc
+│   ├── LauComplex.cc
+│   ├── LauCruijffPdf.cc
+│   ├── LauCrystalBallPdf.cc
+│   ├── LauDPDepBifurGaussPdf.cc
+│   ├── LauDPDepCruijffPdf.cc
+│   ├── LauDPDepGaussPdf.cc
+│   ├── LauDPDepMapPdf.cc
+│   ├── LauDPDepSumPdf.cc
+│   ├── LauDPPartialIntegralInfo.cc
+│   ├── LauDabbaRes.cc
+│   ├── LauDatabasePDG.cc
+│   ├── LauDaughters.cc
+│   ├── LauEFKLLMRes.cc
+│   ├── LauEffModel.cc
+│   ├── LauEmbeddedData.cc
+│   ├── LauExponentialPdf.cc
+│   ├── LauFitDataTree.cc
+│   ├── LauFitNtuple.cc
+│   ├── LauFitObject.cc
+│   ├── LauFitter.cc
+│   ├── LauFlatNR.cc
+│   ├── LauFlatteRes.cc
+│   ├── LauFormulaPar.cc
+│   ├── LauGaussIncohRes.cc
+│   ├── LauGaussPdf.cc
+│   ├── LauGenNtuple.cc
+│   ├── LauGounarisSakuraiRes.cc
+│   ├── LauIntegrals.cc
+│   ├── LauIsobarDynamics.cc
+│   ├── LauKMatrixProdPole.cc
+│   ├── LauKMatrixProdSVP.cc
+│   ├── LauKMatrixPropFactory.cc
+│   ├── LauKMatrixPropagator.cc
+│   ├── LauKappaRes.cc
+│   ├── LauKinematics.cc
+│   ├── LauLASSBWRes.cc
+│   ├── LauLASSNRRes.cc
+│   ├── LauLASSRes.cc
+│   ├── LauLinearPdf.cc
+│   ├── LauMagPhaseCPCoeffSet.cc
+│   ├── LauMagPhaseCoeffSet.cc
+│   ├── LauMinuit.cc
+│   ├── LauModIndPartWaveMagPhase.cc
+│   ├── LauModIndPartWaveRealImag.cc
+│   ├── LauNRAmplitude.cc
+│   ├── LauNovosibirskPdf.cc
+│   ├── LauParameter.cc
+│   ├── LauParametricStepFuncPdf.cc
+│   ├── LauParticlePDG.cc
+│   ├── LauPolNR.cc
+│   ├── LauPolarGammaCPCoeffSet.cc
+│   ├── LauPrint.cc
+│   ├── LauRandom.cc
+│   ├── LauRealImagCPCoeffSet.cc
+│   ├── LauRealImagCoeffSet.cc
+│   ├── LauRealImagGammaCPCoeffSet.cc
+│   ├── LauRelBreitWignerRes.cc
+│   ├── LauResonanceInfo.cc
+│   ├── LauResonanceMaker.cc
+│   ├── LauRhoOmegaMix.cc
+│   ├── LauRooFitSlave.cc
+│   ├── LauSPlot.cc
+│   ├── LauScfMap.cc
+│   ├── LauSigmaRes.cc
+│   ├── LauSigmoidPdf.cc
+│   ├── LauSimFitMaster.cc
+│   ├── LauSimFitSlave.cc
+│   ├── LauSimpleFitModel.cc
+│   ├── LauString.cc
+│   ├── LauSumPdf.cc
+│   ├── LauTextFileParser.cc
+│   ├── LauVetoes.cc
+│   └── LauWeightedSumEffModel.cc
+└── test - directory containing code for some test executables
+    ├── Makefile - GNU make configuration file for building the test executables
+    ├── TestCovariant.cc
+    ├── TestCovariant2.cc
+    └── TestNewKinematicsMethods.cc
+
+6 directories, 282 files
+
+
 			Building the Code
 			-----------------
 

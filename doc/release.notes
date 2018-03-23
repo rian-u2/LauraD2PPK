@@ -4,6 +4,32 @@
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
 
+23rd March 2018 Thomas Latham
+* Some fixes in LauRhoOmegaMix that propagate the following settings to the subcomponents:
+  - spinType_
+  - flipHelicity_
+  - ignoreMomenta_
+  - ignoreSpin_
+  - ignoreBarrierScaling_
+
+23rd February 2018 Thomas Latham
+* Add section on structure of package to README file (requested by CPC technial editor)
+* Add copyright notice to files in test directory
+
+21st February 2018 Thomas Latham
+* Improve comments in functions calculating helicity angles in LauKinematics
+
+19th February 2018 Daniel O'Hanlon
+* Fix bug in LauCPFitModel introduced in code for importing parameters (25/01/18): when parameters are asked to be randomised via useRandomInitFitPars, those parameters that were already fixed in the model, in addition to those that are fixed on import, were being freed.
+
+19th February 2018 Daniel O'Hanlon
+* Bug fixes in rho/omega fit fractions calculation
+
+25th January 2018 Daniel O'Hanlon
+* Add feature for importing parameters into LauCPFitModels from previous fit output files.
+
+23rd January 2018 Daniel O'Hanlon
+* Calculate separate rho and omega fit-fractions for LauRhoOmegaMix, when turned on with calculateRhoOmegaFitFractions in LauIsobarDynamics.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 			Laura++ v3r4

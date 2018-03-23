@@ -176,6 +176,14 @@ void LauRhoOmegaMix::initialise()
 
 void LauRhoOmegaMix::initialiseRho()
 {
+    // Propagate settings
+    rhoRes_->setSpinType( this->getSpinType() );
+    rhoRes_->flipHelicity( this->flipHelicity() );
+    rhoRes_->ignoreMomenta( this->ignoreMomenta() );
+    rhoRes_->ignoreSpin( this->ignoreSpin() );
+    rhoRes_->ignoreBarrierScaling( this->ignoreBarrierScaling() );
+
+    // Do the initialisation
     rhoRes_->initialise();
 
     // Keep track of the current pole mass and barrier factor terms so that
@@ -214,14 +222,15 @@ void LauRhoOmegaMix::initialiseOmega()
 	changedOmegaM = kTRUE;
     }
 
-    // Let the omega resonance pointer know if the mass or width are fixed or floating
     if (doneFirstInit_ == kFALSE) {
 
+	// Let the omega resonance pointer know if the mass or width are fixed or floating
 	omegaRes_->fixMass(this->fixmOmegaValue());
 	omegaRes_->fixWidth(this->fixwOmegaValue());
 
 	// We do not need to use the spin terms for the omega lineshape, since we
 	// use those from the rho for the full amplitude later on
+	// (as such we do not need to propagate the flip helicity setting to the omega, just to the rho)
 	omegaRes_->ignoreSpin(kTRUE);
 
 	// We want to ignore momentum-dependent width effects: just use the constant pole width
@@ -323,17 +332,13 @@ LauComplex LauRhoOmegaMix::amplitude(const LauKinematics* kinematics) {
 	// Modify the full amplitude
 	resAmplitude = resAmplitude/denomTerm;
 
-    if (this->whichAmpSq_ == 1) {
-        // For omega fit fraction
-
-        return LauComplex(sqrt(omegaAmp.abs() * Delta * magBVal), 0.0);
-
-    } else if (this->whichAmpSq_ == 2) {
-        // For rho fit fraction
-
-        return rhoAmp;
-
-    }
+	if (this->whichAmpSq_ == 1) {
+	    // For omega fit fraction
+	    return LauComplex(sqrt(omegaAmp.abs() * Delta * magBVal), 0.0);
+	} else if (this->whichAmpSq_ == 2) {
+	    // For rho fit fraction
+	    return rhoAmp;
+	}
 
     }
 

@@ -3,6 +3,8 @@
 ///  This is the History file for the Laura++ package.      ///
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
+17th April 2018 Daniel O'Hanlon
+* Fix bug in rho-omega mixing fit-fraction calculation: rho fit-fraction was not normalised to the total DP rate
 
 23rd March 2018 Thomas Latham
 * Some fixes in LauRhoOmegaMix that propagate the following settings to the subcomponents:

@@ -2197,7 +2197,7 @@ void LauIsobarDynamics::calcExtraInfo(const Bool_t init)
 			Double_t omegaFF = fifjSumRealOmega * fitFrac_[omegaID][omegaID].value();
 
 			fitFrac_[storeID][storeID].value(omegaFF);
-			fitFrac_[omegaID][omegaID].value(fitFracPartRho * fNorm_[omegaID] * fNorm_[omegaID]);
+			fitFrac_[omegaID][omegaID].value(fitFracPartRho * fNorm_[omegaID] * fNorm_[omegaID] / DPRate_.value());
 
 	    } else {
 			std::cout << "INFO in LauIsobarDynamics::calcExtraInfo : calculateRhoOmegaFitFractions is set, but the RhoOmegaMix model isn't in the right place. Ignoring this option." << std::endl;

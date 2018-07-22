@@ -47,6 +47,9 @@ Thomas Latham
 #include "LauModIndPartWaveRealImag.hh"
 #include "LauNRAmplitude.hh"
 #include "LauPolNR.hh"
+#include "LauPoleRes.hh"
+#include "LauPolarFormFactorNR.hh"
+#include "LauPolarFormFactorSymNR.hh"
 #include "LauRelBreitWignerRes.hh"
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
@@ -852,6 +855,25 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			// Polynomial NR amplitude model - arguments are there to preserve the interface
 			std::cout<<"                                        : Using polynomial NR lineshape. "<<std::endl;
 			theResonance = new LauPolNR(resInfo, resPairAmpInt, daughters);
+			break;
+
+		case LauAbsResonance::POLE :
+			// Sacalar pole model
+			std::cout<<"                                        :  Using the scalar Pole lineshape.. "<<std::endl;
+			theResonance = new LauPoleRes(resInfo, resPairAmpInt, daughters);
+			break;
+
+		case LauAbsResonance::PolarFFNR :
+			// Polar Form Factor NR amplitude model - arguments are there to preserve the interface
+			std::cout<<"                                        :  Using Polar FormFactor NR lineshape.. "<<std::endl;
+			theResonance = new LauPolarFormFactorNR(resInfo, resPairAmpInt, daughters);
+			break;
+
+		case LauAbsResonance::PolarFFSymNR :
+		case LauAbsResonance::PolarFFSymNRNoInter :
+			// Polar Form Factor NR amplitude model - arguments are there to preserve the interface
+			std::cout<<"                                        : Using Polar FormFactor Symetric NR lineshape. "<<std::endl;
+			theResonance = new LauPolarFormFactorSymNR(resInfo, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::MIPW_MagPhase :

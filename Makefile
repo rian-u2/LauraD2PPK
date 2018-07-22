@@ -73,7 +73,8 @@ ifeq ($(findstring linux, $(ARCH)),linux)
 # This set here should work for Linux.
 CXX      = g++
 LD       = g++
-CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -std=c++11
+#CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -std=c++11
+CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -std=c++11
 MFLAGS   = -MM
 LDFLAGS  = -shared
 endif

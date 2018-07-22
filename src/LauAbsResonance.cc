@@ -61,6 +61,10 @@ bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
 		case BelleSymNRNoInter:
 		case TaylorNR:
 		case PolNR:
+		case POLE:
+                case PolarFFNR:
+                case PolarFFSymNR:
+                case PolarFFSymNRNoInter:
 		case MIPW_MagPhase: 
 		case MIPW_RealImag: 
 		case RhoOmegaMix_GS:

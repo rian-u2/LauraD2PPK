@@ -73,6 +73,10 @@ class LauAbsResonance {
 			BelleSymNRNoInter,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs without interference */
 			TaylorNR,		/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR,			/*!< an empirical polynomial nonresonant amplitude */
+			POLE,			/*!< scalar Pole lineshape */
+			PolarFFNR,		/*!< Polar Form Factor nonresonant amplitude */
+			PolarFFSymNR,		/*!< Polar Form Factor nonresonant amplitude  for symmetrised DPs  without interference */
+			PolarFFSymNRNoInter,	/*!< Polar Form Factor nonresonant amplitude */
 			MIPW_MagPhase, 		/*!< a model independent partial wave - magnitude and phase representation */
 			MIPW_RealImag, 		/*!< a model independent partial wave - real and imaginary part representation */
 			GaussIncoh,		/*!< an incoherent Gaussian shape */

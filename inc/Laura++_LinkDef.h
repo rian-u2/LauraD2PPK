@@ -117,6 +117,9 @@ Thomas Latham
 #pragma link C++ class LauParamFixed+;
 #pragma link C++ class LauParticlePDG+;
 #pragma link C++ class LauPolNR+;
+#pragma link C++ class LauPoleRes+;
+#pragma link C++ class LauPolarFormFactorNR+;
+#pragma link C++ class LauPolarFormFactorSymNR+;
 #pragma link C++ class LauPolarGammaCPCoeffSet+;
 #pragma link C++ class LauPrint+;
 #pragma link C++ class LauRealImagCoeffSet+;

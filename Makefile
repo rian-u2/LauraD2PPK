@@ -73,8 +73,8 @@ ifeq ($(findstring linux, $(ARCH)),linux)
 # This set here should work for Linux.
 CXX      = g++
 LD       = g++
-#CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -std=c++11
-CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -std=c++11
+CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC -std=c++11
+#CXXFLAGS = -g -O2 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -std=c++11
 MFLAGS   = -MM
 LDFLAGS  = -shared
 endif
@@ -83,8 +83,8 @@ ifeq ($(ARCH),macosx64)
 # This set here should work for MacOSX.
 CXX      = g++
 LD       = g++
-#CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
-CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -std=c++11
+CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -Werror -fPIC
+#CXXFLAGS = -g -O3 -Wall -Wextra -Wshadow -Woverloaded-virtual -fPIC -std=c++11
 MFLAGS   = -MM
 LDFLAGS  = -dynamiclib -single_module -undefined dynamic_lookup
 endif

@@ -39,9 +39,11 @@ Thomas Latham
 ClassImp(LauPolarFormFactorNR)
 
 
-LauPolarFormFactorNR::LauPolarFormFactorNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauPolarFormFactorNR::LauPolarFormFactorNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),
-	lambda_(0)
+	lambda_(0),
+	model_(resType)
+
 {
 	TString parName = this->getSanitisedName();
 	parName += "_lambda";

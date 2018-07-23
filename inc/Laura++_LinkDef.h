@@ -127,6 +127,7 @@ Thomas Latham
 #pragma link C++ class LauRealImagGammaCPCoeffSet+;
 #pragma link C++ class LauRelBreitWignerRes+;
 #pragma link C++ class LauResonanceInfo+;
+#pragma link C++ class LauRescatteringRes+;
 #pragma link C++ class LauResonanceMaker+;
 #pragma link C++ class LauRhoOmegaMix+;
 #ifdef DOLAUROOFITSLAVE

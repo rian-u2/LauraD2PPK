@@ -42,7 +42,8 @@ class LauPolarFormFactorSymNR : public LauAbsResonance {
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
 		*/
-		LauPolarFormFactorSymNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters);
+		LauPolarFormFactorSymNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType, 
+                                               const Int_t resPairAmpInt, const LauDaughters* daughters);
 
 		//! Destructor
 		virtual ~LauPolarFormFactorSymNR();

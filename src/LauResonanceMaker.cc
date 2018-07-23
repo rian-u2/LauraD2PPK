@@ -46,6 +46,7 @@ Thomas Latham
 #include "LauModIndPartWaveMagPhase.hh"
 #include "LauModIndPartWaveRealImag.hh"
 #include "LauNRAmplitude.hh"
+#include "LauRescatteringRes.hh"
 #include "LauPolNR.hh"
 #include "LauPoleRes.hh"
 #include "LauPolarFormFactorNR.hh"
@@ -866,14 +867,20 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 		case LauAbsResonance::PolarFFNR :
 			// Polar Form Factor NR amplitude model - arguments are there to preserve the interface
 			std::cout<<"                                        :  Using Polar FormFactor NR lineshape.. "<<std::endl;
-			theResonance = new LauPolarFormFactorNR(resInfo, resPairAmpInt, daughters);
+			theResonance = new LauPolarFormFactorNR(resInfo, resType, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::PolarFFSymNR :
 		case LauAbsResonance::PolarFFSymNRNoInter :
 			// Polar Form Factor NR amplitude model - arguments are there to preserve the interface
 			std::cout<<"                                        : Using Polar FormFactor Symetric NR lineshape. "<<std::endl;
-			theResonance = new LauPolarFormFactorSymNR(resInfo, resPairAmpInt, daughters);
+			theResonance = new LauPolarFormFactorSymNR(resInfo, resType, resPairAmpInt, daughters);
+			break;
+
+		case LauAbsResonance::KKPiPiScatt:
+			// KKPiPi Inelastic Scattering amplitude - arguments are there to preserve the interface
+			std::cout<<"                                        : KKPiPi Inelastic Scattering amplitude lineshape. "<<std::endl;
+			theResonance = new LauRescatteringRes(resInfo, resType, resPairAmpInt, daughters);
 			break;
 
 		case LauAbsResonance::MIPW_MagPhase :

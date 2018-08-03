@@ -77,7 +77,9 @@ class LauAbsResonance {
 			PolarFFNR,		/*!< Polar Form Factor nonresonant amplitude */
 			PolarFFSymNR,		/*!< Polar Form Factor nonresonant amplitude  for symmetrised DPs  without interference */
 			PolarFFSymNRNoInter,	/*!< Polar Form Factor nonresonant amplitude */
-			KKPiPiScatt,		/*!< KK-PiPi inelastic scattering amplitude */
+			Rescattering,		/*!< KK-PiPi inelastic scattering amplitude */
+			Rescattering2,		/*!< KK-PiPi inelastic scattering amplitude */
+			RescatteringNoInter,	/*!< KK-PiPi inelastic scattering amplitude */
 			MIPW_MagPhase, 		/*!< a model independent partial wave - magnitude and phase representation */
 			MIPW_RealImag, 		/*!< a model independent partial wave - real and imaginary part representation */
 			GaussIncoh,		/*!< an incoherent Gaussian shape */

@@ -500,6 +500,16 @@ void LauResonanceMaker::createResonanceVector()
 	neutral = new LauResonanceInfo("Spline_S0_Bar",     0.0,      0.0,     0,      0,       LauBlattWeisskopfFactor::Light   );
 	resInfo_.push_back( neutral );
 
+        // Polar Form Factor  nonresonant model
+	neutral = new LauResonanceInfo("PolarFFSymNR",    0.0,      0.0,     0,      0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+	neutral = new LauResonanceInfo("PolarFFNR",       0.0,      0.0,     0,      0,       LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+
+	// PiPi-KK Inelastic Scattering
+	neutral = new LauResonanceInfo("Rescattering",        0.0,      0.0,     0,      0,   LauBlattWeisskopfFactor::Light   );
+	resInfo_.push_back( neutral );
+
 	nResDefMax_ = resInfo_.size();
 }
 
@@ -877,7 +887,8 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			theResonance = new LauPolarFormFactorSymNR(resInfo, resType, resPairAmpInt, daughters);
 			break;
 
-		case LauAbsResonance::KKPiPiScatt:
+		case LauAbsResonance::Rescattering:
+		case LauAbsResonance::RescatteringNoInter:
 			// KKPiPi Inelastic Scattering amplitude - arguments are there to preserve the interface
 			std::cout<<"                                        : KKPiPi Inelastic Scattering amplitude lineshape. "<<std::endl;
 			theResonance = new LauRescatteringRes(resInfo, resType, resPairAmpInt, daughters);

@@ -56,7 +56,7 @@ class LauPolarFormFactorNR : public LauAbsResonance {
 			\param [in] kinematics the kinematic variables of the current event
 			\return the complex amplitude
 		*/
-		virtual LauComplex amplitude(const LauKinematics* kinematics);
+		//virtual LauComplex amplitude(const LauKinematics* kinematics);
 
 		//! Get the resonance model type
                 /*!

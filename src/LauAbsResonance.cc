@@ -66,6 +66,7 @@ bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
                 case PolarFFSymNR:
                 case PolarFFSymNRNoInter:
                 case Rescattering:
+	        case Rescattering2:
                 case RescatteringNoInter:
 		case MIPW_MagPhase: 
 		case MIPW_RealImag: 

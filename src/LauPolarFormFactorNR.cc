@@ -75,7 +75,7 @@ void LauPolarFormFactorNR::initialise()
 
 }
 
-LauComplex LauPolarFormFactorNR::resAmp(Double_t mass, Double_t spinTerm)
+LauComplex LauPolarFormFactorNR::resAmp(Double_t mass, Double_t)
 {
 	Double_t magnitude(1.0);
 

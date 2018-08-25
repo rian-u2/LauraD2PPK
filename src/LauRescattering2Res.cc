@@ -205,7 +205,7 @@ void LauRescattering2Res::initialise()
 
 }
 
-LauComplex LauRescattering2Res::resAmp(Double_t mass, Double_t spinTerm)
+LauComplex LauRescattering2Res::resAmp(Double_t mass, Double_t)
 {
 	Int_t i = 0;
 	if (mass < sqr_tmax[1]) i = 1;
@@ -222,11 +222,11 @@ LauComplex LauRescattering2Res::resAmp(Double_t mass, Double_t spinTerm)
         return LauComplex(mag*TMath::Cos(phase), mag*TMath::Sin(phase));
 }
 
-Double_t LauRescattering2Res::pn(const Double_t x, const Double_t n) const
+Double_t LauRescattering2Res::pn(const Double_t x_, const Double_t n) const
 {       
         if (n==0) return 1.0;
-	if (n==1) return x;
-	return 2*x*pn(x,n-1) - pn(x,n-2);
+	if (n==1) return x_;
+	return 2*x_*pn(x_,n-1) - pn(x_,n-2);
 }
 
 

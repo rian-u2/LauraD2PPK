@@ -101,7 +101,6 @@ ifeq ($(strip $(SKIPLIST)),)
 endif
 LAURALIBDIR=$(shell pwd | xargs dirname)/lib
 LAURALIB = $(LAURALIBDIR)/libLaura++.so
-UTILSLIB = $(PWD)/$(WORKDIR)/libLauraUtils.so
 
 INCLUDES += -I$(INCDIR)
 CXXFLAGS += $(INCLUDES)
@@ -112,23 +111,14 @@ default: bin
 # List of all source files
 CCLIST:=$(filter-out $(SKIPLIST), $(wildcard *.cc))
 
-# List of all source files that contain main functions
-BINCCLIST:=$(shell egrep -l "^[[:space:]]*int[[:space:]]*main\>" $(CCLIST))
-
-# List of all source files to be compiled into the library
-LIBCCLIST:=$(filter-out $(BINCCLIST), $(CCLIST))
-
 # List of all object files to build
 OLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(CCLIST))))
-
-# List of all object files to be combined into library
-LIBOLIST:=$(patsubst %.cc,%.o,$(addprefix $(OBJDIR)/,$(notdir $(LIBCCLIST))))
 
 # List of all dependency files to make
 DLIST:=$(patsubst %.cc,%.d,$(addprefix $(DEPDIR)/,$(notdir $(CCLIST))))
 
 # List of all binary files to make
-BINLIST:=$(patsubst %.cc,%,$(notdir $(BINCCLIST)))
+BINLIST:=$(patsubst %.cc,%,$(notdir $(CCLIST)))
 
 # Implicit rule making all dependency Makefiles included at the end of this makefile
 $(DEPDIR)/%.d: %.cc
@@ -144,22 +134,15 @@ $(OBJDIR)/%.o : %.cc
 	@mkdir -p $(OBJDIR)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Rule to combine objects into a shared library
-$(UTILSLIB): $(LIBOLIST)
-	@echo "Making $(UTILSLIB)"
-	@rm -f $(UTILSLIB)
-	@$(CXX) $(LIBOLIST) $(SOFLAGS) -o $(UTILSLIB)
-
 # Rule to compile all binaries
-% : $(OBJDIR)/%.o $(LAURALIB) $(UTILSLIB)
+% : $(OBJDIR)/%.o $(LAURALIB)
 	@echo "Linking $@"
-	@$(CXX) $(LDFLAGS) $< -o $@ $(LAURALIB) $(UTILSLIB) $(ROOTLIBS)
+	@$(CXX) $(LDFLAGS) $< -o $@ $(LAURALIB) $(ROOTLIBS)
 
 bin: $(BINLIST)
 
 clean:
 	rm -f $(BINLIST)
-	rm -f $(UTILSLIB)
 	rm -rf $(WORKDIR)
 
 .PHONY : bin default clean

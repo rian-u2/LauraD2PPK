@@ -676,6 +676,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	// If we're asked to generate more than 100 experiments then split it
 	// up into multiple files since otherwise can run into memory issues
 	// when building the index
+	// TODO - this obviously depends on the number of events per experiment as well, so should do this properly
 
 	UInt_t totalExpts = fitToyMCScale_;
 	if ( totalExpts > 100 ) {
@@ -683,6 +684,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 		if ( totalExpts%100 ) {
 			nFiles += 1;
 		}
+		TString fileNameBase {fileName};
 		for ( UInt_t iFile(0); iFile < nFiles; ++iFile ) {
 
 			UInt_t firstExp( iFile*100 );
@@ -692,6 +694,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 			this->setNExpts(nExp, firstExp);
 
 			// Create a unique filename and generate the events
+			fileName = fileNameBase;
 			TString extraname = "_file";
 			extraname += iFile;
 			fileName.Insert( fileName.Last('.'), extraname );

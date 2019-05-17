@@ -36,6 +36,9 @@ Thomas Latham
 using std::cout;
 using std::endl;
 
+ClassImp(LauKMatrixPropFactory)
+
+
 // the singleton instance
 LauKMatrixPropFactory* LauKMatrixPropFactory::theFactory_ = 0;
 

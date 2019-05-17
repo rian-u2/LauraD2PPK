@@ -48,7 +48,7 @@ int main(const int argc, const char** argv)
 		treeName = argv[4];
 	}
 
-	ResultsExtractor myExtractor(inputFileName,outputFileName,treeName);
+	LauResultsExtractor myExtractor(inputFileName,outputFileName,treeName);
 	myExtractor.process(nExpt);
 
 	return EXIT_SUCCESS;

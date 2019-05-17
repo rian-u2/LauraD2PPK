@@ -37,16 +37,10 @@ Thomas Latham
 #include "TObjArray.h"
 #include "TSystem.h"
 
-using std::cout;
-using std::cerr;
-using std::flush;
-using std::endl;
-using std::vector;
-using std::map;
-using std::pair;
-using std::ofstream;
+ClassImp(LauResultsExtractor)
 
-ResultsExtractor::ResultsExtractor(const TString& inputFileName, const TString& outputFileName, const TString& treeName) :
+
+LauResultsExtractor::LauResultsExtractor(const TString& inputFileName, const TString& outputFileName, const TString& treeName) :
 	inputFileName_(inputFileName),
 	outputFileName_(outputFileName),
 	treeName_(treeName),
@@ -57,7 +51,7 @@ ResultsExtractor::ResultsExtractor(const TString& inputFileName, const TString& 
 {
 }
 
-ResultsExtractor::~ResultsExtractor()
+LauResultsExtractor::~LauResultsExtractor()
 {
 	this->clearMaps();
 	delete inputTree_; inputTree_ = 0;
@@ -67,15 +61,16 @@ ResultsExtractor::~ResultsExtractor()
 	delete outputFile_; outputFile_ = 0;
 }
 
-void ResultsExtractor::setupInputTree()
+void LauResultsExtractor::setupInputTree()
 {
 	TObjArray* leaves = inputTree_->GetListOfLeaves();
 	Int_t nLeaves = leaves->GetEntries();
 
-	cout<<"Setting branches for input tree \""<<inputTree_->GetName()<<"\" with "<<nEntries_<<" entries..."<<endl;
+	std::cout<<"Setting branches for input tree \""<<inputTree_->GetName()<<"\" with "<<nEntries_<<" entries..."<<std::endl;
 	inputTree_->SetBranchAddress("iExpt",&iExpt_);
 	inputTree_->SetBranchAddress("fitStatus",&fitStatus_);
 	inputTree_->SetBranchAddress("NLL",&NLL_);
+	inputTree_->SetBranchAddress("EDM",&EDM_);
 
 	for (Int_t iLeaf(3); iLeaf<nLeaves; ++iLeaf) {
 
@@ -96,16 +91,17 @@ void ResultsExtractor::setupInputTree()
 		}
 	}
 
-	cout<<"Set branch addresses for "<<otherVars_.size()+3<<" branches.\n"<<endl;
+	std::cout<<"Set branch addresses for "<<otherVars_.size()+3<<" branches.\n"<<std::endl;
 }
 
-void ResultsExtractor::setupOutputTree(TTree * tree)
+void LauResultsExtractor::setupOutputTree(TTree * tree)
 {
-	cout<<"Creating branches for output tree \""<<tree->GetName()<<"\"..."<<endl;
+	std::cout<<"Creating branches for output tree \""<<tree->GetName()<<"\"..."<<std::endl;
 
 	tree->Branch("iExpt",&iExpt_,"iExpt/I");
 	tree->Branch("fitStatus",&fitStatus_,"fitStatus/I");
 	tree->Branch("NLL",&NLL_,"NLL/D");
+	tree->Branch("EDM",&EDM_,"EDM/D");
 
 	for (std::map<TString,Double_t>::iterator iter = otherVars_.begin(); iter != otherVars_.end(); ++iter) {
 		TString name = iter->first;
@@ -115,14 +111,15 @@ void ResultsExtractor::setupOutputTree(TTree * tree)
 
 		tree->Branch(name,address,thirdBit);
 	}
-	cout<<"Created "<<otherVars_.size()<<" branches.\n"<<endl;
+	std::cout<<"Created "<<otherVars_.size()<<" branches.\n"<<std::endl;
 }
 
-void ResultsExtractor::setInputTreeBranchStatus(Bool_t status)
+void LauResultsExtractor::setInputTreeBranchStatus(const Bool_t status)
 {
 	inputTree_->SetBranchStatus("iExpt",kTRUE);
 	inputTree_->SetBranchStatus("fitStatus",kTRUE);
 	inputTree_->SetBranchStatus("NLL",kTRUE);
+	inputTree_->SetBranchStatus("EDM",kTRUE);
 
 	for (std::map<TString,Double_t>::iterator iter = otherVars_.begin(); iter != otherVars_.end(); ++iter) {
 		TString name = iter->first;
@@ -130,9 +127,9 @@ void ResultsExtractor::setInputTreeBranchStatus(Bool_t status)
 	}
 }
 
-void ResultsExtractor::clearMaps()
+void LauResultsExtractor::clearMaps()
 {
-	for (map<Int_t,TH1*>::iterator iter = nllHistos_.begin(); iter != nllHistos_.end(); ++iter) {
+	for (std::map<Int_t,TH1*>::iterator iter = nllHistos_.begin(); iter != nllHistos_.end(); ++iter) {
 		delete (iter->second);
 	}
 	bestNLL_.clear();
@@ -141,13 +138,13 @@ void ResultsExtractor::clearMaps()
 	nllHistos_.clear();
 }
 
-void ResultsExtractor::process(Int_t numExpts)
+void LauResultsExtractor::process(Int_t numExpts)
 {
 	// open the text file
-	cout << "\n" << "Chaining...\n" << endl;
+	std::cout << "\n" << "Chaining...\n" << std::endl;
 	std::ifstream textFile(inputFileName_, std::ios::in);
 	if (!textFile.good()) {
-		cerr<<"Problem opening file: \""<<inputFileName_<<"\", exiting..."<<endl;
+		std::cerr<<"Problem opening file: \""<<inputFileName_<<"\", exiting..."<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -158,16 +155,16 @@ void ResultsExtractor::process(Int_t numExpts)
 	TString inputFileName = "";
 	while(inputFileName.ReadLine(textFile) && (!inputFileName.IsNull())) {
 		if (inputFileName.EndsWith(".root") && !inputFileName.BeginsWith("#")) {
-			cout << inputFileName << endl;
+			std::cout << inputFileName << std::endl;
 			inputTree_->Add(inputFileName);
 		}
 		else {
-			cout << inputFileName << "\t *** Skipped ***" << endl;
+			std::cout << inputFileName << "\t *** Skipped ***" << std::endl;
 		}
 	}
 
 	textFile.close();
-	cout << "\n" << "... finished.\n" << endl;
+	std::cout << "\n" << "... finished.\n" << std::endl;
 
 	nEntries_ = inputTree_->GetEntries();
 	this->setupInputTree();
@@ -179,25 +176,25 @@ void ResultsExtractor::process(Int_t numExpts)
 	// for each experiment there is a pair object holding
 	// the best NLL and the tree entry for that NLL value
 	// each expt starts out with NLL = 0.0 and entry = -1
-	cout<<"Setting up the map..."<<flush;
+	std::cout<<"Setting up the map..."<<std::flush;
 	this->clearMaps();
 	for (Int_t i(0); i<numExpts; ++i) {
 		bestNLL_.insert(std::make_pair(i, std::make_pair(0.0,-1)));
 		worstNLL_.insert(std::make_pair(i, std::make_pair(0.0,-1)));
-		allNLLs_.insert(std::make_pair(i, vector<Double_t>()));
+		allNLLs_.insert(std::make_pair(i, std::vector<Double_t>()));
 		allNLLs_[i].reserve(nEntries_);
 	}
-	cout<<" done.\n"<<endl;
+	std::cout<<" done.\n"<<std::endl;
 
 	// only read the 3 info branches
 	//this->setInputTreeBranchStatus(kFALSE);
 
 	// loop over the tree and store the best entries for each expt
-	cout<<"Starting to store best entry info..."<<endl;
+	std::cout<<"Starting to store best entry info..."<<std::endl;
 	for (Int_t j(0); j<nEntries_; ++j) {
 
 		if ((nEntries_<100) || (j%(nEntries_/100)==0)) {
-			cout<<"Examining entry "<<j<<endl;
+			std::cout<<"Examining entry "<<j<<std::endl;
 		}
 
 		inputTree_->GetEntry(j);
@@ -219,9 +216,9 @@ void ResultsExtractor::process(Int_t numExpts)
 		}
 
 	}
-	cout<<"Finished storing best entry info.\n"<<endl;
+	std::cout<<"Finished storing best entry info.\n"<<std::endl;
 
-	cout<<"Creating NLL histograms..."<<flush;
+	std::cout<<"Creating NLL histograms..."<<std::flush;
 	TH1* histo(0);
 	for (Int_t i(0); i<numExpts; ++i) {
 		Double_t min = bestNLL_[i].first;
@@ -238,12 +235,12 @@ void ResultsExtractor::process(Int_t numExpts)
 		name += i;
 		name += "NLL";
 		histo = new TH1F(name,"",100,min,max);
-		for (vector<Double_t>::const_iterator iter = allNLLs_[i].begin(); iter != allNLLs_[i].end(); ++iter) {
+		for (std::vector<Double_t>::const_iterator iter = allNLLs_[i].begin(); iter != allNLLs_[i].end(); ++iter) {
 			histo->Fill(*iter);
 		}
 		nllHistos_.insert(std::make_pair(i, histo));
 	}
-	cout<<" done.\n"<<endl;
+	std::cout<<" done.\n"<<std::endl;
 
 	// now need to read all branches
 	//this->setInputTreeBranchStatus(kTRUE);
@@ -251,7 +248,7 @@ void ResultsExtractor::process(Int_t numExpts)
 	std::ofstream fout("best-fit.txt");
 
 	// loop over the experiments, grab the best entry and store it
-	cout<<"Starting to retrieve best entries and fill output tree."<<endl;
+	std::cout<<"Starting to retrieve best entries and fill output tree."<<std::endl;
 	for (Int_t i(0); i<numExpts; ++i) {
 		Int_t bestEntry = bestNLL_[i].second;
 		if (bestEntry != -1) {
@@ -259,7 +256,7 @@ void ResultsExtractor::process(Int_t numExpts)
 			outputTree_->Fill();
 		}
 		if ((numExpts<100) || (i%(numExpts/100)==0)) {
-			cout<<"Writing out experiment "<<i<<endl;
+			std::cout<<"Writing out experiment "<<i<<std::endl;
 		}
 		TString bestFit(inputTree_->GetCurrentFile()->GetName());
 		bestFit.Remove(0,3);
@@ -268,22 +265,22 @@ void ResultsExtractor::process(Int_t numExpts)
 			index = bestFit.Index(".");
 		}
 		bestFit.Remove(index);
-		fout<<"Experiment "<<i<<" BestFit "<<bestFit<<endl;
+		fout<<"Experiment "<<i<<" BestFit "<<bestFit<<std::endl;
 	}
-	cout<<"Finished filling best entries in output tree.\n"<<endl;
+	std::cout<<"Finished filling best entries in output tree.\n"<<std::endl;
 	fout.close();
 
-	cout<<"Writing output file."<<endl;
+	std::cout<<"Writing output file."<<std::endl;
 
 	this->writeFile();
 }
 
-void ResultsExtractor::writeFile()
+void LauResultsExtractor::writeFile()
 {
 	if (!outputFile_) {
 		outputFile_ = new TFile(outputFileName_,"recreate");
 	}
-	for (map<Int_t,TH1*>::iterator iter = nllHistos_.begin(); iter != nllHistos_.end(); ++iter) {
+	for (std::map<Int_t,TH1*>::iterator iter = nllHistos_.begin(); iter != nllHistos_.end(); ++iter) {
 		(iter->second)->SetDirectory(outputFile_);
 	}
 	outputTree_->SetDirectory(outputFile_);

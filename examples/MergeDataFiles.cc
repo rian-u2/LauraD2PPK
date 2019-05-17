@@ -47,7 +47,7 @@ int main(const int argc, const char** argv)
 		outputFileName = argv[4];
 	}
 
-	MergeDataFiles myMerger(inputFileName1,inputFileName2,treeName);
+	LauMergeDataFiles myMerger(inputFileName1,inputFileName2,treeName);
 	myMerger.process(outputFileName);
 
 	return EXIT_SUCCESS;

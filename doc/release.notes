@@ -3,6 +3,28 @@
 ///  This is the History file for the Laura++ package.      ///
 ///                                                         ///
 ///////////////////////////////////////////////////////////////
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			Laura++ v3r5
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+17th May 2019 Thomas Latham
+* Fix licences and Doxygen in pole, nonresonant form factors, and rescattering line shapes
+* Add reference for pole line shape
+* Fix class names and add Doxygen to LauCalcChiSq, LauResultsExtractor, LauMergeDataFiles
+* Update Doxyfile with more recent Doxygen version
+* Make consistent the use of ClassDef and ClassImp everywhere
+
+8th January 2019 Thomas Latham
+* Workaround for issue with splitting toy MC files when generating large number of experiments
+
+5th December 2018 Thomas Latham
+* Move sources and headers for the utilities library into the main library
+  - makes examples dir executables only (in preparation for CMake build)
+
+22nd, 23rd July and 4th August 2018 Juan Otalora
+* Add pole, nonresonant form factors, and rescattering line shapes
+
 17th April 2018 Daniel O'Hanlon
 * Fix bug in rho-omega mixing fit-fraction calculation: rho fit-fraction was not normalised to the total DP rate
 

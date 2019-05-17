@@ -869,8 +869,8 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			theResonance = new LauPolNR(resInfo, resPairAmpInt, daughters);
 			break;
 
-		case LauAbsResonance::POLE :
-			// Sacalar pole model
+		case LauAbsResonance::Pole :
+			// Scalar pole model
 			std::cout<<"                                        :  Using the scalar Pole lineshape.. "<<std::endl;
 			theResonance = new LauPoleRes(resInfo, resPairAmpInt, daughters);
 			break;
@@ -894,12 +894,12 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			std::cout<<"                                        : KKPiPi Inelastic Scattering amplitude lineshape. "<<std::endl;
 			theResonance = new LauRescatteringRes(resInfo, resType, resPairAmpInt, daughters);
 			break;
-		
-	        case LauAbsResonance::Rescattering2:
-		        // KKPiPi Inelastic Scattering amplitude - arguments are there to preserve the interface                                                                                                                             
-		        std::cout<<"                                        : KKPiPi Inelastic Scattering amplitude lineshape. "<<std::endl;
-		        theResonance = new LauRescattering2Res(resInfo, resPairAmpInt, daughters);
-		        break;
+
+		case LauAbsResonance::Rescattering2:
+			// KKPiPi Inelastic Scattering amplitude - arguments are there to preserve the interface
+			std::cout<<"                                        : KKPiPi Inelastic Scattering amplitude lineshape. "<<std::endl;
+			theResonance = new LauRescattering2Res(resInfo, resPairAmpInt, daughters);
+			break;
 
 		case LauAbsResonance::MIPW_MagPhase :
 			// Model independent partial wave

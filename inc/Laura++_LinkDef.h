@@ -61,6 +61,7 @@ Thomas Latham
 #pragma link C++ class LauBlind+;
 #pragma link C++ class LauBreitWignerRes+;
 #pragma link C++ class LauCacheData+;
+#pragma link C++ class LauCalcChiSq+;
 #pragma link C++ class LauCartesianCPCoeffSet+;
 #pragma link C++ class LauCartesianGammaCPCoeffSet+;
 #pragma link C++ class LauChebychevPdf+;
@@ -107,6 +108,7 @@ Thomas Latham
 #pragma link C++ class LauLinearPdf+;
 #pragma link C++ class LauMagPhaseCoeffSet+;
 #pragma link C++ class LauMagPhaseCPCoeffSet+;
+#pragma link C++ class LauMergeDataFiles+;
 #pragma link C++ class LauMinuit+;
 #pragma link C++ class LauModIndPartWaveMagPhase+;
 #pragma link C++ class LauModIndPartWaveRealImag+;
@@ -130,6 +132,7 @@ Thomas Latham
 #pragma link C++ class LauRescatteringRes+;
 #pragma link C++ class LauRescattering2Res+;
 #pragma link C++ class LauResonanceMaker+;
+#pragma link C++ class LauResultsExtractor+;
 #pragma link C++ class LauRhoOmegaMix+;
 #ifdef DOLAUROOFITSLAVE
 #pragma link C++ class LauRooFitSlave+;

@@ -1,6 +1,6 @@
 
 /*
-Copyright 2008 University of Warwick
+Copyright 2018 University of Warwick
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ LauRescatteringRes::LauRescatteringRes(LauResonanceInfo* resInfo, const LauAbsRe
 	Eps1_(0),
 	Eps2_(0),
 	C0_(0),
-	type_(0),
 	model_(resType)
 {
 	TString parNameBase = this->getSanitisedName();
@@ -126,20 +125,10 @@ LauRescatteringRes::LauRescatteringRes(LauResonanceInfo* resInfo, const LauAbsRe
 
 LauRescatteringRes::~LauRescatteringRes()
 {
-	delete lambdaPiPi_;
-	delete lambdaKK_;
-	delete Mf_;
-	delete Ms_;
-	delete Mprime_;
-	delete Eps1_;
-	delete Eps2_;
-	delete C0_;
 }
 
 void LauRescatteringRes::initialise()
 {
-
-
 	const LauDaughters* daughters = this->getDaughters();
 	Int_t resPairAmpInt = this->getPairInt();
 	if ( daughters->gotSymmetricalDP() && resPairAmpInt != 3 ) {
@@ -220,7 +209,6 @@ LauComplex LauRescatteringRes::amplitude(const LauKinematics* kinematics)
         LauComplex resAmplitude(-tauIm_s*NR1_s*NR2_s ,tauRe_s*NR1_s*NR2_s);
 
 	return resAmplitude;
-
 }
 
 LauComplex LauRescatteringRes::resAmp(Double_t mass, Double_t spinTerm)

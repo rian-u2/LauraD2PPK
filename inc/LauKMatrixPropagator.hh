@@ -494,7 +494,6 @@ class LauKMatrixPropagator {
          	Bool_t scattSymmetry_;
 
 		ClassDef(LauKMatrixPropagator,0) // K-matrix amplitude model
-
 };
 
 #endif

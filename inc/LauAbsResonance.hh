@@ -73,20 +73,20 @@ class LauAbsResonance {
 			BelleSymNRNoInter,	/*!< an empirical exponential nonresonant amplitude for symmetrised DPs without interference */
 			TaylorNR,		/*!< an empirical Taylor expansion nonresonant amplitude for symmetrised DPs */
 			PolNR,			/*!< an empirical polynomial nonresonant amplitude */
-			POLE,			/*!< scalar Pole lineshape */
+			Pole,			/*!< scalar Pole lineshape */
 			PolarFFNR,		/*!< Polar Form Factor nonresonant amplitude */
-			PolarFFSymNR,		/*!< Polar Form Factor nonresonant amplitude  for symmetrised DPs  without interference */
-			PolarFFSymNRNoInter,	/*!< Polar Form Factor nonresonant amplitude */
+			PolarFFSymNR,		/*!< Polar Form Factor nonresonant amplitude for symmetrised DPs */
+			PolarFFSymNRNoInter,	/*!< Polar Form Factor nonresonant amplitude for symmetrised DPs without interference */
 			Rescattering,		/*!< KK-PiPi inelastic scattering amplitude */
 			Rescattering2,		/*!< KK-PiPi inelastic scattering amplitude */
 			RescatteringNoInter,	/*!< KK-PiPi inelastic scattering amplitude */
 			MIPW_MagPhase, 		/*!< a model independent partial wave - magnitude and phase representation */
 			MIPW_RealImag, 		/*!< a model independent partial wave - real and imaginary part representation */
 			GaussIncoh,		/*!< an incoherent Gaussian shape */
-			RhoOmegaMix_GS,         /*!< mass mixing model using GS for res 1 and RBW for res 2 */
-			RhoOmegaMix_RBW,        /*!< mass mixing model using two RBWs  */
-			RhoOmegaMix_GS_1,       /*!< mass mixing model using GS for res 1 and RBW for res 2, with denominator factor = 1 */
-			RhoOmegaMix_RBW_1       /*!< mass mixing model using two RBWs, with denominator factor = 1 */
+			RhoOmegaMix_GS,		/*!< mass mixing model using GS for res 1 and RBW for res 2 */
+			RhoOmegaMix_RBW,	/*!< mass mixing model using two RBWs  */
+			RhoOmegaMix_GS_1,	/*!< mass mixing model using GS for res 1 and RBW for res 2, with denominator factor = 1 */
+			RhoOmegaMix_RBW_1	/*!< mass mixing model using two RBWs, with denominator factor = 1 */
 		};
 
 		//! Define the allowed spin formalisms

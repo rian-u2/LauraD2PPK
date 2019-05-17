@@ -65,11 +65,10 @@ Thomas Latham
 #include <cstdlib>
 #include <cmath>
 
-using std::cout;
-using std::cerr;
-using std::endl;
+ClassImp(LauCalcChiSq)
 
-CalcChiSq::CalcChiSq(TString inputFileName) :
+
+LauCalcChiSq::LauCalcChiSq(const TString& inputFileName) :
 	inputFileName_(inputFileName),
 	fileName1_(""),
 	fileName2_(""),
@@ -91,27 +90,26 @@ CalcChiSq::CalcChiSq(TString inputFileName) :
 	nParams_(0),
 	scaleFactor_(1.0),
 	verbose_(kFALSE)
-
 {
 }
 
-CalcChiSq::~CalcChiSq()
+LauCalcChiSq::~LauCalcChiSq()
 {
 }
 
-void CalcChiSq::run()
+void LauCalcChiSq::run()
 {
-
-	cout<<"Running chi-squared algorithm"<<endl;
+	std::cout<<"Running chi-squared algorithm"<<std::endl;
 	this->initialiseHistos();
-	cout<<"Calculating chi-squared"<<endl;
+
+	std::cout<<"Calculating chi-squared"<<std::endl;
 	this->calculateChiSq();
 
 	//make plots
-	makePlots();
+	this->makePlots();
 
 	// Output the various histograms
-	cout<<"Writing out histogram output"<<endl;
+	std::cout<<"Writing out histogram output"<<std::endl;
 
 	TFile* outFile = new TFile("checkHistos.root", "recreate");
 
@@ -124,13 +122,11 @@ void CalcChiSq::run()
 	outFile->Write();
 	outFile->Close();
 
-	cout<<"Done"<<endl;
-
+	std::cout<<"Done"<<std::endl;
 }
 
-void CalcChiSq::calculateChiSq()
+void LauCalcChiSq::calculateChiSq()
 {
-
 	Float_t toyVal(0.), dataVal(0.);
 	Int_t minContent(0), ndof(0);
 	Float_t diff(0.), chiSq(0.), totalChiSq(0.);
@@ -165,11 +161,12 @@ void CalcChiSq::calculateChiSq()
 
 	ndof = histo1_->GetNumberOfBins()-nParams_-1;
 
-	cout<<"Total ChiSq/nDof = "<<totalChiSq<<"/"<<ndof<<" = "<<totalChiSq/ndof<<endl;
+	std::cout<<"Total ChiSq/nDof = "<<totalChiSq<<"/"<<ndof<<" = "<<totalChiSq/ndof<<std::endl;
 	std::cout << "Actual minimum entries per bin: " << minContent << std::endl;
 }
 
-void CalcChiSq::makePlots() {
+void LauCalcChiSq::makePlots()
+{
    gStyle->SetPalette(1,0);
    const Int_t NRGBs = 5;
    const Int_t NCont = 255;
@@ -258,7 +255,7 @@ void CalcChiSq::makePlots() {
 
 }
 
-void CalcChiSq::initialiseHistos()
+void LauCalcChiSq::initialiseHistos()
 {
 
         // Open the input control file:
@@ -270,7 +267,7 @@ void CalcChiSq::initialiseHistos()
 	// get the info on the low stat histo
 	getData >> fileName1_ >> treeName1_ >> xName1_ >> yName1_;
 	if (!getData.good()) {
-		cerr<<"Error. Could not read first line of the input file "<<inputFileName_<<endl;
+		std::cerr<<"Error. Could not read first line of the input file "<<inputFileName_<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -283,15 +280,15 @@ void CalcChiSq::initialiseHistos()
 	TTree* tree1 = dynamic_cast<TTree*>(file1->Get(treeName1_.Data()));
 
 	if (tree1 == 0) {
-		cerr<<"Error. Could not find the tree "<<treeName1_
-		    <<" in the file "<<fileName1_<<endl;
+		std::cerr<<"Error. Could not find the tree "<<treeName1_
+		    <<" in the file "<<fileName1_<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
 	// get the info on the high stat histogram
 	getData >> fileName2_ >> treeName2_ >> xName2_ >> yName2_;
 	if (!getData.good()) {
-		cerr<<"Error. Could not read the second line of the input file "<<inputFileName_<<endl;
+		std::cerr<<"Error. Could not read the second line of the input file "<<inputFileName_<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -312,8 +309,8 @@ void CalcChiSq::initialiseHistos()
 	}
 
 	if (tree2 == 0) {
-		cerr<<"Error. Could not find the tree "<<treeName2_
-		    <<" in the file "<<fileName2_<<endl;
+		std::cerr<<"Error. Could not find the tree "<<treeName2_
+		    <<" in the file "<<fileName2_<<std::endl;
 		gSystem->Exit(EXIT_FAILURE);
 	}
 
@@ -334,11 +331,11 @@ void CalcChiSq::initialiseHistos()
 	// close the text file
 	getData.close();
 
-	cout<<"Using the files and trees: "<<fileName1_<<"; "<<treeName1_
-	    <<" and "<<fileName2_<<"; "<<treeName2_<<endl;
-	cout<<"Relative scaling factor histo1/histo2 set to "<<scaleFactor_<<endl;
-	cout<<"Minimum bin content is "<<minContent_<<endl;
-	cout<<"Number of free parameters is "<<nParams_<<endl;
+	std::cout<<"Using the files and trees: "<<fileName1_<<"; "<<treeName1_
+	    <<" and "<<fileName2_<<"; "<<treeName2_<<std::endl;
+	std::cout<<"Relative scaling factor histo1/histo2 set to "<<scaleFactor_<<std::endl;
+	std::cout<<"Minimum bin content is "<<minContent_<<std::endl;
+	std::cout<<"Number of free parameters is "<<nParams_<<std::endl;
 
 	Double_t x;
 	Double_t y;
@@ -361,10 +358,10 @@ void CalcChiSq::initialiseHistos()
 
 	//select the number of divisions to get us closest to minContent entries per bin
 	std::vector<Int_t> divisions;
-	pickBinning(xs,ys,nEntries,divisions);
+	this->pickBinning(xs,ys,nEntries,divisions);
 
 	//perform the adaptive bining based on  histo1_
-	getHisto(xMin_, xMax_, yMin_, yMax_, xs, ys, nEntries, divisions);
+	this->getHisto(xMin_, xMax_, yMin_, yMax_, xs, ys, nEntries, divisions);
 
 	histo1_           = dynamic_cast<TH2Poly*>(theHisto_->Clone("histo1_"));
 	histo2_           = dynamic_cast<TH2Poly*>(theHisto_->Clone("histo2_"));
@@ -400,10 +397,10 @@ void CalcChiSq::initialiseHistos()
 	delete file1;
 	if (file2 != 0) {file2->Close();}
 	delete file2;
-
 }
 
-void CalcChiSq::pickBinning(Double_t* xs, Double_t* ys, Int_t nEntries, std::vector<Int_t>& divisions) {
+void LauCalcChiSq::pickBinning(const Double_t* xs, const Double_t* ys, const Int_t nEntries, std::vector<Int_t>& divisions)
+{
 	//first check how many events we have within the histogram limits
 	Int_t nIn(0);
 	for(Int_t i=0; i<nEntries; ++i) {
@@ -467,7 +464,8 @@ void CalcChiSq::pickBinning(Double_t* xs, Double_t* ys, Int_t nEntries, std::vec
 	}
 }
 
-void CalcChiSq::getHisto(Double_t xMin, Double_t xMax, Double_t yMin, Double_t yMax, Double_t* xs, Double_t* ys, Int_t nEntries, std::vector<Int_t>& divisions, UInt_t iter) {
+void LauCalcChiSq::getHisto(const Double_t xMin, const Double_t xMax, const Double_t yMin, const Double_t yMax, const Double_t* xs, const Double_t* ys, const Int_t nEntries, const std::vector<Int_t>& divisions, const UInt_t iter)
+{
 
 	//If it's the last iteration create the bin and return
 	if(iter == divisions.size()) {
@@ -539,7 +537,7 @@ void CalcChiSq::getHisto(Double_t xMin, Double_t xMax, Double_t yMin, Double_t y
 	//call for each sub bin
 	for (Int_t nDivx = 0; nDivx < n_divx; ++nDivx){
 		for (Int_t nDivy = 0; nDivy < n_divy; ++nDivy){
-			getHisto(xLimits[nDivx], xLimits[nDivx + 1], yLimits[nDivx][nDivy], yLimits[nDivx][nDivy + 1], xs, ys, nEntries, divisions,iter+1);
+			this->getHisto(xLimits[nDivx], xLimits[nDivx + 1], yLimits[nDivx][nDivy], yLimits[nDivx][nDivy + 1], xs, ys, nEntries, divisions,iter+1);
 		}
 	}
 }

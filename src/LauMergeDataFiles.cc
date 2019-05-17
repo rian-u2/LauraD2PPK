@@ -31,7 +31,10 @@ Thomas Latham
 #include "TObjArray.h"
 #include "TSystem.h"
 
-MergeDataFiles::MergeDataFiles(const TString& fileName1, const TString& fileName2, const TString& treeName) :
+ClassImp(LauMergeDataFiles)
+
+
+LauMergeDataFiles::LauMergeDataFiles(const TString& fileName1, const TString& fileName2, const TString& treeName) :
 	fileName1_(fileName1),
 	fileName2_(fileName2),
 	treeName_(treeName),
@@ -44,7 +47,7 @@ MergeDataFiles::MergeDataFiles(const TString& fileName1, const TString& fileName
 {
 }
 
-MergeDataFiles::~MergeDataFiles()
+LauMergeDataFiles::~LauMergeDataFiles()
 {
 	if (inputFile1_ && inputFile1_->IsOpen()) {
 		inputFile1_->Close();
@@ -62,7 +65,7 @@ MergeDataFiles::~MergeDataFiles()
 	delete outputFile_;
 }
 
-void MergeDataFiles::openInputFiles()
+void LauMergeDataFiles::openInputFiles()
 {
 	// open the two input ROOT files
 	inputFile1_ = TFile::Open(fileName1_);
@@ -88,7 +91,7 @@ void MergeDataFiles::openInputFiles()
 	}
 }
 
-void MergeDataFiles::setupInputTrees()
+void LauMergeDataFiles::setupInputTrees()
 {
 	TObjArray* leaves1 = inputTree1_->GetListOfLeaves();
 	TObjArray* leaves2 = inputTree2_->GetListOfLeaves();
@@ -138,7 +141,7 @@ void MergeDataFiles::setupInputTrees()
 	std::cout<<"Set branch addresses for "<<integerVars_.size()<<" Int_t branches.\n"<<std::endl;
 }
 
-void MergeDataFiles::setupOutputTree()
+void LauMergeDataFiles::setupOutputTree()
 {
 	std::cout<<"Creating branches for output tree \""<<outputTree_->GetName()<<"\"..."<<std::endl;
 
@@ -164,7 +167,7 @@ void MergeDataFiles::setupOutputTree()
 	std::cout<<"Created "<<doubleVars_.size()+integerVars_.size()<<" branches.\n"<<std::endl;
 }
 
-void MergeDataFiles::process(const TString& fileName)
+void LauMergeDataFiles::process(const TString& fileName)
 {
 	this->openInputFiles();
 
@@ -205,7 +208,7 @@ void MergeDataFiles::process(const TString& fileName)
 	this->writeFile();
 }
 
-void MergeDataFiles::findExperiments(TTree* tree, ExptsMap& exptsMap)
+void LauMergeDataFiles::findExperiments(TTree* tree, ExptsMap& exptsMap)
 {
 	const Int_t nEntries = tree->GetEntries();
 
@@ -235,15 +238,15 @@ void MergeDataFiles::findExperiments(TTree* tree, ExptsMap& exptsMap)
 	exptsMap[iExpt_].second = nEntries-1;
 }
 
-Bool_t MergeDataFiles::checkExperimentMaps() const
+Bool_t LauMergeDataFiles::checkExperimentMaps() const
 {
 	// first check that the two maps are the same size
 	UInt_t size1 = tree1Expts_.size();
 	UInt_t size2 = tree2Expts_.size();
 	if ( size1 != size2 ) {
-		std::cerr<<"ERROR in MergeDataFiles::checkExperimentMaps : Experiment maps are not the same size.\n";
-		std::cerr<<"                                             : Tree from "<<fileName1_<<" has "<<size1<<" experiments.";
-		std::cerr<<"                                             : Tree from "<<fileName2_<<" has "<<size2<<" experiments.";
+		std::cerr<<"ERROR in LauMergeDataFiles::checkExperimentMaps : Experiment maps are not the same size.\n";
+		std::cerr<<"                                                : Tree from "<<fileName1_<<" has "<<size1<<" experiments.";
+		std::cerr<<"                                                : Tree from "<<fileName2_<<" has "<<size2<<" experiments.";
 		return kFALSE;
 	}
 
@@ -251,7 +254,7 @@ Bool_t MergeDataFiles::checkExperimentMaps() const
 		Int_t expt = iter1->first;
 		ExptsMap::const_iterator iter2 = tree2Expts_.find( expt );
 		if ( iter2 == tree2Expts_.end() ) {
-			std::cerr<<"ERROR in MergeDataFiles::checkExperimentMaps : Cannot find experiment "<<expt<<" in tree from "<<fileName2_<<std::endl;
+			std::cerr<<"ERROR in LauMergeDataFiles::checkExperimentMaps : Cannot find experiment "<<expt<<" in tree from "<<fileName2_<<std::endl;
 			return kFALSE;
 		}
 	}
@@ -259,7 +262,7 @@ Bool_t MergeDataFiles::checkExperimentMaps() const
 	return kTRUE;
 }
 
-void MergeDataFiles::readExperiment(TTree* tree, const ExptsMap::const_iterator& expt, Int_t offset)
+void LauMergeDataFiles::readExperiment(TTree* tree, const ExptsMap::const_iterator& expt, Int_t offset)
 {
 	// find the first and last entry for this experiment from the map element
 	const Int_t firstEntry = expt->second.first;
@@ -276,7 +279,7 @@ void MergeDataFiles::readExperiment(TTree* tree, const ExptsMap::const_iterator&
 	}
 }
 
-void MergeDataFiles::writeFile()
+void LauMergeDataFiles::writeFile()
 {
 	std::cout<<"Building experiment:event index"<<std::endl;
 	outputTree_->BuildIndex("iExpt","iEvtWithinExpt");

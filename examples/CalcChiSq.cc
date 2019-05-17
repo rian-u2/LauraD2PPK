@@ -33,7 +33,7 @@ int main(const int argc, const char** argv)
 
 	if (argc > 1) {inputFile = TString(argv[1]);}
 
-	CalcChiSq a(inputFile);
+	LauCalcChiSq a(inputFile);
 
 	//a.setVerbose(kTRUE);
 	a.run();

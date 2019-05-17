@@ -1,6 +1,6 @@
 
 /*
-Copyright 2004 University of Warwick
+Copyright 2018 University of Warwick
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ Paul Harrison
 Thomas Latham
 */
 
-/*! \file LauBelleNR.cc
-    \brief File containing implementation of LauBelleNR class.
+/*! \file LauPoleRes.cc
+    \brief File containing implementation of LauPoleRes class.
 */
 
 #include "LauPoleRes.hh"
@@ -47,12 +47,12 @@ void LauPoleRes::initialise()
 LauComplex LauPoleRes::resAmp(Double_t mass, Double_t spinTerm)
 {
 	// This function returns the complex dynamical amplitude for a pole. 1/((mpole*mpole)-m*m)
-        // mpole==(m0-iw0)==(rePole-i imPole), to use the already defined mass and width of the resonance
+	// mpole==(m0-iw0)==(rePole-i*imPole), to use the already defined mass and width of the resonance
 
 	Double_t rePole = this->getMass();
 	Double_t imPole = this->getWidth();
 	Double_t reTerm = rePole*rePole -imPole*imPole -mass*mass;
-        Double_t imTerm = 2.0*rePole*imPole; 
+	Double_t imTerm = 2.0*rePole*imPole; 
 
 	LauComplex resAmplitude(reTerm, imTerm);
 

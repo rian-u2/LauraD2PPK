@@ -1,23 +1,37 @@
 
-// Copyright University of Warwick 2004 - 2014.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/*
+Copyright 2018 University of Warwick
 
-// Authors:
-// Thomas Latham
-// John Back
-// Paul Harrison
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Laura++ package authors:
+John Back
+Paul Harrison
+Thomas Latham
+*/
 
 /*! \file LauPolarFormFactorNR.hh
     \brief File containing declaration of LauPolarFormFactorNR class.
 */
 
 /*! \class LauPolarFormFactorNR
-    \brief Class for defining the Reescatering model.
+    \brief Class for defining a nonresonant form factor model
 
-    Defines the reescatering model from:
-         Pelaez et Yndúrain: arXiv:hep-ph/0411334v2 Mar 2005
-         Nogueira, Bediaga, Cavalcante, Frederico, Lorenco: JHEP ???
+    Defines the nonresonant form factor model from:
+         Nogueira, Bediaga, Cavalcante, Frederico, Lorenco: Phys. Rev. D92 (2015) 054010, arXiv:1506.08332 [hep-ph]
+         Pelaez, Yndurain: Phys. Rev. D71 (2005) 074016, arXiv:hep-ph/0411334
 */
 
 #ifndef LAU_POLAR_FORM_FACTOR_NR
@@ -50,13 +64,6 @@ class LauPolarFormFactorNR : public LauAbsResonance {
 
 		//! Initialise the model
 		virtual void initialise();
-
-		//! Get the complex dynamical amplitude
-		/*! 
-			\param [in] kinematics the kinematic variables of the current event
-			\return the complex amplitude
-		*/
-		//virtual LauComplex amplitude(const LauKinematics* kinematics);
 
 		//! Get the resonance model type
                 /*!
@@ -91,15 +98,15 @@ class LauPolarFormFactorNR : public LauAbsResonance {
 		virtual const std::vector<LauParameter*>& getFloatingParameters();
 
 	protected:
-		//! Set the parameter lambda, the NR term for the 
+		//! Set the parameter lambda, the NR shape parameter
 		/*!
-			\param [in] lambda, the NR term for the 
+			\param [in] lambda the NR shape parameter
 		*/
 		void setLambda(const Double_t lambda);
 
-		//! Get the lambda, the NR term for the 
+		//! Get the parameter lambda, the NR shape parameter
 		/*!
-			\return the lambda, the NR term for the 
+			\return lambda, the NR shape parameter
 		*/
 		Double_t getLambda() const {return (lambda_!=0) ? lambda_->value() : 0.0;}
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2008 University of Warwick
+Copyright 2018 University of Warwick
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ Thomas Latham
 */
 
 /*! \class LauRescatteringRes
-    \brief Class for defining the Rescatering model.
+    \brief Class for defining the rescattering model.
 
     Defines the Rescatering models from PiPi-KK Inelastic Scatering :
          2005: J.R. Pelaez, F. J. Ynduráin: PHYSICAL REVIEW D 71, 074016 (2005)
@@ -34,8 +34,8 @@ Thomas Latham
          2018: J.R. Pelaez,  A.Rodas: Unpublished yet PiPi -> KK scattering up to 1.47 GeV with hyperbolic dispersion relations.
 */
 
-#ifndef LAU_RESCATERING_RES
-#define LAU_RESCATERING_RES
+#ifndef LAU_RESCATTERING_RES
+#define LAU_RESCATTERING_RES
 
 #include "TString.h"
 
@@ -109,13 +109,13 @@ class LauRescatteringRes : public LauAbsResonance {
 	protected:
 		//! Set the parameter lambdaPiPi, the term for the PiPi
 		/*!
-			\param [in] lambdaPiPi, the term for the PiPi
+			\param [in] lambda the term for the PiPi
 		*/
 		void setLambdaPiPi(const Double_t lambda);
 
 		//! Get the lambdaPiPi, the term for the PiPi
 		/*!
-			\return the lambdaPiPi, the term for the PiPi
+			\return lambdaPiPi, the term for the PiPi
 		*/
 		Double_t getLambdaPiPi() const {return (lambdaPiPi_!=0) ? lambdaPiPi_->value() : 0.0;}
 
@@ -127,13 +127,13 @@ class LauRescatteringRes : public LauAbsResonance {
 
 		//! Set the parameter lambdaKK, the term for the KK
 		/*!
-			\param [in] lambdaKK, the term for the KK
+			\param [in] lambda the term for the KK
 		*/
 		void setLambdaKK(const Double_t lambda);
 
 		//! Get the lambdaKK, the term for the KK
 		/*!
-			\return the lambdaKK, the term for the KK
+			\return lambdaKK, the term for the KK
 		*/
 		Double_t getLambdaKK() const {return (lambdaKK_!=0) ? lambdaKK_->value() : 0.0;}
 
@@ -294,8 +294,6 @@ class LauRescatteringRes : public LauAbsResonance {
 
 		//! the term for the C0
 		LauParameter* C0_;
-
-		UInt_t  type_;
 
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;

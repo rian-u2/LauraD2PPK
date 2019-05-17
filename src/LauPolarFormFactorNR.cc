@@ -1,6 +1,6 @@
 
 /*
-Copyright 2004 University of Warwick
+Copyright 2018 University of Warwick
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ Paul Harrison
 Thomas Latham
 */
 
-/*! \file LauBelleNR.cc
-    \brief File containing implementation of LauBelleNR class.
+/*! \file LauPolarFormFactorNR.cc
+    \brief File containing implementation of LauPolarFormFactorNR class.
 */
 
 #include <iostream>

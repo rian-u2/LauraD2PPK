@@ -274,6 +274,26 @@ TString LauDaughters::getNameParent() const
 	return parent_->string();
 }
 
+TString LauDaughters::getSanitisedNameDaug1() const
+{
+	return daughters_[0]->stringAlphaNum();
+}
+
+TString LauDaughters::getSanitisedNameDaug2() const
+{
+	return daughters_[1]->stringAlphaNum();
+}
+
+TString LauDaughters::getSanitisedNameDaug3() const
+{
+	return daughters_[2]->stringAlphaNum();
+}
+
+TString LauDaughters::getSanitisedNameParent() const
+{
+	return parent_->stringAlphaNum();
+}
+
 Int_t LauDaughters::getTypeDaug1() const
 {
 	return daughters_[0]->code();

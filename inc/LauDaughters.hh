@@ -115,6 +115,15 @@ class LauDaughters {
 		//! Get name of the parent particle 
 		TString getNameParent() const;
 
+		//! Get sanitised name of the first daughter particle 
+		TString getSanitisedNameDaug1() const;
+		//! Get sanitised name of the second daughter particle 
+		TString getSanitisedNameDaug2() const;
+		//! Get sanitised name of the third daughter particle 
+		TString getSanitisedNameDaug3() const;
+		//! Get sanitised name of the parent particle 
+		TString getSanitisedNameParent() const;
+
 		//! Get PDG code of the first daughter particle 
 		Int_t getTypeDaug1() const;
 		//! Get PDG code of the second daughter particle 

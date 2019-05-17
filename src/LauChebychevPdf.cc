@@ -105,13 +105,13 @@ void LauChebychevPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	Double_t x2(x*x);
 	Double_t sum(0) ;
 	switch ( coeffs_.size() ) {
-		case  7: sum += coeffs_[6]->unblindValue()*x*p3(x2,64,-112,56,-7);
-		case  6: sum += coeffs_[5]->unblindValue()*p3(x2,32,-48,18,-1);
-		case  5: sum += coeffs_[4]->unblindValue()*x*p2(x2,16,-20,5);
-		case  4: sum += coeffs_[3]->unblindValue()*p2(x2,8,-8,1);
-		case  3: sum += coeffs_[2]->unblindValue()*x*p1(x2,4,-3);
-		case  2: sum += coeffs_[1]->unblindValue()*p1(x2,2,-1);
-		case  1: sum += coeffs_[0]->unblindValue()*x;
+		case  7: sum += coeffs_[6]->unblindValue()*x*p3(x2,64,-112,56,-7); [[fallthrough]];
+		case  6: sum += coeffs_[5]->unblindValue()*p3(x2,32,-48,18,-1); [[fallthrough]];
+		case  5: sum += coeffs_[4]->unblindValue()*x*p2(x2,16,-20,5); [[fallthrough]];
+		case  4: sum += coeffs_[3]->unblindValue()*p2(x2,8,-8,1); [[fallthrough]];
+		case  3: sum += coeffs_[2]->unblindValue()*x*p1(x2,4,-3); [[fallthrough]];
+		case  2: sum += coeffs_[1]->unblindValue()*p1(x2,2,-1); [[fallthrough]];
+		case  1: sum += coeffs_[0]->unblindValue()*x; [[fallthrough]];
 		case  0: sum +=1;
 	}
 
@@ -131,9 +131,9 @@ void LauChebychevPdf::calcNorm()
 
 	Double_t norm(0) ;
 	switch( coeffs_.size() ) {
-		case  7: case  6: norm += coeffs_[5]->unblindValue()*(-1 + 18./3. - 48./5. + 32./7.);
-		case  5: case  4: norm += coeffs_[3]->unblindValue()*( 1 -  8./3. +  8./5.);
-		case  3: case  2: norm += coeffs_[1]->unblindValue()*(-1 +  2./3.);
+		case  7: case  6: norm += coeffs_[5]->unblindValue()*(-1 + 18./3. - 48./5. + 32./7.); [[fallthrough]];
+		case  5: case  4: norm += coeffs_[3]->unblindValue()*( 1 -  8./3. +  8./5.); [[fallthrough]];
+		case  3: case  2: norm += coeffs_[1]->unblindValue()*(-1 +  2./3.); [[fallthrough]];
 		case  1: case  0: norm += 1;
 	}
 	norm *= xmax-xmin;

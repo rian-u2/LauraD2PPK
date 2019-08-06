@@ -53,6 +53,7 @@ ClassImp(LauAbsFitModel)
 
 
 LauAbsFitModel::LauAbsFitModel() :
+	fixParams_(kFALSE),
 	compareFitData_(kFALSE),
 	savePDF_(kFALSE),
 	writeLatexTable_(kFALSE),
@@ -1059,31 +1060,31 @@ UInt_t LauAbsFitModel::readExperimentData()
 	return nEvent;
 }
 
-void LauAbsFitModel::setParametersFromFile(TString fileName, TString treeName, Bool_t fix)
+void LauAbsFitModel::setParametersFromFile(const TString& fileName, const TString& treeName, const Bool_t fix)
 {
-    this->fixParamFileName_ = fileName;
-    this->fixParamTreeName_ = treeName;
-    this->fixParams_ = fix;
+	fixParamFileName_ = fileName;
+	fixParamTreeName_ = treeName;
+	fixParams_ = fix;
 }
 
-void LauAbsFitModel::setParametersFromMap(std::map<std::string, Double_t> parameters, Bool_t fix)
+void LauAbsFitModel::setParametersFromMap(const std::map<TString, Double_t>& parameters, const Bool_t fix)
 {
-    this->fixParamMap_ = parameters;
-    this->fixParams_ = fix;
+	fixParamMap_ = parameters;
+	fixParams_ = fix;
 }
 
-void LauAbsFitModel::setNamedParameters(TString fileName, TString treeName, std::set<std::string> parameters, Bool_t fix)
+void LauAbsFitModel::setNamedParameters(const TString& fileName, const TString& treeName, const std::set<TString>& parameters, const Bool_t fix)
 {
-    this->fixParamFileName_ = fileName;
-    this->fixParamTreeName_ = treeName;
-    this->fixParamNames_ = parameters;
-    this->fixParams_ = fix;
+	fixParamFileName_ = fileName;
+	fixParamTreeName_ = treeName;
+	fixParamNames_ = parameters;
+	fixParams_ = fix;
 }
 
-void LauAbsFitModel::setParametersFileFallback(TString fileName, TString treeName, std::map<std::string, Double_t> parameters, Bool_t fix)
+void LauAbsFitModel::setParametersFileFallback(const TString& fileName, const TString& treeName, const std::map<TString, Double_t>& parameters, const Bool_t fix)
 {
-    this->fixParamFileName_ = fileName;
-    this->fixParamTreeName_ = treeName;
-    this->fixParamMap_ = parameters;
-    this->fixParams_ = fix;
+	fixParamFileName_ = fileName;
+	fixParamTreeName_ = treeName;
+	fixParamMap_ = parameters;
+	fixParams_ = fix;
 }

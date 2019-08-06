@@ -258,22 +258,20 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] treeName the name of the tree in the file corresponding to the parameters to set
 			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
 		*/
-        void setParametersFromFile(TString fileName, TString treeName, Bool_t fix);
+		void setParametersFromFile(const TString& fileName, const TString& treeName, const Bool_t fix);
 
 		//! Set model parameters from a given std::map
 		/*!
-
 			Only parameters named in the map are imported, all others are set to their values specified
 			in the model configuration.
 
 			\param [in] parameters map from parameter name to imported value
 			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
 		*/
-        void setParametersFromMap(std::map<std::string, Double_t> parameters, Bool_t fix);
+		void setParametersFromMap(const std::map<TString, Double_t>& parameters, const Bool_t fix);
 
 		//! Set named model parameters from a file
 		/*!
-
 			Identical to setParametersFromFile, but only import parameters named from parameters set.
 			All others are set to their values specified in the model configuration.
 
@@ -282,11 +280,10 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] parameters the set of parameters to import from the file
 			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
 		*/
-        void setNamedParameters(TString fileName, TString treeName, std::set<std::string> parameters, Bool_t fix);
+		void setNamedParameters(const TString& fileName, const TString& treeName, const std::set<TString>& parameters, const Bool_t fix);
 
 		//! Set named model parameters from a given std::map, with fallback to those from a file
 		/*!
-
 			Parameters named in the map are imported with their specified values. All other parameters are set
 			to the values corresponding to the value in the given file.
 
@@ -295,7 +292,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 			\param [in] parameters map from parameter name to imported value (override parameters form the file)
 			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
 		*/
-        void setParametersFileFallback(TString fileName, TString treeName, std::map<std::string, Double_t> parameters, Bool_t fix);
+		void setParametersFileFallback(const TString& fileName, const TString& treeName, const std::map<TString, Double_t>& parameters, const Bool_t fix);
 
 	protected:
 
@@ -496,7 +493,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		virtual void writeOutTable(const TString& outputFile) = 0;
 
 		//! Store the per-event likelihood values
-                virtual void storePerEvtLlhds() = 0;
+		virtual void storePerEvtLlhds() = 0;
 
 		//! Calculate the sPlot data
 		virtual void calculateSPlotData();
@@ -712,21 +709,22 @@ class LauAbsFitModel : public LauSimFitSlave {
 		TString fixParamFileName_;
 
 		//! Imported parameters tree name
-        TString fixParamTreeName_;
+		TString fixParamTreeName_;
 
 		//! Map from imported parameter name to value
-        std::map<std::string, Double_t> fixParamMap_;
+		std::map<TString, Double_t> fixParamMap_;
 
 		//! Imported parameter names
-        std::set<std::string> fixParamNames_;
+		std::set<TString> fixParamNames_;
 
 		//! Whether to fix the loaded parameters (kTRUE) or leave them floating (kFALSE)
-        Bool_t fixParams_;
+		Bool_t fixParams_;
 
 		//! The set of parameters that are imported (either from a file or by value) and not
 		//  set to be fixed in the fit. In addition to those from fixParamNames_, these
-		//   include those imported from a file
-		std::set<LauParameter *> allImportedFreeParams_;
+		//  include those imported from a file.
+		std::set<LauParameter*> allImportedFreeParams_;
+
 	private:
 		//! Copy constructor (not implemented)
 		LauAbsFitModel(const LauAbsFitModel& rhs);

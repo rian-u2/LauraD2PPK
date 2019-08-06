@@ -178,7 +178,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		*/
 		void embedNegSignal(const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE,
-                                Bool_t useReweighting = kFALSE);
+				Bool_t useReweighting = kFALSE);
 
 		//! Embed full simulation events for the given background class, rather than generating toy from the PDFs
 		/*!
@@ -201,7 +201,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		*/
 		void embedPosSignal(const TString& fileName, const TString& treeName,
 				Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment = kFALSE,
-                                Bool_t useReweighting = kFALSE);
+				Bool_t useReweighting = kFALSE);
 
 		//! Embed full simulation events for the given background class, rather than generating toy from the PDFs
 		/*!
@@ -314,7 +314,7 @@ class LauCPFitModel : public LauAbsFitModel {
 
 
 		//! Store the per event likelihood values
-                virtual void storePerEvtLlhds();
+		virtual void storePerEvtLlhds();
 
 		// Methods to do with calculating the likelihood functions
 		// and manipulating the fitting parameters.
@@ -407,7 +407,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		/*!
 			\param [in] embeddedData the full simulation information
 		*/
- 	        Bool_t storeSignalMCMatch(LauEmbeddedData* embeddedData);
+		Bool_t storeSignalMCMatch(LauEmbeddedData* embeddedData);
 
 		//! Add sPlot branches for the extra PDFs
 		/*!
@@ -464,12 +464,12 @@ class LauCPFitModel : public LauAbsFitModel {
 		LauIsobarDynamics* getNegSigModel() {return negSigModel_;}
 		LauIsobarDynamics* getPosSigModel() {return posSigModel_;}
 
-        //! Retrieve a named parameter from a TTree
+		//! Retrieve a named parameter from a TTree
 		/*!
 			\param [in] tree a reference to the tree from which to obtain the parameters
 			\param [in] name the name of the parameter to retrive
 		*/
-        Double_t getParamFromTree(TTree & tree, TString name);
+		Double_t getParamFromTree( TTree& tree, const TString& name );
 
 		//! Set a LauParameter to a given value
 		/*!
@@ -477,13 +477,13 @@ class LauCPFitModel : public LauAbsFitModel {
 			\param [in] val the value to set
 			\param [in] fix whether to fix the LauParameter or leave it floating
 		*/
-        void fixParam(LauParameter * param, Double_t val, Bool_t fix);
+		void fixParam( LauParameter* param, const Double_t val, const Bool_t fix );
 
 		//! Set a vector of LauParameters according to the specified method
 		/*!
 			\param [in] params the vector of pointers to LauParameter to set values of
 		*/
-        void fixParams(std::vector<LauParameter *> params);
+		void fixParams( std::vector<LauParameter*>& params );
 
 	private:
 		//! Copy constructor (not implemented)
@@ -640,7 +640,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		Bool_t compareFitData_;
 
 		//! Name of the parent particle
-                TString negParent_;
+		TString negParent_;
 
 		//! Name of the parent particle
 		TString posParent_;
@@ -669,7 +669,7 @@ class LauCPFitModel : public LauAbsFitModel {
 		Bool_t reuseSignal_;
 
 		//! Boolean to use reweighting for B-
-        Bool_t useNegReweighting_;
+		Bool_t useNegReweighting_;
 
 		//! Boolean to use reweighting for B+
 		Bool_t usePosReweighting_;

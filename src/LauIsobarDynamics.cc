@@ -266,7 +266,7 @@ void LauIsobarDynamics::findIntegralsToBeRecalculated()
 
 void LauIsobarDynamics::collateResonanceParameters()
 {
-        // Initialise all resonance models
+	// Initialise all resonance models
 	resonancePars_.clear();
 	resonanceParValues_.clear();
 	resonanceParResIndex_.clear();
@@ -793,11 +793,11 @@ void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const T
 	// Define the K-matrix propagator. The resPairAmpInt integer specifies which mass combination should be used
 	// for the invariant mass-squared variable "s". The pole masses and coupling constants are defined in the
 	// paramFileName parameter file.
-        // The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
+	// The number of channels and poles are defined by the nChannels and nPoles integers, respectively.
 	// The integer rowIndex specifies which row of the propagator should be used when
 	// summing over all amplitude channels: S-wave will be the first row, so rowIndex = 1.
 
-        // Check that the rowIndex is valid
+	// Check that the rowIndex is valid
 	if (rowIndex < 1 || rowIndex > nChannels) {
 	        std::cerr << "ERROR in LauIsobarDynamics::defineKMatrixPropagator. The rowIndex, which is set to "
 			  << rowIndex << ", must be between 1 and the number of channels "
@@ -1025,20 +1025,20 @@ void LauIsobarDynamics::calcDPNormalisation()
 
 std::vector< std::pair<Double_t, Double_t> > LauIsobarDynamics::formGapsFromRegions( const std::vector< std::pair<Double_t, Double_t> >& regions, const Double_t min, const Double_t max ) const
 {
-    std::vector< std::pair<Double_t, Double_t> > gaps(regions.size() + 1, std::make_pair(0., 0.));
+	std::vector< std::pair<Double_t, Double_t> > gaps(regions.size() + 1, std::make_pair(0., 0.));
 
-    // Given some narrow resonance regions, find the regions that correspond to the gaps between them
+	// Given some narrow resonance regions, find the regions that correspond to the gaps between them
 
-    gaps[0].first = min;
+	gaps[0].first = min;
 
-    for (UInt_t i = 0; i < regions.size(); ++i) {
-        gaps[i].second = regions[i].first;
-        gaps[i + 1].first = regions[i].second;
-    }
+	for (UInt_t i = 0; i < regions.size(); ++i) {
+		gaps[i].second = regions[i].first;
+		gaps[i + 1].first = regions[i].second;
+	}
 
-    gaps[gaps.size() - 1].second = max;
+	gaps[gaps.size() - 1].second = max;
 
-    return gaps;
+	return gaps;
 }
 
 void LauIsobarDynamics::cullNullRegions( std::vector<LauDPPartialIntegralInfo*>& regions ) const
@@ -2640,19 +2640,18 @@ void LauIsobarDynamics::updateCoeffs(const std::vector<LauComplex>& coeffs)
 
 TString LauIsobarDynamics::getConjResName(const TString& resName) const
 {
-       // Get the name of the charge conjugate resonance
-       TString conjName(resName);
+	// Get the name of the charge conjugate resonance
+	TString conjName(resName);
 
-       Ssiz_t index1 = resName.Index("+");
-       Ssiz_t index2 = resName.Index("-");
-       if (index1 != -1) {
-	       conjName.Replace(index1, 1, "-");
-       } else if (index2 != -1) {
-	       conjName.Replace(index2, 1, "+");
-       }
+	Ssiz_t index1 = resName.Index("+");
+	Ssiz_t index2 = resName.Index("-");
+	if (index1 != -1) {
+		conjName.Replace(index1, 1, "-");
+	} else if (index2 != -1) {
+		conjName.Replace(index2, 1, "+");
+	}
 
-       return conjName;
-
+	return conjName;
 }
 
 Double_t LauIsobarDynamics::retrieveEfficiency()

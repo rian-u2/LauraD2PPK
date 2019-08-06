@@ -36,8 +36,15 @@ Thomas Latham
 #include "TMinuit.h"
 #include "TRandom.h"
 #include "TFile.h"
+#include "TTree.h"
+#include "TBranch.h"
+#include "TLeaf.h"
 #include "TMath.h"
 #include "TH2.h"
+#include "TGraph2D.h"
+#include "TGraph.h"
+#include "TStyle.h"
+#include "TCanvas.h"
 
 #include "LauAbsBkgndDPModel.hh"
 #include "LauAbsCoeffSet.hh"
@@ -56,14 +63,6 @@ Thomas Latham
 #include "LauPrint.hh"
 #include "LauRandom.hh"
 #include "LauScfMap.hh"
-#include "TGraph2D.h"
-#include "TGraph.h"
-#include "TStyle.h"
-#include "TCanvas.h"
-#include "TGraph2D.h"
-#include "TGraph.h"
-#include "TStyle.h"
-#include "TCanvas.h"
 
 ClassImp(LauCPFitModel)
 
@@ -517,27 +516,26 @@ void LauCPFitModel::initialise()
 			gSystem->Exit(EXIT_FAILURE);
 		}
 
-        if( !this->fixParamFileName_.IsNull() || !this->fixParamMap_.empty() ) {
-            std::vector<LauAbsCoeffSet*>::iterator itr;
+		if ( !fixParamFileName_.IsNull() || !fixParamMap_.empty() ) {
 
-            // Set coefficients
+			// Set coefficients
 
-            std::vector<LauParameter *> params;
-            for (itr = coeffPars_.begin(); itr!= coeffPars_.end(); itr++) {
-                std::vector<LauParameter*> p = (*itr)->getParameters();
-                params.insert(params.end(), p.begin(), p.end());
-            }
+			std::vector<LauParameter*> params;
+			for ( auto itr = coeffPars_.begin(); itr != coeffPars_.end(); ++itr ) {
+				std::vector<LauParameter*> p = (*itr)->getParameters();
+				params.insert(params.end(), p.begin(), p.end());
+			}
 
-            this->fixParams(params);
+			this->fixParams(params);
 
-            // Set resonance parameters (if they exist)
+			// Set resonance parameters (if they exist)
 
-            negSigModel_->collateResonanceParameters();
-            posSigModel_->collateResonanceParameters();
+			negSigModel_->collateResonanceParameters();
+			posSigModel_->collateResonanceParameters();
 
-            this->fixParams(negSigModel_->getFloatingParameters());
-            this->fixParams(posSigModel_->getFloatingParameters());
-        }
+			this->fixParams(negSigModel_->getFloatingParameters());
+			this->fixParams(posSigModel_->getFloatingParameters());
+		}
 
 		// From the initial parameter values calculate the coefficients
 		// so they can be passed to the signal model
@@ -1392,7 +1390,7 @@ void LauCPFitModel::randomiseInitFitPars()
 	// Only randomise those parameters that are not fixed!
 	std::cout << "INFO in LauCPFitModel::randomiseInitFitPars : Randomising the initial fit magnitudes and phases of the components..." << std::endl;
 
-	if (this->fixParamFileName_.IsNull() && this->fixParamMap_.empty()) {
+	if ( fixParamFileName_.IsNull() && fixParamMap_.empty() ) {
 		// No params are imported - randomise as normal
 		for (UInt_t i = 0; i < nSigComp_; i++) {
 			coeffPars_[i]->randomiseInitValues();
@@ -1411,7 +1409,6 @@ void LauCPFitModel::randomiseInitFitPars()
 		}
 
 		for (auto p : allImportedFreeParams_) { p->fixed(kFALSE); }
-
 	}
 }
 
@@ -3337,109 +3334,107 @@ void LauCPFitModel::savePDFPlotsWave(const TString& label, const Int_t& spin)
 
 }
 
-Double_t LauCPFitModel::getParamFromTree(TTree & tree, TString name)
+Double_t LauCPFitModel::getParamFromTree( TTree& tree, const TString& name )
 {
-    if ( tree.FindBranch(name) ) {
-        Double_t val;
+	TBranch* branch{tree.FindBranch( name )};
+	if ( branch ) {
+		TLeaf* leaf{branch->GetLeaf( name )};
+		if ( leaf ) {
+			tree.GetEntry(0);
+			return leaf->GetValue();
+		} else {
+			std::cout << "ERROR in LauCPFitModel::getParamFromTree : Leaf name " + name + " not found in parameter file!" << std::endl;
+		}
+	} else {
+		std::cout << "ERROR in LauCPFitModel::getParamFromTree : Branch name " + name + " not found in parameter file!" << std::endl;
+	}
 
-        tree.SetBranchAddress(name, &val);
-        tree.GetEntry(0);
-
-        return val;
-    } else {
-        std::cout << "ERROR in LauCPFitModel::getParamFromTree : Branch name " + name + " not found in parameter file!" << std::endl;
-    }
-
-    return -1.1;
+	return -1.1;
 }
 
-void LauCPFitModel::fixParam(LauParameter * param, Double_t val, Bool_t fix)
+void LauCPFitModel::fixParam( LauParameter* param, const Double_t val, const Bool_t fix)
 {
-    std::cout << "INFO in LauCPFitModel::fixParam : Setting " << param->name() << " to " << val << std::endl;
+	std::cout << "INFO in LauCPFitModel::fixParam : Setting " << param->name() << " to " << val << std::endl;
 
-    param->value(val);
-    param->genValue(val);
-    param->initValue(val);
-    
-    if (fix) {
-        param->fixed(kTRUE);
-    } else if (!param->fixed()){
+	param->value(val);
+	param->genValue(val);
+	param->initValue(val);
+
+	if (fix) {
+		param->fixed(kTRUE);
+	} else if (!param->fixed()){
 		// Add parameter name to list to indicate that this should not be randomised by randomiseInitFitPars
 		// (otherwise only those that are fixed are not randomised).
-                // This is only done to those that are not already fixed (see randomiseInitFitPars).
-
+		// This is only done to those that are not already fixed (see randomiseInitFitPars).
 		allImportedFreeParams_.insert(param);
-    }
+	}
 }
 
-void LauCPFitModel::fixParams(std::vector<LauParameter *> params)
+void LauCPFitModel::fixParams( std::vector<LauParameter*>& params )
 {
-    Bool_t fix = this->fixParams_;
+	const Bool_t fix{fixParams_};
 
-    // TODO: Allow some parameters to be fixed and some to remain floating (but initialised)
+	// TODO: Allow some parameters to be fixed and some to remain floating (but initialised)
 
-    if (!this->fixParamFileName_.IsNull()) {
+	if ( !fixParamFileName_.IsNull() ) {
 
-        // Take param values from a file
+		// Take param values from a file
 
-        TFile * paramFile = TFile::Open(this->fixParamFileName_, "READ");
-        TTree * paramTree = dynamic_cast<TTree *>(paramFile->Get(this->fixParamTreeName_));
+		TFile * paramFile = TFile::Open(fixParamFileName_, "READ");
+		if (!paramFile) {
+			std::cerr << "ERROR in LauCPFitModel::fixParams : File '" + fixParamFileName_ + "' could not be opened for reading!" << std::endl;
+			return;
+		}
 
-        if (!paramTree) {
-            std::cout << "ERROR in LauCPFitModel::fixParams : Tree '" + this->fixParamTreeName_ + "' not found in parameter file!" << std::endl;
-            return;
-        }
+		TTree * paramTree = dynamic_cast<TTree*>(paramFile->Get(fixParamTreeName_));
+		if (!paramTree) {
+			std::cerr << "ERROR in LauCPFitModel::fixParams : Tree '" + fixParamTreeName_ + "' not found in parameter file!" << std::endl;
+			return;
+		}
 
-        if (!this->fixParamNames_.empty()) {
+		if ( !fixParamNames_.empty() ) {
 
-            // Fix params from file, according to vector of names
+			// Fix params from file, according to vector of names
 
-            std::set<std::string>::iterator itrName;
-            std::vector<LauParameter *>::iterator itr;
-
-            for(itr = params.begin(); itr != params.end(); itr++) {
-                if ( (itrName = this->fixParamNames_.find((*itr)->name().Data()))  != this->fixParamNames_.end() ) {
-                    this->fixParam(*itr, this->getParamFromTree(*paramTree, *itrName), fix);
-                }
-            }
-
-
-        } else {
-
-            // Fix some (unspecified) parameters from file, prioritising the map (if it exists)
-
-            std::vector<LauParameter *>::iterator itr;
-
-            for(itr = params.begin(); itr != params.end(); itr++) {
-
-                TString name = (*itr)->name();
-
-                std::map<std::string, Double_t>::iterator nameValItr;
-
-                if ( !this->fixParamMap_.empty() && (nameValItr = this->fixParamMap_.find(name.Data())) != this->fixParamMap_.end() ) {
-                    this->fixParam(*itr, nameValItr->second, fix);
-                } else {
-                    this->fixParam(*itr, this->getParamFromTree(*paramTree, name), fix);
-                }
-
-            }
-
-        } // Vector of names?
-
-    } else {
-
-        // Fix param names fom map, leave others floating
-
-        std::vector<LauParameter *>::iterator itr;
-        std::map<std::string, Double_t>::iterator nameValItr;
-
-        for(itr = params.begin(); itr != params.end(); itr++) {
-            if ( (nameValItr = this->fixParamMap_.find((*itr)->name().Data())) != this->fixParamMap_.end() ) {
-                this->fixParam(*itr, nameValItr->second, fix);
-            }
-        }
-
-    }
+			for( auto itr = params.begin(); itr != params.end(); ++itr ) {
+				auto itrName = fixParamNames_.find( (*itr)->name() );
+				if ( itrName != fixParamNames_.end() ) {
+					this->fixParam(*itr, this->getParamFromTree(*paramTree, *itrName), fix);
+				}
+			}
 
 
+		} else {
+
+			// Fix some (unspecified) parameters from file, prioritising the map (if it exists)
+
+			for( auto itr = params.begin(); itr != params.end(); ++itr) {
+
+				const TString& name = (*itr)->name();
+
+				if ( ! fixParamMap_.empty() ) {
+					auto nameValItr = fixParamMap_.find(name);
+					if ( nameValItr != fixParamMap_.end() ) {
+						this->fixParam(*itr, nameValItr->second, fix);
+					}
+				} else {
+					this->fixParam(*itr, this->getParamFromTree(*paramTree, name), fix);
+				}
+
+			}
+
+		} // Vector of names?
+
+	} else {
+
+		// Fix param names fom map, leave others floating
+
+		for( auto itr = params.begin(); itr != params.end(); ++itr ) {
+			auto nameValItr = this->fixParamMap_.find( (*itr)->name() );
+			if ( nameValItr != this->fixParamMap_.end() ) {
+				this->fixParam(*itr, nameValItr->second, fix);
+			}
+		}
+
+	}
 }

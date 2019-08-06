@@ -189,9 +189,9 @@ class LauIsobarDynamics {
 		    \param [in] poleName the name of the pole
 		    \param [in] propName the name of the propagator to use
 		    \param [in] poleIndex the index of the pole within the propagator
-                    \param [in] useProdAdler boolean to turn on/off the production Adler zero factor (default = off)
+		    \param [in] useProdAdler boolean to turn on/off the production Adler zero factor (default = off)
 		*/
-                void addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex, Bool_t useProdAdler = kFALSE);
+		void addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex, Bool_t useProdAdler = kFALSE);
 
 		//! Add a K-matrix slowly-varying part (SVP) term to the model
 		/*!
@@ -204,7 +204,7 @@ class LauIsobarDynamics {
 		    \param [in] channelIndex the index of the channel within the propagator
 		    \param [in] useProdAdler boolean to turn on/off the production Adler zero factor (default = off)
 		*/
-                void addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex, Bool_t useProdAdler = kFALSE);
+		void addKMatrixProdSVP(const TString& SVPName, const TString& propName, Int_t channelIndex, Bool_t useProdAdler = kFALSE);
 
 		//! Set the maximum value of A squared to be used in the accept/reject
 		/*!
@@ -430,18 +430,18 @@ class LauIsobarDynamics {
 		*/
 		void updateCoeffs(const std::vector<LauComplex>& coeffs);
 
-                //! Collate the resonance parameters to initialise (or re-initialise) the model
+		//! Collate the resonance parameters to initialise (or re-initialise) the model
 		/*!
 		    NB: This has been factored out of the initialise() method to allow for use in the
-                    importation of parameters in LauAbsFitModel
+		    importation of parameters in LauAbsFitModel
 		*/
-                void collateResonanceParameters();
+		void collateResonanceParameters();
 
 		//! Set the helicity flip flag for new amplitude components
 		/*!
 		    \param [in] boolean the helicity flip flag
 		*/
-		inline void flipHelicityForCPEigenstates(Bool_t boolean) {flipHelicity_ = boolean;}
+		inline void flipHelicityForCPEigenstates(const Bool_t boolean) {flipHelicity_ = boolean;}
 
 		//! Retrieve the mean efficiency across the Dalitz plot
 		/*!
@@ -534,7 +534,7 @@ class LauIsobarDynamics {
 		inline std::vector<LauParameter*>& getFloatingParameters() {return resonancePars_;}
 
 		//! Whether to calculate separate rho and omega fit-fractions from LauRhoOmegaMix
-        inline void calculateRhoOmegaFitFractions(Bool_t calcFF) { calculateRhoOmegaFitFractions_ = calcFF; }
+		inline void calculateRhoOmegaFitFractions(const Bool_t calcFF) { calculateRhoOmegaFitFractions_ = calcFF; }
 
 	protected:
 		//! Print a summary of the model to be used
@@ -974,8 +974,8 @@ class LauIsobarDynamics {
 		//! Resonance indices for which the amplitudes and integrals should be recalculated
 		std::set<UInt_t> integralsToBeCalculated_;
 
-        //! Whether to calculate separate rho and omega fit fractions from the LauRhoOmegaMix model
-        Bool_t calculateRhoOmegaFitFractions_;
+		//! Whether to calculate separate rho and omega fit fractions from the LauRhoOmegaMix model
+		Bool_t calculateRhoOmegaFitFractions_;
 
 		ClassDef(LauIsobarDynamics,0)
 };

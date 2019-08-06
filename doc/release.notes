@@ -8,12 +8,17 @@
 			Laura++ v3r5
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+6th August 2019 Thomas Latham
+* Add some extra charmonium states to list of known resonances
+* Minor modifications to code for importing parameter values from file
+
 17th May 2019 Thomas Latham
 * Fix licences and Doxygen in pole, nonresonant form factors, and rescattering line shapes
-* Add reference for pole line shape
+* Add journal reference for pole line shape
 * Fix class names and add Doxygen to LauCalcChiSq, LauResultsExtractor, LauMergeDataFiles
-* Update Doxyfile with more recent Doxygen version
+* Update Doxyfile from more recent Doxygen version
 * Make consistent the use of ClassDef and ClassImp everywhere
+* Add functions to return the "sanitised" names of parent and daughters
 
 8th January 2019 Thomas Latham
 * Workaround for issue with splitting toy MC files when generating large number of experiments
@@ -44,7 +49,10 @@
 * Improve comments in functions calculating helicity angles in LauKinematics
 
 19th February 2018 Daniel O'Hanlon
-* Fix bug in LauCPFitModel introduced in code for importing parameters (25/01/18): when parameters are asked to be randomised via useRandomInitFitPars, those parameters that were already fixed in the model, in addition to those that are fixed on import, were being freed.
+* Fix bug in LauCPFitModel introduced in code for importing parameters (25/01/18)
+  - When parameters are asked to be randomised via useRandomInitFitPars, those
+    parameters that were already fixed in the model, in addition to those that
+    are fixed on import, were being freed.
 
 19th February 2018 Daniel O'Hanlon
 * Bug fixes in rho/omega fit fractions calculation

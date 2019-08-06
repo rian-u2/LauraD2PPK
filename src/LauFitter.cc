@@ -32,11 +32,11 @@ Thomas Latham
 #include "LauAbsFitter.hh"
 #include "LauMinuit.hh"
 
-ClassImp(LauFitter)
-
 
 LauAbsFitter* LauFitter::theInstance_ = 0;
 LauFitter::Type LauFitter::fitterType_ = LauFitter::Minuit;
+
+ClassImp(LauFitter)
 
 void LauFitter::setFitterType( Type type )
 {

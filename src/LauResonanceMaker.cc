@@ -310,8 +310,14 @@ void LauResonanceMaker::createResonanceVector()
 	// chi_c2
 	neutral = new LauResonanceInfo("chi_c2",        3.55620,  0.00193,  2,     0,       LauBlattWeisskopfFactor::Charmonium   );
 	resInfo_.push_back( neutral );
+	// psi(3770)
+	neutral = new LauResonanceInfo("psi(3770)",     3.77313,  0.0272,   1,     0,       LauBlattWeisskopfFactor::Charmonium   );
+	resInfo_.push_back( neutral );
 	// X(3872)
 	neutral = new LauResonanceInfo("X(3872)",       3.87169,   0.0012,  1,     0,       LauBlattWeisskopfFactor::Charmonium   );
+	resInfo_.push_back( neutral );
+	// chi_c2(2P)
+	neutral = new LauResonanceInfo("chi_c2(2P)",    3.9272,    0.024,   2,     0,       LauBlattWeisskopfFactor::Charmonium   );
 	resInfo_.push_back( neutral );
 
 	// unknown scalars             name,            mass,     width,    spin,  charge,  BW category,    BW radius parameter (defaults to 4.0)

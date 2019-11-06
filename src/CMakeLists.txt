@@ -1,0 +1,47 @@
+# Set the include directory (unfortunately this old-style stuff is necessary for the ROOT_GENERATE_DICTIONARY macro)
+include_directories(${PROJECT_SOURCE_DIR}/inc)
+
+# Use glob to find the headers and sources
+file(GLOB LAURA_HEADERS ${PROJECT_SOURCE_DIR}/inc/*.hh)
+file(GLOB LAURA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+if (NOT LAURA_BUILD_ROOFIT_SLAVE)
+    list(REMOVE_ITEM LAURA_HEADERS ${PROJECT_SOURCE_DIR}/inc/LauRooFitSlave.hh)
+	list(REMOVE_ITEM LAURA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/LauRooFitSlave.cc)
+endif()
+
+# Generate the rootcint file
+set(LAURA_LINKDEF ${PROJECT_SOURCE_DIR}/inc/Laura++_LinkDef.h)
+set(LAURA_DICTIONARY G__Laura++.cxx)
+if (LAURA_BUILD_ROOFIT_SLAVE)
+ROOT_GENERATE_DICTIONARY(
+	G__Laura++
+	${LAURA_HEADERS}
+	LINKDEF ${LAURA_LINKDEF}
+	OPTIONS -DDOLAUROOFITSLAVE
+	)
+else()
+ROOT_GENERATE_DICTIONARY(
+	G__Laura++
+	${LAURA_HEADERS}
+	LINKDEF ${LAURA_LINKDEF}
+	)
+endif()
+
+# Build the shared library
+add_library(Laura++ SHARED ${LAURA_SOURCES} ${LAURA_DICTIONARY})
+set_target_properties(Laura++ PROPERTIES OUTPUT_NAME Laura++)
+set_target_properties(Laura++ PROPERTIES VERSION ${CMAKE_PROJECT_VERSION} SOVERSION ${CMAKE_PROJECT_VERSION_MAJOR})
+set_target_properties(Laura++ PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+target_include_directories(Laura++ PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME}>)
+target_link_libraries(Laura++ ROOT::Core ROOT::Hist ROOT::Matrix ROOT::Physics ROOT::Minuit ROOT::EG ROOT::Tree)
+if (LAURA_BUILD_ROOFIT_SLAVE)
+    target_link_libraries(Laura++ ROOT::RooFit ROOT::RooFitCore)
+endif()
+
+# Install the libraries
+install(
+    TARGETS Laura++
+    EXPORT "LauraTargets"
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+

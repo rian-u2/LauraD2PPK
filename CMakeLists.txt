@@ -25,7 +25,11 @@ project(Laura++ VERSION 3.6.0
 # Option to enable/disable compilation of the RooFit slave class
 option(LAURA_BUILD_ROOFIT_SLAVE "Enable/disable compilation of RooFit slave class" OFF)
 
-# Option to enable/disable compilation of the test executables
+# Option to enable/disable building of the Doxygen documentation
+option(LAURA_BUILD_DOCS "Enable/disable building of Doxygen documentation" OFF)
+
+# Options to enable/disable compilation of the example/test executables
+option(LAURA_BUILD_EXAMPLES "Enable/disable compilation of example executables" OFF)
 option(LAURA_BUILD_TESTS "Enable/disable compilation of test executables" OFF)
 
 # Prepend this project's custom module path(s) to CMAKE_MODULE_PATH
@@ -39,6 +43,11 @@ include(LauraCompilerFlags)
 # External dependencies
 include(LauraExternalDependencies)
 
+# Create the documentation
+if(LAURA_BUILD_DOCS)
+    add_subdirectory(doc)
+endif()
+
 # Install the headers
 add_subdirectory(inc)
 
@@ -46,7 +55,9 @@ add_subdirectory(inc)
 add_subdirectory(src)
 
 # Build and install the executables in the examples directory
-add_subdirectory(examples)
+if(LAURA_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 if(LAURA_BUILD_TESTS)
     add_subdirectory(test)

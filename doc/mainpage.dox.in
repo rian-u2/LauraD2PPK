@@ -23,7 +23,11 @@ Thomas Latham
 
 /*!
 \mainpage
-Welcome to the Laura++ documentation, please use the links at the top of the page to navigate to particular classes or namespaces.<br>
+Welcome to the Laura++ documentation, please use the links at the top of the page to navigate to particular classes or namespaces.
+
 The Laura++ project can be found at https://laura.hepforge.org
+
+See also the [README](@PROJECT_SOURCE_DIR@/README.md) and [release notes](@PROJECT_SOURCE_DIR@/doc/ReleaseNotes.md) for more information.
+
 */
 

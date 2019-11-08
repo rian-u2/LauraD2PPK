@@ -1,12 +1,10 @@
-///////////////////////////////////////////////////////////////
-///                                                         ///
-///  This is the History file for the Laura++ package.      ///
-///                                                         ///
-///////////////////////////////////////////////////////////////
+# Laura++ release notes
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r5
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+6th November 2019 Thomas Latham
+* Adopt CMake as the build system
+
+===
+## Laura++ v3r5
 
 6th August 2019 Thomas Latham
 * Add some extra charmonium states to list of known resonances
@@ -63,9 +61,8 @@
 23rd January 2018 Daniel O'Hanlon
 * Calculate separate rho and omega fit-fractions for LauRhoOmegaMix, when turned on with calculateRhoOmegaFitFractions in LauIsobarDynamics.
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r4
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v3r4
 
 16th January 2018 Thomas Latham
 * Update licence for all files to the Apache Software License Version 2.0
@@ -90,9 +87,8 @@
 29th November 2017 Thomas Latham
 * Improve error messages in LauCPFitModel::weightEvents
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r3
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v3r3
 
 23rd November 2017 Thomas Latham
 * Add an example written as a python script: GenFit3pi.py
@@ -108,9 +104,8 @@
     f_Adler rather than being multiplied by it
   - only affected case where using LauFlatteRes to describe K_0*(1430)
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r2
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v3r2
 
 18th October 2017 Thomas Latham
 * Modify LauDaughters::testDPSymmetry to:
@@ -256,12 +251,10 @@
 * Add calculation of so-called covariant factors for spin amplitude
 
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r1
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v3r1
 
 9th September 2016 Thomas Latham
-
 * Modification of LauFitNtuple to check the size of the covariance matrix wrt known number of parameters and act accordingly:
   - If it is empty, just fill a diagonal correlation matrix and issue a warning.
   - If it results from a failed first stage of a two-stage fit then the correlation matrix is padded with 1s and 0s for the parameters that were fixed in the first stage.
@@ -269,7 +262,6 @@
 * Minor fix to LauAbsCoeffSet: the names of parameters would be mangled if they were the same as the basename, e.g. A1_A would become A1_ while A1_B would be correct.
 
 8th September 2016 Thomas Latham
-
 * Modifications to LauResonanceInfo to allow customisation of which extra parameters are shared between charge conjugate or shared-parameter records.
   - Where the parameters are not shared they are independently created instead of being cloned.
 * Modification of LauRhoOmegaMix to take advantage of the above to have the magB and phiB parameters independent.
@@ -277,7 +269,6 @@
 * Minor unrelated improvement to information messages in LauIsobarDynamics.
 
 25th August 2016 John Back
-
 * Modified LauRhoOmegaMix to allow either a RelBW or GS lineshape for the rho, as well as
   allowing the option to set the second-order denominator term to be equal to unity. 
   Also fixed the bug where the spinTerm was not included in the rho-omega amplitude.
@@ -296,25 +287,20 @@
   This is used in the LauRhoOmegaMix for the omega lineshape where its width does not depend on momentum
 
 23rd May 2016 John Back
-
 * Added new lineshape model for rho-omega mass mixing, LauRhoOmegaMix.
 
 12th April 2016 Thomas Latham
-
 * Switch to integrating in square DP when narrow resonances are found in m12.
   - The integration grid size can be specified by the user
 
 19th January 2016 John Back
-
 * Correct the f(m^2) factor in the denominator of the LauGounarisSakuraiRes
   lineshape to use Gamma_0 instead of Gamma(m)
 
 14th January 2016 Thomas Latham
-
 * Documentation improvements
 
 7th December 2015 Thomas Latham
-
 * Resolve bug that meant the order of resonances in LauIsobarDynamics was assumed to match with the order in which the complex coefficients are supplied to the fit model
   - The ordering of resonances is defined by LauIsobarDynamics:
     - Firstly all coherent resonances in order of addition
@@ -324,79 +310,64 @@
   - Doxygen updated to reflect these changes
 
 12th November 2015 Daniel Craik
-
 * Added support for Akima splines and linear interpolation to Lau1DCubicSpline
 * LauAbsModIndPartWave, LauModIndPartWaveRealImag and LauModIndPartWaveMagPhase updated to allow choice of spline interpolation method
 * LauEFKLLMRes updated to use Akima splines
 
 10th November 2015 Thomas Latham & Daniel Craik
-
 * Add the EFKLLM form-factor model for the Kpi S-wave and an example using this lineshape
 * Modify LauResonanceMaker::getResonance to use a switch for greater clarity and easier checking on missing cases
 
 4th November 2015 Daniel Craik
-
 * Add checks to LauIsobarDynamics::addResonance and LauIsobarDynamics::addIncohResonance to stop the wrong type of LauResonanceModel being used
   - LauAbsResonance::isIncoherentModel method added to identify incoherent models
 
 8th September 2015 Mark Whitehead
-
 * Add the ability to modify the error of parameters via the CoeffSet
   - setParameterError added to LauAbsCoeffSet
 * Tweak the handling of initial error values passed to MINUIT (to determine initial step size) in LauMinuit
 
 
 7th September 2015 Mark Whitehead
-
 * Add the ability to Gaussian constrain parameters via the CoeffSet
   - addGaussianConstraint added to LauAbsCoeffSet
 
 12th June 2015 Thomas Latham
-
 * Modifications to Belle-style nonresonant models
   - LauBelleNR modified to use pure Legendre polynomials of cos(theta) in the spin term (i.e. to remove the q*p factors)
   - New form added to LauBelleSymNR (LauAbsResonance::BelleSymNRNoInter) that removes the interference term between the two DP halves
   - The new form also works with non-zero spin (warning added if non-zero spin specified for BelleSymNR and TaylorNR)
 
 8th June 2015 Thomas Latham
-
 * Further work on the blinding mechanism:
   - New method added LauParameter::blindParameter that activates the blinding.
   - The rest of the framework updated to use another new method LauParameter::unblindedValue in all likelihood calculations etc.
   - Example GenFitNoDP updated to include lines to optionally blind the yield parameters.
 
 29th May 2015 Daniel Craik
-
 * Added LauBlind class for blinding and unblinding a value with an offset based on a blinding string
 
 26th May 2015 Daniel Craik
-
 * Stopped LauCPFitModel passing fixed signal/background yields or 
   asymmetries to Minuit to avoid hitting limit of 101 fixed parameters
 
 22nd April 2015 Daniel Craik
-
 * Updated MIPW classes to use Lau1DCubicSpline
 
 19th April 2015 Daniel Craik
-
 * Added Lau1DCubicSpline class for 1D spline interpolation
 
 26th March 2015 Thomas Latham
-
 * Reworked MIPW code into abstract base class and derived classes
   to allow different representations of the amplitude at each knot
 
 31st December 2015 Daniel Craik
-
 * Added unbinned goodness of fit tests to examples
 
 12th January 2015 Daniel Craik
-
 * Calculate effective masses for virtual resonances above the upper kinematic limit
 
 10th December 2014 Daniel Craik
-
 * Added coefficient sets to extract gamma from a simultaneous fit to CP and nonCP final states, 
   such as the B0->D_CP K pi and B0->D0bar K pi Dalitz plots, as proposed in Phys. Rev. D79, 051301 (2009)
   - LauPolarGammaCPCoeffSet uses the CP parameters r, delta and gamma directly
@@ -407,63 +378,51 @@
   - LauPolarGammaCPCoeffSet allows for a single gamma parameter to be shared between multiple resonances
   - LauAbsCoeffSet::adjustName made virtual to allow global variables such as gamma to not receive a prefix
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r0p1
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v3r0p1
 
 19th June 2015 Thomas Latham
-
 * Factor out the JFit slave code from LauAbsFitModel into a new base class LauSimFitSlave
 
 19th June 2015 Thomas Latham
-
 * Fix check in LauIsobarDynamics::calcDPNormalisationScheme to avoid using hardcoded number
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v3r0
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v3r0
 
 24th October 2014 Thomas Latham
-
 * Fixed bug in floating of Blatt-Weisskopf barrier radii
   - The values at the pole mass were not being updated when the radii changed
 
 21st October 2014 Daniel Craik
-
 * Fixed bug in LauIsobarDynamics where multiple incoherent amplitudes led to nonsensical fit fractions
 
 17th October 2014 John Back
-
 * Added the ability to calculate the transition amplitude matrix T in LauKMatrixPropagator,
   as well as a few other minor speed-up changes and code checks. Example/PlotKMatrixTAmp.cc
   can be used to check the T amplitude variation, phase shift and inelasticity, for a given 
   K matrix channel, as a function of the invariant mass squared variable s
 
 15th October 2014 Thomas Latham
-
 * Add methods to LauIsobarDynamics to make the integration binning more tunable by the user:
   - setNarrowResonanceThreshold - modify the value below which a resonance is considered to be narrow (defaults to 0.02 GeV/c2)
   - setIntegralBinningFactor - modify the factor by which the narrow resonance width is divided to obtain the bin size (defaults to 100)
 * Print warning messages if the memory usage is likely to be very large
 
 13th October 2014 Thomas Latham
-
 * Modify Makefile to allow compilation with ROOT 6 (in addition to maintaining support for ROOT 5)
 * Fix a few compilation errors on MacOSX 10.9
 
 13th October 2014 Daniel Craik
-
 * Update LauModIndPartWave to allow knots at kinematic limits to be modified
   - Add new method setKnotAmp to modify existing knots (and the knot at the upper kinematic limit which is automatically added at initialisation)
 * Update doxygen for LauIsobarDynamics::addIncoherentResonance to mention that incoherent resonances must be added last
 
 10th October 2014 Thomas Latham
-
 * Add new method to LauResonanceMaker to set whether the radius of a given Blatt-Weisskopf category should be fixed of floated
 * Modify the methods of LauResonanceMaker to set the radius value and whether it should be floated so that they work before and after the resonances have been created
 
 9th October 2014 John Back
-
 * Corrected the eta-eta' and 4pi phase space factors in LauKMatrixPropagator,
   which is used for the K-matrix amplitude:
   - calcEtaEtaPRho() does not include the mass difference term m_eta - m_eta'
@@ -474,11 +433,9 @@
     going on and the reason for the choices made
 
 6th October 2014 Thomas Latham
-
 * Implement the mechanism for floating Blatt-Weisskopf barrier factor radius parameters
 
 30th September 2014 Thomas Latham
-
 * Fix issue in the checks on toy MC generation validity
   - in the case of exceeding max iterations it was possible to enter an infinite loop
   - the checks now detect all three possible states:
@@ -489,7 +446,6 @@
 * Modify behaviour when TTree objects are saved into files to avoid having multiple cycle numbers present
 
 29th September 2014 Daniel Craik
-
 * Add support for incoherent resonances in the signal model
   - LauIsobarDynamics updated to include incoherent terms
   - ABC for incoherent resonances, LauAbsIncohRes, added deriving from LauAbsResonance
@@ -500,31 +456,25 @@
 * Updated parameters in LauConstants to match PDG 2014
 
 14th July 2014 Thomas Latham
-
 * Add intial support for fully-symmetric final states such as B0 -> KS KS KS
   - Performs the symmetrisation of the signal model
   - Background (and efficiency) histogram classes need some work if the user wants to provide folded histograms
 
 8th July 2014 Daniel Craik
-
 * Add class for model-independent partial wave
   - Uses splines to produce a smooth amplitude from a set of magnitude and phase values at given invariant masses
   - The individual magnitudes and phases can be floated in the fit
 
 16th June 2014 Thomas Latham
-
 * Allow floating of resonance parameters in simultaneous fits
 
 13th June 2014 Thomas Latham
-
 * Fix bug in LauResonanceInfo cloning method, where the width parameter was given a clone of the mass
 
 10th June 2014 Thomas Latham
-
 * Add new function to allow sharing of resonance parameters between components that are not charged conjugates, e.g. LASS_BW and LASS_NR
 
 9th June 2014 Thomas Latham and Daniel Craik
-
 * Fix bug in the new integration scheme
   - Was not accounting for cases where several resonances share a floating parameter
   - Meant that the integrals and caches for that resonance were not being updated
@@ -535,46 +485,38 @@
   - Therefore results are not necessarily comparable between fits run before and after this changeset.
   - This change will first be released in v3r0.
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v2r2
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v2r2
 
 5th June 2014 Thomas Latham
-
 * Fix issue in asymmetric efficiency histogram errors
   - Fluctuation of bins was incorrectly sampling - assumed area each side of peak was the same
 
 5th June 2014 Thomas Latham
 (in branch for release in v3r0)
-
 * Introduce intelligent calculation of amplitudes during recalculation of integrals and recaching of data points
   - Floating resonance parameters is now much more efficient
 * Make resonance parameters second-stage, also improves fit timing when floating them
 
 3rd June 2014 Rafael Coutinho
-
 * Implement generation of toy MC from fit results in fitSlave
 
 27th May 2014 Thomas Latham
 (in branch for release in v3r0)
-
 * Complete audit of special functions
 * Remove unncessary LauAbsDPDynamics base class and move all functionality into LauIsobarDynamics
 
 20th May 2014 Daniel Craik
 (in branch for release in v3r0)
-
 * Add support for K*_0(1430) and a_0(980) to LauFlatteRes
 
 16th-19th May 2014 Thomas Latham and Daniel Craik
 (in branch for release in v3r0)
-
 * Update all other lineshapes so that their parameters can float
   - The only resonance parameters that now cannot float are the Blatt-Weisskopf barrier factor radii
 
 15th May 2014 Thomas Latham
 (in branch for release in v3r0)
-
 * Change the mechanism for getting floating resonance parameters into the fit
   - Moved from LauResonanceMaker to the resonances themselves
   - Lays some groundwork for improving the efficiency of recalculating the integrals
@@ -582,42 +524,36 @@
 
 13th May 2014 Daniel Craik
 (in branch for release in v3r0)
-
 * Fix bug where illegal characters were being propagated from resonance names into TBranch names
 
 6th May 2014 Thomas Latham
 (in branch for release in v3r0)
-
 * Provide accessors for mass and width parameters
 
 5th May 2014 Louis Henry
-
 * Fix compilation problem by making LauDatabasePDG destructor virtual
 
 4th May 2014 Thomas Latham
-
-* Provide a new argument to Lau*FitModel::splitSignalComponent to allow fluctuation of the bins on the SCF fraction histogram
+* Provide a new argument to LauSimpleFitModel::splitSignalComponent and
+  LauCPFitModel::splitSignalComponent to allow fluctuation of the bins on the
+  SCF fraction histogram
 
 29th April 2014 Thomas Latham
-
 * Fix bug in the determination of the integration scheme
   - Nearby narrow resonances caused problems if their "zones" overlap
   - These zones are now merged together
 
 29th April 2014 Thomas Latham
 (in branch for release in v3r0)
-
 * Some improvments to integration scheme storage
 
 26th April 2014 Juan Otalora
 (in branch for release in v3r0)
-
 * Make integation scheme fixed after first determination
   - is stored in a new class LauDPPartialIntegralInfo
   - used on subsequent re-evaluations of the integrals
 
 23rd April 2014 Thomas Latham
-
 * Attempt to improve clarity of LauIsobarDynamics::addResonance function
   - the 3rd argument is now an enumeration of the various resonance models
   - removed the optional arguments regarding the change of mass, width & spin
@@ -629,7 +565,6 @@
 * All examples updated to use new interface
 
 23rd April 2014 Thomas Latham
-
 * Address issue of setting values of resonance parameters for all models
   - decided to do away with need to have LauIsobarDynamics know everything
   - LauIsobarDynamics::addResonance now returns a pointer to LauAbsResonance
@@ -638,82 +573,67 @@
   - Update GenFit3pi example to demonstrate mechanism
 
 22nd April 2014 Thomas Latham
-
 * Allow Gaussian constraints to be added in simultaneous fitting
   - constraints will be ignored by the slaves
   - those added directly to fit parameters will be propogated to the master and handled there
   - those on combinations of parameters should be added in the master process
 
 22nd April 2014 Mark Whitehead
-
 * Update Laura to cope with resonances of spin 4 and spin 5
   - Zemach spin terms added to src/LauAbsResonance.cc
   - BW barrier factors added to src/LauRelBreitWignerRes.cc
 
 19th April 2014 Daniel Craik
-
 * Add LauWeightedSumEffModel which gives an efficiency model from the weighted sum of several LauEffModel objects.
 * Added pABC, LauAbsEffModel, for LauEffModel and LauWeightedSumEffModel.
 * Various classes updated to use pointers to LauAbsEffModel instead of LauEffModel.
 
 15th April 2014 Daniel Craik
-
 * Enable LauEfficiencyModel to contain several Lau2DAbsDP objects with the total efficiency calculated as the product.
 
 10th April 2014 Mark Whitehead
-
 * Fix an issue with the likelihood penalty term for Gaussian constraints
   - Factor two missing in the denominator
   - New penalty term is: ( x-mean )^2 / 2*(width^2)
 
 4th April 2014 Thomas Latham
-
 * Add storage of fit fractions that have not been efficiency corrected
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v2r1
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v2r1
 
 1st April 2014 Thomas Latham
-
 * Fix issue in LauFitter that prevents compilation with g++ 4.8
   - Missing virtual destructor
   - Take opportunity to audit other special functions
 
 31st March 2014 Mark Whitehead
 (in branch for release in v2r1)
-
 * Added an efficiency branch to the ntuple produced for toy data samples
   - Both LauSimpleFitModel and LauCPFitModel updated
 
 28th March 2014 Daniel Craik
 (in branch for release in v2r2)
-
 * Added support for asymmetric errors to Lau2DHistDP, Lau2DSplineDP and LauEffModel.
 
 27th March 2014 Daniel Craik
-
 * Changed histogram classes to use seeded random number generator for
   fluctuation and raising or lowering of bins and updated doxygen.
 
 20th March 2014 Mark Whitehead
 (in branch for release in v2r1)
-
 * Added the ability to add Gaussian contraints to LauFormulaPars of fit parameters
   - User supplies the information but the LauFormulaPar is constructed behind the scenes
 
 18th March 2014 Thomas Latham
-
 * Improve behaviour of toy generation from fit results
 
 13th March 2014 Juan Otalora
 (in branch for release in v3r0)
-
 * Extended ability to float mass and width to other resonance lineshapes (Flatte, LASS and G-S)
 
 11th March 2014 Mark Whitehead 
 (in branch for release in v2r1)
-
 * Added the functionality to make LauFormulaPars usable in fits
   - Added a new class LauAbsRValue which LauParameter and LauFormularPar inherit from
   - Many files updated to accept LauAbsRValues instead of LauParameters
@@ -722,19 +642,16 @@
 
 10th March 2014 Thomas Latham
 (in branch for release in v3r0)
-
 * First attempt at floating resonance parameters (work mostly from Juan)
   - Only works for RelBW lineshape
   - Can only float mass and width
   - Works nicely!
   - Still needs much work to generalise and make more efficient
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v2r0
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v2r0
 
 8th March 2014 Thomas Latham
-
 * Some additional functionality for the CoeffSet classes:
   - allow the parameter values to be set (optionally setting the initial and generated values as well)
   - allow the parameters to be set to float or to be fixed in the fit
@@ -747,11 +664,9 @@
 * Add -Werror to compiler flags (treats warnings as errors)
 
 5th March 2014 Thomas Latham
-
 * Some improvements to LauPolNR to speed up amplitude calculation
 
 2nd March 2014 Thomas Latham
-
 * A number of updates to the CoeffSet classes:
   - allow specification of the basename just after construction (before being given to the fit model)
   - allow configuration of the parameter fit ranges (through static methods of base class)
@@ -760,41 +675,33 @@
 * Some improvements to the Doxygen and runtime information printouts
 
 20th February 2014 Louis Henry
-
 * Add LauPolNR - class for modelling the nonresonant contribution based on BaBar 3K model (arXiv:1201.5897)
 
 6th February 2014 Thomas Latham
-
 * Correct helicity convention information in Doxygen for LauKinematics
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v1r2
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v1r2
 
 5th February 2014 Thomas Latham
-
 * Add rule to the Makefile that creates a rootmap file for the library
 
 4th February 2014 Daniel Craik
-
 * Fixed bug in Lau2DSplineDPPdf - normalisation was not being calculated
 * Added out-of-range warning in LauBkgndDPModel and supressed excessive warnings
 
 3rd February 2014 Mark Whitehead
 (in branch for release in v2r0)
-
 * Added a new class to allow parameters to be a function of other parameters
   - inc/LauFormulaPar.hh
   - src/LauFormulaPar.cc
 
 28th January 2014 Daniel Craik
-
 * Improved out-of-range efficiency warnings in LauEffModel and supressed excessive errors
 * Modified LauIsobarDynamics to allow LASS parameters to be configured for LauLASSBWRes and
   LauLASSNRRes
 
 27th January 2014 Daniel Craik
-
 * Added spline interpolation to DP backgrounds
   - Added Lau2DSplineDPPdf which uses a spline to model a normalised PDF across a DP
   - Added pABC, Lau2DAbsDPPdf, for Lau2DHistDPPdf and Lau2DSplineDPPdf and moved common 
@@ -803,19 +710,16 @@
   - setBkgndSpline method added to LauBkgndDPModel to allow use of splines
 
 22nd January 2014 Thomas Latham
-
 * Improve some error checks and corresponding warning messages in
   LauCPFitModel::setSignalDPParameters
 
 16th January 2014 Thomas Latham
-
 * Add LauRealImagCPCoeffSet, which provides an (x,y), (xbar,ybar) way of
   parametrising the complex coefficients.
 * Try to improve timing in the *CoeffSet classes by making the complex coeffs
   into member variables.
 
 20th December 2013 Daniel Craik
-
 * Added Lau2DCubicSpline which provides cubic spline interpolation of a histogram
   - Added Lau2DSplineDP which uses a spline to model variation across a DP (eg efficiency)
   - Added pABC, Lau2DAbsDP, for Lau2DHistDP and Lau2DSplineDP and moved common code 
@@ -827,7 +731,6 @@
 
 18th December 2013 Mark Whitehead
 (in branch for release in v2r0)
-
 * Added functionality to include Gaussian constraints on floated
   parameters in the fit.
   The files updated are:
@@ -837,53 +740,42 @@
   - src/LauParameter.cc
 
 5th December 2013 Thomas Latham
-
 * Fix small bug in GenFitKpipi example where background asymmetry parameter had
   its limits the wrong way around
 
 4th December 2013 Daniel Craik
-
 * Updated 2D chi-squared code to use adaptive binning.
 
 3rd December 2013 Thomas Latham
-
 * Generalise the Makefile in the examples directory
   - results in minor changes to the names of 3 of the binaries
 
 3rd December 2013 Thomas Latham
 (in branch for release in v2r0)
-
 * Have the master save an ntuple with all fitter parameters and the full correlation matrix information.
 
 29th November 2013 Thomas Latham
-
 * Fixed bug in ResultsExtractor where the output file was not written
 
 29th November 2013 Thomas Latham
 (in branch for release in v2r0)
-
 * Allow the slave ntuples to store the partial covariance matrices in the simultaneous fitting
 
 26th November 2013 Thomas Latham
 (in branch for release in v2r0)
-
 * Added first version of the simultaneous fitting framework
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v1r1p1
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v1r1p1
 
 22nd November 2013 Thomas Latham
-
 * Fixed bug in LauCPFitModel where values of q = -1 extra PDFs
   were used regardless of the event charge.
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v1r1
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v1r1
 
 20th November 2013 Mark Whitehead
-
 * Changed convention for the barrier factors, swapping from p* to p.
   This seems to give more physically reasonable results.
   The files updated are:
@@ -891,16 +783,13 @@
   - src/LauRelBreitWignerRes.cc
 
 18th October 2013 Thomas Latham
-
 * Fix dependency problem in Makefile
 
 8th October 2013 Thomas Latham
-
 * Some fixes to yield implementation
 * Minor bug fix in DP background histogram class
 
 7th October 2013 Mark Whitehead
-
 * Update to accept the yields and yield asymmetries as LauParameters.
   All examples have been updated to reflect this change.
   This updated the following files:
@@ -913,11 +802,9 @@
 * Addition of the following particles to src/LauResonanceMaker.cc
   Ds*+-, Ds0*(2317)+-, Ds2*(2573)+-, Ds1*(2700)+- and Bs*0
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-			Laura++ v1r0
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+===
+## Laura++ v1r0
 
 13th September 2013 Thomas Latham
-
 * Initial import of the package into HEPforge
 

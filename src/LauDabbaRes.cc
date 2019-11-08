@@ -24,6 +24,7 @@ Thomas Latham
 
 /*! \file LauDabbaRes.cc
     \brief File containing implementation of LauDabbaRes class.
+
     Formulae and data values from arXiv:0901.2217 - author D.V.Bugg
 */
 

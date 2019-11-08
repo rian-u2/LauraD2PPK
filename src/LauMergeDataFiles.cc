@@ -22,6 +22,10 @@ Paul Harrison
 Thomas Latham
 */
 
+/*! \file LauMergeDataFiles.cc
+  \brief File containing implementation of LauMergeDataFiles class.
+ */
+
 #include "LauMergeDataFiles.hh"
 
 #include <iostream>

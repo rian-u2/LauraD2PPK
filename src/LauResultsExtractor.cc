@@ -22,6 +22,10 @@ Paul Harrison
 Thomas Latham
 */
 
+/*! \file LauResultsExtractor.cc
+  \brief File containing implementation of LauResultsExtractor class.
+ */
+
 #include "LauResultsExtractor.hh"
 
 #include <iostream>

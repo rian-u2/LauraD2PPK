@@ -22,31 +22,30 @@ Paul Harrison
 Thomas Latham
 */
 
-// Code to produce an adaptive binning scheme and calculate the 2D chi-square between
-// two datasets (e.g. low-stat data and high-stat toyMC).
-// To run the code, do "./CalcChiSq chiSqInput.txt", where chiSqInput.txt is
-// an input control file, and contains the following lines:
-// Low_stat_file_name      Low_stat_histo_name
-// High_stat_file_name     High_stat_histo_name
-// Min_bin_content         N_free_params        Low/high stat_histo_ratio
+/*! \file LauCalcChiSq.cc
+  \brief File containing implementation of LauCalcChiSq class.
 
-// Note that the low and high stat histograms must have the same bin axes
-// ranges and number of bins.
-
-// It works by using the low stat (first) histogram to find a binning scheme such
-// that the total number of entries in each bin is >= Min_bin_content. The number
-// of entries in the histogram is divided by the desired minimum bin content to
-// give a target number of bins. The largest number of bins that can be expressed
-// as a product of powers of four, nine, 25, 49 and 121 that does not exceed the
-// target value is chosen. The histogram is the recursively subdivided in 2x2, 3x3,
-// 5x5, 7x7 or 11x11 bins. For each stage of the subdivision, each bin is first
-// divided into equally populated bins in x then each of these is further divded
-// into equally popiulated bins in y.
-
-// The (Pearson) chi-squared is then the sum of the chi-squared contributions
-// of all bins:
-// (low_stat_number - high_stat_number)^2/(high_stat_number)
-// The nDof = number of bins - number of free params - 1
+  Code to produce an adaptive binning scheme and calculate the 2D chi-square
+  between two datasets (e.g. low-stat data and high-stat toyMC).
+ 
+  Note that the low and high stat histograms must have the same bin axes ranges
+  and number of bins.
+ 
+  It works by using the low stat (first) histogram to find a binning scheme such
+  that the total number of entries in each bin is >= Min_bin_content. The number
+  of entries in the histogram is divided by the desired minimum bin content to
+  give a target number of bins. The largest number of bins that can be expressed
+  as a product of powers of 4, 9, 25, 49 and 121 that does not exceed the target
+  value is chosen. The histogram is the recursively subdivided in 2x2, 3x3, 5x5,
+  7x7 or 11x11 bins. For each stage of the subdivision, each bin is first
+  divided into equally populated bins in x then each of these is further divded
+  into equally popiulated bins in y.
+ 
+  The (Pearson) chi-squared is then the sum of the chi-squared contributions of
+  all bins:
+  (low_stat_number - high_stat_number)^2/(high_stat_number)
+  The nDof = number of bins - number of free params - 1
+ */
 
 #include "LauCalcChiSq.hh"
 

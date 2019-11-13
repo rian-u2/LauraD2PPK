@@ -25,8 +25,8 @@ laura.git
 ├── doc - directory related to building Doxygen documentation
 │   ├── CMakeLists.txt - CMake configuration file
 │   ├── Doxyfile.in - Doxygen configuration file
-│   ├── mainpage.dox - front page of the Doxygen documents
-│   └── release.notes - history of commits to the package
+│   ├── mainpage.dox.in - front page of the Doxygen documents
+│   └── ReleaseNotes.md - history of commits to the package
 ├── examples - directory containing code examples and their associated data files and job scripts
 │   ├── B3piKMNoAdler.dat
 │   ├── B3piKMPoles.dat
@@ -228,7 +228,6 @@ laura.git
 │   ├── LauCPFitModel.cc
 │   ├── LauCacheData.cc
 │   ├── LauCalcChiSq.cc
-│   ├── LauCalcChiSq.cc~
 │   ├── LauCartesianCPCoeffSet.cc
 │   ├── LauCartesianGammaCPCoeffSet.cc
 │   ├── LauChebychevPdf.cc
@@ -243,7 +242,6 @@ laura.git
 │   ├── LauDPDepSumPdf.cc
 │   ├── LauDPPartialIntegralInfo.cc
 │   ├── LauDabbaRes.cc
-│   ├── LauDabbaRes.cc~
 │   ├── LauDatabasePDG.cc
 │   ├── LauDaughters.cc
 │   ├── LauEFKLLMRes.cc
@@ -276,7 +274,6 @@ laura.git
 │   ├── LauMagPhaseCPCoeffSet.cc
 │   ├── LauMagPhaseCoeffSet.cc
 │   ├── LauMergeDataFiles.cc
-│   ├── LauMergeDataFiles.cc~
 │   ├── LauMinuit.cc
 │   ├── LauModIndPartWaveMagPhase.cc
 │   ├── LauModIndPartWaveRealImag.cc
@@ -301,7 +298,6 @@ laura.git
 │   ├── LauResonanceInfo.cc
 │   ├── LauResonanceMaker.cc
 │   ├── LauResultsExtractor.cc
-│   ├── LauResultsExtractor.cc~
 │   ├── LauRhoOmegaMix.cc
 │   ├── LauRooFitSlave.cc
 │   ├── LauSPlot.cc
@@ -324,9 +320,10 @@ laura.git
 ```
 
 ## Building the library
-Compilation of Laura++ requires the [CMake](https://www.cmake.org) build tool,
-plus a C++14 compatible compiler (GCC 8 or better, Clang 8 or better are
-recommended) and `make` on a UNIX operating system.
+Compilation of Laura++ on a UNIX operating system requires:
+* the [CMake](https://www.cmake.org) build tool
+* a C++14 compatible compiler ([GCC](https://gcc.gnu.org) 8 or better, [Clang](https://clang.llvm.org) 8 or better are recommended)
+* [GNU Make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org) (not currently tested)
 
 The package depends only on [ROOT](https://root.cern.ch).
 Before building the code, it is necessary that the ROOT package be findable by CMake, which can be achieved by doing one of the following:
@@ -384,7 +381,7 @@ $
 Again, the exact output will be system specific, but you should see the
 `Laura++` target built without error and that the installation was successful.
 
-If compiling with gcc 5, see [the corresponding note][gcc5-note].
+If compiling with gcc 5, see [the corresponding note](#notes).
 
 
 ## Examples and documentation
@@ -404,8 +401,9 @@ running `cmake`:
 ```
 -DLAURA_BUILD_DOCS=ON
 ```
-After building and installing, you can load the `doc/html/index.html` file
-found in the install location into your web browser.
+After building and installing, you can load the
+`share/doc/Laura++/html/index.html` file (found in the install location) into
+your web browser.
 
 
 ## Authors and contributors
@@ -436,12 +434,13 @@ collaborations for their helpful input.
 Contact: Tom Latham (laura@projects.hepforge.org)
 
 
-## Notes
+## Notes {#notes}
 
-[gcc5-note]: It has been reported that when compiling on Ubuntu 16.04 LTS with
-gcc 5.4.0 the build will fail due to, apparently spurious, "variable defined
-but not used" errors related to the constants defined in the `LauConstants.hh`
-header file. The workaround is to add the option -Wno-error=unused-variable to
-the `CMAKE_CXX_FLAGS` variable in the file:
-cmake/Modules/LauraCompilerFlags.cmake
+* [It has been reported](https://laura.hepforge.org/trac/ticket/67) that when
+  compiling on Ubuntu 16.04 LTS with gcc 5.4.0 the build will fail due to,
+  apparently spurious, "variable defined but not used" errors related to the
+  constants defined in the `LauConstants.hh` header file.  
+  The workaround is to add the option `-Wno-error=unused-variable` to the
+  `CMAKE_CXX_FLAGS` variable in the file:  
+  cmake/Modules/LauraCompilerFlags.cmake
 

@@ -406,6 +406,21 @@ After building and installing, you can load the
 your web browser.
 
 
+## Building your own code
+
+If you wish to build your own code that uses the Laura++ library you should add the Laura++ installation area to the `CMAKE_PREFIX_PATH` environment variable.
+You can then add lines like the following to your own `CMakeLists.txt` file:
+```cmake
+# Find ROOT and Laura++
+find_package(Laura REQUIRED)
+find_package(ROOT REQUIRED)
+
+# Now build the executable
+add_executable(MyExe MyExe.cc)
+target_link_libraries(MyExe PRIVATE Laura::Laura++)
+```
+
+
 ## Authors and contributors
 
 As mentioned in the Introduction above, the authors of the package are:  

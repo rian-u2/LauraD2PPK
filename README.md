@@ -320,6 +320,8 @@ laura.git
 ```
 
 ## Building the library
+
+### Prerequisites
 Compilation of Laura++ on a UNIX operating system requires:
 * the [CMake](https://www.cmake.org) build tool
 * a C++14 compatible compiler ([GCC](https://gcc.gnu.org) 8 or better, [Clang](https://clang.llvm.org) 8 or better are recommended)
@@ -331,6 +333,17 @@ Before building the code, it is necessary that the ROOT package be findable by C
 - the directory containing the `root-config` program is in the `PATH` environment variable
 - the ROOT cmake directory is in the `CMAKE_PREFIX_PATH` environment variable
 
+In order to setup an environment that satifies all of the above requirements we highly recommend use of the [LCG views](https://lcginfo.cern.ch).
+For example, on a machine with the [CVMFS client](https://cvmfs.readthedocs.io/en/stable/) installed, one can do:
+```
+source /cvmfs/sft.cern.ch/lcg/views/setupViews.(c)sh <LCG release> <arch-os-compiler>
+```
+for example:
+```
+source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_96b x86_64-centos7-gcc9-opt
+```
+
+### Build procedure
 To build from a clone of this repository, open a terminal window
 and change directory into that holding this README file.
 Create a build directory in which to run `cmake` and the build, and change into

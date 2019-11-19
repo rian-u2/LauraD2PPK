@@ -25,9 +25,9 @@ import sys
 
 # Process the command-line arguments
 def usage( progName ) :
-    print 'Usage:'
-    print '%s gen [nExpt = 1] [firstExpt = 0]' % progName
-    print '%s fit <iFit> [nExpt = 1] [firstExpt = 0]' % progName
+    print('Usage:')
+    print('%s gen [nExpt = 1] [firstExpt = 0]' % progName)
+    print('%s fit <iFit> [nExpt = 1] [firstExpt = 0]' % progName)
 
 if len(sys.argv) < 2 :
     usage( sys.argv[0] )

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 """
 Copyright 2017 University of Warwick
@@ -58,13 +59,14 @@ else :
 
 # Import ROOT and load the appropriate libraries
 import ROOT
+ROOT.gSystem.AddDynamicPath('@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@')
 ROOT.gSystem.Load('libEG')
 ROOT.gSystem.Load('libHist')
 ROOT.gSystem.Load('libMatrix')
 ROOT.gSystem.Load('libTree')
 ROOT.gSystem.Load('libTreePlayer')
 ROOT.gSystem.Load('libMinuit')
-ROOT.gSystem.Load('../lib/libLaura++.so')
+ROOT.gSystem.Load('libLaura++')
 
 # If you want to use square DP histograms for efficiency,
 # backgrounds or you just want the square DP co-ordinates

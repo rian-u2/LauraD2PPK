@@ -35,3 +35,7 @@ foreach( _example ${EXAMPLE_SOURCES})
     install(TARGETS ${_example} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endforeach()
 
+# Also install the python script version of GenFit3pi
+configure_file(GenFit3pi.py.in GenFit3pi.py @ONLY)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/GenFit3pi.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+

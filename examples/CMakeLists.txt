@@ -20,6 +20,7 @@ list(APPEND EXAMPLE_SOURCES
     PlotKMatrixTAmp
     PlotResults
     point2PointTestSample
+    QuasiFlatSqDalitz
     ResultsExtractor
     Slave
     SlaveRooFit

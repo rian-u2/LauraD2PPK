@@ -1,6 +1,9 @@
 # Laura++ release notes
 
-6th November 2019 Thomas Latham
+21st November 2019 Thomas Latham
+* Add QuasiFlatSqDalitz example, which generates toy according to EvtGen's FLATSQDALITZ model
+
+6th - 20th November 2019 Thomas Latham
 * Adopt CMake as the build system
 
 ===

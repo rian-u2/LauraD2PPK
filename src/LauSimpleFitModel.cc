@@ -890,7 +890,7 @@ std::pair<LauSimpleFitModel::LauGenInfo,Bool_t> LauSimpleFitModel::eventsToGener
 		}
 
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		nEvtsGen[bkgndClass] = std::make_pair( nEvts, evtWeight );
+		nEvtsGen[bkgndClass] = std::make_pair( nEvtsToGen, evtWeight );
 	}
 
 	return std::make_pair( nEvtsGen, blind );

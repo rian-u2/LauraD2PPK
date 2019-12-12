@@ -1489,8 +1489,8 @@ std::pair<LauCPFitModel::LauGenInfo,Bool_t> LauCPFitModel::eventsToGenerate()
 		}
 
 		const TString& bkgndClass = this->bkgndClassName(bkgndID);
-		nEvtsGen[std::make_pair(bkgndClass,+1)] = std::make_pair(nPosEvts,evtWeight);
-		nEvtsGen[std::make_pair(bkgndClass,-1)] = std::make_pair(nNegEvts,evtWeight);
+		nEvtsGen[std::make_pair(bkgndClass,+1)] = std::make_pair(nPosEvtsToGen,evtWeight);
+		nEvtsGen[std::make_pair(bkgndClass,-1)] = std::make_pair(nNegEvtsToGen,evtWeight);
 	}
 
 	// Print out the information on what we're generating, but only if none of the parameters are blind (otherwise we risk unblinding them!)

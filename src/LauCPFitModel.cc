@@ -1423,16 +1423,17 @@ std::pair<LauCPFitModel::LauGenInfo,Bool_t> LauCPFitModel::eventsToGenerate()
 	Bool_t blind = kFALSE;
 
 	// Signal
+	if ( signalEvents_->blind() ) {
+		blind = kTRUE;
+	}
+
 	Double_t evtWeight(1.0);
 	Double_t nEvts = signalEvents_->genValue();
 	if ( nEvts < 0.0 ) {
 		evtWeight = -1.0;
 		nEvts = TMath::Abs( nEvts );
 	}
-	if ( signalEvents_->blind() ) {
-		blind = kTRUE;
-	}
-	Double_t asym(0.0);
+
 	Double_t sigAsym(0.0);
 	// need to include this as an alternative in case the DP isn't in the model
 	if ( !this->useDP() || forceAsym_ ) {
@@ -1447,40 +1448,49 @@ std::pair<LauCPFitModel::LauGenInfo,Bool_t> LauCPFitModel::eventsToGenerate()
 			sigAsym = (negRate-posRate)/(negRate+posRate);
 		}
 	}
-	asym = sigAsym;
-	Int_t nPosEvts = static_cast<Int_t>((nEvts/2.0 * (1.0 - asym)) + 0.5);
-	Int_t nNegEvts = static_cast<Int_t>((nEvts/2.0 * (1.0 + asym)) + 0.5);
+	Double_t nPosEvts = (nEvts/2.0 * (1.0 - sigAsym));
+	Double_t nNegEvts = (nEvts/2.0 * (1.0 + sigAsym));
+
+	Int_t nPosEvtsToGen { static_cast<Int_t>(nPosEvts) };
+	Int_t nNegEvtsToGen { static_cast<Int_t>(nNegEvts) };
 	if (this->doPoissonSmearing()) {
-		nNegEvts = LauRandom::randomFun()->Poisson(nNegEvts);
-		nPosEvts = LauRandom::randomFun()->Poisson(nPosEvts);
+		nPosEvtsToGen = LauRandom::randomFun()->Poisson(nPosEvts);
+		nNegEvtsToGen = LauRandom::randomFun()->Poisson(nNegEvts);
 	}
-	nEvtsGen[std::make_pair("signal",-1)] = std::make_pair(nNegEvts,evtWeight);
-	nEvtsGen[std::make_pair("signal",+1)] = std::make_pair(nPosEvts,evtWeight);
+
+	nEvtsGen[std::make_pair("signal",+1)] = std::make_pair(nPosEvtsToGen,evtWeight);
+	nEvtsGen[std::make_pair("signal",-1)] = std::make_pair(nNegEvtsToGen,evtWeight);
 
 	// backgrounds
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-		const TString& bkgndClass = this->bkgndClassName(bkgndID);
 		const LauAbsRValue* evtsPar = bkgndEvents_[bkgndID];
 		const LauAbsRValue* asymPar = bkgndAsym_[bkgndID];
 		if ( evtsPar->blind() || asymPar->blind() ) {
 			blind = kTRUE;
 		}
+
 		evtWeight = 1.0;
-		nEvts = TMath::FloorNint( evtsPar->genValue() );
+		nEvts = evtsPar->genValue();
 		if ( nEvts < 0 ) {
 			evtWeight = -1.0;
 			nEvts = TMath::Abs( nEvts );
 		}
-		asym = asymPar->genValue();
-		nPosEvts = static_cast<Int_t>((nEvts/2.0 * (1.0 - asym)) + 0.5);
-		nNegEvts = static_cast<Int_t>((nEvts/2.0 * (1.0 + asym)) + 0.5);
+
+		const Double_t asym = asymPar->genValue();
+		nPosEvts = (nEvts/2.0 * (1.0 - asym));
+		nNegEvts = (nEvts/2.0 * (1.0 + asym));
+
+		nPosEvtsToGen = static_cast<Int_t>(nPosEvts);
+		nNegEvtsToGen = static_cast<Int_t>(nNegEvts);
 		if (this->doPoissonSmearing()) {
-			nNegEvts = LauRandom::randomFun()->Poisson(nNegEvts);
-			nPosEvts = LauRandom::randomFun()->Poisson(nPosEvts);
+			nPosEvtsToGen = LauRandom::randomFun()->Poisson(nPosEvts);
+			nNegEvtsToGen = LauRandom::randomFun()->Poisson(nNegEvts);
 		}
-		nEvtsGen[std::make_pair(bkgndClass,-1)] = std::make_pair(nNegEvts,evtWeight);
-		nEvtsGen[std::make_pair(bkgndClass,+1)] = std::make_pair(nPosEvts,evtWeight);
+
+		const TString& bkgndClass = this->bkgndClassName(bkgndID);
+		nEvtsGen[std::make_pair(bkgndClass,+1)] = std::make_pair(nPosEvtsToGen,evtWeight);
+		nEvtsGen[std::make_pair(bkgndClass,-1)] = std::make_pair(nNegEvtsToGen,evtWeight);
 	}
 
 	// Print out the information on what we're generating, but only if none of the parameters are blind (otherwise we risk unblinding them!)

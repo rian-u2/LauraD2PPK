@@ -851,38 +851,46 @@ std::pair<LauSimpleFitModel::LauGenInfo,Bool_t> LauSimpleFitModel::eventsToGener
 	Bool_t blind = kFALSE;
 
 	// Signal
-	Double_t evtWeight(1.0);
-	Int_t nEvts = TMath::FloorNint(signalEvents_->genValue());
-	if ( nEvts < 0 ) {
-		evtWeight = -1.0;
-		nEvts = TMath::Abs( nEvts );
-	}
-	if (this->doPoissonSmearing()) {
-		nEvts = LauRandom::randomFun()->Poisson(nEvts);
-	}
-	nEvtsGen["signal"] = std::make_pair( nEvts, evtWeight );
 	if ( signalEvents_->blind() ) {
 		blind = kTRUE;
 	}
 
+	Double_t evtWeight(1.0);
+	Double_t nEvts = signalEvents_->genValue();
+	if ( nEvts < 0 ) {
+		evtWeight = -1.0;
+		nEvts = TMath::Abs( nEvts );
+	}
+
+	Int_t nEvtsToGen { static_cast<Int_t>(nEvts) };
+	if (this->doPoissonSmearing()) {
+		nEvtsToGen = LauRandom::randomFun()->Poisson(nEvts);
+	}
+
+	nEvtsGen["signal"] = std::make_pair( nEvtsToGen, evtWeight );
+
 	// Backgrounds
 	const UInt_t nBkgnds = this->nBkgndClasses();
 	for ( UInt_t bkgndID(0); bkgndID < nBkgnds; ++bkgndID ) {
-		const TString& bkgndClass = this->bkgndClassName(bkgndID);
 		const LauAbsRValue* evtsPar = bkgndEvents_[bkgndID];
+		if ( evtsPar->blind() ) {
+			blind = kTRUE;
+		}
+
 		evtWeight = 1.0;
-		nEvts = TMath::FloorNint( evtsPar->genValue() );
+		nEvts = evtsPar->genValue();
 		if ( nEvts < 0 ) {
 			evtWeight = -1.0;
 			nEvts = TMath::Abs( nEvts );
 		}
+
+		nEvtsToGen = static_cast<Int_t>(nEvts);
 		if (this->doPoissonSmearing()) {
-			nEvts = LauRandom::randomFun()->Poisson(nEvts);
+			nEvtsToGen = LauRandom::randomFun()->Poisson(nEvts);
 		}
-		nEvtsGen[bkgndClass] = std::make_pair( nEvts, evtWeight );
-		if ( evtsPar->blind() ) {
-			blind = kTRUE;
-		}
+
+		const TString& bkgndClass = this->bkgndClassName(bkgndID);
+		nEvtsGen[bkgndClass] = std::make_pair( nEvtsToGen, evtWeight );
 	}
 
 	return std::make_pair( nEvtsGen, blind );

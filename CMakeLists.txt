@@ -32,6 +32,11 @@ option(LAURA_BUILD_DOCS "Enable/disable building of Doxygen documentation" OFF)
 option(LAURA_BUILD_EXAMPLES "Enable/disable compilation of example executables" OFF)
 option(LAURA_BUILD_TESTS "Enable/disable compilation of test executables" OFF)
 
+message(STATUS "Laura++: Optional compilation of RooFit slave class LAURA_BUILD_ROOFIT_SLAVE ${LAURA_BUILD_ROOFIT_SLAVE}")
+message(STATUS "Laura++: Optional building of Doxygen documentation LAURA_BUILD_DOCS         ${LAURA_BUILD_DOCS}")
+message(STATUS "Laura++: Optional building of example executables   LAURA_BUILD_EXAMPLES     ${LAURA_BUILD_EXAMPLES}")
+message(STATUS "Laura++: Optional building of test executables      LAURA_BUILD_TESTS        ${LAURA_BUILD_TESTS}")
+
 # Prepend this project's custom module path(s) to CMAKE_MODULE_PATH
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH})
 
@@ -68,11 +73,12 @@ include(CMakePackageConfigHelpers)
 
 set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+set(DATA_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME})
 
 configure_package_config_file(cmake/Templates/LauraConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/LauraConfig.cmake
-    INSTALL_DESTINATION cmake
-    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
+    INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}/cmake
+    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
     )
 
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/LauraConfigVersion.cmake
@@ -81,11 +87,11 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/LauraConfigVersion.
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LauraConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/LauraConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}/cmake
     )
 
 install(
     EXPORT "LauraTargets"
     NAMESPACE "Laura::"
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}/cmake
     )

@@ -20,5 +20,13 @@ endif()
 # Don't want to do this because it uses old-style CMake
 #include(${ROOT_USE_FILE})
 
-include(${ROOT_DIR}/modules/RootNewMacros.cmake)
+if(EXISTS "${ROOT_DIR}/RootMacros.cmake")
+    message(STATUS "Laura++: Including ROOT macros module: ${ROOT_DIR}/RootMacros.cmake")
+    include(${ROOT_DIR}/RootMacros.cmake)
+elseif(EXISTS "${ROOT_DIR}/modules/RootNewMacros.cmake")
+    message(STATUS "Laura++: Including ROOT macros module: ${ROOT_DIR}/modules/RootNewMacros.cmake")
+    include(${ROOT_DIR}/modules/RootNewMacros.cmake)
+else()
+    message(WARNING "Laura++: Cannot locate ROOT macros module in ${ROOT_DIR}")
+endif()
 

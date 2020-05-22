@@ -37,9 +37,6 @@ ClassImp(LauGounarisSakuraiRes)
 LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	q0_(0.0),
-	p0_(0.0),
-	pstar0_(0.0),
-	erm0_(0.0),
 	resMass_(0.0),
 	resMassSq_(0.0),
 	resWidth_(0.0),
@@ -54,8 +51,7 @@ LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const In
 	h0_(0.0),
 	dhdm0_(0.0),
 	d_(0.0),
-	FR0_(1.0),
-	FP0_(1.0)
+	FR0_(1.0)
 {
 }
 
@@ -95,76 +91,45 @@ void LauGounarisSakuraiRes::initialise()
 	mParentSq_ = massParent*massParent;
 	mBachSq_ = massBachelor*massBachelor;
 
+	// Create an effective resonance pole mass to protect against resonances
+	// that are below threshold
+	Double_t effResMass = resMass_;
+	Double_t effResMassSq = resMassSq_;
+	if ( resMassSq_ - mDaugSumSq_ < 0.0 ) {
+		Double_t minMass = mDaugSum_;
+		Double_t maxMass = massParent - massBachelor;
+		Double_t tanhTerm = std::tanh( (resMass_ - ((minMass + maxMass)/2))/(maxMass-minMass));
+		effResMass = minMass + (maxMass-minMass)*(1+tanhTerm)/2;
+		effResMassSq = effResMass*effResMass;
+	}
+
 	// Decay momentum of either daughter in the resonance rest frame
 	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t term1 = resMassSq_ - mDaugSumSq_;
-	Double_t term2 = resMassSq_ - mDaugDiffSq_;
+	Double_t term1 = effResMassSq - mDaugSumSq_;
+	Double_t term2 = effResMassSq - mDaugDiffSq_;
 	Double_t term12 = term1*term2;
 	if (term12 > 0.0) {
-		q0_ = TMath::Sqrt(term12)/(2.0*resMass_);
+		q0_ = TMath::Sqrt(term12)/(2.0*effResMass);
 	} else {
 		q0_ = 0.0;
 	}
 
-	// Momentum of the bachelor particle in the resonance rest frame
-	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t eBach = (mParentSq_ - resMassSq_ - mBachSq_)/(2.0*resMass_);
-	Double_t termBach = eBach*eBach - mBachSq_;
-	if ( eBach<0.0 || termBach<0.0 ) {
-		p0_ = 0.0;
-	} else {
-		p0_ = TMath::Sqrt( termBach );
-	}
-
-	// Momentum of the bachelor particle in the parent rest frame
-	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t eStarBach = (mParentSq_ + mBachSq_ - resMassSq_)/(2.0*massParent);
-	Double_t termStarBach = eStarBach*eStarBach - mBachSq_;
-	if ( eStarBach<0.0 || termStarBach<0.0 ) {
-		pstar0_ = 0.0;
-	} else {
-		pstar0_ = TMath::Sqrt( termStarBach );
-	}
-
-	// Covariant factor when resonance mass = rest-mass value, m_0 (PDF value)
-	erm0_ = (mParentSq_ + resMassSq_ - mBachSq_)/(2.0*massParent*resMass_);
-	this->calcCovFactor( erm0_ );
-
 	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
 	FR0_ = 1.0;
-	FP0_ = 1.0;
-	if ( resSpin > 0 ) {
+	if ( this->getSpin() > 0 ) {
 		const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
-		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-		FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
-		switch ( parBWFactor->getRestFrame() ) {
-			case LauBlattWeisskopfFactor::ResonanceFrame:
-				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::ParentFrame:
-				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::Covariant:
-				{
-				Double_t covFactor = this->getCovFactor();
-				if ( resSpin > 2 ) {
-					covFactor = TMath::Power( covFactor, 1.0/resSpin );
-				} else if ( resSpin == 2 ) {
-					covFactor = TMath::Sqrt( covFactor );
-				}
-				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_*covFactor) : 1.0;
-				break;
-				}
+		if ( resBWFactor != nullptr ) {
+			FR0_ = resBWFactor->calcFormFactor(q0_);
 		}
 	}
 
 	// Calculate the extra things needed by the G-S shape
-	h0_ = 2.0*LauConstants::invPi * q0_/resMass_ * TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi));
-	dhdm0_ = h0_ * (1.0/(8.0*q0_*q0_) - 1.0/(2.0*resMassSq_)) + 1.0/(LauConstants::twoPi*resMassSq_);
+	h0_ = 2.0*LauConstants::invPi * q0_/effResMass * TMath::Log((effResMass + 2.0*q0_)/(2.0*LauConstants::mPi));
+	dhdm0_ = h0_ * (1.0/(8.0*q0_*q0_) - 1.0/(2.0*effResMassSq)) + 1.0/(LauConstants::twoPi*effResMassSq);
 	d_ = 3.0*LauConstants::invPi * LauConstants::mPi*LauConstants::mPi/(q0_*q0_)
-		* TMath::Log((resMass_ + 2.0*q0_)/(2.0*LauConstants::mPi))
-		+ resMass_/(LauConstants::twoPi*q0_)
-		- LauConstants::mPi*LauConstants::mPi*resMass_/(LauConstants::pi*q0_*q0_*q0_);
+		* TMath::Log((effResMass + 2.0*q0_)/(2.0*LauConstants::mPi))
+		+ effResMass/(LauConstants::twoPi*q0_)
+		- LauConstants::mPi*LauConstants::mPi*effResMass/(LauConstants::pi*q0_*q0_*q0_);
 }
 
 LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
@@ -212,30 +177,34 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t fFactorB(1.0);
 	if ( resSpin > 0 ) {
 		const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+		if ( resBWFactor != nullptr ) {
+			fFactorR = resBWFactor->calcFormFactor(q);
+		}
+
 		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-		fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
-		switch ( parBWFactor->getRestFrame() ) {
-			case LauBlattWeisskopfFactor::ResonanceFrame:
-				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::ParentFrame:
-				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::Covariant:
+		if ( parBWFactor != nullptr ) {
+			switch ( parBWFactor->getRestFrame() ) {
+				case LauBlattWeisskopfFactor::ResonanceFrame:
+					fFactorB = parBWFactor->calcFormFactor(p);
+					break;
+				case LauBlattWeisskopfFactor::ParentFrame:
+					fFactorB = parBWFactor->calcFormFactor(pstar);
+					break;
+				case LauBlattWeisskopfFactor::Covariant:
 				{
-				Double_t covFactor = this->getCovFactor();
-				if ( resSpin > 2 ) {
-					covFactor = TMath::Power( covFactor, 1.0/resSpin );
-				} else if ( resSpin == 2 ) {
-					covFactor = TMath::Sqrt( covFactor );
+					Double_t covFactor = this->getCovFactor();
+					if ( resSpin > 2 ) {
+						covFactor = TMath::Power( covFactor, 1.0/resSpin );
+					} else if ( resSpin == 2 ) {
+						covFactor = TMath::Sqrt( covFactor );
+					}
+					fFactorB = parBWFactor->calcFormFactor(pstar*covFactor);
+					break;
 				}
-				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar*covFactor) : 1.0;
-				break;
-				}
+			}
 		}
 	}
 	const Double_t fFactorRRatio = fFactorR/FR0_;
-	const Double_t fFactorBRatio = fFactorB/FP0_;
 
 	const Double_t qRatio = q/q0_;
 	const Double_t qTerm = qRatio*qRatio*qRatio;
@@ -254,7 +223,7 @@ LauComplex LauGounarisSakuraiRes::resAmp(Double_t mass, Double_t spinTerm)
 	// Scale by the denominator factor, as well as the spin term and Blatt-Weisskopf factors
 	Double_t numerFactor = spinTerm*(1.0 + d_ * resWidth/resMass);
 	if (!this->ignoreBarrierScaling()) {
-   	        numerFactor *= fFactorRRatio*fFactorBRatio;
+		numerFactor *= fFactorR * fFactorB;
 	}
 	const Double_t denomFactor = (massSqTerm + f)*(massSqTerm + f) + resMassSq_*totWidth*totWidth;
 	resAmplitude.rescale(numerFactor/denomFactor);

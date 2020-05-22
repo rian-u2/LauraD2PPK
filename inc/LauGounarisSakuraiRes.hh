@@ -88,12 +88,6 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 
 		//! Momentum of the daughters in the resonance rest frame (at pole mass)
 		Double_t q0_; 
-		//! Momentum of the bachelor in the resonance rest frame (at pole mass)
-		Double_t p0_;
-		//! Momentum of the bachelor in the parent rest frame (at pole mass)
-		Double_t pstar0_;
-		//! Covariant factor (at pole mass)
-		Double_t erm0_;
 		//! The resonance mass
 		Double_t resMass_;
 		//! Square of the resonance mass
@@ -124,8 +118,6 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		Double_t d_;
 		//! Value of the form factor for resonance decay (at pole mass)
 		Double_t FR0_; 
-		//! Value of the form factor for parent decay (at pole mass)
-		Double_t FP0_;
 
 		ClassDef(LauGounarisSakuraiRes,0) // Gounaris-Sakurai resonance model
 

@@ -37,9 +37,6 @@ ClassImp(LauRelBreitWignerRes)
 LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),
 	q0_(0.0),
-	p0_(0.0),
-	pstar0_(0.0),
-	erm0_(0.0),
 	resMass_(0.0),
 	resMassSq_(0.0),
 	resWidth_(0.0),
@@ -51,8 +48,7 @@ LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_
 	mDaugDiffSq_(0.0),
 	mParentSq_(0.0),
 	mBachSq_(0.0),
-	FR0_(1.0),
-	FP0_(1.0)
+	FR0_(1.0)
 {
 }
 
@@ -88,7 +84,7 @@ void LauRelBreitWignerRes::initialise()
 	// that are below threshold
 	Double_t effResMass = resMass_;
 	Double_t effResMassSq = resMassSq_;
-	if (resMassSq_ - mDaugSumSq_ < 0.0  || resMass_ > massParent - massBachelor){
+	if ( resMassSq_ - mDaugSumSq_ < 0.0 ) {
 		Double_t minMass = mDaugSum_;
 		Double_t maxMass = massParent - massBachelor;
 		Double_t tanhTerm = std::tanh( (resMass_ - ((minMass + maxMass)/2))/(maxMass-minMass));
@@ -107,56 +103,12 @@ void LauRelBreitWignerRes::initialise()
 		q0_ = 0.0;
 	}
 
-	// Momentum of the bachelor particle in the resonance rest frame
-	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t eBach = (mParentSq_ - effResMassSq - mBachSq_)/(2.0*effResMass);
-	Double_t termBach = eBach*eBach - mBachSq_;
-	if ( eBach<0.0 || termBach<0.0 ) {
-		p0_ = 0.0;
-	} else {
-		p0_ = TMath::Sqrt( termBach );
-	}
-
-	// Momentum of the bachelor particle in the parent rest frame
-	// when resonance mass = rest-mass value, m_0 (PDG value)
-	Double_t eStarBach = (mParentSq_ + mBachSq_ - effResMassSq)/(2.0*massParent);
-	Double_t termStarBach = eStarBach*eStarBach - mBachSq_;
-	if ( eStarBach<0.0 || termStarBach<0.0 ) {
-		pstar0_ = 0.0;
-	} else {
-		pstar0_ = TMath::Sqrt( termStarBach );
-	}
-
-	// Covariant factor when resonance mass = rest-mass value, m_0 (PDF value)
-	erm0_ = (mParentSq_ + effResMassSq - mBachSq_)/(2.0*massParent*effResMass);
-	this->calcCovFactor( erm0_ );
-
-	// Calculate the Blatt-Weisskopf form factor for the case when m = m_0
+	// Calculate the resonance Blatt-Weisskopf form factor for the case when m = m_0
 	FR0_ = 1.0;
-	FP0_ = 1.0;
-	const Int_t resSpin = this->getSpin();
-	if ( resSpin > 0 ) {
+	if ( this->getSpin() > 0 ) {
 		const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
-		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-		FR0_ = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q0_) : 1.0;
-		switch ( parBWFactor->getRestFrame() ) {
-			case LauBlattWeisskopfFactor::ResonanceFrame:
-				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p0_) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::ParentFrame:
-				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::Covariant:
-				{
-				Double_t covFactor = this->getCovFactor();
-				if ( resSpin > 2 ) {
-					covFactor = TMath::Power( covFactor, 1.0/resSpin );
-				} else if ( resSpin == 2 ) {
-					covFactor = TMath::Sqrt( covFactor );
-				}
-				FP0_ = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar0_*covFactor) : 1.0;
-				break;
-				}
+		if ( resBWFactor != nullptr ) {
+			FR0_ = resBWFactor->calcFormFactor(q0_);
 		}
 	}
 }
@@ -208,30 +160,33 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 	Double_t fFactorB(1.0);
 	if ( resSpin > 0 ) {
 		const LauBlattWeisskopfFactor* resBWFactor = this->getResBWFactor();
+		if ( resBWFactor != nullptr ) {
+			fFactorR = resBWFactor->calcFormFactor(q);
+		}
+
 		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
-		fFactorR = (resBWFactor!=0) ? resBWFactor->calcFormFactor(q) : 1.0;
-		switch ( parBWFactor->getRestFrame() ) {
-			case LauBlattWeisskopfFactor::ResonanceFrame:
-				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(p) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::ParentFrame:
-				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar) : 1.0;
-				break;
-			case LauBlattWeisskopfFactor::Covariant:
+		if ( parBWFactor != nullptr ) {
+			switch ( parBWFactor->getRestFrame() ) {
+				case LauBlattWeisskopfFactor::ResonanceFrame:
+					fFactorB = parBWFactor->calcFormFactor(p);
+					break;
+				case LauBlattWeisskopfFactor::ParentFrame:
+					fFactorB = parBWFactor->calcFormFactor(pstar);
+					break;
+				case LauBlattWeisskopfFactor::Covariant:
 				{
-				Double_t covFactor = this->getCovFactor();
-				if ( resSpin > 2 ) {
-					covFactor = TMath::Power( covFactor, 1.0/resSpin );
-				} else if ( resSpin == 2 ) {
-					covFactor = TMath::Sqrt( covFactor );
+					Double_t covFactor = this->getCovFactor();
+					if ( resSpin > 2 ) {
+						covFactor = TMath::Power( covFactor, 1.0/resSpin );
+					} else if ( resSpin == 2 ) {
+						covFactor = TMath::Sqrt( covFactor );
+					}
+					fFactorB = parBWFactor->calcFormFactor(pstar*covFactor);
+					break;
 				}
-				fFactorB = (parBWFactor!=0) ? parBWFactor->calcFormFactor(pstar*covFactor) : 1.0;
-				break;
-				}
+			}
 		}
 	}
-	const Double_t fFactorRRatio = fFactorR/FR0_;
-	const Double_t fFactorBRatio = fFactorB/FP0_;
 
 	// If ignoreMomenta is set, set the total width simply as the pole width, and do
 	// not include any momentum-dependent barrier factors (set them to unity)
@@ -251,6 +206,8 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 		    qTerm = TMath::Power(qRatio, 2.0*resSpin + 1.0);
 		}
 		
+		const Double_t fFactorRRatio = fFactorR/FR0_;
+
 		totWidth = resWidth*qTerm*(resMass/mass)*fFactorRRatio*fFactorRRatio;
 
 	} 
@@ -266,7 +223,7 @@ LauComplex LauRelBreitWignerRes::resAmp(Double_t mass, Double_t spinTerm)
 
 	// Include Blatt-Weisskopf barrier factors
 	if (!this->ignoreBarrierScaling()) {
-	        scale *= fFactorRRatio*fFactorBRatio;
+		scale *= fFactorR * fFactorB;
 	} 
 
 	resAmplitude.rescale(scale);

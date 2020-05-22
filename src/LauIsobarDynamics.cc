@@ -100,7 +100,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
 	flipHelicity_(kTRUE),
-	recalcNormalisation_(kFALSE)
+	recalcNormalisation_(kFALSE),
+	calculateRhoOmegaFitFractions_(kFALSE)
 {
 	if (daughters != 0) {
 		symmetricalDP_ = daughters->gotSymmetricalDP();
@@ -163,7 +164,8 @@ LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* ef
 	aSqMaxSet_(1.25),
 	aSqMaxVar_(0.0),
 	flipHelicity_(kTRUE),
-	recalcNormalisation_(kFALSE)
+	recalcNormalisation_(kFALSE),
+	calculateRhoOmegaFitFractions_(kFALSE)
 {
 	// Constructor for the isobar signal model
 	if (daughters != 0) {

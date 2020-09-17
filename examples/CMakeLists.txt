@@ -14,7 +14,6 @@ list(APPEND EXAMPLE_SOURCES
     GenFitNoDPMultiDim
     KMatrixDto3pi
     KMatrixExample
-    Master
     MergeDataFiles
     mixedSampleTest
     PlotKMatrixTAmp
@@ -22,12 +21,13 @@ list(APPEND EXAMPLE_SOURCES
     point2PointTestSample
     QuasiFlatSqDalitz
     ResultsExtractor
-    Slave
-    SlaveRooFit
+    SimFitCoordinator
+    SimFitTask
+    SimFitTaskRooFit
     )
 
-if(NOT LAURA_BUILD_ROOFIT_SLAVE)
-    list(REMOVE_ITEM EXAMPLE_SOURCES SlaveRooFit)
+if(NOT LAURA_BUILD_ROOFIT_TASK)
+    list(REMOVE_ITEM EXAMPLE_SOURCES SimFitTaskRooFit)
 endif()
 
 foreach( _example ${EXAMPLE_SOURCES})

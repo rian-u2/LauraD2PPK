@@ -22,20 +22,20 @@
 
 if [ $# -lt 1 ]
 then
-    echo "Usage: $0 <nExpt> [firstExpt = 0] [numSlaves = 2]"
+    echo "Usage: $0 <nExpt> [firstExpt = 0] [numTasks = 2]"
     exit 1
 fi
 
 nexpt=$1
 firstexpt=0
-numslaves=2
+numtasks=2
 
 if [ $# -gt 1 ]
 then
     firstexpt=$2
     if [ $# -gt 2 ]
     then
-        numslaves=$3
+        numtasks=$3
     fi
 fi
 
@@ -45,20 +45,20 @@ fi
 
 # Generate the toy MC
 #echo "Generating MC"
-#./SlaveRooFit gen DD $nexpt $firstexpt > gen-log-DD.out 2>&1
-#./SlaveRooFit gen LL $nexpt $firstexpt > gen-log-LL.out 2>&1
+#./SimFitTaskRooFit gen DD $nexpt $firstexpt > gen-log-DD.out 2>&1
+#./SimFitTaskRooFit gen LL $nexpt $firstexpt > gen-log-LL.out 2>&1
 
 
 # Do the simultaneous fit
-./Master 0 $nexpt $firstexpt $numslaves > master-log.out 2>&1 &
+./SimFitCoordinator 0 $nexpt $firstexpt $numtasks > coordinator-log.out 2>&1 &
 sleep 5
 
-port=`tail -1 master-log.out | awk '{print $NF}'`
+port=`tail -1 coordinator-log.out | awk '{print $NF}'`
 echo $port
 
-./SlaveRooFit fit DD $port > slave-dd-log.out 2>&1 &
+./SimFitTaskRooFit fit DD $port > task-dd-log.out 2>&1 &
 sleep 1
-./SlaveRooFit fit LL $port > slave-ll-log.out 2>&1
+./SimFitTaskRooFit fit LL $port > task-ll-log.out 2>&1
 
 
 

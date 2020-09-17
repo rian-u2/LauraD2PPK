@@ -37,7 +37,7 @@ Thomas Latham
 #include "TString.h"
 #include "TTree.h"
 
-#include "LauRooFitSlave.hh"
+#include "LauRooFitTask.hh"
 
 void usage( std::ostream& out, const TString& progName )
 {
@@ -51,9 +51,9 @@ int main( int argc, char** argv )
 {
 	// Process command-line arguments
 	// Usage:
-	// ./SlaveRooFit gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]
+	// ./SimFitTaskRooFit gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]
 	// or
-	// ./SlaveRooFit fit <category = DD or LL> <port> [nExpt = 1] [firstExpt = 0]
+	// ./SimFitTaskRooFit fit <category = DD or LL> <port> [nExpt = 1] [firstExpt = 0]
 	if ( argc < 3 ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
@@ -158,9 +158,9 @@ int main( int argc, char** argv )
 
 	// Execute the generation/fit
 	if ( command == "fit" ) {
-		// Create the slave instance
-		LauRooFitSlave fitModel(model, kTRUE, RooArgSet(mB));
-		fitModel.runSlave( dataFile, treeName, rootFileName, tableFileName, "localhost", port );
+		// Create the task instance
+		LauRooFitTask fitModel(model, kTRUE, RooArgSet(mB));
+		fitModel.runTask( dataFile, treeName, rootFileName, tableFileName, "localhost", port );
 	} else {
 		std::cerr << "Can't do this yet" << std::endl;
 		//RooDataSet* data = model.generate( RooArgSet(mB), nTotEvents );

@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+17th September 2020 Mark Whitehead
+* Begin updates to use inclusive language. Simultaneous fits now handled by Coordinator and Tasks
+  - see https://phab.hepforge.org/T112
+
 19th August 2020 Thomas Latham
 * Remove explicit normalisation of numerator Blatt-Weisskopf factors
   - See https://phab.hepforge.org/T93

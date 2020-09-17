@@ -22,18 +22,18 @@ Paul Harrison
 Thomas Latham
 */
 
-/*! \file LauRooFitSlave.hh
-    \brief File containing declaration of LauRooFitSlave class.
+/*! \file LauRooFitTask.hh
+    \brief File containing declaration of LauRooFitTask class.
 */
 
-/*! \class LauRooFitSlave
-    \brief A class for creating a RooFit-based slave process for simultaneous/combined fits
+/*! \class LauRooFitTask
+    \brief A class for creating a RooFit-based task process for simultaneous/combined fits
 
     Implementation of the JFit method described in arXiv:1409.5080 [physics.data-an].
 */
 
-#ifndef LAU_ROO_FIT_SLAVE
-#define LAU_ROO_FIT_SLAVE
+#ifndef LAU_ROO_FIT_TASK
+#define LAU_ROO_FIT_TASK
 
 #include <utility>
 #include <vector>
@@ -45,19 +45,19 @@ Thomas Latham
 #include "TMatrixDfwd.h"
 #include "TString.h"
 
-#include "LauSimFitSlave.hh"
+#include "LauSimFitTask.hh"
 
 class LauParameter;
 
 
-class LauRooFitSlave : public LauSimFitSlave {
+class LauRooFitTask : public LauSimFitTask {
 
 	public:
 		//! Constructor
-		LauRooFitSlave( RooAbsPdf& model, const Bool_t extended, const RooArgSet& vars, const TString& weightVarName = "" );
+		LauRooFitTask( RooAbsPdf& model, const Bool_t extended, const RooArgSet& vars, const TString& weightVarName = "" );
 
 		//! Destructor
-		virtual ~LauRooFitSlave();
+		virtual ~LauRooFitTask();
 
 		//! Initialise the fit model
 		virtual void initialise();
@@ -74,7 +74,7 @@ class LauRooFitSlave : public LauSimFitSlave {
 
 	protected:
 
-		//! Package the initial fit parameters for transmission to the master
+		//! Package the initial fit parameters for transmission to the coordinator
 		/*!
 		    \param [out] array the array to be filled with the LauParameter objects
 		*/	
@@ -96,16 +96,16 @@ class LauRooFitSlave : public LauSimFitSlave {
 
 		//! Perform all finalisation actions
 		/*!
-			- Receive the results of the fit from the master
+			- Receive the results of the fit from the coordinator
 			- Perform any finalisation routines
-		  	- Package the finalised fit parameters for transmission back to the master
+		  	- Package the finalised fit parameters for transmission back to the coordinator
 
 			\param [in] fitStat the status of the fit, e.g. status code, EDM, NLL
-			\param [in] parsFromMaster the parameters at the fit minimum
+			\param [in] parsFromCoordinator the parameters at the fit minimum
 			\param [in] covMat the fit covariance matrix
-			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
+			\param [out] parsToCoordinator the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
+		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromCoordinator, const TMatrixD* covMat, TObjArray& parsToCoordinator );
 
 		//! Open the input file and verify that all required variables are present
 		/*!
@@ -128,10 +128,10 @@ class LauRooFitSlave : public LauSimFitSlave {
 		void cleanData();
 
 		//! Copy constructor (not implemented)
-		LauRooFitSlave(const LauRooFitSlave& rhs);
+		LauRooFitTask(const LauRooFitTask& rhs);
 
 		//! Copy assignment operator (not implemented)
-		LauRooFitSlave& operator=(const LauRooFitSlave& rhs);
+		LauRooFitTask& operator=(const LauRooFitTask& rhs);
 
 		//! The model
 		RooAbsPdf& model_;
@@ -166,7 +166,7 @@ class LauRooFitSlave : public LauSimFitSlave {
 		//! The fit parameters (as LauParameter's)
 		std::vector<LauParameter*> fitPars_;
 
-		ClassDef(LauRooFitSlave,0);
+		ClassDef(LauRooFitTask,0);
 };
 
 #endif

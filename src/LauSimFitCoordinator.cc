@@ -22,8 +22,8 @@ Paul Harrison
 Thomas Latham
 */
 
-/*! \file LauSimFitMaster.cc
-    \brief File containing implementation of LauSimFitMaster class.
+/*! \file LauSimFitCoordinator.cc
+    \brief File containing implementation of LauSimFitCoordinator class.
 */
 
 #include <cstdlib>
@@ -46,39 +46,39 @@ Thomas Latham
 #include "LauFormulaPar.hh"
 #include "LauParameter.hh"
 #include "LauParamFixed.hh"
-#include "LauSimFitMaster.hh"
+#include "LauSimFitCoordinator.hh"
 
 
-ClassImp(LauSimFitMaster)
+ClassImp(LauSimFitCoordinator)
 
 
-LauSimFitMaster::LauSimFitMaster( UInt_t numSlaves, UInt_t port ) :
-	nSlaves_(numSlaves),
+LauSimFitCoordinator::LauSimFitCoordinator( UInt_t numTasks, UInt_t port ) :
+	nTasks_(numTasks),
 	reqPort_(port),
 	socketMonitor_(0),
-	messageFromSlave_(0),
+	messageFromTask_(0),
 	fitNtuple_(0)
 {
-	messagesToSlaves_.resize( nSlaves_ );
-	for ( UInt_t iSlave(0); iSlave < nSlaves_; ++iSlave ) {
-		messagesToSlaves_[iSlave] = new TMessage();
+	messagesToTasks_.resize( nTasks_ );
+	for ( UInt_t iTask(0); iTask < nTasks_; ++iTask ) {
+		messagesToTasks_[iTask] = new TMessage();
 	}
 }
 
-LauSimFitMaster::~LauSimFitMaster()
+LauSimFitCoordinator::~LauSimFitCoordinator()
 {
 	delete socketMonitor_; socketMonitor_ = 0;
 
-	// Tell all slaves that they are finished and delete corresponding socket
+	// Tell all tasks that they are finished and delete corresponding socket
 	TString msgStr("Finish");
 	TMessage message( kMESS_STRING );
 	message.WriteTString(msgStr);
-	for ( std::vector<TSocket*>::iterator iter = sSlaves_.begin(); iter != sSlaves_.end(); ++iter ) {
+	for ( std::vector<TSocket*>::iterator iter = socketTasks_.begin(); iter != socketTasks_.end(); ++iter ) {
 		(*iter)->Send(message);
 		(*iter)->Close();
 		delete (*iter);
 	}
-	sSlaves_.clear();
+	socketTasks_.clear();
 
 	// Remove the components created to apply constraints to fit parameters
 	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
@@ -100,20 +100,20 @@ LauSimFitMaster::~LauSimFitMaster()
 	}
 	vectorPar_.clear();
 
-	delete messageFromSlave_; messageFromSlave_ = 0;
+	delete messageFromTask_; messageFromTask_ = 0;
 
-	for ( std::vector<TMessage*>::iterator iter = messagesToSlaves_.begin(); iter != messagesToSlaves_.end(); ++iter ) {
+	for ( std::vector<TMessage*>::iterator iter = messagesToTasks_.begin(); iter != messagesToTasks_.end(); ++iter ) {
 		delete (*iter);
 	}
-	messagesToSlaves_.clear();
+	messagesToTasks_.clear();
 
 	delete fitNtuple_;
 }
 
-void LauSimFitMaster::initSockets()
+void LauSimFitCoordinator::initSockets()
 {
 	if ( socketMonitor_ != 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::initSockets : Sockets already initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::initSockets : Sockets already initialised." << std::endl;
 		return;
 	}
 
@@ -123,26 +123,26 @@ void LauSimFitMaster::initSockets()
 	TServerSocket *ss = new TServerSocket( reqPort_, kFALSE );
 	UInt_t actual_port = ss->GetLocalPort();
 
-	std::cout << "INFO in LauSimFitMaster::initSockets : Waiting for connection with " << nSlaves_ << " workers on port " << actual_port << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::initSockets : Waiting for connection with " << nTasks_ << " workers on port " << actual_port << std::endl;
 
-	sSlaves_.resize(nSlaves_);
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		sSlaves_[iSlave] = ss->Accept();
-		std::cout << "                                     : Added slave " << iSlave << std::endl;
+	socketTasks_.resize(nTasks_);
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		socketTasks_[iTask] = ss->Accept();
+		std::cout << "                                     : Added task " << iTask << std::endl;
 	}
 
 	// tell the clients to start
-	std::cout << "INFO in LauSimFitMaster::initSockets : Initialising slaves" << std::endl;
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+	std::cout << "INFO in LauSimFitCoordinator::initSockets : Initialising tasks" << std::endl;
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
 
 		TMessage message( kMESS_ANY );
-		message.WriteUInt(iSlave);
-		message.WriteUInt(nSlaves_);
+		message.WriteUInt(iTask);
+		message.WriteUInt(nTasks_);
 		message.WriteBool(this->useAsymmFitErrors());
 
-		sSlaves_[iSlave]->Send(message);
+		socketTasks_[iTask]->Send(message);
 
-		socketMonitor_->Add(sSlaves_[iSlave]);
+		socketMonitor_->Add(socketTasks_[iTask]);
 	}
 	std::cout << "                                     : Now start fit\n" << std::endl;
 
@@ -152,33 +152,33 @@ void LauSimFitMaster::initSockets()
 
 /*
  * OLD VERSION THAT JUST GETS THE NAMES - COULD HAVE A SERIES OF EXCHANGES TO GET THE NAMES, INIT VALUES, RANGES, ETC. INSTEAD OF PASSING PARAMETERS
- * THIS INCREASES THE GENERALITY OF THE CODE, I.E. THERE IS NO NEED FOR THE SLAVES TO KNOW ANY LAURA++ CLASS BUT THIS ONE, BUT MAKES IT RATHER MORE DENSE
+ * THIS INCREASES THE GENERALITY OF THE CODE, I.E. THERE IS NO NEED FOR THE TASKS TO KNOW ANY LAURA++ CLASS BUT THIS ONE, BUT MAKES IT RATHER MORE DENSE
  * FOR THE MOMENT I WILL STICK WITH THE METHOD OF PASSING LAUPARAMETER OBJECTS AROUND AND CONSIDER GOING BACK TO THIS GENERAL METHOD ONCE EVERYTHING IS WORKING
  *
-void LauSimFitMaster::getParametersFromSlavesFirstTime()
+void LauSimFitCoordinator::getParametersFromTasksFirstTime()
 {
-	slaveIndices_.resize( nSlaves_ );
+	taskIndices_.resize( nTasks_ );
 
 	TSocket* sActive(0);
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		// Send a message to the slave, requesting the list of parameter names
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		// Send a message to the task, requesting the list of parameter names
 		TString msgStr = "Parameter Names";
 		TMessage message( kMESS_STRING );
 		message.WriteTString( msgStr );
-		sSlaves_[iSlave]->Send(message);
+		socketTasks_[iTask]->Send(message);
 
-		// Wait to receive the response and check that it has come from the slave we just requested from
+		// Wait to receive the response and check that it has come from the task we just requested from
 		sActive = socketMonitor_->Select();
-		if ( sActive != sSlaves_[iSlave] ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Received message from a different slave than expected!" << std::endl;
+		if ( sActive != socketTasks_[iTask] ) {
+			std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasksFirstTime : Received message from a different task than expected!" << std::endl;
 			gSystem->Exit(1);
 		}
 
 		// Read the object and extract the parameter names
-		sSlaves_[iSlave]->Recv( messageFromSlave_ );
-		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
+		socketTasks_[iTask]->Recv( messageFromTask_ );
+		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromTask_->ReadObject( messageFromTask_->GetClass() ) );
 		if ( ! objarray ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameter names from slave" << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasksFirstTime : Error reading parameter names from task" << std::endl;
 			gSystem->Exit(1);
 		}
 
@@ -186,7 +186,7 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 		for ( Int_t iPar(0); iPar < nPars; ++iPar ) {
 			TObjString* objstring = dynamic_cast<TObjString*>( (*objarray)[iPar] );
 			if ( ! objstring ) {
-				std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameter names from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasksFirstTime : Error reading parameter names from task" << std::endl;
 				gSystem->Exit(1);
 			}
 			TString parname = objstring->GetString();
@@ -194,17 +194,17 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 			std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
 			if ( iter != parIndices_.end() ) {
 				UInt_t index = iter->second;
-				slaveIndices_[iSlave].push_back( index );
+				taskIndices_[iTask].push_back( index );
 			} else {
 				UInt_t index = parIndices_.size();
 				parIndices_.insert( std::make_pair( parname, index ) );
 				parNames_.insert( std::make_pair( index, parname ) );
-				slaveIndices_[iSlave].push_back( index );
+				taskIndices_[iTask].push_back( index );
 			}
 		}
 
 		delete objarray; objarray = 0;
-		delete messageFromSlave_; messageFromSlave_ = 0;
+		delete messageFromTask_; messageFromTask_ = 0;
 	}
 
 	UInt_t nPars = parNames_.size();
@@ -212,24 +212,24 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 }
 */
 
-void LauSimFitMaster::getParametersFromSlaves()
+void LauSimFitCoordinator::getParametersFromTasks()
 {
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlaves : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasks : Sockets not initialised." << std::endl;
 		return;
 	}
 
 	if ( params_.empty() ) {
-		this->getParametersFromSlavesFirstTime();
+		this->getParametersFromTasksFirstTime();
 
 		// Add variables to Gaussian constrain to a list
 		this->addConParameters();
 	} else {
-		this->updateParametersFromSlaves();
+		this->updateParametersFromTasks();
 	}
 }
 
-void LauSimFitMaster::updateParametersFromSlaves()
+void LauSimFitCoordinator::updateParametersFromTasks()
 {
 	TSocket* sActive(0);
 
@@ -238,22 +238,22 @@ void LauSimFitMaster::updateParametersFromSlaves()
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
 
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		// Send the message to the slave
-		sSlaves_[iSlave]->Send(message);
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		// Send the message to the task
+		socketTasks_[iTask]->Send(message);
 
-		// Wait to receive the response and check that it has come from the slave we just requested from
+		// Wait to receive the response and check that it has come from the task we just requested from
 		sActive = socketMonitor_->Select();
-		if ( sActive != sSlaves_[iSlave] ) {
-			std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Received message from a different slave than expected!" << std::endl;
+		if ( sActive != socketTasks_[iTask] ) {
+			std::cerr << "ERROR in LauSimFitCoordinator::updateParametersFromTasks : Received message from a different task than expected!" << std::endl;
 			gSystem->Exit(1);
 		}
 
 		// Read the object and extract the parameter names
-		sSlaves_[iSlave]->Recv( messageFromSlave_ );
-		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
+		socketTasks_[iTask]->Recv( messageFromTask_ );
+		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromTask_->ReadObject( messageFromTask_->GetClass() ) );
 		if ( ! objarray ) {
-			std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Error reading parameter names from slave" << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::updateParametersFromTasks : Error reading parameter names from task" << std::endl;
 			gSystem->Exit(1);
 		}
 
@@ -261,15 +261,15 @@ void LauSimFitMaster::updateParametersFromSlaves()
 		objarray->SetOwner(kTRUE);
 
 		const UInt_t nPars = objarray->GetEntries();
-		if ( nPars != slaveIndices_[iSlave].size() ) {
-			std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Unexpected number of parameters received from slave" << std::endl;
+		if ( nPars != taskIndices_[iTask].size() ) {
+			std::cerr << "ERROR in LauSimFitCoordinator::updateParametersFromTasks : Unexpected number of parameters received from task" << std::endl;
 			gSystem->Exit(1);
 		}
 
 		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 			LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
 			if ( ! parameter ) {
-				std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Error reading parameter from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitCoordinator::updateParametersFromTasks : Error reading parameter from task" << std::endl;
 				gSystem->Exit(1);
 			}
 
@@ -278,33 +278,33 @@ void LauSimFitMaster::updateParametersFromSlaves()
 
 			std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
 			if ( iter == parIndices_.end() ) {
-				std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Unexpected parameter name received from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitCoordinator::updateParametersFromTasks : Unexpected parameter name received from task" << std::endl;
 				gSystem->Exit(1);
 			}
 
 			const UInt_t index = iter->second;
-			if ( slaveIndices_[iSlave][iPar] != index ) {
-				std::cerr << "ERROR in LauSimFitMaster::updateParametersFromSlaves : Unexpected parameter received from slave" << std::endl;
+			if ( taskIndices_[iTask][iPar] != index ) {
+				std::cerr << "ERROR in LauSimFitCoordinator::updateParametersFromTasks : Unexpected parameter received from task" << std::endl;
 				gSystem->Exit(1);
 			}
 
 			params_[index]->initValue( parvalue );
 			parValues_[index] = parvalue;
-			vectorPar_[iSlave][iPar] = parvalue;
+			vectorPar_[iTask][iPar] = parvalue;
 			this->checkParameter( parameter, index );
 		}
 
 		delete objarray; objarray = 0;
-		delete messageFromSlave_; messageFromSlave_ = 0;
+		delete messageFromTask_; messageFromTask_ = 0;
 	}
 }
 
-void LauSimFitMaster::getParametersFromSlavesFirstTime()
+void LauSimFitCoordinator::getParametersFromTasksFirstTime()
 {
-	slaveIndices_.resize( nSlaves_ );
-	slaveFreeIndices_.resize( nSlaves_ );
-	vectorPar_.resize( nSlaves_ );
-	vectorRes_.resize( nSlaves_ );
+	taskIndices_.resize( nTasks_ );
+	taskFreeIndices_.resize( nTasks_ );
+	vectorPar_.resize( nTasks_ );
+	vectorRes_.resize( nTasks_ );
 
 	TSocket* sActive(0);
 
@@ -313,33 +313,33 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
 
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		// Send the message to the slave
-		sSlaves_[iSlave]->Send(message);
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		// Send the message to the task
+		socketTasks_[iTask]->Send(message);
 
-		// Wait to receive the response and check that it has come from the slave we just requested from
+		// Wait to receive the response and check that it has come from the task we just requested from
 		sActive = socketMonitor_->Select();
-		if ( sActive != sSlaves_[iSlave] ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Received message from a different slave than expected!" << std::endl;
+		if ( sActive != socketTasks_[iTask] ) {
+			std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasksFirstTime : Received message from a different task than expected!" << std::endl;
 			gSystem->Exit(1);
 		}
 
 		// Read the object and extract the parameter names
-		sSlaves_[iSlave]->Recv( messageFromSlave_ );
-		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
+		socketTasks_[iTask]->Recv( messageFromTask_ );
+		TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromTask_->ReadObject( messageFromTask_->GetClass() ) );
 		if ( ! objarray ) {
-			std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameters from slave" << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasksFirstTime : Error reading parameters from task" << std::endl;
 			gSystem->Exit(1);
 		}
 
 		const UInt_t nPars = objarray->GetEntries();
 
-		vectorPar_[iSlave] = new Double_t[nPars];
+		vectorPar_[iTask] = new Double_t[nPars];
 
 		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 			LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
 			if ( ! parameter ) {
-				std::cerr << "ERROR in LauSimFitMaster::getParametersFromSlavesFirstTime : Error reading parameter from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitCoordinator::getParametersFromTasksFirstTime : Error reading parameter from task" << std::endl;
 				gSystem->Exit(1);
 			}
 
@@ -350,42 +350,42 @@ void LauSimFitMaster::getParametersFromSlavesFirstTime()
 			std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
 			if ( iter != parIndices_.end() ) {
 				UInt_t index = iter->second;
-				slaveIndices_[iSlave].push_back( index );
+				taskIndices_[iTask].push_back( index );
 				if ( ! parfixed ) {
-					slaveFreeIndices_[iSlave].push_back( index );
+					taskFreeIndices_[iTask].push_back( index );
 				}
 				this->checkParameter( parameter, index );
 			} else {
 				UInt_t index = parIndices_.size();
 				parIndices_.insert( std::make_pair( parname, index ) );
 				parNames_.insert( std::make_pair( index, parname ) );
-				slaveIndices_[iSlave].push_back( index );
+				taskIndices_[iTask].push_back( index );
 				if ( ! parfixed ) {
-					slaveFreeIndices_[iSlave].push_back( index );
+					taskFreeIndices_[iTask].push_back( index );
 				}
 				params_.push_back( parameter );
 				parValues_.push_back( parvalue );
 			}
-			vectorPar_[iSlave][iPar] = parvalue;
+			vectorPar_[iTask][iPar] = parvalue;
 		}
 
 		delete objarray; objarray = 0;
-		delete messageFromSlave_; messageFromSlave_ = 0;
+		delete messageFromTask_; messageFromTask_ = 0;
 	}
 }
 
-void LauSimFitMaster::printParInfo() const
+void LauSimFitCoordinator::printParInfo() const
 {
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		const std::vector<UInt_t>& indices = slaveIndices_[iSlave];
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		const std::vector<UInt_t>& indices = taskIndices_[iTask];
 
-		std::cout << "INFO in LauSimFitMaster::printParInfo : Slave " << iSlave << " has the following parameters:\n";
+		std::cout << "INFO in LauSimFitCoordinator::printParInfo : Task " << iTask << " has the following parameters:\n";
 		for ( std::vector<UInt_t>::const_iterator iter = indices.begin(); iter != indices.end(); ++iter ) {
 			const TString& parName = parNames_.find(*iter)->second;
 			Double_t parValue = parValues_[*iter];
 			const LauParameter* par = params_[*iter];
 			if ( par->name() != parName || par->initValue() != parValue ) {
-				std::cerr << "ERROR in LauSimFitMaster::printParInfo : Discrepancy in parameter name and value records, this is very strange!!" << std::endl;
+				std::cerr << "ERROR in LauSimFitCoordinator::printParInfo : Discrepancy in parameter name and value records, this is very strange!!" << std::endl;
 			}
 
 			std::cout << "                                      : " << parName << " = " << parValue << " and has index " << *iter << "\n";
@@ -394,40 +394,40 @@ void LauSimFitMaster::printParInfo() const
 		std::cout << std::endl;
 	}
 
-	std::cout << "INFO in LauSimFitMaster::printParInfo : " << "There are " << params_.size() << " parameters in total" << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::printParInfo : " << "There are " << params_.size() << " parameters in total" << std::endl;
 }
 
-void LauSimFitMaster::checkParameter( const LauParameter* param, UInt_t index ) const
+void LauSimFitCoordinator::checkParameter( const LauParameter* param, UInt_t index ) const
 {
 	const LauParameter* storedPar = params_[index];
 
 	TString parName = storedPar->name();
 	if ( param->name() != parName ) {
-		std::cerr << "ERROR in LauSimFitMaster::checkParameter : Parameter name is different!!  This shouldn't happen!!" << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::checkParameter : Parameter name is different!!  This shouldn't happen!!" << std::endl;
 	}
 	if ( param->initValue() != storedPar->initValue() ) {
-		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Initial value for parameter " << parName << " is different, will use the value first set: " << storedPar->initValue() << std::endl;
+		std::cerr << "WARNING in LauSimFitCoordinator::checkParameter : Initial value for parameter " << parName << " is different, will use the value first set: " << storedPar->initValue() << std::endl;
 	}
 	if ( param->minValue() != storedPar->minValue() ) {
-		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Minimum allowed value for parameter " << parName << " is different, will use the value first set: " << storedPar->minValue() << std::endl;
+		std::cerr << "WARNING in LauSimFitCoordinator::checkParameter : Minimum allowed value for parameter " << parName << " is different, will use the value first set: " << storedPar->minValue() << std::endl;
 	}
 	if ( param->maxValue() != storedPar->maxValue() ) {
-		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Maximum allowed value for parameter " << parName << " is different, will use the value first set: " << storedPar->maxValue() << std::endl;
+		std::cerr << "WARNING in LauSimFitCoordinator::checkParameter : Maximum allowed value for parameter " << parName << " is different, will use the value first set: " << storedPar->maxValue() << std::endl;
 	}
 	if ( param->fixed() != storedPar->fixed() ) {
-		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Fixed/floating property of parameter " << parName << " is different, will use the value first set: " << (storedPar->fixed() ? "fixed" : "floating") << std::endl;
+		std::cerr << "WARNING in LauSimFitCoordinator::checkParameter : Fixed/floating property of parameter " << parName << " is different, will use the value first set: " << (storedPar->fixed() ? "fixed" : "floating") << std::endl;
 	}
 	if ( param->secondStage() != storedPar->secondStage() ) {
-		std::cerr << "WARNING in LauSimFitMaster::checkParameter : Second stage property of parameter " << parName << " is different, will use the value first set: " << (storedPar->secondStage() ? "true" : "false") << std::endl;
+		std::cerr << "WARNING in LauSimFitCoordinator::checkParameter : Second stage property of parameter " << parName << " is different, will use the value first set: " << (storedPar->secondStage() ? "true" : "false") << std::endl;
 	}
 }
 
-void LauSimFitMaster::initialise()
+void LauSimFitCoordinator::initialise()
 {
 	this->initSockets();
 }
 
-void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, const UInt_t nExp, const UInt_t firstExp, const Bool_t useAsymmErrors, const Bool_t doTwoStageFit )
+void LauSimFitCoordinator::runSimFit( const TString& fitNtupleFileName, const UInt_t nExp, const UInt_t firstExp, const Bool_t useAsymmErrors, const Bool_t doTwoStageFit )
 {
 	// Routine to perform the total fit.
 
@@ -436,8 +436,8 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, const UInt_t 
 	this->twoStageFit(doTwoStageFit);
 	this->initialise();
 
-	std::cout << "INFO in LauSimFitMaster::runSimFit : First experiment = " << firstExp << std::endl;
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of experiments = " << nExp << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : First experiment = " << firstExp << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : Number of experiments = " << nExp << std::endl;
 
 	// Start the cumulative timer
 	cumulTimer_.Start();
@@ -445,7 +445,7 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, const UInt_t 
 	this->resetFitCounters();
 
 	// Create and setup the fit results ntuple
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Creating fit ntuple." << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : Creating fit ntuple." << std::endl;
 	if (fitNtuple_ != 0) {delete fitNtuple_; fitNtuple_ = 0;}
 	fitNtuple_ = new LauFitNtuple(fitNtupleFileName, useAsymmErrors);
 
@@ -457,15 +457,15 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, const UInt_t 
 
 		this->setCurrentExperiment( iExp );
 
-		// Instruct the slaves to read the data for this experiment
+		// Instruct the tasks to read the data for this experiment
 		Bool_t readOK = this->readData();
 		if ( ! readOK ) {
-			std::cerr << "ERROR in LauSimFitMaster::runSimFit : One or more slaves reported problems with reading data for experiment " << iExp << ", skipping..." << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::runSimFit : One or more tasks reported problems with reading data for experiment " << iExp << ", skipping..." << std::endl;
 			timer_.Stop();
 			continue;
 		}
 
-		// Instruct the slaves to perform the caching
+		// Instruct the tasks to perform the caching
 		this->cacheInputData();
 
 		// Do the fit
@@ -475,65 +475,65 @@ void LauSimFitMaster::runSimFit( const TString& fitNtupleFileName, const UInt_t 
 		timer_.Stop();
 		timer_.Print();
 
-		// Instruct the slaves to finalise the results
+		// Instruct the tasks to finalise the results
 		this->finalise();
 	}
 
 	// Print out total timing info.
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Cumulative timing:" << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : Cumulative timing:" << std::endl;
 	cumulTimer_.Stop();
 	cumulTimer_.Print();
 
 	// Print out stats on OK fits.
 	const UInt_t nOKFits = this->numberOKFits();
 	const UInt_t nBadFits = this->numberBadFits();
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of OK Fits = " << nOKFits << std::endl;
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Number of Failed Fits = " << nBadFits << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : Number of OK Fits = " << nOKFits << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : Number of Failed Fits = " << nBadFits << std::endl;
 	Double_t fitEff(0.0);
 	if (nExp != 0) {fitEff = nOKFits/(1.0*nExp);}
-	std::cout << "INFO in LauSimFitMaster::runSimFit : Fit efficiency = " << fitEff*100.0 << "%." << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::runSimFit : Fit efficiency = " << fitEff*100.0 << "%." << std::endl;
 
-	// Instruct the slaves to write out any fit results (ntuples etc...).
+	// Instruct the tasks to write out any fit results (ntuples etc...).
 	this->writeOutResults();
 }
 
-void LauSimFitMaster::withinAsymErrorCalc(const Bool_t inAsymErrCalc)
+void LauSimFitCoordinator::withinAsymErrorCalc(const Bool_t inAsymErrCalc)
 {
 	this->LauFitObject::withinAsymErrorCalc(inAsymErrCalc);
 
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::withinAsymErrorCalc : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::withinAsymErrorCalc : Sockets not initialised." << std::endl;
 		return;
 	}
 
-	// Construct a message, informing the slaves whether or not we are now within the asymmetric error calculation
+	// Construct a message, informing the tasks whether or not we are now within the asymmetric error calculation
 	TString msgStr("Asym Error Calc");
 	const Bool_t asymErrorCalc( this->withinAsymErrorCalc() );
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
 	message.WriteBool( asymErrorCalc );
 
-	// Send the message to the slaves
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		sSlaves_[iSlave]->Send(message);
+	// Send the message to the tasks
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		socketTasks_[iTask]->Send(message);
 	}
 
 	TSocket* sActive(0);
 	UInt_t responsesReceived(0);
-	while ( responsesReceived != nSlaves_ ) {
+	while ( responsesReceived != nTasks_ ) {
 
 		// Get the next queued response
 		sActive = socketMonitor_->Select();
 
-		// Extract from the message the ID of the slave and the number of events read
+		// Extract from the message the ID of the task and the number of events read
 		Bool_t response(kTRUE);
-		UInt_t iSlave(0);
-		sActive->Recv( messageFromSlave_ );
-		messageFromSlave_->ReadUInt( iSlave );
-		messageFromSlave_->ReadBool( response );
+		UInt_t iTask(0);
+		sActive->Recv( messageFromTask_ );
+		messageFromTask_->ReadUInt( iTask );
+		messageFromTask_->ReadBool( response );
 
 		if ( response != asymErrorCalc ) {
-			std::cerr << "WARNING in LauSimFitMaster::withinAsymErrorCalc : Problem informing slave " << iSlave << std::endl;
+			std::cerr << "WARNING in LauSimFitCoordinator::withinAsymErrorCalc : Problem informing task " << iTask << std::endl;
 		}
 
 		++responsesReceived;
@@ -541,10 +541,10 @@ void LauSimFitMaster::withinAsymErrorCalc(const Bool_t inAsymErrCalc)
 
 }
 
-Bool_t LauSimFitMaster::readData()
+Bool_t LauSimFitCoordinator::readData()
 {
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::readData : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::readData : Sockets not initialised." << std::endl;
 		return kFALSE;
 	}
 
@@ -555,31 +555,31 @@ Bool_t LauSimFitMaster::readData()
 	message.WriteTString( msgStr );
 	message.WriteUInt( iExp );
 
-	// Send the message to the slaves
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		sSlaves_[iSlave]->Send(message);
+	// Send the message to the tasks
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		socketTasks_[iTask]->Send(message);
 	}
 
 	TSocket* sActive(0);
 	UInt_t responsesReceived(0);
 	Bool_t ok(kTRUE);
-	while ( responsesReceived != nSlaves_ ) {
+	while ( responsesReceived != nTasks_ ) {
 
 		// Get the next queued response
 		sActive = socketMonitor_->Select();
 
-		// Extract from the message the ID of the slave and the number of events read
-		sActive->Recv( messageFromSlave_ );
-		UInt_t iSlave(0);
+		// Extract from the message the ID of the task and the number of events read
+		sActive->Recv( messageFromTask_ );
+		UInt_t iTask(0);
 		UInt_t nEvents(0);
-		messageFromSlave_->ReadUInt( iSlave );
-		messageFromSlave_->ReadUInt( nEvents );
+		messageFromTask_->ReadUInt( iTask );
+		messageFromTask_->ReadUInt( nEvents );
 
 		if ( nEvents <= 0 ) {
-			std::cerr << "ERROR in LauSimFitMaster::readData : Slave " << iSlave << " reports no events found for experiment " << iExp << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::readData : Task " << iTask << " reports no events found for experiment " << iExp << std::endl;
 			ok = kFALSE;
 		} else {
-			std::cerr << "INFO in LauSimFitMaster::readData : Slave " << iSlave << " reports " << nEvents << " events found for experiment " << iExp << std::endl;
+			std::cerr << "INFO in LauSimFitCoordinator::readData : Task " << iTask << " reports " << nEvents << " events found for experiment " << iExp << std::endl;
 		}
 
 		++responsesReceived;
@@ -588,10 +588,10 @@ Bool_t LauSimFitMaster::readData()
 	return ok;
 }
 
-Bool_t LauSimFitMaster::cacheInputData()
+Bool_t LauSimFitCoordinator::cacheInputData()
 {
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::cacheInputData : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::cacheInputData : Sockets not initialised." << std::endl;
 		return kFALSE;
 	}
 
@@ -600,28 +600,28 @@ Bool_t LauSimFitMaster::cacheInputData()
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
 
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		// Send the message to the slave
-		sSlaves_[iSlave]->Send(message);
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		// Send the message to the task
+		socketTasks_[iTask]->Send(message);
 	}
 
 	TSocket* sActive(0);
 	UInt_t responsesReceived(0);
 	Bool_t allOK(kTRUE);
-	while ( responsesReceived != nSlaves_ ) {
+	while ( responsesReceived != nTasks_ ) {
 
 		// Get the next queued response
 		sActive = socketMonitor_->Select();
 
-		// Extract from the message the ID of the slave and the success/failure flag
-		sActive->Recv( messageFromSlave_ );
-		UInt_t iSlave(0);
+		// Extract from the message the ID of the task and the success/failure flag
+		sActive->Recv( messageFromTask_ );
+		UInt_t iTask(0);
 		Bool_t ok(kTRUE);
-		messageFromSlave_->ReadUInt( iSlave );
-		messageFromSlave_->ReadBool( ok );
+		messageFromTask_->ReadUInt( iTask );
+		messageFromTask_->ReadBool( ok );
 
 		if ( ! ok ) {
-			std::cerr << "ERROR in LauSimFitMaster::cacheInputData : Slave " << iSlave << " reports an error performing caching" << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::cacheInputData : Task " << iTask << " reports an error performing caching" << std::endl;
 			allOK = kFALSE;
 		}
 
@@ -631,17 +631,17 @@ Bool_t LauSimFitMaster::cacheInputData()
 	return allOK;
 }
 
-void LauSimFitMaster::checkInitFitParams()
+void LauSimFitCoordinator::checkInitFitParams()
 {
-	this->getParametersFromSlaves();
+	this->getParametersFromTasks();
 	this->printParInfo();
 }
 
-void LauSimFitMaster::fitExpt()
+void LauSimFitCoordinator::fitExpt()
 {
 	// Routine to perform the actual fit for the given experiment
 
-	// Instruct the slaves to update initial fit parameters if required (e.g. if using random numbers).
+	// Instruct the tasks to update initial fit parameters if required (e.g. if using random numbers).
 	this->checkInitFitParams();
 
 	// Initialise the fitter
@@ -652,14 +652,14 @@ void LauSimFitMaster::fitExpt()
 	this->startNewFit( LauFitter::fitter()->nParameters(), LauFitter::fitter()->nFreeParameters() );
 
 	// Now ready for minimisation step
-	std::cout << "\nINFO in LauSimFitMaster::fitExpt : Start minimisation...\n";
+	std::cout << "\nINFO in LauSimFitCoordinator::fitExpt : Start minimisation...\n";
 	LauAbsFitter::FitStatus fitResult = LauFitter::fitter()->minimise();
 
 	// If we're doing a two stage fit we can now release (i.e. float)
 	// the 2nd stage parameters and re-fit
 	if (this->twoStageFit()) {
 		if ( fitResult.status != 3 ) {
-			std::cerr << "ERROR in LauSimFitMaster:fitExpt : Not running second stage fit since first stage failed." << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator:fitExpt : Not running second stage fit since first stage failed." << std::endl;
 			LauFitter::fitter()->releaseSecondStageParameters();
 		} else {
 			LauFitter::fitter()->releaseSecondStageParameters();
@@ -677,7 +677,7 @@ void LauSimFitMaster::fitExpt()
 	LauFitter::fitter()->updateParameters();
 }
 
-void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
+void LauSimFitCoordinator::setParsFromMinuit(Double_t* par, Int_t npar)
 {
 	// This function sets the internal parameters based on the values
 	// that Minuit is using when trying to minimise the total likelihood function.
@@ -687,7 +687,7 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 	if ( ! this->withinAsymErrorCalc() ) {
 		const UInt_t nFreePars = this->nFreeParams();
 		if (static_cast<UInt_t>(npar) != nFreePars) {
-			std::cerr << "ERROR in LauSimFitMaster::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
+			std::cerr << "ERROR in LauSimFitCoordinator::setParsFromMinuit : Unexpected number of free parameters: " << npar << ".\n";
 			std::cerr << "                                              Expected: " << nFreePars << ".\n" << std::endl;
 			gSystem->Exit(EXIT_FAILURE);
 		}
@@ -697,7 +697,7 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 	// the par array actually contains all the parameters,
 	// free and floating...
 	// Update all the parameters with their new values.
-	// Change the value in the array to be sent out to the slaves and the
+	// Change the value in the array to be sent out to the tasks and the
 	// parameters themselves (so that constraints are correctly calculated)
 	for (UInt_t i(0); i<this->nTotParams(); ++i) {
 		if (!params_[i]->fixed()) {
@@ -707,43 +707,43 @@ void LauSimFitMaster::setParsFromMinuit(Double_t* par, Int_t npar)
 	}
 }
 
-Double_t LauSimFitMaster::getTotNegLogLikelihood()
+Double_t LauSimFitCoordinator::getTotNegLogLikelihood()
 {
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::getTotNegLogLikelihood : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::getTotNegLogLikelihood : Sockets not initialised." << std::endl;
 		return 0.0;
 	}
 
-	// Send current values of the parameters to the slaves.
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+	// Send current values of the parameters to the tasks.
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
 
-		std::vector<UInt_t>& indices = slaveIndices_[iSlave];
-		std::vector<UInt_t>& freeIndices = slaveFreeIndices_[iSlave];
+		std::vector<UInt_t>& indices = taskIndices_[iTask];
+		std::vector<UInt_t>& freeIndices = taskFreeIndices_[iTask];
 		UInt_t nPars = indices.size();
 		UInt_t nFreePars = freeIndices.size();
 		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
-			vectorPar_[iSlave][iPar] = parValues_[ indices[iPar] ];
+			vectorPar_[iTask][iPar] = parValues_[ indices[iPar] ];
 		}
 
-		TMessage* message = messagesToSlaves_[iSlave];
+		TMessage* message = messagesToTasks_[iTask];
 		message->Reset( kMESS_ANY );
 		message->WriteUInt( nPars );
 		message->WriteUInt( nFreePars );
-		message->WriteFastArray( vectorPar_[iSlave], nPars );
+		message->WriteFastArray( vectorPar_[iTask], nPars );
 
-		sSlaves_[iSlave]->Send(*message);
+		socketTasks_[iTask]->Send(*message);
 	}
 
 	Double_t negLogLike(0.0);
 	TSocket  *sActive(0);
 	UInt_t responsesReceived(0);
 	Bool_t allOK(kTRUE);
-	while ( responsesReceived != nSlaves_ ) {
+	while ( responsesReceived != nTasks_ ) {
 
 		sActive = socketMonitor_->Select();
-		sActive->Recv(messageFromSlave_);	    
+		sActive->Recv(messageFromTask_);	    
 
-		messageFromSlave_->ReadDouble( vectorRes_[responsesReceived] );
+		messageFromTask_->ReadDouble( vectorRes_[responsesReceived] );
 
 		Double_t& nLL = vectorRes_[responsesReceived];
 		if ( nLL == 0.0 || TMath::IsNaN(nLL) || !TMath::Finite(nLL) ) {
@@ -762,7 +762,7 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 
 	const Double_t worstNegLogLike = -1.0*this->worstLogLike();
 	if ( ! allOK ) {
-		std::cerr << "WARNING in LauSimFitMaster::getTotNegLogLikelihood : Strange NLL value returned by one or more slaves\n";
+		std::cerr << "WARNING in LauSimFitCoordinator::getTotNegLogLikelihood : Strange NLL value returned by one or more tasks\n";
 		std::cerr << "                                                   : Returning worst NLL found so far to force MINUIT out of this region." << std::endl;
 		negLogLike = worstNegLogLike;
 	} else if ( negLogLike > worstNegLogLike ) {
@@ -772,7 +772,7 @@ Double_t LauSimFitMaster::getTotNegLogLikelihood()
 	return negLogLike;
 }
 
-Double_t LauSimFitMaster::getLogLikelihoodPenalty()
+Double_t LauSimFitCoordinator::getLogLikelihoodPenalty()
 {
 	Double_t penalty(0.0);
 
@@ -788,7 +788,7 @@ Double_t LauSimFitMaster::getLogLikelihoodPenalty()
 	return penalty;
 }
 
-void LauSimFitMaster::addConParameters()
+void LauSimFitCoordinator::addConParameters()
 {
 	// Add penalties from the constraints to fit parameters
 
@@ -796,7 +796,7 @@ void LauSimFitMaster::addConParameters()
 	for ( std::vector<LauParameter*>::const_iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
 		if ( (*iter)->gaussConstraint() ) {
 			conVars_.push_back( *iter );
-			std::cout << "INFO in LauSimFitMaster::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+			std::cout << "INFO in LauSimFitCoordinator::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
 		}
 	}
 
@@ -815,7 +815,7 @@ void LauSimFitMaster::addConParameters()
 
 		// If the parameters are not found, skip it
 		if ( params.size() != (*iter).conPars_.size() ) {
-			std::cerr << "WARNING in LauSimFitMaster::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
+			std::cerr << "WARNING in LauSimFitCoordinator::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
 			continue;
 		}
 
@@ -823,7 +823,7 @@ void LauSimFitMaster::addConParameters()
 		formPar->addGaussianConstraint( (*iter).mean_, (*iter).width_ );
 		conVars_.push_back(formPar);
 
-		std::cout << "INFO in LauSimFitMaster::addConParameters : Added Gaussian constraint to formula\n";
+		std::cout << "INFO in LauSimFitCoordinator::addConParameters : Added Gaussian constraint to formula\n";
 		std::cout << "                                          : Formula: " << (*iter).formula_ << std::endl;
 		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
 			std::cout << "                                          : Parameter: " << (*iterparam)->name() << std::endl;
@@ -832,16 +832,16 @@ void LauSimFitMaster::addConParameters()
 	
 }
 
-Bool_t LauSimFitMaster::finalise()
+Bool_t LauSimFitCoordinator::finalise()
 {
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::finalise : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::finalise : Sockets not initialised." << std::endl;
 		return kFALSE;
 	}
 
 	// Prepare the covariance matrices
 	const TMatrixD& covMatrix = this->covarianceMatrix();
-	covMatrices_.resize( nSlaves_ );
+	covMatrices_.resize( nTasks_ );
 
 	LauParamFixed pred;
 
@@ -856,14 +856,14 @@ Bool_t LauSimFitMaster::finalise()
 		}
 	}
 
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		const UInt_t nPar = slaveIndices_[iSlave].size();
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		const UInt_t nPar = taskIndices_[iTask].size();
 
 		std::vector<UInt_t> freeIndices;
 		freeIndices.reserve( nPar );
 
 		for ( UInt_t iPar(0); iPar < nPar; ++iPar ) {
-			UInt_t index = slaveIndices_[iSlave][iPar];
+			UInt_t index = taskIndices_[iTask][iPar];
 			std::map<UInt_t,UInt_t>::iterator freeIter = freeParIndices.find(index);
 			if ( freeIter == freeParIndices.end() ) {
 				continue;
@@ -873,7 +873,7 @@ Bool_t LauSimFitMaster::finalise()
 		}
 
 		const UInt_t nFreePars = freeIndices.size();
-		TMatrixD& covMat = covMatrices_[iSlave];
+		TMatrixD& covMat = covMatrices_[iTask];
 		covMat.ResizeTo( nFreePars, nFreePars );
 
 		for ( UInt_t iPar(0); iPar < nFreePars; ++iPar ) {
@@ -888,12 +888,12 @@ Bool_t LauSimFitMaster::finalise()
 	// The array to hold the parameters
 	TObjArray array;
 
-	// Send messages to all slaves containing the final parameters and fit status, NLL
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
+	// Send messages to all tasks containing the final parameters and fit status, NLL
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
 
 		array.Clear();
 
-		std::vector<UInt_t>& indices = slaveIndices_[iSlave];
+		std::vector<UInt_t>& indices = taskIndices_[iTask];
 		UInt_t nPars = indices.size();
 		for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 			array.Add( params_[ indices[iPar] ] );
@@ -902,9 +902,9 @@ Bool_t LauSimFitMaster::finalise()
 		const Int_t status = this->statusCode();
 		const Double_t NLL = this->nll();
 		const Double_t EDM = this->edm();
-		TMatrixD& covMat = covMatrices_[iSlave];
+		TMatrixD& covMat = covMatrices_[iTask];
 
-		TMessage* message = messagesToSlaves_[iSlave];
+		TMessage* message = messagesToTasks_[iTask];
 		message->Reset( kMESS_OBJECT );
 		message->WriteInt( status );
 		message->WriteDouble( NLL );
@@ -912,42 +912,42 @@ Bool_t LauSimFitMaster::finalise()
 		message->WriteObject( &array );
 		message->WriteObject( &covMat );
 
-		sSlaves_[iSlave]->Send(*message);
+		socketTasks_[iTask]->Send(*message);
 	}
 
 	TSocket  *sActive(0);
 	UInt_t responsesReceived(0);
 	Bool_t allOK(kTRUE);
-	while ( responsesReceived != nSlaves_ ) {
+	while ( responsesReceived != nTasks_ ) {
 
 		// Get the next queued response
 		sActive = socketMonitor_->Select();
 
-		// Extract from the message the ID of the slave and the number of events read
-		sActive->Recv( messageFromSlave_ );
-		UInt_t iSlave(0);
+		// Extract from the message the ID of the task and the number of events read
+		sActive->Recv( messageFromTask_ );
+		UInt_t iTask(0);
 		Bool_t ok(kTRUE);
-		messageFromSlave_->ReadUInt( iSlave );
-		messageFromSlave_->ReadBool( ok );
+		messageFromTask_->ReadUInt( iTask );
+		messageFromTask_->ReadBool( ok );
 
 		if ( ok ) {
-			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromSlave_->ReadObject( messageFromSlave_->GetClass() ) );
+			TObjArray * objarray = dynamic_cast<TObjArray*>( messageFromTask_->ReadObject( messageFromTask_->GetClass() ) );
 			if ( ! objarray ) {
-				std::cerr << "ERROR in LauSimFitMaster::finalise : Error reading finalised parameters from slave" << std::endl;
+				std::cerr << "ERROR in LauSimFitCoordinator::finalise : Error reading finalised parameters from task" << std::endl;
 				allOK = kFALSE;
 			} else {
 				// We want to auto-delete the supplied parameters since we only copy their values in this case
 				objarray->SetOwner(kTRUE);
 
 				const UInt_t nPars = objarray->GetEntries();
-				if ( nPars != slaveIndices_[iSlave].size() ) {
-					std::cerr << "ERROR in LauSimFitMaster::finalise : Unexpected number of finalised parameters received from slave" << std::endl;
+				if ( nPars != taskIndices_[iTask].size() ) {
+					std::cerr << "ERROR in LauSimFitCoordinator::finalise : Unexpected number of finalised parameters received from task" << std::endl;
 					allOK = kFALSE;
 				} else {
 					for ( UInt_t iPar(0); iPar < nPars; ++iPar ) {
 						LauParameter* parameter = dynamic_cast<LauParameter*>( (*objarray)[iPar] );
 						if ( ! parameter ) {
-							std::cerr << "ERROR in LauSimFitMaster::finalise : Error reading parameter from slave" << std::endl;
+							std::cerr << "ERROR in LauSimFitCoordinator::finalise : Error reading parameter from task" << std::endl;
 							allOK = kFALSE;
 							continue;
 						}
@@ -956,14 +956,14 @@ Bool_t LauSimFitMaster::finalise()
 
 						std::map< TString, UInt_t >::iterator iter = parIndices_.find( parname );
 						if ( iter == parIndices_.end() ) {
-							std::cerr << "ERROR in LauSimFitMaster::finalise : Unexpected parameter name received from slave" << std::endl;
+							std::cerr << "ERROR in LauSimFitCoordinator::finalise : Unexpected parameter name received from task" << std::endl;
 							allOK = kFALSE;
 							continue;
 						}
 
 						const UInt_t index = iter->second;
-						if ( slaveIndices_[iSlave][iPar] != index ) {
-							std::cerr << "ERROR in LauSimFitMaster::finalise : Unexpected parameter received from slave" << std::endl;
+						if ( taskIndices_[iTask][iPar] != index ) {
+							std::cerr << "ERROR in LauSimFitCoordinator::finalise : Unexpected parameter received from task" << std::endl;
 							allOK = kFALSE;
 							continue;
 						}
@@ -971,13 +971,13 @@ Bool_t LauSimFitMaster::finalise()
 						Double_t parvalue = parameter->value();
 						params_[index]->value( parvalue );
 						parValues_[index] = parvalue;
-						vectorPar_[iSlave][iPar] = parvalue;
+						vectorPar_[iTask][iPar] = parvalue;
 					}
 				}
 				delete objarray;
 			}
 		} else {
-			std::cerr << "ERROR in LauSimFitMaster::finalise : Slave " << iSlave << " reports an error performing finalisation" << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::finalise : Task " << iTask << " reports an error performing finalisation" << std::endl;
 			allOK = kFALSE;
 		}
 
@@ -1000,10 +1000,10 @@ Bool_t LauSimFitMaster::finalise()
 	return allOK;
 }
 
-Bool_t LauSimFitMaster::writeOutResults()
+Bool_t LauSimFitCoordinator::writeOutResults()
 {
 	if ( socketMonitor_ == 0 ) {
-		std::cerr << "ERROR in LauSimFitMaster::writeOutResults : Sockets not initialised." << std::endl;
+		std::cerr << "ERROR in LauSimFitCoordinator::writeOutResults : Sockets not initialised." << std::endl;
 		return kFALSE;
 	}
 
@@ -1012,28 +1012,28 @@ Bool_t LauSimFitMaster::writeOutResults()
 	TMessage message( kMESS_STRING );
 	message.WriteTString( msgStr );
 
-	// Send the message to the slaves
-	for ( UInt_t iSlave(0); iSlave<nSlaves_; ++iSlave ) {
-		sSlaves_[iSlave]->Send(message);
+	// Send the message to the tasks
+	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {
+		socketTasks_[iTask]->Send(message);
 	}
 
 	TSocket  *sActive(0);
 	UInt_t responsesReceived(0);
 	Bool_t allOK(kTRUE);
-	while ( responsesReceived != nSlaves_ ) {
+	while ( responsesReceived != nTasks_ ) {
 
 		// Get the next queued response
 		sActive = socketMonitor_->Select();
 
-		// Extract from the message the ID of the slave and the number of events read
-		sActive->Recv( messageFromSlave_ );
-		UInt_t iSlave(0);
+		// Extract from the message the ID of the task and the number of events read
+		sActive->Recv( messageFromTask_ );
+		UInt_t iTask(0);
 		Bool_t ok(kTRUE);
-		messageFromSlave_->ReadUInt( iSlave );
-		messageFromSlave_->ReadBool( ok );
+		messageFromTask_->ReadUInt( iTask );
+		messageFromTask_->ReadBool( ok );
 
 		if ( ! ok ) {
-			std::cerr << "ERROR in LauSimFitMaster::writeOutResults : Slave " << iSlave << " reports an error performing finalisation" << std::endl;
+			std::cerr << "ERROR in LauSimFitCoordinator::writeOutResults : Task " << iTask << " reports an error performing finalisation" << std::endl;
 			allOK = kFALSE;
 		}
 

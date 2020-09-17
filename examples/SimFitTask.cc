@@ -52,9 +52,9 @@ int main( int argc, char** argv )
 {
 	// Process command-line arguments
 	// Usage:
-	// ./Slave gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]
+	// ./SimFitTask gen <category = DD or LL> [nExpt = 1] [firstExpt = 0]
 	// or
-	// ./Slave fit <category = DD or LL> <iFit> <port> [nExpt = 1] [firstExpt = 0]
+	// ./SimFitTask fit <category = DD or LL> <iFit> <port> [nExpt = 1] [firstExpt = 0]
 	if ( argc < 3 ) {
 		usage( std::cerr, argv[0] );
 		return EXIT_FAILURE;
@@ -214,7 +214,7 @@ int main( int argc, char** argv )
 	// Generate toy from the fitted parameters
 	//TString fitToyFileName("fitToyMC_");
 	//fitToyFileName += category;
-	//fitToyFileName += "-Slave_";
+	//fitToyFileName += "-Task_";
 	//fitToyFileName += iFit;
 	//fitToyFileName += ".root";
 	//fitModel->compareFitData(100, fitToyFileName);
@@ -222,30 +222,30 @@ int main( int argc, char** argv )
 	// Write out per-event likelihoods and sWeights
 	//TString splotFileName("splot_");
 	//splotFileName += category;
-	//splotFileName += "-Slave_";
+	//splotFileName += "-Task_";
 	//splotFileName += iFit;
 	//splotFileName += ".root";
 	//fitModel->writeSPlotData(splotFileName, "splot", kFALSE);
 
 	// Set the names of the files to read/write
-	TString dataFile("gen-"); dataFile += category; dataFile += "-Slave.root";
+	TString dataFile("gen-"); dataFile += category; dataFile += "-Task.root";
 	TString treeName("genResults");
 	TString rootFileName("");
 	TString tableFileName("");
 	if (command == "fit") {
-		rootFileName = "fit"; rootFileName += category; rootFileName += "-Slave_"; rootFileName += iFit;
+		rootFileName = "fit"; rootFileName += category; rootFileName += "-Task_"; rootFileName += iFit;
 		rootFileName += "_expt_"; rootFileName += firstExpt;
 		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
 		rootFileName += ".root";
-		tableFileName = "fit"; tableFileName += category; tableFileName += "SlaveResults_"; tableFileName += iFit;
+		tableFileName = "fit"; tableFileName += category; tableFileName += "TaskResults_"; tableFileName += iFit;
 	} else {
 		rootFileName = "dummy.root";
-		tableFileName = "gen"; tableFileName += category; tableFileName += "SlaveResults_";
+		tableFileName = "gen"; tableFileName += category; tableFileName += "TaskResults_";
 	}
 
 	// Execute the generation/fit
 	if ( command == "fit" ) {
-		fitModel->runSlave( dataFile, treeName, rootFileName, tableFileName, hostname, port );
+		fitModel->runTask( dataFile, treeName, rootFileName, tableFileName, hostname, port );
 	} else {
 		fitModel->run( command, dataFile, treeName, rootFileName, tableFileName );
 	}

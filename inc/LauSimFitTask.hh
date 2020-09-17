@@ -22,21 +22,21 @@ Paul Harrison
 Thomas Latham
 */
 
-/*! \file LauSimFitSlave.hh
-    \brief File containing declaration of LauSimFitSlave class.
+/*! \file LauSimFitTask.hh
+    \brief File containing declaration of LauSimFitTask class.
 */
 
-/*! \class LauSimFitSlave
-    \brief The base class for any slave process for simultaneous/combined fits
+/*! \class LauSimFitTask
+    \brief The base class for any task process for simultaneous/combined fits
 
     Implementation of the JFit method described in arXiv:1409.5080 [physics.data-an].
 
-    This class acts as the base class from which slaves should inherit.
+    This class acts as the base class from which tasks should inherit.
     This allows any fitting framework to plug in to the JFit method.
 */
 
-#ifndef LAU_SIM_FIT_SLAVE
-#define LAU_SIM_FIT_SLAVE
+#ifndef LAU_SIM_FIT_TASK
+#define LAU_SIM_FIT_TASK
 
 #include "TMatrixDfwd.h"
 
@@ -48,33 +48,33 @@ class TString;
 class LauFitNtuple;
 
 
-class LauSimFitSlave : public LauFitObject {
+class LauSimFitTask : public LauFitObject {
 
 	public:
 		//! Constructor
-		LauSimFitSlave();
+		LauSimFitTask();
 
 		//! Destructor
-		virtual ~LauSimFitSlave();
+		virtual ~LauSimFitTask();
 
-		//! Obtain the number of slaves
-		UInt_t nSlaves() const {return nSlaves_;}
+		//! Obtain the number of tasks
+		UInt_t nTasks() const {return nTasks_;}
 
-		//! Obtain the ID number of this slave
-		UInt_t slaveId() const {return slaveId_;}
+		//! Obtain the ID number of this task
+		UInt_t taskId() const {return taskId_;}
 
-		//! Start the slave process for simultaneous fitting
+		//! Start the task process for simultaneous fitting
 		/*!
 			\param [in] dataFileName the name of the input data file
 			\param [in] dataTreeName the name of the tree containing the data
 			\param [in] histFileName the file name for the output histograms
 			\param [in] tableFileName the file name for the latex output file
-			\param [in] addressMaster the hostname of the machine running the master process
-			\param [in] portMaster the port number on which the master process is listening
+			\param [in] addressCoordinator the hostname of the machine running the coordinator process
+			\param [in] portCoordinator the port number on which the coordinator process is listening
 		*/	
-		virtual void runSlave(const TString& dataFileName, const TString& dataTreeName,
+		virtual void runTask(const TString& dataFileName, const TString& dataTreeName,
 			              const TString& histFileName, const TString& tableFileName = "",
-			              const TString& addressMaster = "localhost", const UInt_t portMaster = 9090);
+			              const TString& addressCoordinator = "localhost", const UInt_t portCoordinator = 9090);
 
 		//! Initialise the fit model
 		/*!
@@ -100,15 +100,15 @@ class LauSimFitSlave : public LauFitObject {
 		//! Access to the fit ntuple
 		LauFitNtuple* fitNtuple() {return fitNtuple_;}
 
-		//! Establish the connection to the master process
+		//! Establish the connection to the coordinator process
 		/*!
-			\param [in] addressMaster the hostname of the machine running the master process
-			\param [in] portMaster the port number on which the master process is listening
+			\param [in] addressCoordinator the hostname of the machine running the coordinator process
+			\param [in] portCoordinator the port number on which the coordinator process is listening
 		*/	
-		void connectToMaster( const TString& addressMaster, const UInt_t portMaster );
+		void connectToCoordinator( const TString& addressCoordinator, const UInt_t portCoordinator );
 
-		//! Listen for requests from the master and act accordingly
-		void processMasterRequests();
+		//! Listen for requests from the coordinator and act accordingly
+		void processCoordinatorRequests();
 
 		//! Setup saving of fit results to ntuple/LaTeX table etc.
 		/*!
@@ -120,7 +120,7 @@ class LauSimFitSlave : public LauFitObject {
 		*/	
 		virtual void setupResultsOutputs( const TString& histFileName, const TString& tableFileName );
 
-		//! Package the initial fit parameters for transmission to the master
+		//! Package the initial fit parameters for transmission to the coordinator
 		/*!
 			\param [out] array the array to be filled with the LauParameter objects
 		*/	
@@ -128,16 +128,16 @@ class LauSimFitSlave : public LauFitObject {
 
 		//! Perform all finalisation actions
 		/*!
-			- Receive the results of the fit from the master
+			- Receive the results of the fit from the coordinator
 			- Perform any finalisation routines
-		  	- Package the finalised fit parameters for transmission back to the master
+		  	- Package the finalised fit parameters for transmission back to the coordinator
 
 			\param [in] fitStat the status of the fit, e.g. status code, EDM, NLL
-			\param [in] parsFromMaster the parameters at the fit minimum
+			\param [in] parsFromCoordinator the parameters at the fit minimum
 			\param [in] covMat the fit covariance matrix
-			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
+			\param [out] parsToCoordinator the array to be filled with the finalised LauParameter objects
 		*/	
-		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster ) = 0;
+		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromCoordinator, const TMatrixD* covMat, TObjArray& parsToCoordinator ) = 0;
 
 		//! Open the input file and verify that all required variables are present
 		/*!
@@ -160,30 +160,30 @@ class LauSimFitSlave : public LauFitObject {
 
 	private:
 		//! Copy constructor (not implemented)
-		LauSimFitSlave(const LauSimFitSlave& rhs);
+		LauSimFitTask(const LauSimFitTask& rhs);
 
 		//! Copy assignment operator (not implemented)
-		LauSimFitSlave& operator=(const LauSimFitSlave& rhs);
+		LauSimFitTask& operator=(const LauSimFitTask& rhs);
 
 		//! A socket to enable parallel setup 
-		TSocket* sMaster_;
+		TSocket* socketCoordinator_;
 
-		//! Message from master to the slaves
-		TMessage* messageFromMaster_;
+		//! Message from coordinator to the tasks
+		TMessage* messageFromCoordinator_;
 
-		//! Slave id number
-		UInt_t slaveId_;
+		//! Task id number
+		UInt_t taskId_;
 
-		//! The total number of slaves
-		UInt_t nSlaves_;
+		//! The total number of tasks
+		UInt_t nTasks_;
 
-		//! Parameter values array (for reading from the master)
+		//! Parameter values array (for reading from the coordinator)
 		Double_t* parValues_;
 
 		//! The fit ntuple
 		LauFitNtuple* fitNtuple_;
 
-		ClassDef(LauSimFitSlave,0);
+		ClassDef(LauSimFitTask,0);
 };
 
 #endif

@@ -73,7 +73,7 @@ Thomas Latham
 
 #include "LauFitObject.hh"
 #include "LauFormulaPar.hh"
-#include "LauSimFitSlave.hh"
+#include "LauSimFitTask.hh"
 // LauSPlot included to get LauSPlot::NameSet typedef
 #include "LauSPlot.hh"
 
@@ -84,7 +84,7 @@ class LauGenNtuple;
 class LauAbsRValue;
 class LauParameter;
 
-class LauAbsFitModel : public LauSimFitSlave {
+class LauAbsFitModel : public LauSimFitTask {
 
 	public:
 		//! Constructor
@@ -448,7 +448,7 @@ class LauAbsFitModel : public LauSimFitSlave {
 		*/
 		virtual void setupResultsOutputs( const TString& histFileName, const TString& tableFileName );
 
-		//! Package the initial fit parameters for transmission to the master
+		//! Package the initial fit parameters for transmission to the coordinator
 		/*!
 			\param [out] array the array to be filled with the LauParameter objects
 		*/
@@ -456,16 +456,16 @@ class LauAbsFitModel : public LauSimFitSlave {
 
 		//! Perform all finalisation actions
 		/*!
-			- Receive the results of the fit from the master
+			- Receive the results of the fit from the coordinator
 			- Perform any finalisation routines
-		  	- Package the finalised fit parameters for transmission back to the master
+		  	- Package the finalised fit parameters for transmission back to the coordinator
 
 			\param [in] fitStat the status of the fit, e.g. status code, EDM, NLL
-			\param [in] parsFromMaster the parameters at the fit minimum
+			\param [in] parsFromCoordinator the parameters at the fit minimum
 			\param [in] covMat the fit covariance matrix
-			\param [out] parsToMaster the array to be filled with the finalised LauParameter objects
+			\param [out] parsToCoordinator the array to be filled with the finalised LauParameter objects
 		*/
-		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster );
+		virtual void finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromCoordinator, const TMatrixD* covMat, TObjArray& parsToCoordinator );
 
 		//! Write the results of the fit into the ntuple
 		/*!

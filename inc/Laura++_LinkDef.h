@@ -134,15 +134,15 @@ Thomas Latham
 #pragma link C++ class LauResonanceMaker+;
 #pragma link C++ class LauResultsExtractor+;
 #pragma link C++ class LauRhoOmegaMix+;
-#ifdef DOLAUROOFITSLAVE
-#pragma link C++ class LauRooFitSlave+;
+#ifdef DOLAUROOFITTASK
+#pragma link C++ class LauRooFitTask+;
 #endif
 #pragma link C++ class LauScfMap+;
 #pragma link C++ class LauSigmaRes+;
 #pragma link C++ class LauSigmoidPdf+;
 #pragma link C++ class LauSimpleFitModel+;
-#pragma link C++ class LauSimFitMaster+;
-#pragma link C++ class LauSimFitSlave+;
+#pragma link C++ class LauSimFitCoordinator+;
+#pragma link C++ class LauSimFitTask+;
 #pragma link C++ class LauSPlot+;
 #pragma link C++ class LauString+;
 #pragma link C++ class LauSumPdf+;

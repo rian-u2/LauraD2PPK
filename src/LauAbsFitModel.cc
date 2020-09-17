@@ -513,7 +513,7 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 
 void LauAbsFitModel::setupResultsOutputs( const TString& histFileName, const TString& tableFileName )
 {
-	this->LauSimFitSlave::setupResultsOutputs( histFileName, tableFileName );
+	this->LauSimFitTask::setupResultsOutputs( histFileName, tableFileName );
 
 	outputTableName_ = tableFileName;
 }
@@ -1001,29 +1001,29 @@ void LauAbsFitModel::prepareInitialParArray( TObjArray& array )
 	this->startNewFit( nPars, nFreePars );
 }
 
-void LauAbsFitModel::finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromMaster, const TMatrixD* covMat, TObjArray& parsToMaster )
+void LauAbsFitModel::finaliseExperiment( const LauAbsFitter::FitStatus& fitStat, const TObjArray* parsFromCoordinator, const TMatrixD* covMat, TObjArray& parsToCoordinator )
 {
 	// Copy the fit status information
 	this->storeFitStatus( fitStat, *covMat );
 
 	// Now process the parameters
 	const UInt_t nPars = this->nTotParams();
-	UInt_t nParsFromMaster = parsFromMaster->GetEntries();
-	if ( nParsFromMaster != nPars ) {
-		std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Unexpected number of parameters received from master" << std::endl;
-		std::cerr << "                                            : Received " << nParsFromMaster << " when expecting " << nPars << std::endl;
+	UInt_t nParsFromCoordinator = parsFromCoordinator->GetEntries();
+	if ( nParsFromCoordinator != nPars ) {
+		std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Unexpected number of parameters received from coordinator" << std::endl;
+		std::cerr << "                                            : Received " << nParsFromCoordinator << " when expecting " << nPars << std::endl;
 		gSystem->Exit( EXIT_FAILURE );
 	}
 
-	for ( UInt_t iPar(0); iPar < nParsFromMaster; ++iPar ) {
-		LauParameter* parameter = dynamic_cast<LauParameter*>( (*parsFromMaster)[iPar] );
+	for ( UInt_t iPar(0); iPar < nParsFromCoordinator; ++iPar ) {
+		LauParameter* parameter = dynamic_cast<LauParameter*>( (*parsFromCoordinator)[iPar] );
 		if ( ! parameter ) {
-			std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Error reading parameter from master" << std::endl;
+			std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Error reading parameter from coordinator" << std::endl;
 			gSystem->Exit( EXIT_FAILURE );
 		}
 
 		if ( parameter->name() != fitVars_[iPar]->name() ) {
-			std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Error reading parameter from master" << std::endl;
+			std::cerr << "ERROR in LauAbsFitModel::finaliseExperiment : Error reading parameter from coordinator" << std::endl;
 			gSystem->Exit( EXIT_FAILURE );
 		}
 
@@ -1046,7 +1046,7 @@ void LauAbsFitModel::finaliseExperiment( const LauAbsFitter::FitStatus& fitStat,
 
 	// Send the finalised fit parameters
 	for ( LauParameterPList::iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
-		parsToMaster.Add( *iter );
+		parsToCoordinator.Add( *iter );
 	}
 }
 

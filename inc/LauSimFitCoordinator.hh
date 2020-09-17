@@ -22,20 +22,20 @@ Paul Harrison
 Thomas Latham
 */
 
-/*! \file LauSimFitMaster.hh
-    \brief File containing declaration of LauSimFitMaster class.
+/*! \file LauSimFitCoordinator.hh
+    \brief File containing declaration of LauSimFitCoordinator class.
 */
 
-/*! \class LauSimFitMaster
-    \brief The master process for simultaneous/combined fits
+/*! \class LauSimFitCoordinator
+    \brief The coordinator process for simultaneous/combined fits
 
     Implementation of the JFit method described in arXiv:1409.5080 [physics.data-an].
 
-    This class acts as the interface between the slave processes and the minimiser.
+    This class acts as the interface between the task processes and the minimiser.
 */
 
-#ifndef LAU_SIM_FIT_MASTER
-#define LAU_SIM_FIT_MASTER
+#ifndef LAU_SIM_FIT_COORDINATOR
+#define LAU_SIM_FIT_COORDINATOR
 
 #include <map>
 #include <vector>
@@ -54,18 +54,18 @@ class LauParameter;
 class LauFitNtuple;
 
 
-class LauSimFitMaster : public LauFitObject {
+class LauSimFitCoordinator : public LauFitObject {
 
 	public:
 		//! Constructor
 		/*! 
-			\param [in] numSlaves the number of slaves processes to expect connections from
-			\param [in] port the port on which to listen for connections from the slaves
+			\param [in] numTasks the number of tasks processes to expect connections from
+			\param [in] port the port on which to listen for connections from the tasks
 		*/
-		LauSimFitMaster( UInt_t numSlaves, UInt_t port = 9090 );
+		LauSimFitCoordinator( UInt_t numTasks, UInt_t port = 9090 );
 
 		//! Destructor
-		virtual ~LauSimFitMaster();
+		virtual ~LauSimFitCoordinator();
 
 		//! Run the fit
 		/*! 
@@ -115,17 +115,17 @@ class LauSimFitMaster : public LauFitObject {
 		//! Initialise
 		void initialise();
 
-		//! Initialise socket connections for the slaves 
+		//! Initialise socket connections for the tasks 
 		void initSockets();
 
-		//! Determine/update the parameter initial values from all slaves
-		void getParametersFromSlaves();
+		//! Determine/update the parameter initial values from all tasks
+		void getParametersFromTasks();
 
-		//! Determine the parameter names and initial values from all slaves
-		void getParametersFromSlavesFirstTime();
+		//! Determine the parameter names and initial values from all tasks
+		void getParametersFromTasksFirstTime();
 
-		//! Update and verify the parameter initial values from all slaves
-		void updateParametersFromSlaves();
+		//! Update and verify the parameter initial values from all tasks
+		void updateParametersFromTasks();
 
 		//! Check for compatibility between two same-named parameters, which should therefore be identical
 		void checkParameter( const LauParameter* param, UInt_t index ) const;
@@ -136,13 +136,13 @@ class LauSimFitMaster : public LauFitObject {
 		//! Calculate the penalty terms to the log likelihood from Gaussian constraints
 		Double_t getLogLikelihoodPenalty();
 
-		//! Instruct the slaves to read the input data for the given experiment
+		//! Instruct the tasks to read the input data for the given experiment
 		/*!
 			\return success/failure of the reading operations
 		*/
 		Bool_t readData();
 
-		//! Instruct the slaves to perform the caching
+		//! Instruct the tasks to perform the caching
 		/*!
 			\return success/failure of the caching operations
 		*/
@@ -151,46 +151,46 @@ class LauSimFitMaster : public LauFitObject {
 		//! Perform the fit for the current experiment
 		void fitExpt();
 
-		//! Instruct the slaves to update the initial fit parameter values, if required
+		//! Instruct the tasks to update the initial fit parameter values, if required
 		void checkInitFitParams();
 
-		//! Return the final parameters to the slaves and instruct them to perform their finalisation
+		//! Return the final parameters to the tasks and instruct them to perform their finalisation
 		Bool_t finalise();
 
-		//! Instruct the slaves to write out the fit results
+		//! Instruct the tasks to write out the fit results
 		Bool_t writeOutResults();
 
 
 	private:
 		//! Copy constructor (not implemented)
-		LauSimFitMaster(const LauSimFitMaster& rhs);
+		LauSimFitCoordinator(const LauSimFitCoordinator& rhs);
 
 		//! Copy assignment operator (not implemented)
-		LauSimFitMaster& operator=(const LauSimFitMaster& rhs);
+		LauSimFitCoordinator& operator=(const LauSimFitCoordinator& rhs);
 
 		//! Store the constraints for fit parameters until initialisation is complete
 		std::vector<StoreConstraints> storeCon_;
 
-		//! The number of slaves
-		const UInt_t nSlaves_;
+		//! The number of tasks
+		const UInt_t nTasks_;
 
 		//! The requested port
 		const UInt_t reqPort_;
 
-		//! The covariance sub-matrices for each slave
+		//! The covariance sub-matrices for each task
 		std::vector<TMatrixD> covMatrices_;
 
 		//! Parallel setup monitor
 		TMonitor* socketMonitor_;
 
-		//! Sockets for each of the slaves
-		std::vector<TSocket*> sSlaves_;
+		//! Sockets for each of the tasks
+		std::vector<TSocket*> socketTasks_;
 
-		//! Messages to slaves
-		std::vector<TMessage*> messagesToSlaves_;
+		//! Messages to tasks
+		std::vector<TMessage*> messagesToTasks_;
 
-		//! Message from slaves to the master
-		TMessage* messageFromSlave_;
+		//! Message from tasks to the coordinator
+		TMessage* messageFromTask_;
 
 		//! Map of parameter names to index in the values vector
 		std::map< TString, UInt_t > parIndices_;
@@ -207,16 +207,16 @@ class LauSimFitMaster : public LauFitObject {
 		//! Parameter values
 		std::vector<Double_t> parValues_;
 
-		//! Lists of indices for each slave
-		std::vector< std::vector<UInt_t> > slaveIndices_;
+		//! Lists of indices for each task
+		std::vector< std::vector<UInt_t> > taskIndices_;
 
-		//! Lists of indices of free parameters for each slave
-		std::vector< std::vector<UInt_t> > slaveFreeIndices_;
+		//! Lists of indices of free parameters for each task
+		std::vector< std::vector<UInt_t> > taskFreeIndices_;
 
-		//! Parameter values to send to the slaves
+		//! Parameter values to send to the tasks
 		std::vector<Double_t*> vectorPar_;
 
-		//! Likelihood values returned from the slaves
+		//! Likelihood values returned from the tasks
 		std::vector<Double_t> vectorRes_;
 
 		//! The fit timer 
@@ -228,7 +228,7 @@ class LauSimFitMaster : public LauFitObject {
 		//! The fit results ntuple
 		LauFitNtuple* fitNtuple_;
 
-		ClassDef(LauSimFitMaster,0);
+		ClassDef(LauSimFitCoordinator,0);
 };
 
 #endif

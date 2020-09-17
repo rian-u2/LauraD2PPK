@@ -1,5 +1,16 @@
 # Laura++ release notes
 
+19th August 2020 Thomas Latham
+* Remove explicit normalisation of numerator Blatt-Weisskopf factors
+  - See https://phab.hepforge.org/T93
+
+22nd May 2020 Thomas Latham
+* Fix uninitialised variable (related to rho-omega mixin) in LauIsobarDynamics
+
+12th December 2019 Thomas Latham & Daniel Johnson
+* Fix issue with generation of events for categories with small expected yield
+  - See https://phab.hepforge.org/T76
+
 21st November 2019 Thomas Latham
 * Add QuasiFlatSqDalitz example, which generates toy according to EvtGen's FLATSQDALITZ model
 

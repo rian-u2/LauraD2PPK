@@ -29,6 +29,7 @@ Thomas Latham
 #include <iostream>
 #include <vector>
 
+#include "RooFormulaVar.h"
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "TFile.h"
@@ -53,7 +54,7 @@ LauRooFitTask::LauRooFitTask( RooAbsPdf& model, const Bool_t extended, const Roo
 	dataTree_(0),
 	exptData_(0),
 	extended_(extended),
-	iExptCat_("iExpt","Expt Number"),
+	iExptSet_(),
 	nllVar_(0)
 {
 }
@@ -142,12 +143,12 @@ Bool_t LauRooFitTask::verifyFitData(const TString& dataFileName, const TString& 
 	if ( branch == 0 ) {
 		std::cout << "WARNING in LauRooFitTask::verifyFitData : Cannot find branch \"iExpt\" in the tree, will treat all data as being from a single experiment" << std::endl;
 	} else {
-		// Define the valid values for the iExpt RooCategory
-		iExptCat_.clearTypes();
+		// Define the valid values for iExpt
+		iExptSet_.clear();
 		const UInt_t firstExp = dataTree_->GetMinimum("iExpt");
 		const UInt_t lastExp  = dataTree_->GetMaximum("iExpt");
 		for ( UInt_t iExp = firstExp; iExp <= lastExp; ++iExp ) {
-			iExptCat_.defineType( TString::Format("expt%d",iExp), iExp );
+			iExptSet_.insert( iExp );
 		}
 	}
 
@@ -303,10 +304,10 @@ UInt_t LauRooFitTask::readExperimentData()
 {
 	// check that we're being asked to read a valid index
 	const UInt_t exptIndex = this->iExpt();
-	if ( iExptCat_.numTypes() == 0 && exptIndex != 0 ) {
+	if ( iExptSet_.empty() && exptIndex != 0 ) {
 		std::cerr << "ERROR in LauRooFitTask::readExperimentData : Invalid experiment number " << exptIndex << ", data contains only one experiment" << std::endl;
 		return 0;
-	} else if ( ! iExptCat_.isValidIndex( exptIndex ) ) {
+	} else if ( iExptSet_.find( exptIndex ) == iExptSet_.end() ) {
 		std::cerr << "ERROR in LauRooFitTask::readExperimentData : Invalid experiment number " << exptIndex << std::endl;
 		return 0;
 	}
@@ -315,7 +316,7 @@ UInt_t LauRooFitTask::readExperimentData()
 	delete exptData_;
 
 	// retrieve the data and find out how many events have been read
-	if ( iExptCat_.numTypes() == 0 ) {
+	if ( iExptSet_.empty() ) {
 		exptData_ = new RooDataSet( TString::Format("expt%dData",exptIndex), "", dataTree_, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
 	} else {
 		const TString selectionString = TString::Format("iExpt==%d",exptIndex);

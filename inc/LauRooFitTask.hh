@@ -35,6 +35,7 @@ Thomas Latham
 #ifndef LAU_ROO_FIT_TASK
 #define LAU_ROO_FIT_TASK
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -155,7 +156,7 @@ class LauRooFitTask : public LauSimFitTask {
 		const Bool_t extended_;
 
 		//! The experiment category variable
-		RooCategory iExptCat_;
+		std::set<UInt_t> iExptSet_;
 
 		//! The NLL variable
 		RooNLLVar* nllVar_;

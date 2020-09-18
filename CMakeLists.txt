@@ -32,7 +32,7 @@ option(LAURA_BUILD_DOCS "Enable/disable building of Doxygen documentation" OFF)
 option(LAURA_BUILD_EXAMPLES "Enable/disable compilation of example executables" OFF)
 option(LAURA_BUILD_TESTS "Enable/disable compilation of test executables" OFF)
 
-message(STATUS "Laura++: Optional compilation of RooFit task class LAURA_BUILD_ROOFIT_TASK   ${LAURA_BUILD_ROOFIT_TASK}")
+message(STATUS "Laura++: Optional compilation of RooFit task class  LAURA_BUILD_ROOFIT_TASK  ${LAURA_BUILD_ROOFIT_TASK}")
 message(STATUS "Laura++: Optional building of Doxygen documentation LAURA_BUILD_DOCS         ${LAURA_BUILD_DOCS}")
 message(STATUS "Laura++: Optional building of example executables   LAURA_BUILD_EXAMPLES     ${LAURA_BUILD_EXAMPLES}")
 message(STATUS "Laura++: Optional building of test executables      LAURA_BUILD_TESTS        ${LAURA_BUILD_TESTS}")

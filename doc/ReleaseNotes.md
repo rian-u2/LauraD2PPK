@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+27th November 2020 Dan Johnson
+* Allow slope of NR exponential model to vary negative - improves fit stability in low-statistics fits
+  - see https://phab.hepforge.org/T128
+
 17th September 2020 Mark Whitehead
 * Begin updates to use inclusive language. Simultaneous fits now handled by Coordinator and Tasks
   - see https://phab.hepforge.org/T112

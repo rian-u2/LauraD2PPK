@@ -166,9 +166,7 @@ class LauFormulaPar : public LauAbsRValue {
 		//! Vector of LauParameters in the formula
 		std::vector<LauParameter*> paramVec_;
 
-		//! Array 
-		Double_t* dummy_;
-		//! Array 
+		//! Array to hold parameter values to pass to formula
 		Double_t* paramArray_;
 
 		//! Choice to use Gaussian constraint

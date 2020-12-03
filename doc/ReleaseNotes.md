@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+2nd December 2020 Thomas Latham
+* Fix LauFormulaPar to follow change in behaviour of TFormula
+  - see https://phab.hepforge.org/T129
+
 27th November 2020 Dan Johnson
 * Allow slope of NR exponential model to vary negative - improves fit stability in low-statistics fits
   - see https://phab.hepforge.org/T128
@@ -13,7 +17,7 @@
   - See https://phab.hepforge.org/T93
 
 22nd May 2020 Thomas Latham
-* Fix uninitialised variable (related to rho-omega mixin) in LauIsobarDynamics
+* Fix uninitialised variable (related to rho-omega mixing) in LauIsobarDynamics
 
 12th December 2019 Thomas Latham & Daniel Johnson
 * Fix issue with generation of events for categories with small expected yield
@@ -24,6 +28,7 @@
 
 6th - 20th November 2019 Thomas Latham
 * Adopt CMake as the build system
+  - See https://phab.hepforge.org/T33
 
 ===
 ## Laura++ v3r5

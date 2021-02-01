@@ -49,7 +49,7 @@ Thomas Latham
 
 class LauKMatrixPropagator {
 
-        public:
+	public:
 		//! Constructor
 		/*! 
 			\param [in] name name of the propagator
@@ -59,12 +59,12 @@ class LauKMatrixPropagator {
 			\param [in] nPoles the number of poles
 			\param [in] rowIndex this specifies which row of the propagator should be used when summing over the amplitude channels
 		*/
-	        LauKMatrixPropagator(const TString& name, const TString& paramFileName, 
-                                     Int_t resPairAmpInt, Int_t nChannels, Int_t nPoles,
-				     Int_t rowIndex = 1);
+		LauKMatrixPropagator(	const TString& name, const TString& paramFileName, 
+								Int_t resPairAmpInt, Int_t nChannels, Int_t nPoles,
+								Int_t rowIndex = 1 );
 
 		//! Destructor
-  	        virtual ~LauKMatrixPropagator();
+  	    virtual ~LauKMatrixPropagator();
 
 		//! Calculate the invariant mass squared s
 		/*!
@@ -82,25 +82,25 @@ class LauKMatrixPropagator {
 		/*!
 			\param [in] inputFile name of the input file
 		*/	
-	        void setParameters(const TString& inputFile);
+		void setParameters(const TString& inputFile);
 
-                //! Get the scattering K matrix
-                /*!
-                        \return the real, symmetric scattering K matrix
+		//! Get the scattering K matrix
+		/*!
+			\return the real, symmetric scattering K matrix
 		*/
-                TMatrixD getKMatrix() const {return ScattKMatrix_;}
+		TMatrixD getKMatrix() const {return ScattKMatrix_;}
 
-                //! Get the real part of the propagator full matrix
-                /*!
-		        \return the real part of the propagator full matrix
-                */
-                TMatrixD getRealPropMatrix() const {return realProp_;}
+		//! Get the real part of the propagator full matrix
+		/*!
+			\return the real part of the propagator full matrix
+		*/
+		TMatrixD getRealPropMatrix() const {return realProp_;}
 
-                //! Get the negative imaginary part of the full propagator matrix
-                /*!
-                        \return the negative imaginary part of the full propagator matrix
-                */
-        	TMatrixD getNegImagPropMatrix() const {return negImagProp_;}
+		//! Get the negative imaginary part of the full propagator matrix
+		/*!
+			\return the negative imaginary part of the full propagator matrix
+		*/
+		TMatrixD getNegImagPropMatrix() const {return negImagProp_;}
 
 		//! Get the real part of the term of the propagator
 		/*!
@@ -123,6 +123,14 @@ class LauKMatrixPropagator {
 		*/
 		Double_t getPoleDenomTerm(Int_t poleIndex) const;
 
+		//! Get coupling parameters, set according to the input file
+		/*!
+			\param [in] poleIndex number of the required pole
+			\param [in] channelIndex number of the required channel
+			\return the parameter of the coupling constant
+		*/
+		LauParameter& getPoleMassSqParameter(Int_t poleIndex);
+
 		//! Get coupling constants that were loaded from the input file
 		/*!
 			\param [in] poleIndex number of the required pole
@@ -131,6 +139,14 @@ class LauKMatrixPropagator {
 		*/
 		Double_t getCouplingConstant(Int_t poleIndex, Int_t channelIndex) const;
 
+		//! Get coupling parameters, set according to the input file
+		/*!
+			\param [in] poleIndex number of the required pole
+			\param [in] channelIndex number of the required channel
+			\return the parameter of the coupling constant
+		*/
+		LauParameter& getCouplingParameter(Int_t poleIndex, Int_t channelIndex);
+
 		//! Get scattering constants that were loaded from the input file
 		/*!
 			\param [in] channel1Index number of the first channel index
@@ -138,6 +154,44 @@ class LauKMatrixPropagator {
 			\return the value of the scattering constant
 		*/
 		Double_t getScatteringConstant(Int_t channel1Index, Int_t channel2Index) const;
+
+		//! Get scattering parameters, set according to the input file
+		/*!
+			\param [in] channel1Index number of the first channel index
+			\param [in] channel2Index number of the second channel index
+			\return the parameter of the scattering constant
+		*/
+		LauParameter& getScatteringParameter(Int_t channel1Index, Int_t channel2Index);
+
+		//! Get mSq0 production parameter
+		/*!
+			\return the mSq0 parameter
+		*/
+		LauParameter& getmSq0() {return mSq0_;}
+
+		//! Get s0Scatt production parameter
+		/*!
+			\return the s0Scatt parameter
+		*/
+		LauParameter& gets0Scatt() {return s0Scatt_;}
+
+		//! Get s0 production parameter
+		/*!
+			\return the s0Prod parameter
+		*/
+		LauParameter& gets0Prod() {return s0Prod_;}
+
+		//! Get sA production parameter
+		/*!
+			\return the sA parameter
+		*/
+		LauParameter& getsA() {return sA_;}		
+
+		//! Get sA0 production parameter
+		/*!
+			\return the sA0 parameter
+		*/
+		LauParameter& getsA0() {return sA0_;}	
 
 		//! Get the "slowly-varying part" term of the amplitude
 		/*!
@@ -154,62 +208,60 @@ class LauKMatrixPropagator {
 
 		//! Get the DP axis identifier
 		/*!
-			/return the value to identify the DP axis in question
+			\return the value to identify the DP axis in question
 		*/
 		Int_t getResPairAmpInt() const {return resPairAmpInt_;}
 
 		//! Get the number of channels
 		/*!
-			/return the number of channels
+			\return the number of channels
 		*/
 		Int_t getNChannels() const {return nChannels_;}
 
 		//! Get the number of poles
 		/*!
-			/return the number of poles
+			\return the number of poles
 		*/
 		Int_t getNPoles() const {return nPoles_;}
 
 		//! Get the propagator name
 		/*!
-			/return the name of the propagator
+			\return the name of the propagator
 		*/
 		TString getName() const {return name_;}
 
-                //! Get the unitary transition amplitude for the given channel
-                /*!
-                        \param [in] s The invariant mass squared
-                        \param [in] channel The index number of the channel process
-                        \return the complex amplitude T
+		//! Get the unitary transition amplitude for the given channel
+		/*!
+			\param [in] s The invariant mass squared
+			\param [in] channel The index number of the channel process
+			\return the complex amplitude T
 		*/
-                LauComplex getTransitionAmp(Double_t s, Int_t channel);
+		LauComplex getTransitionAmp(Double_t s, Int_t channel);
 
-
-                //! Get the complex phase space term for the given channel and invariant mass squared
-                /*!
-                        \param [in] s The invariant mass squared
-                        \param [in] channel The index number of the channel process
-                        \return the complex phase space term rho(channel, channel)
+        //! Get the complex phase space term for the given channel and invariant mass squared
+        /*!
+            \param [in] s The invariant mass squared
+            \param [in] channel The index number of the channel process
+            \return the complex phase space term rho(channel, channel)
 		*/
-                LauComplex getPhaseSpaceTerm(Double_t s, Int_t channel);
+        LauComplex getPhaseSpaceTerm(Double_t s, Int_t channel);
 
-                //! Get the Adler zero factor, which is set when updatePropagator is called
-                /*!     
-		        \return the Adler zero factor
+        //! Get the Adler zero factor, which is set when updatePropagator is called
+        /*!     
+		    \return the Adler zero factor
 		*/
-                Double_t getAdlerZero() const {return adlerZeroFactor_;}
+        Double_t getAdlerZero() const {return adlerZeroFactor_;}
     
 
-	        //! Get the THat amplitude for the given s and channel number
-	        /*!
-		        \param [in] s The invariant mass squared
+	    //! Get the THat amplitude for the given s and channel number
+	    /*!
+		    \param [in] s The invariant mass squared
 			\param [in] channel The index number of the channel process
 			\return the complex THat amplitude
 		*/
-                LauComplex getTHat(Double_t s, Int_t channel);
+        LauComplex getTHat(Double_t s, Int_t channel);
 
-
-        protected:
+	protected:
 		//! Calculate the scattering K-matrix for the given value of s
 		/*!
 			\param [in] s the invariant mass squared
@@ -318,22 +370,22 @@ class LauKMatrixPropagator {
 		Bool_t checkPhaseSpaceType(Int_t phaseSpaceInt) const;
 
 
-                //! Get the unitary transition amplitude matrix for the given kinematics
-                /*!
-                        \param [in] kinematics The pointer to the constant kinematics
+        //! Get the unitary transition amplitude matrix for the given kinematics
+        /*!
+            \param [in] kinematics The pointer to the constant kinematics
 		*/
-                void getTMatrix(const LauKinematics* kinematics);
+        void getTMatrix(const LauKinematics* kinematics);
 
-                //! Get the unitary transition amplitude matrix for the given kinematics
-                /*!
-                        \param [in] s The invariant mass squared of the system
+        //! Get the unitary transition amplitude matrix for the given kinematics
+        /*!
+            \param [in] s The invariant mass squared of the system
 		*/
-                void getTMatrix(Double_t s);
+        void getTMatrix(Double_t s);
 
-                //! Get the square root of the phase space matrix
-                void getSqrtRhoMatrix();
-                
-        private:
+        //! Get the square root of the phase space matrix
+        void getSqrtRhoMatrix();
+               
+    private:
 		//! Copy constructor (not implemented)
 		LauKMatrixPropagator(const LauKMatrixPropagator& rhs);
 
@@ -341,39 +393,39 @@ class LauKMatrixPropagator {
 		LauKMatrixPropagator& operator=(const LauKMatrixPropagator& rhs);
 
 		//! Create a map for the K-matrix parameters	
-	        typedef std::map<int, std::vector<LauParameter> > KMatrixParamMap;
+	    typedef std::map<int, std::vector<LauParameter> > KMatrixParamMap;
 
 
-	        //! Initialise and set the dimensions for the internal matrices and parameter arrays
-        	void initialiseMatrices();
+	    //! Initialise and set the dimensions for the internal matrices and parameter arrays
+        void initialiseMatrices();
 
-        	//! Store the (phase space) channel indices from a line in the parameter file
-	        /*!
-	                \param [in] theLine Vector of strings corresponding to the line from the parameter file
+        //! Store the (phase space) channel indices from a line in the parameter file
+	    /*!
+	        \param [in] theLine Vector of strings corresponding to the line from the parameter file
 		*/
-	        void storeChannels(const std::vector<std::string>& theLine);
+	    void storeChannels(const std::vector<std::string>& theLine);
  
-        	//! Store the pole mass and couplings from a line in the parameter file
-	        /*!
-	                \param [in] theLine Vector of strings corresponding to the line from the parameter file
+        //! Store the pole mass and couplings from a line in the parameter file
+	    /*!
+	        \param [in] theLine Vector of strings corresponding to the line from the parameter file
 		*/
-	        void storePole(const std::vector<std::string>& theLine);
+	    void storePole(const std::vector<std::string>& theLine);
 
-        	//! Store the scattering coefficients from a line in the parameter file
-	        /*!
-	                \param [in] theLine Vector of strings corresponding to the line from the parameter file
+        //! Store the scattering coefficients from a line in the parameter file
+	    /*!
+	        \param [in] theLine Vector of strings corresponding to the line from the parameter file
 		*/
-	        void storeScattering(const std::vector<std::string>& theLine);
+	    void storeScattering(const std::vector<std::string>& theLine);
 
-        	//! Store miscelleanous parameters from a line in the parameter file
-	        /*!
-	                \param [in] keyword the name of the parameter to be set
-	                \param [in] parString the string containing the value of the parameter
+        //! Store miscelleanous parameters from a line in the parameter file
+	    /*!
+	        \param [in] keyword the name of the parameter to be set
+	        \param [in] parString the string containing the value of the parameter
 		*/
-        	void storeParameter(const TString& keyword, const TString& parString);
+        void storeParameter(const TString& keyword, const TString& parString);
 
 
-              	//! String to store the propagator name
+		//! String to store the propagator name
 		TString name_;
 		//! Name of the input parameter file
 		TString paramFileName_;
@@ -415,10 +467,10 @@ class LauKMatrixPropagator {
 		TMatrixD ReSqrtRhoMatrix_;
 		//! Imaginary part of the square root of the phase space density diagonal matrix
 		TMatrixD ImSqrtRhoMatrix_;
-                //! Real part of the unitary T matrix
-                TMatrixD ReTMatrix_;
-                //! Imaginary part of the unitary T matrix
-                TMatrixD ImTMatrix_;
+        //! Real part of the unitary T matrix
+        TMatrixD ReTMatrix_;
+        //! Imaginary part of the unitary T matrix
+        TMatrixD ImTMatrix_;
 
 		//! Number of channels
 		Int_t nChannels_;
@@ -426,12 +478,12 @@ class LauKMatrixPropagator {
 		Int_t nPoles_;
 
 		//! Vector of squared pole masses
-	        std::vector<LauParameter> mSqPoles_;
+	    std::vector<LauParameter> mSqPoles_;
 
 		//! Array of coupling constants
-	        LauParArray gCouplings_;
+		LauParArray gCouplings_;
 		//! Array of scattering SVP values
-        	LauParArray fScattering_;
+		LauParArray fScattering_;
 
 		//! Vector of phase space types
 		std::vector<Int_t> phaseSpaceTypes_;
@@ -490,8 +542,8 @@ class LauKMatrixPropagator {
 		//! Control the output of the functions
 		Bool_t verbose_;
 
-	        //! Control if scattering constants are channel symmetric: f_ji = f_ij
-         	Bool_t scattSymmetry_;
+		//! Control if scattering constants are channel symmetric: f_ji = f_ij
+		Bool_t scattSymmetry_;
 
 		ClassDef(LauKMatrixPropagator,0) // K-matrix amplitude model
 };

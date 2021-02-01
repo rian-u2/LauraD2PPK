@@ -67,8 +67,6 @@ LauComplex LauKMatrixProdPole::amplitude(const LauKinematics* kinematics)
 {
 
 	// Calculate the amplitude for the K-matrix production pole.
-	// First, make sure the K-matrix propagator is up-to-date for 
-	// the given centre-of-mass squared value ("s") from the kinematics.
 	LauComplex amp(0.0, 0.0);
 
 	if (thePropagator_ == 0) {
@@ -104,5 +102,31 @@ LauComplex LauKMatrixProdPole::amplitude(const LauKinematics* kinematics)
 	amp.rescale(poleDenom*adlerZero);
 
 	return amp;
+
+}
+
+const std::vector<LauParameter*>& LauKMatrixProdPole::getFloatingParameters()
+{
+
+	this->clearFloatingParameters();
+
+	Int_t nChannels = thePropagator_->getNChannels();
+
+	for (int jChannel = 0 ; jChannel < nChannels ; jChannel++)
+	{
+		LauParameter& par_gj_ = thePropagator_->getCouplingParameter(poleIndex_, jChannel);
+		if ( !par_gj_.fixed() )
+		{
+			this->addFloatingParameter( &par_gj_ );
+		}
+	}
+
+	LauParameter& par_polemasssq_ = thePropagator_->getPoleMassSqParameter(poleIndex_);
+	if ( !par_polemasssq_.fixed() )
+	{
+		this->addFloatingParameter( &par_polemasssq_ );
+	}		
+
+	return this->getParameters();
 
 }

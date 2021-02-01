@@ -76,6 +76,12 @@ class LauKMatrixProdSVP : public LauAbsResonance {
                         \return the resonance model type
                 */
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::KMatrix;}
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		const std::vector<LauParameter*>& getFloatingParameters();
 		
 	protected:
 		//! Function not meant to be called

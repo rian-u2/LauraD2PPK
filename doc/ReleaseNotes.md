@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+1st February 2021 Dan Johnson
+* Allow floating of parameters in the K-matrix
+  - see https://phab.hepforge.org/T59
+
 2nd December 2020 Thomas Latham
 * Fix LauFormulaPar to follow change in behaviour of TFormula
   - see https://phab.hepforge.org/T129

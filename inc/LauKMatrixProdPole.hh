@@ -44,7 +44,7 @@ class LauKinematics;
 
 class LauKMatrixProdPole : public LauAbsResonance {
 
-        public:
+	public:
 		//! Constructor
 		/*!
 			\param [in] poleName name of the pole
@@ -54,34 +54,40 @@ class LauKMatrixProdPole : public LauAbsResonance {
 			\param [in] daughters the daughter particles
 			\param [in] useProdAdler boolean to turn on/off the production Adler zero factor
 		*/	
-                LauKMatrixProdPole(const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
-		                   LauKMatrixPropagator* propagator, const LauDaughters* daughters,
-				   Bool_t useProdAdler = kFALSE);
+		LauKMatrixProdPole(	const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
+							LauKMatrixPropagator* propagator, const LauDaughters* daughters,
+							Bool_t useProdAdler = kFALSE);
 
 		//! Destructor
-  		virtual ~LauKMatrixProdPole();
+		virtual ~LauKMatrixProdPole();
 
 		// Initialise the model
-  		virtual void initialise() {return;}
+		virtual void initialise() {return;}
 
 		//! The amplitude calculation
 		/*!
 			\param [in] kinematics the kinematic variables of the current event
 			\return the complex amplitude
 		*/	
-  		virtual LauComplex amplitude(const LauKinematics* kinematics);
+		virtual LauComplex amplitude(const LauKinematics* kinematics);
 
 		//! Get the resonance model type
-                /*!
-                        \return the resonance model type
-                */
+		/*!
+			\return the resonance model type
+		*/
 		virtual LauAbsResonance::LauResonanceModel getResonanceModel() const {return LauAbsResonance::KMatrix;}
+
+		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
+		/*!
+		    \return floating parameters of the resonance
+		*/
+		virtual const std::vector<LauParameter*>& getFloatingParameters();
 
 	protected:
 		//! Function not meant to be called, amplitude is called directly in this case
-  		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
+		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
 
- 	private:
+	private:
 		//! Copy constructor (not implemented)
 		LauKMatrixProdPole(const LauKMatrixProdPole& rhs);
 
@@ -89,14 +95,14 @@ class LauKMatrixProdPole : public LauAbsResonance {
 		LauKMatrixProdPole& operator=(const LauKMatrixProdPole& rhs);
 
 		//! The K-matrix propagator
-   		LauKMatrixPropagator* thePropagator_;
+		LauKMatrixPropagator* thePropagator_;
 		//! The number of the pole
 		Int_t poleIndex_;
 
-                //! Boolean to turn on/off the production Adler zero factor
-                Bool_t useProdAdler_;
+		//! Boolean to turn on/off the production Adler zero factor
+		Bool_t useProdAdler_;
 
-   		ClassDef(LauKMatrixProdPole, 0) // K-matrix production pole
+		ClassDef(LauKMatrixProdPole, 0) // K-matrix production pole
 
 };
 

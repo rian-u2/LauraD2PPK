@@ -45,7 +45,7 @@ using std::cerr;
 ClassImp(LauKMatrixPropagator)
 
 LauKMatrixPropagator::LauKMatrixPropagator(const TString& name, const TString& paramFile, 
-					   Int_t resPairAmpInt, Int_t nChannels, 
+					   Int_t resPairAmpInt, Int_t nChannels,
 					   Int_t nPoles, Int_t rowIndex) :
 	name_(name),
 	paramFileName_(paramFile),
@@ -452,7 +452,7 @@ void LauKMatrixPropagator::storePole(const std::vector<std::string>& theLine)
 
 			Double_t poleMass = std::atof(theLine[2].c_str());
 			Double_t poleMassSq = poleMass*poleMass;
-			LauParameter mPoleParam(poleMassSq);
+			LauParameter mPoleParam(Form("KM_%s_poleMassSq_%i",name_.Data(),poleIndex),poleMassSq);
 			mSqPoles_[poleIndex] = mPoleParam;
 
 			cout<<"Added bare pole mass "<<poleMass<<" GeV for pole number "<<poleIndex+1<<endl;
@@ -460,7 +460,7 @@ void LauKMatrixPropagator::storePole(const std::vector<std::string>& theLine)
 			for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
 
 				Double_t couplingConst = std::atof(theLine[iChannel+3].c_str());
-				LauParameter couplingParam(couplingConst);
+				LauParameter couplingParam(Form("KM_%s_gCoupling_%i_%i",name_.Data(),poleIndex,iChannel),couplingConst);
 				gCouplings_[poleIndex][iChannel] = couplingParam;
 
 				cout<<"Added coupling parameter g^{"<<poleIndex+1<<"}_"
@@ -473,8 +473,8 @@ void LauKMatrixPropagator::storePole(const std::vector<std::string>& theLine)
 	} else {
 
 		cerr<<"Error in LauKMatrixPropagator::storePole. Expecting "<<nExpect
-		    <<" numbers for pole definition but found "<<nWords
-		    <<" values instead"<<endl;
+			<<" numbers for pole definition but found "<<nWords
+			<<" values instead"<<endl;
 
 	}
 
@@ -499,7 +499,7 @@ void LauKMatrixPropagator::storeScattering(const std::vector<std::string>& theLi
 			for (Int_t iChannel = 0; iChannel < nChannels_; iChannel++) {
 				
 				Double_t scattConst = std::atof(theLine[iChannel+2].c_str());
-				LauParameter scattParam(scattConst);
+				LauParameter scattParam(Form("KM_%s_scattConst_%i_%i",name_.Data(),scattIndex,iChannel),scattConst);
 				fScattering_[scattIndex][iChannel] = scattParam;
 
 				cout<<"Added scattering parameter f("<<scattIndex+1<<","
@@ -527,31 +527,31 @@ void LauKMatrixPropagator::storeParameter(const TString& keyword, const TString&
 		
 		Double_t mSq0Value = std::atof(parString.Data());
 		cout<<"Adler zero constant m0Sq = "<<mSq0Value<<endl;
-		mSq0_ = LauParameter("mSq0", mSq0Value);
+		mSq0_ = LauParameter(Form("KM_%s_mSq0",name_.Data()), mSq0Value);
 
 	} else if (!keyword.CompareTo("s0scatt")) {
 
 		Double_t s0ScattValue = std::atof(parString.Data());
 		cout<<"Adler zero constant s0Scatt = "<<s0ScattValue<<endl;
-		s0Scatt_ = LauParameter("s0Scatt", s0ScattValue);
+		s0Scatt_ = LauParameter(Form("KM_%s_s0Scatt",name_.Data()), s0ScattValue);
 
 	} else if (!keyword.CompareTo("s0prod")) {
 
 		Double_t s0ProdValue = std::atof(parString.Data());
 		cout<<"Adler zero constant s0Prod = "<<s0ProdValue<<endl;
-		s0Prod_ = LauParameter("s0Scatt", s0ProdValue);
+		s0Prod_ = LauParameter(Form("KM_%s_s0Prod",name_.Data()), s0ProdValue);
 
 	} else if (!keyword.CompareTo("sa0")) {
 
 		Double_t sA0Value = std::atof(parString.Data());
 		cout<<"Adler zero constant sA0 = "<<sA0Value<<endl;
-		sA0_ = LauParameter("sA0", sA0Value);
+		sA0_ = LauParameter(Form("KM_%s_sA0",name_.Data()), sA0Value);
 
 	} else if (!keyword.CompareTo("sa")) {
 
 		Double_t sAValue = std::atof(parString.Data());
 		cout<<"Adler zero constant sA = "<<sAValue<<endl;
-		sA_ = LauParameter("sA", sAValue);
+		sA_ = LauParameter(Form("KM_%s_sA",name_.Data()), sAValue);
 
 	} else if (!keyword.CompareTo("scattsymmetry")) {
 
@@ -651,6 +651,16 @@ Double_t LauKMatrixPropagator::getPoleDenomTerm(Int_t poleIndex) const
 
 }
 
+LauParameter& LauKMatrixPropagator::getPoleMassSqParameter(Int_t poleIndex)
+{
+	if ( (parametersSet_ == kFALSE) || (poleIndex < 0 || poleIndex >= nPoles_) ) {
+		std::cerr << "ERROR from LauKMatrixPropagator::getPoleMassSqParameter(). Invalid pole." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	return mSqPoles_[poleIndex];
+}
+
 Double_t LauKMatrixPropagator::getCouplingConstant(Int_t poleIndex, Int_t channelIndex) const
 {
 
@@ -663,6 +673,18 @@ Double_t LauKMatrixPropagator::getCouplingConstant(Int_t poleIndex, Int_t channe
 
 }
 
+LauParameter& LauKMatrixPropagator::getCouplingParameter(Int_t poleIndex, Int_t channelIndex)
+{
+
+	if ( (parametersSet_ == kFALSE) || (poleIndex < 0 || poleIndex >= nPoles_) || (channelIndex < 0 || channelIndex >= nChannels_) ) {
+		std::cerr << "ERROR from LauKMatrixPropagator::getCouplingParameter(). Invalid coupling." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	//std::cout << "Minvalue + range for " << poleIndex << ", " << channelIndex << ": " << gCouplings_[poleIndex][channelIndex].minValue() << " => + " << gCouplings_[poleIndex][channelIndex].range() <<
+	//			 " and init value: " << gCouplings_[poleIndex][channelIndex].initValue() << std::endl;
+	return gCouplings_[poleIndex][channelIndex];
+}
 
 Double_t LauKMatrixPropagator::getScatteringConstant(Int_t channel1Index, Int_t channel2Index) const
 {
@@ -674,6 +696,17 @@ Double_t LauKMatrixPropagator::getScatteringConstant(Int_t channel1Index, Int_t 
 	Double_t scatteringConst = fScattering_[channel1Index][channel2Index].unblindValue();
 	return scatteringConst;
 
+}
+
+LauParameter& LauKMatrixPropagator::getScatteringParameter(Int_t channel1Index, Int_t channel2Index)
+{
+
+	if ( (parametersSet_ == kFALSE) || (channel1Index < 0 || channel1Index >= nChannels_) || (channel2Index < 0 || channel2Index >= nChannels_) ) {
+		std::cerr << "ERROR from LauKMatrixPropagator::getScatteringParameter(). Invalid chanel index." << std::endl;
+		gSystem->Exit(EXIT_FAILURE);
+	}
+
+	return fScattering_[channel1Index][channel2Index];
 }
 
 Double_t LauKMatrixPropagator::calcSVPTerm(Double_t s, Double_t s0) const

@@ -473,37 +473,37 @@ class LauAbsResonance {
 		LauAbsResonance& operator=(const LauAbsResonance& rhs);
 
 		//! Information on the resonance
-		LauResonanceInfo* resInfo_;
+		LauResonanceInfo* resInfo_{0};
 
 		//! Information on the particles
 		const LauDaughters* daughters_;
 
 		//! Parent name
-		TString nameParent_; 
+		TString nameParent_{""};
 		//! Daughter 1 name
-		TString nameDaug1_;
+		TString nameDaug1_{""};
 		//! Daughter 2 name
-		TString nameDaug2_;
+		TString nameDaug2_{""};
 		//! Bachelor name
-		TString nameBachelor_;
+		TString nameBachelor_{""};
 
 		//! Parent charge
-		Int_t chargeParent_;
+		Int_t chargeParent_{0};
 		//! Daughter 1 charge
-		Int_t chargeDaug1_; 
+		Int_t chargeDaug1_{0};
 		//! Daughter 2 charge
-		Int_t chargeDaug2_; 
+		Int_t chargeDaug2_{0};
 		//! Bachelor charge
-		Int_t chargeBachelor_;
+		Int_t chargeBachelor_{0};
 
 		//! Parent mass
-		Double_t massParent_; 
+		Double_t massParent_{0.0};
 		//! Daughter 1 mass
-		Double_t massDaug1_; 
+		Double_t massDaug1_{0.0};
 		//! Daughter 2 mass 
-		Double_t massDaug2_; 
+		Double_t massDaug2_{0.0};
 		// Bachelor mass
-		Double_t massBachelor_;
+		Double_t massBachelor_{0.0};
 
 		//! Resonance name
 		TString resName_;
@@ -512,49 +512,49 @@ class LauAbsResonance {
 		TString sanitisedName_;
 
 		//! Resonance mass 
-		LauParameter* resMass_; 
+		LauParameter* resMass_{0};
 		//! Resonance width
-		LauParameter* resWidth_;
+		LauParameter* resWidth_{0};
 
 		//! All parameters of the resonance
 		std::vector<LauParameter*> resParameters_;
 
 		//! Resonance spin
-		Int_t resSpin_; 
+		Int_t resSpin_{0};
 		//! Resonance charge
-		Int_t resCharge_; 
+		Int_t resCharge_{0};
 		//! DP axis identifier
 		Int_t resPairAmpInt_;
 		//! Blatt Weisskopf barrier for parent decay
-		LauBlattWeisskopfFactor* parBWFactor_;
+		LauBlattWeisskopfFactor* parBWFactor_{0};
 		//! Blatt Weisskopf barrier for resonance decay
-		LauBlattWeisskopfFactor* resBWFactor_;
+		LauBlattWeisskopfFactor* resBWFactor_{0};
 
 		//! Spin formalism
-		LauSpinType spinType_;
+		LauSpinType spinType_{Zemach_P};
 
 		//! Boolean to flip helicity
-		Bool_t flipHelicity_;
+		Bool_t flipHelicity_{kFALSE};
 		//! Boolean to ignore the momentum factors in both the spin factor and the mass-dependent width
-		Bool_t ignoreMomenta_;
+		Bool_t ignoreMomenta_{kFALSE};
 		//! Boolean to set the spinTerm to unity always
-		Bool_t ignoreSpin_;
+		Bool_t ignoreSpin_{kFALSE};
 		//! Boolean to ignore barrier factor scaling in the amplitude numerator, they are still used for the mass-dependent width
-		Bool_t ignoreBarrierScaling_;
+		Bool_t ignoreBarrierScaling_{kFALSE};
 
 		// Event kinematics information
 
 		//! Invariant mass
-		Double_t mass_;
+		Double_t mass_{0.0};
 		//! Helicity angle cosine
-		Double_t cosHel_;
+		Double_t cosHel_{0.0};
 
 		//! Daughter momentum in resonance rest frame
-		Double_t q_;
+		Double_t q_{0.0};
 		//! Bachelor momentum in resonance rest frame
-		Double_t p_;
+		Double_t p_{0.0};
 		//! Bachelor momentum in parent rest frame
-		Double_t pstar_;
+		Double_t pstar_{0.0};
 
 		//! Covariant factor
 		/*!
@@ -566,10 +566,10 @@ class LauAbsResonance {
 		    \see LauKinematics::getcov13
 		    \see LauKinematics::getcov23
 		*/
-		Double_t erm_;
+		Double_t erm_{1.0};
 
 		//! Covariant factor (full spin-dependent expression)
-		Double_t covFactor_;
+		Double_t covFactor_{1.0};
 
 		ClassDef(LauAbsResonance,0) // Abstract resonance class
 

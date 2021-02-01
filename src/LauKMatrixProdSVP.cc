@@ -94,3 +94,53 @@ LauComplex LauKMatrixProdSVP::amplitude(const LauKinematics* kinematics)
 
 }
 
+const std::vector<LauParameter*>& LauKMatrixProdSVP::getFloatingParameters()
+{
+
+	this->clearFloatingParameters();
+
+	Int_t nChannels = thePropagator_->getNChannels();
+
+	for (int jChannel = 0 ; jChannel < nChannels ; jChannel++)
+	{
+		LauParameter& par_f_ = thePropagator_->getScatteringParameter(channelIndex_, jChannel);
+		if ( !par_f_.fixed() )
+		{
+			this->addFloatingParameter( &par_f_ );
+		}
+
+	}
+
+	LauParameter& par_mSq0_ = thePropagator_->getmSq0();
+	if ( !par_mSq0_.fixed() )
+	{
+		this->addFloatingParameter( &par_mSq0_ );
+	}
+
+	LauParameter& par_s0Scatt_ = thePropagator_->gets0Scatt();
+	if ( !par_s0Scatt_.fixed() )
+	{
+		this->addFloatingParameter( &par_s0Scatt_ );
+	}
+
+	LauParameter& par_s0Prod_ = thePropagator_->gets0Prod();
+	if ( !par_s0Prod_.fixed() )
+	{
+		this->addFloatingParameter( &par_s0Prod_ );
+	}
+
+	LauParameter& par_sA_ = thePropagator_->getsA();
+	if ( !par_sA_.fixed() )
+	{
+		this->addFloatingParameter( &par_sA_ );
+	}
+
+	LauParameter& par_sA0_ = thePropagator_->getsA0();
+	if ( !par_sA0_.fixed() )
+	{
+		this->addFloatingParameter( &par_sA0_ );
+	}
+
+	return this->getParameters();
+
+}

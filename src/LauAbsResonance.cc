@@ -85,30 +85,13 @@ bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
 LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	resInfo_(resInfo),
 	daughters_(daughters),
-	nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
-	chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
-	massParent_(0.0), massDaug1_(0.0), massDaug2_(0.0), massBachelor_(0.0),
 	resName_( (resInfo!=0) ? resInfo->getName() : "" ),
 	sanitisedName_( (resInfo!=0) ? resInfo->getSanitisedName() : "" ),
 	resMass_( (resInfo!=0) ? resInfo->getMass() : 0 ),
 	resWidth_( (resInfo!=0) ? resInfo->getWidth() : 0 ),
 	resSpin_( (resInfo!=0) ? resInfo->getSpin() : 0 ),
 	resCharge_( (resInfo!=0) ? resInfo->getCharge() : 0 ),
-	resPairAmpInt_(resPairAmpInt),
-	parBWFactor_(0),
-	resBWFactor_(0),
-	spinType_(Zemach_P),
-	flipHelicity_(kFALSE),
-	ignoreMomenta_(kFALSE),
-	ignoreSpin_(kFALSE),
-	ignoreBarrierScaling_(kFALSE),
-	mass_(0.0),
-	cosHel_(0.0),
-	q_(0.0),
-	p_(0.0),
-	pstar_(0.0),
-	erm_(1.0),
-	covFactor_(1.0)
+	resPairAmpInt_(resPairAmpInt)
 {
 	if ( resInfo == 0 ) {
 		std::cerr << "ERROR in LauAbsResonance constructor : null LauResonanceInfo object provided" << std::endl;
@@ -143,32 +126,10 @@ LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairA
 
 // Constructor
 LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters) :
-	resInfo_(0),
 	daughters_(daughters),
-	nameParent_(""), nameDaug1_(""), nameDaug2_(""), nameBachelor_(""),
-	chargeParent_(0), chargeDaug1_(0), chargeDaug2_(0), chargeBachelor_(0),
-	massParent_(0.0), massDaug1_(0.0), massDaug2_(0.0), massBachelor_(0.0),
 	resName_(resName),
 	sanitisedName_(resName),
-	resMass_(0),
-	resWidth_(0),
-	resSpin_(0),
-	resCharge_(0),
-	resPairAmpInt_(resPairAmpInt),
-	parBWFactor_(0),
-	resBWFactor_(0),
-	spinType_(Zemach_P),
-	flipHelicity_(kFALSE),
-	ignoreMomenta_(kFALSE),
-	ignoreSpin_(kFALSE),
-	ignoreBarrierScaling_(kFALSE),
-	mass_(0.0),
-	cosHel_(0.0),
-	q_(0.0),
-	p_(0.0),
-	pstar_(0.0), 
-	erm_(1.0),
-	covFactor_(1.0)
+	resPairAmpInt_(resPairAmpInt)
 {
 	if ( daughters_ == 0 ) {
 		std::cerr << "ERROR in LauAbsResonance constructor : null LauDaughters object provided" << std::endl;

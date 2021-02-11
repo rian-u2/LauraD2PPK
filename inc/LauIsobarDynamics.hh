@@ -177,8 +177,8 @@ class LauIsobarDynamics {
 		    \param [in] nPoles the number of poles
 		    \param [in] rowIndex the index of the row to be used when summing over all amplitude channels: S-wave corresponds to rowIndex = 1.
 		*/
-		void defineKMatrixPropagator(const TString& propName, const TString& paramFileName,
-					     Int_t resPairAmpInt, Int_t nChannels, Int_t nPoles, Int_t rowIndex = 1);
+		LauKMatrixPropagator* defineKMatrixPropagator(	const TString& propName, const TString& paramFileName,
+														Int_t resPairAmpInt, Int_t nChannels, Int_t nPoles, Int_t rowIndex = 1);
 
 		//! Add a K-matrix production pole term to the model
 		/*!

@@ -789,8 +789,8 @@ LauAbsResonance* LauIsobarDynamics::addIncoherentResonance(const TString& resNam
 	return theResonance;
 }
 
-void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const TString& paramFileName, Int_t resPairAmpInt,
-						Int_t nChannels, Int_t nPoles, Int_t rowIndex)
+LauKMatrixPropagator* LauIsobarDynamics::defineKMatrixPropagator(	const TString& propName, const TString& paramFileName, Int_t resPairAmpInt,
+																	Int_t nChannels, Int_t nPoles, Int_t rowIndex)
 {
 	// Define the K-matrix propagator. The resPairAmpInt integer specifies which mass combination should be used
 	// for the invariant mass-squared variable "s". The pole masses and coupling constants are defined in the
@@ -814,6 +814,7 @@ void LauIsobarDynamics::defineKMatrixPropagator(const TString& propName, const T
 			nPoles, rowIndex);
 	kMatrixPropagators_[propagatorName] = thePropagator;
 
+	return thePropagator;
 }
 
 void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TString& propName, Int_t poleIndex, Bool_t useProdAdler)
@@ -841,6 +842,7 @@ void LauIsobarDynamics::addKMatrixProdPole(const TString& poleName, const TStrin
 		Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
 		LauAbsResonance* prodPole = new LauKMatrixProdPole(poleName, poleIndex, resPairAmpInt,
 								   thePropagator, daughters_, useProdAdler);
+		prodPole->setSpinType( LauAbsResonance::Legendre );
 
 		resTypAmp_.push_back(poleName);
 		resPairAmp_.push_back(resPairAmpInt);
@@ -889,6 +891,7 @@ void LauIsobarDynamics::addKMatrixProdSVP(const TString& SVPName, const TString&
 		Int_t resPairAmpInt = thePropagator->getResPairAmpInt();
 		LauAbsResonance* prodSVP = new LauKMatrixProdSVP(SVPName, channelIndex, resPairAmpInt,
 								 thePropagator, daughters_, useProdAdler);
+		prodSVP->setSpinType( LauAbsResonance::Legendre );
 
 		resTypAmp_.push_back(SVPName);
 		resPairAmp_.push_back(resPairAmpInt);
@@ -1239,7 +1242,7 @@ void LauIsobarDynamics::calcDPNormalisationScheme()
 			width = omegaWidth;
 		}
 
-		if ( width > narrowWidth_ || width == 0.0 ) {
+		if ( width > narrowWidth_ || width <= 0.0 ) {
 			continue;
 		}
 

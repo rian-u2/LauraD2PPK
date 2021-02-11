@@ -64,7 +64,7 @@ class LauAbsResonance {
 			LASS_BW,		/*!< the resonant part of the LASS amplitude */
 			LASS_NR,		/*!< the nonresonant part of the LASS amplitude */
 			EFKLLM,			/*!< a form-factor-based description of the Kpi S-wave */
-			KMatrix,		/*!< S-wave description using K-matrix and P-vector */
+			KMatrix,		/*!< description using K-matrix and P-vector */
 			FlatNR,			/*!< a uniform nonresonant amplitude */
 			NRModel,		/*!< a theoretical model nonresonant amplitude */
 			BelleNR,		/*!< an empirical exponential nonresonant amplitude */
@@ -117,8 +117,9 @@ class LauAbsResonance {
 			\param [in] resName the name of the component
 			\param [in] resPairAmpInt the number of the daughter not produced by the resonance
 			\param [in] daughters the daughter particles
+			\param [in] resSpin the spin of the final channel into which the K-matrix scatters
 		*/
-		LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters);
+		LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters, const Int_t resSpin);
 
 		//! Destructor	
 		virtual ~LauAbsResonance();
@@ -520,7 +521,7 @@ class LauAbsResonance {
 		std::vector<LauParameter*> resParameters_;
 
 		//! Resonance spin
-		Int_t resSpin_{0};
+		Int_t resSpin_;
 		//! Resonance charge
 		Int_t resCharge_{0};
 		//! DP axis identifier

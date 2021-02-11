@@ -125,10 +125,11 @@ LauAbsResonance::LauAbsResonance(LauResonanceInfo* resInfo, const Int_t resPairA
 }
 
 // Constructor
-LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters) :
+LauAbsResonance::LauAbsResonance(const TString& resName, const Int_t resPairAmpInt, const LauDaughters* daughters, const Int_t resSpin) :
 	daughters_(daughters),
 	resName_(resName),
 	sanitisedName_(resName),
+	resSpin_(resSpin),
 	resPairAmpInt_(resPairAmpInt)
 {
 	if ( daughters_ == 0 ) {

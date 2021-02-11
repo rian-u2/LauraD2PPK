@@ -625,6 +625,29 @@ void LauResonanceMaker::fixBWRadius(const LauBlattWeisskopfFactor::BlattWeisskop
 	}
 }
 
+LauBlattWeisskopfFactor* LauResonanceMaker::getParentBWFactor(Int_t resSpin, LauBlattWeisskopfFactor::BarrierType barrierType)
+{
+	LauBlattWeisskopfFactor* bwFactor(0);
+
+	// Look up the category in the category information map
+	BWFactorCategoryMap::iterator factor_iter = bwFactors_.find( LauBlattWeisskopfFactor::Parent );
+
+	if ( factor_iter != bwFactors_.end() ) {
+		// If it exists, we can check if the factor object has been created
+		BlattWeisskopfCategoryInfo& categoryInfo = factor_iter->second;
+
+		if ( categoryInfo.bwFactor_ != 0 ) {
+			// If so, simply clone it
+			bwFactor = categoryInfo.bwFactor_->createClone( resSpin, barrierType );
+		}
+	}
+
+	if ( bwFactor==0 ) {
+		std::cerr<<"ERROR in LauResonanceMaker::getParentBWFactor : No parent Blatt-Weisskopf factor found to be cloned for K-matrix."<<std::endl;
+	}
+	return bwFactor;
+}
+
 LauBlattWeisskopfFactor* LauResonanceMaker::getBWFactor( const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const LauResonanceInfo* resInfo )
 {
 	LauBlattWeisskopfFactor* bwFactor(0);
@@ -654,7 +677,7 @@ LauBlattWeisskopfFactor* LauResonanceMaker::getBWFactor( const LauBlattWeisskopf
 		if ( categoryInfo.bwFactor_ != 0 ) {
 			// If so, simply clone it
 			const UInt_t resSpin = resInfo->getSpin();
-			bwFactor = categoryInfo.bwFactor_->createClone( resSpin );
+			bwFactor = categoryInfo.bwFactor_->createClone( resSpin, categoryInfo.bwFactor_->getBarrierType() );
 		} else {
 			// Otherwise we need to create it, using the default value if it has been set
 			if ( categoryInfo.defaultRadius_ >= 0.0 ) {
@@ -836,7 +859,7 @@ LauAbsResonance* LauResonanceMaker::getResonance(const LauDaughters* daughters, 
 			break;
 
 		case LauAbsResonance::KMatrix :
-			// K-matrix description of S-wave
+			// K-matrix description
 			std::cerr<<"ERROR in LauResonanceMaker::getResonance : K-matrix type specified, which should be separately handled."<<std::endl;
 			break;
 

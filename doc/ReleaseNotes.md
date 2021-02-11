@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+4th February 2020 Dan Johnson
+* Extend the K-matrix implementation to handle non-zero spin
+  - see https://phab.hepforge.org/T135
+
 1st February 2021 Dan Johnson
 * Allow floating of parameters in the K-matrix
   - see https://phab.hepforge.org/T59

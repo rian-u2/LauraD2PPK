@@ -64,13 +64,6 @@ class LauKMatrixProdPole : public LauAbsResonance {
 		// Initialise the model
 		virtual void initialise() {return;}
 
-		//! The amplitude calculation
-		/*!
-			\param [in] kinematics the kinematic variables of the current event
-			\return the complex amplitude
-		*/	
-		virtual LauComplex amplitude(const LauKinematics* kinematics);
-
 		//! Get the resonance model type
 		/*!
 			\return the resonance model type
@@ -79,13 +72,18 @@ class LauKMatrixProdPole : public LauAbsResonance {
 
 		//! Retrieve the resonance parameters, e.g. so that they can be loaded into a fit
 		/*!
-		    \return floating parameters of the resonance
+			\return floating parameters of the resonance
 		*/
 		virtual const std::vector<LauParameter*>& getFloatingParameters();
 
 	protected:
-		//! Function not meant to be called, amplitude is called directly in this case
-		virtual LauComplex resAmp(Double_t mass, Double_t spinTerm);
+		//! The amplitude calculation
+		/*!
+			\param [in] mass the invariant-mass for the channel
+			\param [in] spinTerm the spin-term for the final channel
+			\return the complex amplitude
+		*/
+		virtual LauComplex resAmp(const Double_t mass, const Double_t spinTerm);
 
 	private:
 		//! Copy constructor (not implemented)

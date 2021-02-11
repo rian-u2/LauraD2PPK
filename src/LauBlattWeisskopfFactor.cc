@@ -62,10 +62,10 @@ LauBlattWeisskopfFactor::~LauBlattWeisskopfFactor()
 {
 }
 
-LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin ) :
+LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin, const BarrierType newBarrierType ) :
 	spin_(newSpin),
 	radius_(other.radius_->createClone()),
-	barrierType_(other.barrierType_),
+	barrierType_(newBarrierType),
 	restFrame_(other.restFrame_)
 {
 }
@@ -129,9 +129,9 @@ TString LauBlattWeisskopfFactor::setRadiusName( const LauResonanceInfo& resInfo,
 	return categoryName;
 }
 
-LauBlattWeisskopfFactor* LauBlattWeisskopfFactor::createClone( const UInt_t newSpin )
+LauBlattWeisskopfFactor* LauBlattWeisskopfFactor::createClone( const UInt_t newSpin, const BarrierType newBarrierType )
 {
-	LauBlattWeisskopfFactor* clone = new LauBlattWeisskopfFactor( *this, newSpin );
+	LauBlattWeisskopfFactor* clone = new LauBlattWeisskopfFactor( *this, newSpin, newBarrierType );
 	return clone;
 }
 

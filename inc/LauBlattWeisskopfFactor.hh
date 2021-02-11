@@ -90,7 +90,7 @@ class LauBlattWeisskopfFactor {
 		/*!
 		    \param newSpin the value of the spin to use for the created instance
 		*/
-		LauBlattWeisskopfFactor* createClone( const UInt_t newSpin );
+		LauBlattWeisskopfFactor* createClone( const UInt_t newSpin , const BarrierType newBarrierType );
 
 		//! Retrieve the radius parameter
 		const LauParameter* getRadiusParameter() const { return radius_; }
@@ -116,7 +116,7 @@ class LauBlattWeisskopfFactor {
 
 	private:
 		//! Copy constructor
-		LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin );
+		LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin, const BarrierType newBarrierType );
 
 		//! Copy assignment operator (not implemented)
 		LauBlattWeisskopfFactor& operator=( const LauBlattWeisskopfFactor& other );

@@ -127,6 +127,9 @@ class LauResonanceMaker {
 		*/
                 LauResonanceInfo* getResInfo(const TString& resName) const;
 
+		//! Retrieve parent Blatt-Weisskopf factor (for use by K-matrix pole/SVP which doesn't have a `resInfo')
+		LauBlattWeisskopfFactor* getParentBWFactor(Int_t newSpin, LauBlattWeisskopfFactor::BarrierType barrierType);
+
 	protected:
 		//! Create the list of known resonances
 		void createResonanceVector();

@@ -28,44 +28,39 @@ Thomas Latham
 
 #include "LauKMatrixProdPole.hh"
 #include "LauKMatrixPropagator.hh"
+#include "LauResonanceMaker.hh"
 
 #include <iostream>
 
 ClassImp(LauKMatrixProdPole)
 
-LauKMatrixProdPole::LauKMatrixProdPole(const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
-				       LauKMatrixPropagator* propagator, const LauDaughters* daughters, 
-				       Bool_t useProdAdler) : 
-	LauAbsResonance(poleName, resPairAmpInt, daughters),
+LauKMatrixProdPole::LauKMatrixProdPole(	const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
+										LauKMatrixPropagator* propagator, const LauDaughters* daughters,
+										Bool_t useProdAdler) :
+	LauAbsResonance( poleName, resPairAmpInt, daughters, propagator->getL(propagator->getIndex()) ),
 	thePropagator_(propagator),
-        poleIndex_(poleIndex - 1), // poleIndex goes from 1 to nPoles
-        useProdAdler_(useProdAdler)
+	poleIndex_(poleIndex - 1), // poleIndex goes from 1 to nPoles
+	useProdAdler_(useProdAdler)
 {
 
-        if (useProdAdler_) {
-	    std::cout<<"Creating K matrix production pole "<<poleName<<" with poleIndex = "
-		     <<poleIndex<<" with s-dependent production Adler zero term"<<std::endl;
+	if (useProdAdler_) {
+		std::cout	<<"Creating K matrix production pole "<<poleName<<" with poleIndex = "
+					<<poleIndex<<" with s-dependent production Adler zero term"<<std::endl;
 	} else {
-	    std::cout<<"Creating K matrix production pole "<<poleName<<" with poleIndex = "
-		     <<poleIndex<<" with production Adler zero factor = 1"<<std::endl;
+		std::cout	<<"Creating K matrix production pole "<<poleName<<" with poleIndex = "
+					<<poleIndex<<" with production Adler zero factor = 1"<<std::endl;
 	}
 
+	// `Resonance' Blatt-Weisskopf factor is handled internally, but parent must be set here. For other lineshapes, LauResonanceMaker handles this.
+	this->setBarrierRadii( nullptr,LauResonanceMaker::get().getParentBWFactor( propagator->getL(propagator->getIndex()), LauBlattWeisskopfFactor::BWBarrier ) );
 }
 
 LauKMatrixProdPole::~LauKMatrixProdPole() 
 {
 }
 
-LauComplex LauKMatrixProdPole::resAmp(Double_t mass, Double_t spinTerm)
+LauComplex LauKMatrixProdPole::resAmp(const Double_t mass, const Double_t spinTerm)
 {
-	std::cerr << "ERROR in LauKMatrixProdPole::resAmp : This method shouldn't get called." << std::endl;
-	std::cerr << "                                      Returning zero amplitude for mass = " << mass << " and spinTerm = " << spinTerm << "." << std::endl;
-	return LauComplex(0.0, 0.0);
-}
-
-LauComplex LauKMatrixProdPole::amplitude(const LauKinematics* kinematics)
-{
-
 	// Calculate the amplitude for the K-matrix production pole.
 	LauComplex amp(0.0, 0.0);
 
@@ -74,7 +69,40 @@ LauComplex LauKMatrixProdPole::amplitude(const LauKinematics* kinematics)
 		return amp;
 	}
 
-	thePropagator_->updatePropagator(kinematics);
+	// Get barrier factors ('resonance' factor is already accounted for internally via propagator 'Gamma' matrix)
+	Double_t fFactorB(1.0);
+
+	const Int_t resSpin = this->getSpin();
+	const Double_t pstar = this->getPstar();
+
+	if ( resSpin > 0 ) {
+		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+		if ( parBWFactor != nullptr ) {
+			switch ( parBWFactor->getRestFrame() ) {
+				case LauBlattWeisskopfFactor::ResonanceFrame:
+					fFactorB = parBWFactor->calcFormFactor(this->getP());
+					break;
+				case LauBlattWeisskopfFactor::ParentFrame:
+					fFactorB = parBWFactor->calcFormFactor(pstar);
+					break;
+				case LauBlattWeisskopfFactor::Covariant:
+				{
+					Double_t covFactor = this->getCovFactor();
+					if ( resSpin > 2 ) {
+						covFactor = TMath::Power( covFactor, 1.0/resSpin );
+					} else if ( resSpin == 2 ) {
+						covFactor = TMath::Sqrt( covFactor );
+					}
+					fFactorB = parBWFactor->calcFormFactor(pstar*covFactor);
+					break;
+				}
+			}
+		}
+	}
+
+	// Make sure the K-matrix propagator is up-to-date for
+	// the given centre-of-mass squared value ("s")
+	thePropagator_->updatePropagator(mass*mass);
 
 	// Sum the pole denominator terms over all channels j, multiplying by
 	// the propagator terms. Note that we do not sum over poles, since we
@@ -101,6 +129,14 @@ LauComplex LauKMatrixProdPole::amplitude(const LauKinematics* kinematics)
 
 	amp.rescale(poleDenom*adlerZero);
 
+	// Scale by the spin term
+	Double_t scale = spinTerm;
+
+	// Include Blatt-Weisskopf barrier factor for parent
+	scale *= fFactorB;
+
+	amp.rescale(scale);
+
 	return amp;
 
 }
@@ -125,7 +161,7 @@ const std::vector<LauParameter*>& LauKMatrixProdPole::getFloatingParameters()
 	if ( !par_polemasssq_.fixed() )
 	{
 		this->addFloatingParameter( &par_polemasssq_ );
-	}		
+	}
 
 	return this->getParameters();
 

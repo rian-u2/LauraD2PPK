@@ -33,23 +33,22 @@ Thomas Latham
 
 ClassImp(LauKMatrixProdSVP)
 
-LauKMatrixProdSVP::LauKMatrixProdSVP(const TString& SVPName, Int_t channelIndex, Int_t resPairAmpInt,
-		                     LauKMatrixPropagator* propagator, const LauDaughters* daughters,
-				     Bool_t useProdAdler) : 
-	LauAbsResonance(SVPName, resPairAmpInt, daughters),
+LauKMatrixProdSVP::LauKMatrixProdSVP(	const TString& SVPName, Int_t channelIndex, Int_t resPairAmpInt,
+										LauKMatrixPropagator* propagator, const LauDaughters* daughters,
+										Bool_t useProdAdler) :
+	LauAbsResonance( SVPName, resPairAmpInt, daughters, propagator->getL(propagator->getIndex()) ),
 	thePropagator_(propagator),
-        channelIndex_(channelIndex - 1), // channelIndex goes from 1 to nChannels.
-        useProdAdler_(useProdAdler)
+	channelIndex_(channelIndex - 1), // channelIndex goes from 1 to nChannels.
+	useProdAdler_(useProdAdler)
 {
 	// Constructor
-        if (useProdAdler_) {
-	    std::cout<<"Creating K matrix production SVP "<<SVPName<<" with channelIndex = "
-		     <<channelIndex<<" with s-dependent production Adler zero term"<<std::endl;
+	if (useProdAdler_) {
+		std::cout	<<"Creating K matrix production SVP "<<SVPName<<" with channelIndex = "
+					<<channelIndex<<" with s-dependent production Adler zero term"<<std::endl;
 	} else {
-	    std::cout<<"Creating K matrix production SVP "<<SVPName<<" with channelIndex = "
-		     <<channelIndex<<" with production Adler zero factor = 1"<<std::endl;
+		std::cout	<<"Creating K matrix production SVP "<<SVPName<<" with channelIndex = "
+					<<channelIndex<<" with production Adler zero factor = 1"<<std::endl;
 	}
-
 
 }
 
@@ -58,14 +57,7 @@ LauKMatrixProdSVP::~LauKMatrixProdSVP()
 	// Destructor
 }
 
-LauComplex LauKMatrixProdSVP::resAmp(Double_t mass, Double_t spinTerm)
-{
-	std::cerr << "ERROR in LauKMatrixProdSVP::resAmp : This method shouldn't get called." << std::endl;
-	std::cerr << "                                     Returning zero amplitude for mass = " << mass << " and spinTerm = " << spinTerm << "." << std::endl;
-	return LauComplex(0.0, 0.0);
-}
-
-LauComplex LauKMatrixProdSVP::amplitude(const LauKinematics* kinematics)
+LauComplex LauKMatrixProdSVP::resAmp(const Double_t mass, const Double_t spinTerm)
 {
 
 	// Calculate the amplitude for the K-matrix production pole.
@@ -78,7 +70,38 @@ LauComplex LauKMatrixProdSVP::amplitude(const LauKinematics* kinematics)
 		return amp;
 	}
 
-	thePropagator_->updatePropagator(kinematics);
+	// Get barrier factors ('resonance' factor is already accounted for internally via propagator 'Gamma' matrix)
+	Double_t fFactorB(1.0);
+
+	const Int_t resSpin = this->getSpin();
+	const Double_t pstar = this->getPstar();
+
+	if ( resSpin > 0 ) {
+		const LauBlattWeisskopfFactor* parBWFactor = this->getParBWFactor();
+		if ( parBWFactor != nullptr ) {
+			switch ( parBWFactor->getRestFrame() ) {
+				case LauBlattWeisskopfFactor::ResonanceFrame:
+					fFactorB = parBWFactor->calcFormFactor(this->getP());
+					break;
+				case LauBlattWeisskopfFactor::ParentFrame:
+					fFactorB = parBWFactor->calcFormFactor(pstar);
+					break;
+				case LauBlattWeisskopfFactor::Covariant:
+				{
+					Double_t covFactor = this->getCovFactor();
+					if ( resSpin > 2 ) {
+						covFactor = TMath::Power( covFactor, 1.0/resSpin );
+					} else if ( resSpin == 2 ) {
+						covFactor = TMath::Sqrt( covFactor );
+					}
+					fFactorB = parBWFactor->calcFormFactor(pstar*covFactor);
+					break;
+				}
+			}
+		}
+	}
+
+	thePropagator_->updatePropagator(mass*mass);
 
 	Double_t SVPTerm = thePropagator_->getProdSVPTerm();
 
@@ -89,6 +112,14 @@ LauComplex LauKMatrixProdSVP::amplitude(const LauKinematics* kinematics)
 	if (useProdAdler_) {adlerZero = thePropagator_->getAdlerZero();}
 
 	amp.rescale(SVPTerm*adlerZero);
+
+	// Scale by the spin term
+	Double_t scale = spinTerm;
+
+	// Include Blatt-Weisskopf barrier factor for parent
+	scale *= fFactorB;
+
+	amp.rescale(scale);
 
 	return amp;
 
@@ -105,9 +136,9 @@ const std::vector<LauParameter*>& LauKMatrixProdSVP::getFloatingParameters()
 	{
 		LauParameter& par_f_ = thePropagator_->getScatteringParameter(channelIndex_, jChannel);
 		if ( !par_f_.fixed() )
-		{
+    	{
 			this->addFloatingParameter( &par_f_ );
-		}
+   		}
 
 	}
 

@@ -632,19 +632,38 @@ LauBlattWeisskopfFactor* LauResonanceMaker::getParentBWFactor(Int_t resSpin, Lau
 	// Look up the category in the category information map
 	BWFactorCategoryMap::iterator factor_iter = bwFactors_.find( LauBlattWeisskopfFactor::Parent );
 
-	if ( factor_iter != bwFactors_.end() ) {
+	if ( factor_iter == bwFactors_.end() ) {
+		// If the category is currently undefined we need to create it
+		bwFactor = new LauBlattWeisskopfFactor( resSpin, 4.0, bwBarrierType_, bwRestFrame_, LauBlattWeisskopfFactor::Parent );
+		std::cerr<<"WARNING in LauResonanceMaker::getParentBWFactor : Default radius 4.0 set for Blatt-Weisskopf factor category: Parent"<<std::endl;
+
+		BlattWeisskopfCategoryInfo& categoryInfo = bwFactors_[LauBlattWeisskopfFactor::Parent];
+		categoryInfo.bwFactor_ = bwFactor;
+		categoryInfo.defaultRadius_ = bwFactor->getRadiusParameter()->value();
+		categoryInfo.radiusFixed_ = kTRUE;
+	} else {
 		// If it exists, we can check if the factor object has been created
 		BlattWeisskopfCategoryInfo& categoryInfo = factor_iter->second;
 
 		if ( categoryInfo.bwFactor_ != 0 ) {
 			// If so, simply clone it
 			bwFactor = categoryInfo.bwFactor_->createClone( resSpin, barrierType );
+		} else {
+			// Otherwise we need to create it, using the default value if it has been set
+			if ( categoryInfo.defaultRadius_ >= 0.0 ) {
+				bwFactor = new LauBlattWeisskopfFactor( resSpin, categoryInfo.defaultRadius_, bwBarrierType_, bwRestFrame_, LauBlattWeisskopfFactor::Parent );
+			} else {
+				bwFactor = new LauBlattWeisskopfFactor( resSpin, 4.0, bwBarrierType_, bwRestFrame_, LauBlattWeisskopfFactor::Parent );
+				std::cerr<<"WARNING in LauResonanceMaker::getParentBWFactor : Default radius 4.0 set for Blatt-Weisskopf factor category: Parent"<<std::endl;
+			}
+			categoryInfo.bwFactor_ = bwFactor;
+
+			// Set whether the radius should be fixed/floated
+			LauParameter* radius = bwFactor->getRadiusParameter();
+			radius->fixed( categoryInfo.radiusFixed_ );
 		}
 	}
 
-	if ( bwFactor==0 ) {
-		std::cerr<<"ERROR in LauResonanceMaker::getParentBWFactor : No parent Blatt-Weisskopf factor found to be cloned for K-matrix."<<std::endl;
-	}
 	return bwFactor;
 }
 

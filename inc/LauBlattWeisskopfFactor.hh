@@ -36,15 +36,16 @@ Thomas Latham
 #define LAU_BLATTWEISSKOPFFACTOR
 
 #include "Rtypes.h"
+#include "TString.h"
 
 class LauParameter;
 class LauResonanceInfo;
 
 
-class LauBlattWeisskopfFactor {
+class LauBlattWeisskopfFactor final {
 
 	public:
-		//! Define the allowed types of barrier factors 
+		//! Define the allowed types of barrier factors
 		enum BarrierType {
 			BWBarrier,	/*!< Blatt-Weisskopf barrier factor (for use when momentum terms not used in angular term) */
 			BWPrimeBarrier,	/*!< Blatt-Weisskopf barrier factor (for use when momentum terms are used in angular term) - the default */
@@ -83,8 +84,8 @@ class LauBlattWeisskopfFactor {
 		//! Constructor
 		LauBlattWeisskopfFactor( const LauResonanceInfo& resInfo, const Double_t resRadius, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category );
 
-		//! Destructor
-		virtual ~LauBlattWeisskopfFactor();
+		//! Constructor
+		LauBlattWeisskopfFactor( const Int_t spin, const Double_t resRadius, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category );
 
 		//! Method to create a new factor with cloned radius parameter
 		/*!
@@ -110,16 +111,21 @@ class LauBlattWeisskopfFactor {
 		*/
 		Double_t calcFormFactor( const Double_t p ) const;
 
-	protected:
-		//! Set the name of the radius parameter
-		TString setRadiusName( const LauResonanceInfo& resInfo, const BlattWeisskopfCategory category );
-
 	private:
 		//! Copy constructor
 		LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin, const BarrierType newBarrierType );
 
 		//! Copy assignment operator (not implemented)
 		LauBlattWeisskopfFactor& operator=( const LauBlattWeisskopfFactor& other );
+
+		//! Set the name of the radius parameter
+		TString setRadiusName( const LauResonanceInfo& resInfo, const BlattWeisskopfCategory category );
+
+		//! Set the name of the radius parameter
+		TString setRadiusName( const BlattWeisskopfCategory category );
+
+		//! Set the name of the radius parameter
+		TString setRadiusName( const TString& categoryName );
 
 		//! Resonance spin
 		const UInt_t spin_;

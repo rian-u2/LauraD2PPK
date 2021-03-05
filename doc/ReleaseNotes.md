@@ -1,6 +1,10 @@
 # Laura++ release notes
 
-4th February 2020 Dan Johnson
+5th March 2021 Dan Johnson
+* Alterations to allow Blatt-Weisskopf factor for parent to be created in a model with only a K-matrix
+  - see https://phab.hepforge.org/D52
+
+4th February 2021 Dan Johnson
 * Extend the K-matrix implementation to handle non-zero spin
   - see https://phab.hepforge.org/T135
 

@@ -58,8 +58,14 @@ LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauResonanceInfo& resInf
 	std::cout << "INFO in LauBlattWeisskopfFactor constructor : creating radius parameter for category \"" << categoryName << "\", with initial value " << resRadius << std::endl;
 }
 
-LauBlattWeisskopfFactor::~LauBlattWeisskopfFactor()
+LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const Int_t spin, const Double_t resRadius, const BarrierType barrierType, const RestFrame restFrame, const BlattWeisskopfCategory category ) :
+	spin_(spin),
+	radius_(new LauParameter("NEED_A_GOOD_NAME",resRadius,0.0,10.0,kTRUE)),
+	barrierType_(barrierType),
+	restFrame_(restFrame)
 {
+	TString categoryName = this->setRadiusName( category );
+	std::cout << "INFO in LauBlattWeisskopfFactor constructor : creating radius parameter for category \"" << categoryName << "\", with initial value " << resRadius << std::endl;
 }
 
 LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor& other, const UInt_t newSpin, const BarrierType newBarrierType ) :
@@ -72,61 +78,61 @@ LauBlattWeisskopfFactor::LauBlattWeisskopfFactor( const LauBlattWeisskopfFactor&
 
 TString LauBlattWeisskopfFactor::setRadiusName( const LauResonanceInfo& resInfo, const BlattWeisskopfCategory category )
 {
-	TString name = "BarrierRadius_";
-	TString categoryName;
-
 	switch (category) {
-		case Parent :
-			categoryName = "Parent";
-			break;
 		case Indep :
-			categoryName = resInfo.getSanitisedName();
-			break;
-		case Light :
-			categoryName = "Light";
-			break;
-		case Kstar :
-			categoryName = "Kstar";
-			break;
-		case Charm :
-			categoryName = "Charm";
-			break;
-		case StrangeCharm :
-			categoryName = "StrangeCharm";
-			break;
-		case Charmonium :
-			categoryName = "Charmonium";
-			break;
-		case Beauty :
-			categoryName = "Beauty";
-			break;
-		case StrangeBeauty :
-			categoryName = "StrangeBeauty";
-			break;
-		case CharmBeauty :
-			categoryName = "CharmBeauty";
-			break;
-		case Custom1 :
-			categoryName = "Custom1";
-			break;
-		case Custom2 :
-			categoryName = "Custom2";
-			break;
-		case Custom3 :
-			categoryName = "Custom3";
-			break;
-		case Custom4 :
-			categoryName = "Custom4";
-			break;
+			return this->setRadiusName( resInfo.getSanitisedName() );
 		default :
-			categoryName = "Unknown";
-			break;
+			return this->setRadiusName( category );
 	}
+}
 
-	name.Append(categoryName);
-	radius_->name(name);
+TString LauBlattWeisskopfFactor::setRadiusName( const BlattWeisskopfCategory category )
+{
+	switch (category) {
+		case Default :
+			return this->setRadiusName("Unknown");
+		case Indep :
+			// We shouldn't ever end up here
+			return this->setRadiusName("Unknown");
+		case Parent :
+			return this->setRadiusName("Parent");
+		case Light :
+			return this->setRadiusName("Light");
+		case Kstar :
+			return this->setRadiusName("Kstar");
+		case Charm :
+			return this->setRadiusName("Charm");
+		case StrangeCharm :
+			return this->setRadiusName("StrangeCharm");
+		case Charmonium :
+			return this->setRadiusName("Charmonium");
+		case Beauty :
+			return this->setRadiusName("Beauty");
+		case StrangeBeauty :
+			return this->setRadiusName("StrangeBeauty");
+		case CharmBeauty :
+			return this->setRadiusName("CharmBeauty");
+		case Custom1 :
+			return this->setRadiusName("Custom1");
+		case Custom2 :
+			return this->setRadiusName("Custom2");
+		case Custom3 :
+			return this->setRadiusName("Custom3");
+		case Custom4 :
+			return this->setRadiusName("Custom4");
+	}
+	// We should never get here but gcc seems to think we can
+	return this->setRadiusName("Unknown");
+}
 
-	return categoryName;
+TString LauBlattWeisskopfFactor::setRadiusName( const TString& categoryName )
+{
+    TString name = "BarrierRadius_";
+    name.Append(categoryName);
+
+    radius_->name(name);
+
+    return categoryName;
 }
 
 LauBlattWeisskopfFactor* LauBlattWeisskopfFactor::createClone( const UInt_t newSpin, const BarrierType newBarrierType )

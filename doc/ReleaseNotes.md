@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+9th March 2021 Mark Whitehead
+* Update particle properties to PDG 2020
+  - see https://phab.hepforge.org/T140
+
 5th March 2021 Dan Johnson
 * Alterations to allow Blatt-Weisskopf factor for parent to be created in a model with only a K-matrix
   - see https://phab.hepforge.org/D52

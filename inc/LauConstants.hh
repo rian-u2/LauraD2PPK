@@ -38,26 +38,27 @@ Thomas Latham
 
 namespace LauConstants {
 
+		// Masses updated to PDG 2020 values in March 2021	
 		//! Mass of charged D (GeV/c^2) 
-		const Double_t mD		= 1.86961;     
+		const Double_t mD		= 1.86965;     
 		//! Mass of neutral D (GeV/c^2)
-		const Double_t mD0		= 1.86484;
+		const Double_t mD0		= 1.86483;
 		//! Mass of Ds (GeV/c^2)		
-		const Double_t mDs		= 1.96830;    
+		const Double_t mDs		= 1.96834;    
 		//! Mass of charged B (GeV/c^2)
-		const Double_t mB		= 5.27926;
+		const Double_t mB		= 5.27934;
 		//! Mass of neutral B_d (GeV/c^2)
-		const Double_t mB0		= 5.27958;
+		const Double_t mB0		= 5.27965;
 		//! Mass of neutral B_s (GeV/c^2)
-		const Double_t mBs0		= 5.36677;
+		const Double_t mBs0		= 5.36688;
 		//! Mass of pi+- (GeV/c^2)			
-		const Double_t mPi		= 0.13957018; 
+		const Double_t mPi		= 0.13957039; 
 		//! Mass of pi0 (GeV/c^2)
-		const Double_t mPi0		= 0.1349766;  
+		const Double_t mPi0		= 0.1349768;  
 		//! Mass of K+- (GeV/c^2)
 		const Double_t mK		= 0.493677; 
 		//! Mass of K0 (GeV/c^2)
-		const Double_t mK0		= 0.497614; 
+		const Double_t mK0		= 0.497611; 
 		//! Mass of eta (GeV/c^2)
 		const Double_t mEta		= 0.547862; 
 	    	//! Mass of eta' (GeV/c^2)
@@ -92,10 +93,10 @@ namespace LauConstants {
 		const Double_t tauB		= 1.638; 
 		//! Lifetime of the B0 in ps
 		const Double_t tauB0		= 1.519;  
-		//! Mass difference of the B_H and B_L
-		const Double_t deltaMd		= 0.510;  
-		//! Angle beta of the unitarity triangle
-		const Double_t beta		= 21.50*TMath::DegToRad();  
+		//! Mass difference of the B_H and B_L - source PDG via HFLAV 2019
+		const Double_t deltaMd		= 0.5065;  
+		//! Angle beta of the unitarity triangle - source PDG via HFLAV 2019
+		const Double_t beta		= 22.2*TMath::DegToRad();  
 		//! Sine of twice the angle beta of the unitarity triangle
 		const Double_t sin2beta		= TMath::Sin(2.0*beta);  
 

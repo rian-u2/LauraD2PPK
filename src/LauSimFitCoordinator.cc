@@ -123,7 +123,7 @@ void LauSimFitCoordinator::initSockets()
 	TServerSocket *ss = new TServerSocket( reqPort_, kFALSE );
 	UInt_t actual_port = ss->GetLocalPort();
 
-	std::cout << "INFO in LauSimFitCoordinator::initSockets : Waiting for connection with " << nTasks_ << " workers on port " << actual_port << std::endl;
+	std::cout << "INFO in LauSimFitCoordinator::initSockets : Waiting for connection with " << nTasks_ << " tasks on port " << actual_port << std::endl;
 
 	socketTasks_.resize(nTasks_);
 	for ( UInt_t iTask(0); iTask<nTasks_; ++iTask ) {

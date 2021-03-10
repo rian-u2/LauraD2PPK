@@ -1,0 +1,106 @@
+stages:
+  - build
+  - test
+
+variables:
+  LCG_VERSION: "98python3"
+  BUILD_TYPE: "Release"
+  BUILD_ROOFIT_TASK: "OFF"
+  BUILD_DOCS: "OFF"
+
+.production_image:
+  variables:
+    LCG_OS: x86_64-centos7
+  image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
+  tags:
+    - cvmfs
+
+.lcg_setup:
+  before_script:
+    - set +e && source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_$LCG_VERSION $LCG_OS-$LCG_COMPILER; set -e
+
+.build_template:
+  stage: build
+  extends:
+    - .lcg_setup
+  script:
+    - mkdir install
+    - mkdir build && cd build
+    - cmake -DCMAKE_BUILD_TYPE:STRING=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX:PATH=$CI_PROJECT_DIR/install -DLAURA_BUILD_EXAMPLES:BOOL=ON -DLAURA_BUILD_DOCS:BOOL=$BUILD_DOCS -DLAURA_BUILD_ROOFIT_TASK:BOOL=$BUILD_ROOFIT_TASK $CI_PROJECT_DIR
+    - cmake --build .
+    - cmake --build . --target install
+
+build_clang10_opt:
+  variables:
+    LCG_COMPILER: "clang10-opt"
+  extends:
+    - .production_image
+    - .build_template
+
+build_gcc10_opt:
+  variables:
+    LCG_COMPILER: "gcc10-opt"
+  extends:
+    - .production_image
+    - .build_template
+
+build_gcc10_dbg:
+  variables:
+    LCG_COMPILER: "gcc10-dbg"
+    BUILD_TYPE: "Debug"
+    BUILD_ROOFIT_TASK: "ON"
+    BUILD_DOCS: "ON"
+  extends:
+    - .production_image
+    - .build_template
+  artifacts:
+    paths:
+      - install
+    expire_in: 1 day
+
+build_nextLCG_clang10_opt:
+  variables:
+    LCG_VERSION: "99"
+    LCG_COMPILER: "clang10-opt"
+    BUILD_ROOFIT_TASK: "ON"
+  extends:
+    - .production_image
+    - .build_template
+  allow_failure: true
+
+build_nextLCG_gcc10_opt:
+  variables:
+    LCG_VERSION: "99"
+    LCG_COMPILER: "gcc10-opt"
+    BUILD_ROOFIT_TASK: "ON"
+  extends:
+    - .production_image
+    - .build_template
+  allow_failure: true
+
+.test_template:
+  stage: test
+  variables:
+    LCG_COMPILER: "gcc10-dbg"
+  extends:
+    - .production_image
+    - .lcg_setup
+  dependencies:
+    - build_gcc10_dbg
+  artifacts:
+    paths:
+      - runtests
+    expire_in: 1 day
+  script:
+    - export PATH=$CI_PROJECT_DIR/install/bin:$PATH
+    - mkdir runtests && cd runtests
+    - $TEST_EXE gen $TEST_GEN_OPTIONS
+    - $TEST_EXE fit $TEST_FIT_OPTIONS
+
+test_3pi:
+  variables:
+    TEST_EXE: "GenFit3pi"
+    TEST_GEN_OPTIONS: "1 0"
+    TEST_FIT_OPTIONS: "0 1 0"
+  extends:
+    - .test_template

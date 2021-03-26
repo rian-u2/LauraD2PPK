@@ -136,12 +136,14 @@ void Lau1DHistPdf::checkNormalisation()
 	Double_t area(0.0);
 	Double_t areaNoNorm(0.0);
 
+	const Bool_t useInterpolationOrig { useInterpolation_ };
+
 	Double_t x(axisMin_ + dx/2.0);
 	while (x > axisMin_ && x < axisMax_) {
 		area += this->interpolateNorm(x);
 		useInterpolation_ = kFALSE;
 		areaNoNorm += this->interpolate(x);
-		useInterpolation_ = kTRUE;
+		useInterpolation_ = useInterpolationOrig;
 		x += dx;
 	}
 	Double_t norm = area*dx;

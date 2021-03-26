@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+26th March 2021 Thomas Latham
+* Fix bug in setting for linear interpolation in Lau1DHistPdf
+  - see https://phab.hepforge.org/T142
+
 9th March 2021 Mark Whitehead
 * Update particle properties to PDG 2020
   - see https://phab.hepforge.org/T140

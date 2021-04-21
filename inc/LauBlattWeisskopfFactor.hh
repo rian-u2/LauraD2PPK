@@ -90,6 +90,7 @@ class LauBlattWeisskopfFactor final {
 		//! Method to create a new factor with cloned radius parameter
 		/*!
 		    \param newSpin the value of the spin to use for the created instance
+		    \param newBarrierType the BarrierType to use for the created instance
 		*/
 		LauBlattWeisskopfFactor* createClone( const UInt_t newSpin , const BarrierType newBarrierType );
 

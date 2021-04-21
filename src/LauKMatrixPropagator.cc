@@ -915,10 +915,8 @@ void LauKMatrixPropagator::calcGammaMatrix(const Double_t s)
 
 	for (Int_t iChannel (0); iChannel < nChannels_; ++iChannel) {
 
-		LauKMatrixPropagator::KMatrixChannels phaseSpaceIndex = phaseSpaceTypes_[iChannel];
-
 		if ( L_[iChannel] != 0 ) {
-			gamma = this->calcGamma(iChannel,s,phaseSpaceIndex);
+			gamma = this->calcGamma(iChannel,s);
 		} else {
 			gamma = 1.0; // S-wave
 		}
@@ -933,10 +931,12 @@ void LauKMatrixPropagator::calcGammaMatrix(const Double_t s)
 
 }
 
-Double_t LauKMatrixPropagator::calcGamma(const Int_t iCh, const Double_t s, const LauKMatrixPropagator::KMatrixChannels phaseSpaceIndex) const
+Double_t LauKMatrixPropagator::calcGamma(const Int_t iCh, const Double_t s) const
 {
 	// Calculate the barrier factor
 	Double_t gamma(0.0);
+
+	LauKMatrixPropagator::KMatrixChannels phaseSpaceIndex = phaseSpaceTypes_[iCh];
 
 	LauComplex rho = getRho(s,phaseSpaceIndex);
 	Double_t q = 0.5 * sqrt(s) * rho.abs();

@@ -140,7 +140,6 @@ class LauKMatrixPropagator {
 		//! Get pole mass parameters, set according to the input file
 		/*!
 			\param [in] poleIndex number of the required pole
-			\param [in] channelIndex number of the required channel
 			\return the parameter of the pole mass
 		*/
 		LauParameter& getPoleMassSqParameter(const Int_t poleIndex);
@@ -310,10 +309,11 @@ class LauKMatrixPropagator {
 
 		//! Calculate the gamma angular-momentum barrier
 		/*!
+			\param [in] iCh the channel index
 			\param [in] s the invariant mass squared
 			\return the centrifugal barrier factor for L=0,1, or 2
 		*/
-		Double_t calcGamma(const Int_t iCh, const Double_t s, KMatrixChannels phaseSpaceIndex) const;
+		Double_t calcGamma(const Int_t iCh, const Double_t s) const;
 
 		//! Calulate the term 1/(m_pole^2 - s) for the scattering and production K-matrix formulae
 		/*!

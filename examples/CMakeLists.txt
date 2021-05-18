@@ -7,6 +7,7 @@ list(APPEND EXAMPLE_SOURCES
     GenFit3KS
     GenFit3pi
     GenFitBelleCPKpipi
+    GenFitDpipi
     GenFitDs2KKpi
     GenFitEFKLLM
     GenFitKpipi

@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+18th May 2021 Mark Whitehead
+* Add new MIPW example
+  - see https://phab.hepforge.org/T147
+
 26th March 2021 Thomas Latham
 * Fix bug in setting for linear interpolation in Lau1DHistPdf
   - see https://phab.hepforge.org/T142

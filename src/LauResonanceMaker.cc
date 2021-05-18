@@ -382,6 +382,9 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
+	// D(2680)
+	neutral = new LauResonanceInfo("D*0_1(2680)",   2.6811,   0.1867,   1,     0,       LauBlattWeisskopfFactor::Charm   );
+	resInfo_.push_back( neutral );
 	// D(2760)
 	//OLD--	neutral = new LauResonanceInfo("D0(2760)",      2.7633,   0.061,    1,     0           );
 	//OLD--	positve = new LauResonanceInfo("D+(2760)",      2.7697,   0.061,    1,     1           );
@@ -391,8 +394,10 @@ void LauResonanceMaker::createResonanceVector()
 	resInfo_.push_back( neutral );
 	resInfo_.push_back( positve );
 	resInfo_.push_back( negatve );
+	neutral = new LauResonanceInfo("D*0_3(2760)",   2.7755,   0.0953,   3,     0,       LauBlattWeisskopfFactor::Charm   );
+	resInfo_.push_back( neutral );
 	// D(2900)
-	neutral = new LauResonanceInfo("D0(3000)",      3.214,      0.186,     0,     0,       LauBlattWeisskopfFactor::Charm   );
+	neutral = new LauResonanceInfo("D0(3000)",      3.214,    0.186,    0,     0,       LauBlattWeisskopfFactor::Charm   );
 	resInfo_.push_back( neutral );
 	// D(3400)
 	neutral = new LauResonanceInfo("D0(3400)",      3.4,      0.15,     0,     0,       LauBlattWeisskopfFactor::Charm   );

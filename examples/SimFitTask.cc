@@ -102,8 +102,6 @@ int main( int argc, char** argv )
 		return EXIT_FAILURE;
 	}
 
-	LauRandom::setSeed(0);
-
 	// If you want to use square DP histograms for efficiency,
 	// backgrounds or you just want the square DP co-ordinates
 	// stored in the toy MC ntuple then set this to kTRUE

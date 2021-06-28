@@ -39,6 +39,7 @@ Thomas Latham
 
 #include <vector>
 
+#include "Rtypes.h"
 #include "TMath.h"
 
 

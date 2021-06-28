@@ -55,6 +55,7 @@ Thomas Latham
 
 #include <iosfwd>
 
+#include "Rtypes.h"
 #include "TMath.h"
 
 

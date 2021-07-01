@@ -21,6 +21,7 @@ list(APPEND EXAMPLE_SOURCES
     PlotResults
     point2PointTestSample
     QuasiFlatSqDalitz
+    QuasiFlatSqDalitz-CustomMasses
     ResultsExtractor
     SimFitCoordinator
     SimFitTask

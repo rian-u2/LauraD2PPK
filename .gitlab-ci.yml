@@ -3,7 +3,7 @@ stages:
   - test
 
 variables:
-  LCG_VERSION: "98python3"
+  LCG_VERSION: "LCG_100"
   BUILD_TYPE: "Release"
   BUILD_ROOFIT_TASK: "OFF"
   BUILD_DOCS: "OFF"
@@ -17,7 +17,7 @@ variables:
 
 .lcg_setup:
   before_script:
-    - set +e && source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_$LCG_VERSION $LCG_OS-$LCG_COMPILER; set -e
+    - set +e && source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh $LCG_VERSION $LCG_OS-$LCG_COMPILER; set -e
 
 .build_template:
   stage: build
@@ -30,9 +30,9 @@ variables:
     - cmake --build .
     - cmake --build . --target install
 
-build_clang10_opt:
+build_clang11_opt:
   variables:
-    LCG_COMPILER: "clang10-opt"
+    LCG_COMPILER: "clang11-opt"
   extends:
     - .production_image
     - .build_template
@@ -58,20 +58,40 @@ build_gcc10_dbg:
       - install
     expire_in: 1 day
 
-build_nextLCG_clang10_opt:
+build_dev3LCG_gcc_opt:
   variables:
-    LCG_VERSION: "99"
-    LCG_COMPILER: "clang10-opt"
+    LCG_VERSION: "dev3/latest"
+    LCG_COMPILER: "gcc11-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
     - .production_image
     - .build_template
   allow_failure: true
 
-build_nextLCG_gcc10_opt:
+build_dev4LCG_gcc_opt:
   variables:
-    LCG_VERSION: "99"
-    LCG_COMPILER: "gcc10-opt"
+    LCG_VERSION: "dev4/latest"
+    LCG_COMPILER: "gcc11-opt"
+    BUILD_ROOFIT_TASK: "ON"
+  extends:
+    - .production_image
+    - .build_template
+  allow_failure: true
+
+build_dev3LCG_clang_opt:
+  variables:
+    LCG_VERSION: "dev3/latest"
+    LCG_COMPILER: "clang12-opt"
+    BUILD_ROOFIT_TASK: "ON"
+  extends:
+    - .production_image
+    - .build_template
+  allow_failure: true
+
+build_dev4LCG_clang_opt:
+  variables:
+    LCG_VERSION: "dev4/latest"
+    LCG_COMPILER: "clang12-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
     - .production_image

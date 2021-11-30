@@ -3,7 +3,9 @@ stages:
   - test
 
 variables:
-  LCG_VERSION: "LCG_100"
+  LCG_VERSION: "LCG_101"
+  GCC_VERSION: "11"
+  CLANG_VERSION: "12"
   BUILD_TYPE: "Release"
   BUILD_ROOFIT_TASK: "OFF"
   BUILD_DOCS: "OFF"
@@ -30,23 +32,23 @@ variables:
     - cmake --build .
     - cmake --build . --target install
 
-build_clang11_opt:
+build_clang_opt:
   variables:
-    LCG_COMPILER: "clang11-opt"
+    LCG_COMPILER: "clang$CLANG_VERSION-opt"
   extends:
     - .production_image
     - .build_template
 
-build_gcc10_opt:
+build_gcc_opt:
   variables:
-    LCG_COMPILER: "gcc10-opt"
+    LCG_COMPILER: "gcc$GCC_VERSION-opt"
   extends:
     - .production_image
     - .build_template
 
-build_gcc10_dbg:
+build_gcc_dbg:
   variables:
-    LCG_COMPILER: "gcc10-dbg"
+    LCG_COMPILER: "gcc$GCC_VERSION-dbg"
     BUILD_TYPE: "Debug"
     BUILD_ROOFIT_TASK: "ON"
     BUILD_DOCS: "ON"
@@ -61,7 +63,7 @@ build_gcc10_dbg:
 build_dev3LCG_gcc_opt:
   variables:
     LCG_VERSION: "dev3/latest"
-    LCG_COMPILER: "gcc11-opt"
+    LCG_COMPILER: "gcc$GCC_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
     - .production_image
@@ -71,7 +73,7 @@ build_dev3LCG_gcc_opt:
 build_dev4LCG_gcc_opt:
   variables:
     LCG_VERSION: "dev4/latest"
-    LCG_COMPILER: "gcc11-opt"
+    LCG_COMPILER: "gcc$GCC_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
     - .production_image
@@ -81,7 +83,7 @@ build_dev4LCG_gcc_opt:
 build_dev3LCG_clang_opt:
   variables:
     LCG_VERSION: "dev3/latest"
-    LCG_COMPILER: "clang12-opt"
+    LCG_COMPILER: "clang$CLANG_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
     - .production_image
@@ -91,7 +93,7 @@ build_dev3LCG_clang_opt:
 build_dev4LCG_clang_opt:
   variables:
     LCG_VERSION: "dev4/latest"
-    LCG_COMPILER: "clang12-opt"
+    LCG_COMPILER: "clang$CLANG_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
     - .production_image
@@ -101,12 +103,12 @@ build_dev4LCG_clang_opt:
 .test_template:
   stage: test
   variables:
-    LCG_COMPILER: "gcc10-dbg"
+    LCG_COMPILER: "gcc$GCC_VERSION-dbg"
   extends:
     - .production_image
     - .lcg_setup
   dependencies:
-    - build_gcc10_dbg
+    - build_gcc_dbg
   artifacts:
     paths:
       - runtests

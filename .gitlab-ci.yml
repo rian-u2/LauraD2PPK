@@ -32,6 +32,13 @@ variables:
     - cmake --build .
     - cmake --build . --target install
 
+.dev_rules:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      allow_failure: false
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      allow_failure: true
+
 build_clang_opt:
   variables:
     LCG_COMPILER: "clang$CLANG_VERSION-opt"
@@ -68,7 +75,8 @@ build_dev3LCG_gcc_opt:
   extends:
     - .production_image
     - .build_template
-  allow_failure: true
+  rules:
+    - !reference [.dev_rules, rules]
 
 build_dev4LCG_gcc_opt:
   variables:
@@ -78,7 +86,8 @@ build_dev4LCG_gcc_opt:
   extends:
     - .production_image
     - .build_template
-  allow_failure: true
+  rules:
+    - !reference [.dev_rules, rules]
 
 build_dev3LCG_clang_opt:
   variables:
@@ -88,7 +97,8 @@ build_dev3LCG_clang_opt:
   extends:
     - .production_image
     - .build_template
-  allow_failure: true
+  rules:
+    - !reference [.dev_rules, rules]
 
 build_dev4LCG_clang_opt:
   variables:
@@ -98,7 +108,8 @@ build_dev4LCG_clang_opt:
   extends:
     - .production_image
     - .build_template
-  allow_failure: true
+  rules:
+    - !reference [.dev_rules, rules]
 
 .test_template:
   stage: test

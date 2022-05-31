@@ -1,6 +1,6 @@
 
 /*
-Copyright 2018 University of Warwick
+Copyright 2022 University of Warwick
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,16 +35,9 @@ Thomas Latham
 #include "LauRandom.hh"
 
 /*
- * Generates toy MC according to EvtGen's FLATSQDALITZ model
+ * Generates toy MC uniformly in the square Dalitz plot
  *
- * In LHCb simulation versions Sim08 and Sim09, and also in the global EvtGen
- * version 2.0.0 the FLATSQDALITZ model does not generate perfectly uniformly
- * in the square Dalitz plot.
- *
- * This issue was fixed in EvtGen 2.1.0 onwards, and hence in LHCb Sim10 since
- * that uses a later tag of the global EvtGen repository.
- *
- * Usage: QuasiFlatSqDalitz-CustomMasses <parent mass> <child_1 mass> <child_2 mass> <child_3 mass> <nevents> <output file name>
+ * Usage: FlatSqDalitz-CustomMasses <parent mass> <child_1 mass> <child_2 mass> <child_3 mass> <nevents> <output file name>
  */
 
 int main( int argc, char** argv )
@@ -69,7 +62,7 @@ int main( int argc, char** argv )
 
 	LauKinematics kinematics { child_1_mass, child_2_mass, child_3_mass, parent_mass, squareDP };
 
-	Double_t m12Sq{0.0}, m13Sq{0.0}, m23Sq{0.0}, mPrime{0.0}, thPrime{0.0}, jacobian{0.0}, invJacobian{0.0}, randomNum{0.0};
+	Double_t m12Sq{0.0}, m13Sq{0.0}, m23Sq{0.0}, mPrime{0.0}, thPrime{0.0};
 
 	TFile * file { TFile::Open(outputFileName,"recreate") };
 	TTree * tree { new TTree("genResults","genResults") };
@@ -79,35 +72,21 @@ int main( int argc, char** argv )
 	tree->Branch("m23Sq",&m23Sq,"m23Sq/D");
 	tree->Branch("mPrime",&mPrime,"mPrime/D");
 	tree->Branch("thPrime",&thPrime,"thPrime/D");
-	tree->Branch("jacobian",&jacobian,"jacobian/D");
-	tree->Branch("invJacobian",&invJacobian,"invJacobian/D");
-	tree->Branch("randomNum",&randomNum,"randomNum/D");
 
-	Bool_t evtAccepted{kFALSE};
 	for ( ULong_t i{0}; i < nEvents; ++i ) {
 
 		if ( nEvents > 1000 && i%(nEvents/1000)==0 ) {
 			std::cout << "Generating event " << i << std::endl;
 		}
 
-		evtAccepted = kFALSE;
+		kinematics.genFlatSqDP( mPrime, thPrime );
+		kinematics.updateSqDPKinematics( mPrime, thPrime );
 
-		while ( !evtAccepted ) {
-			kinematics.genFlatPhaseSpace( m13Sq, m23Sq );
-			kinematics.updateKinematics( m13Sq, m23Sq );
-			jacobian = kinematics.calcSqDPJacobian();
-			invJacobian = (jacobian<1.0) ? 1.0 : 1.0/jacobian;
+		m13Sq = kinematics.getm13Sq();
+		m23Sq = kinematics.getm23Sq();
+		m12Sq = kinematics.getm12Sq();
 
-			randomNum = LauRandom::randomFun()->Rndm();
-			if ( randomNum < invJacobian ) {
-				evtAccepted = kTRUE;
-				m12Sq = kinematics.getm12Sq();
-				mPrime = kinematics.getmPrime();
-				thPrime = kinematics.getThetaPrime();
-
-				tree->Fill();
-			}
-		}
+		tree->Fill();
 	}
 
 	file->Write();

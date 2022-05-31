@@ -3,6 +3,10 @@ list(APPEND EXAMPLE_SOURCES
     B3piKMatrixMassProj
     B3piKMatrixPlots
     CalcChiSq
+    FlatPhaseSpace
+    FlatPhaseSpace-CustomMasses
+    FlatSqDalitz
+    FlatSqDalitz-CustomMasses
     GenFit3K
     GenFit3KS
     GenFit3pi

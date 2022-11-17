@@ -208,9 +208,11 @@ class LauIsobarDynamics {
 
 		//! Set the maximum value of A squared to be used in the accept/reject
 		/*!
+		    Disables the automatic determination of ASqMax
+
 		    \param [in] value the new value
 		*/
-		inline void setASqMaxValue(Double_t value) {aSqMaxSet_ = value;}
+		inline void setASqMaxValue(Double_t value) {aSqMaxSet_ = value; aSqMaxAuto_ = kFALSE;}
 
 		//! Retrieve the maximum value of A squared to be used in the accept/reject
 		/*!
@@ -860,6 +862,7 @@ class LauIsobarDynamics {
 		//! Force the symmetrisation of the integration in m13 <-> m23 for non-symmetric but flavour-conjugate final states
 		Bool_t forceSymmetriseIntegration_;
 
+
 		//! The storage of the integration scheme
 		std::vector<LauDPPartialIntegralInfo*> dpPartialIntegralInfo_;
 
@@ -955,6 +958,9 @@ class LauIsobarDynamics {
 
 		//! The maximum value of A squared that has been seen so far while generating
 		Double_t aSqMaxVar_;
+
+		//! Flag to generate aSqMaxSet_ once generate is called
+		Bool_t aSqMaxAuto_{kTRUE};
 
 		//! The helicity flip flag for new amplitude components
 		Bool_t flipHelicity_;

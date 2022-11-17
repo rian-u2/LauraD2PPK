@@ -23,13 +23,7 @@ Thomas Latham
 */
 
 /*! \file LauPrint.hh
-    \brief File containing declaration of LauPrint class.
-*/
-
-/*! \class LauPrint
-    \brief Class to define various output print commands.
-
-    Class to define various output print commands (for output tables etc..)
+    \brief File containing declaration of LauPrint class and LauOutputLevel enum.
 */
 
 #ifndef LAU_PRINT
@@ -39,6 +33,24 @@ Thomas Latham
 
 #include <iosfwd>
 
+
+/*! \enum LauOutputLevel
+    \brief Enumeration to define verbosity level for various printouts
+*/
+
+enum class LauOutputLevel {
+	None         = -1, //!< Zero printout
+	Quiet        =  0, //!< Reduced printout
+	Standard     =  1, //!< Normal level of printout
+	Verbose      =  2, //!< Verbose printout
+	ExtraVerbose =  3  //!< Highly verbose printout
+};
+
+/*! \class LauPrint
+    \brief Class to define various output print commands.
+
+    Class to define various output print commands (for output tables etc..)
+*/
 
 class LauPrint {
 

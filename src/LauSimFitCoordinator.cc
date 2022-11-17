@@ -645,36 +645,36 @@ void LauSimFitCoordinator::fitExpt()
 	this->checkInitFitParams();
 
 	// Initialise the fitter
-	LauFitter::fitter()->useAsymmFitErrors( this->useAsymmFitErrors() );
-	LauFitter::fitter()->twoStageFit( this->twoStageFit() );
-	LauFitter::fitter()->initialise( this, params_ );
+	LauFitter::fitter().useAsymmFitErrors( this->useAsymmFitErrors() );
+	LauFitter::fitter().twoStageFit( this->twoStageFit() );
+	LauFitter::fitter().initialise( this, params_ );
 
-	this->startNewFit( LauFitter::fitter()->nParameters(), LauFitter::fitter()->nFreeParameters() );
+	this->startNewFit( LauFitter::fitter().nParameters(), LauFitter::fitter().nFreeParameters() );
 
 	// Now ready for minimisation step
 	std::cout << "\nINFO in LauSimFitCoordinator::fitExpt : Start minimisation...\n";
-	LauAbsFitter::FitStatus fitResult = LauFitter::fitter()->minimise();
+	LauAbsFitter::FitStatus fitResult = LauFitter::fitter().minimise();
 
 	// If we're doing a two stage fit we can now release (i.e. float)
 	// the 2nd stage parameters and re-fit
 	if (this->twoStageFit()) {
 		if ( fitResult.status != 3 ) {
 			std::cerr << "ERROR in LauSimFitCoordinator:fitExpt : Not running second stage fit since first stage failed." << std::endl;
-			LauFitter::fitter()->releaseSecondStageParameters();
+			LauFitter::fitter().releaseSecondStageParameters();
 		} else {
-			LauFitter::fitter()->releaseSecondStageParameters();
-			this->startNewFit( LauFitter::fitter()->nParameters(), LauFitter::fitter()->nFreeParameters() );
-			fitResult = LauFitter::fitter()->minimise();
+			LauFitter::fitter().releaseSecondStageParameters();
+			this->startNewFit( LauFitter::fitter().nParameters(), LauFitter::fitter().nFreeParameters() );
+			fitResult = LauFitter::fitter().minimise();
 		}
 	}
 
-	const TMatrixD& covMat = LauFitter::fitter()->covarianceMatrix();
+	const TMatrixD& covMat = LauFitter::fitter().covarianceMatrix();
 	this->storeFitStatus( fitResult, covMat );
 
 	// Store the final fit results and errors into protected internal vectors that
 	// all sub-classes can use within their own finalFitResults implementation
 	// used below (e.g. putting them into an ntuple in a root file)
-	LauFitter::fitter()->updateParameters();
+	LauFitter::fitter().updateParameters();
 }
 
 void LauSimFitCoordinator::setParsFromMinuit(Double_t* par, Int_t npar)

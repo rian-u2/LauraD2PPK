@@ -26,21 +26,25 @@ Thomas Latham
     \brief File containing implementation of LauFitter methods.
 */
 
-#include <iostream>
-
 #include "LauFitter.hh"
-#include "LauAbsFitter.hh"
+
 #include "LauMinuit.hh"
 
+#include <array>
+#include <iostream>
+#include <memory>
 
-LauAbsFitter* LauFitter::theInstance_ = 0;
-LauFitter::Type LauFitter::fitterType_ = LauFitter::Minuit;
+
+std::unique_ptr<LauAbsFitter> LauFitter::theInstance_ = nullptr;
+LauFitter::Type LauFitter::fitterType_ = LauFitter::Type::Minuit;
+LauOutputLevel LauFitter::fitterVerbosity_ = LauOutputLevel::Standard;
+UInt_t LauFitter::fitterMaxPars_ = 100;
 
 ClassImp(LauFitter)
 
-void LauFitter::setFitterType( Type type )
+void LauFitter::setFitterType( const Type type )
 {
-	if ( theInstance_ != 0 ) {
+	if ( theInstance_ != nullptr ) {
 		std::cerr << "ERROR in LauFitter::setFitterType : The fitter has already been created, cannot change the type now." << std::endl;
 		return;
 	}
@@ -48,17 +52,48 @@ void LauFitter::setFitterType( Type type )
 	fitterType_ = type;
 }
 
-LauAbsFitter* LauFitter::fitter()
+void LauFitter::setFitterVerbosity( const LauOutputLevel level )
 {
-	// Returns a pointer to a singleton LauAbsFitter object.
+	if ( theInstance_ != nullptr ) {
+		std::cerr << "ERROR in LauFitter::setFitterVerbosity : The fitter has already been created, cannot change the verbosity now." << std::endl;
+		return;
+	}
+
+	fitterVerbosity_ = level;
+}
+
+void LauFitter::setFitterMaxPars( const UInt_t maxPars )
+{
+	if ( theInstance_ != nullptr ) {
+		std::cerr << "ERROR in LauFitter::setFitterMaxPars : The fitter has already been created, cannot change the maximum number of parameters now." << std::endl;
+		return;
+	}
+
+	fitterMaxPars_ = maxPars;
+}
+
+LauAbsFitter& LauFitter::fitter()
+{
+	// Returns a reference to a singleton LauAbsFitter object.
 	// Creates the object the first time it is called.
 
-	if ( theInstance_ == 0 ) {
-		if ( fitterType_ == Minuit ) {
-			theInstance_ = new LauMinuit();
+	if ( theInstance_ == nullptr ) {
+		if ( fitterType_ == Type::Minuit ) {
+			// NB cannot use std::make_unique here since the LauMinuit constructor is private
+			theInstance_.reset( new LauMinuit( fitterMaxPars_, fitterVerbosity_ ) );
 		}
 	}
 
-	return theInstance_;
+	return *theInstance_;
 }
 
+void LauFitter::destroyFitter()
+{
+	// destroy the current fitter
+	theInstance_.reset();
+
+	// restore the default settings
+	fitterType_ = LauFitter::Type::Minuit;
+	fitterVerbosity_ = LauOutputLevel::Standard;
+	fitterMaxPars_ = 100;
+}

@@ -36,10 +36,10 @@ Thomas Latham
 #ifndef LAU_ABS_FITTER
 #define LAU_ABS_FITTER
 
-#include <vector>
-
 #include "Rtypes.h"
 #include "TMatrixDfwd.h"
+
+#include <vector>
 
 class LauFitObject;
 class LauParameter;
@@ -62,7 +62,7 @@ class LauAbsFitter {
 		};
 
 		//! Destructor
-		virtual ~LauAbsFitter() {}
+		virtual ~LauAbsFitter() = default;
 
 		//! Initialise the fitter, setting the information on the parameters
 		/*!
@@ -72,7 +72,7 @@ class LauAbsFitter {
 		virtual void initialise( LauFitObject* fitObj, const std::vector<LauParameter*>& parameters ) = 0;
 
 		//! Get the object that controls the calculation of the likelihood
-		virtual LauFitObject* getFitObject() =0;
+		virtual LauFitObject* getFitObject() = 0;
 
 		//! Get the total number of fit parameters
 		virtual UInt_t nParameters() const = 0;
@@ -125,17 +125,22 @@ class LauAbsFitter {
 
 	protected:
 		//! Constructor
-		LauAbsFitter() {}
+		LauAbsFitter() = default;
 
 	private:
 		//! Copy constructor - private and not implemented
-		LauAbsFitter( const LauAbsFitter& );
+		LauAbsFitter( const LauAbsFitter& ) = delete;
+
+		//! Move constructor - private and not implemented
+		LauAbsFitter( LauAbsFitter&& ) = delete;
 
 		//! Copy assignment operator - private and not implemented
-		LauAbsFitter& operator=( const LauAbsFitter& rhs );
+		LauAbsFitter& operator=( const LauAbsFitter& rhs ) = delete;
+
+		//! Move assignment operator - private and not implemented
+		LauAbsFitter& operator=( LauAbsFitter&& rhs ) = delete;
 
 		ClassDef(LauAbsFitter,0);
 };
 
 #endif
-

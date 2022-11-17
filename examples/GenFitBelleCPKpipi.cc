@@ -130,12 +130,15 @@ int main( int argc, char** argv )
 	negSigModel->setIntFileName("integ_neg.dat");
 	posSigModel->setIntFileName("integ_pos.dat");
 
-	// Reset the maximum signal DP ASq value
-	// This will be automatically adjusted to avoid bias or extreme
-	// inefficiency if you get the value wrong but best to set this by
-	// hand once you've found the right value through some trial and
-	// error.
-	Double_t aSqMaxValue = 1.62;
+	// Set the maximum signal DP ASq value
+	// If you do not provide a value, one will be determined automatically,
+	// which should be close to the true maximum but is not guaranteed to
+	// be optimal.
+	// Any value, whether manually provided or automatically determined,
+	// will be automatically adjusted to avoid bias or extreme inefficiency
+	// but it is best to set this by hand once you've found the right value
+	// through some trial and error.
+	const Double_t aSqMaxValue{1.62};
 	negSigModel->setASqMaxValue(aSqMaxValue);
 	posSigModel->setASqMaxValue(aSqMaxValue);
 

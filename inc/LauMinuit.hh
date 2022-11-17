@@ -35,13 +35,14 @@ Thomas Latham
 #ifndef LAU_MINUIT
 #define LAU_MINUIT
 
-#include <utility>
-#include <vector>
+#include "LauAbsFitter.hh"
+#include "LauPrint.hh"
 
 #include "Rtypes.h"
 #include "TMatrixD.h"
 
-#include "LauAbsFitter.hh"
+#include <utility>
+#include <vector>
 
 class LauParameter;
 class TVirtualFitter;
@@ -51,7 +52,7 @@ class LauMinuit : public LauAbsFitter {
 
 	public:
 		//! Destructor
-		virtual ~LauMinuit();
+		virtual ~LauMinuit() = default;
 
 		//! Initialise the fitter, setting the information on the parameters
 		/*!
@@ -118,37 +119,46 @@ class LauMinuit : public LauAbsFitter {
 		friend class LauFitter;
 
 		//! Constructor
-		explicit LauMinuit( Int_t maxPar = 100 );
+		LauMinuit( const UInt_t maxPar = 100, const LauOutputLevel verbosity = LauOutputLevel::Standard );
 
 		//! Copy constructor - private and not implemented
-		LauMinuit( const LauMinuit& );
+		LauMinuit( const LauMinuit& ) = delete;
+
+		//! Move constructor - private and not implemented
+		LauMinuit( LauMinuit&& ) = delete;
 
 		//! Copy assignment operator - private and not implemented
-		LauMinuit& operator=( const LauMinuit& rhs );
+		LauMinuit& operator=( const LauMinuit& ) = delete;
+
+		//! Move assignment operator - private and not implemented
+		LauMinuit& operator=( LauMinuit&& ) = delete;
 
 		//! The interface to Minuit
-		TVirtualFitter* minuit_;
+		TVirtualFitter* minuit_{nullptr};
 
 		//! The maximum number of parameters
-		const UInt_t maxPar_;
+		const UInt_t maxPar_{100};
+
+		//! The verbosity level of the fitter
+		const LauOutputLevel outputLevel_{LauOutputLevel::Standard};
 
 		//! The fit parameters
 		std::vector<LauParameter*> params_;
 
 		//! The total number of parameters
-		UInt_t nParams_;
+		UInt_t nParams_{0};
 
 		//! The number of free parameters
-		UInt_t nFreeParams_;
+		UInt_t nFreeParams_{0};
 
 		//! Option to perform a two stage fit
-		Bool_t twoStageFit_; 
+		Bool_t twoStageFit_{kFALSE}; 
 
 		//! Option to use asymmetric errors
-		Bool_t useAsymmFitErrors_; 
+		Bool_t useAsymmFitErrors_{kFALSE}; 
 
 		//! The status of the fit 
-		FitStatus fitStatus_;
+		FitStatus fitStatus_{-1,0.0,0.0};
 
 		//! The covariance matrix
 		TMatrixD covMatrix_;
@@ -157,4 +167,3 @@ class LauMinuit : public LauAbsFitter {
 };
 
 #endif
-

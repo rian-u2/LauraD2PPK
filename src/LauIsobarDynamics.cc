@@ -58,6 +58,7 @@ Thomas Latham
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
 #include "LauRhoOmegaMix.hh"
+#include "LauASqMaxFinder.hh"
 
 ClassImp(LauIsobarDynamics)
 
@@ -2287,8 +2288,20 @@ Bool_t LauIsobarDynamics::generate()
 
 	// We need to make sure to calculate everything for every resonance
 	integralsToBeCalculated_.clear();
-	for ( UInt_t i(0); i < nAmp_+nIncohAmp_; ++i ) {
+	for ( UInt_t i{0}; i < nAmp_+nIncohAmp_; ++i ) {
 		integralsToBeCalculated_.insert(i);
+	}
+
+	if ( aSqMaxAuto_ ) {
+		std::cout<<"INFO in LauIsobarDynamics::generate : Starting auto-location of |A|^2 maximum"<<std::endl;
+
+		LauASqMaxFinder finder{*this};
+		aSqMaxSet_ = finder.find();
+		aSqMaxAuto_ = kFALSE;
+
+		std::cout<<"INFO in LauIsobarDynamics::generate : auto-location of |A|^2 maximum finds: "<<aSqMaxSet_<<std::endl;
+		aSqMaxSet_ *= 1.10;
+		std::cout<<"                                    : applying safety factor of 10\% gives:  "<<aSqMaxSet_<<std::endl;
 	}
 
 	nSigGenLoop_ = 0;
@@ -2369,6 +2382,7 @@ LauIsobarDynamics::ToyMCStatus LauIsobarDynamics::checkToyMC(Bool_t printErrorMe
 		// Found a value of ASq higher than the accept/reject ceiling - the generation is biased
 		if (printErrorMessages) {
 			std::cerr<<"WARNING in LauIsobarDynamics::checkToyMC : |A|^2 maximum was set to "<<aSqMaxSet_<<" but a value exceeding this was found: "<<aSqMaxVar_<<std::endl;
+			std::cerr<<"                                         : This value was found at m13Sq = "<<kinematics_->getm13Sq()<<" and m23Sq = "<<kinematics_->getm23Sq()<<std::endl;
 			std::cerr<<"                                         : Run was invalid, as any generated MC will be biased, according to the accept/reject method!"<<std::endl;
 			std::cerr<<"                                         : The value of |A|^2 maximum be reset to be > "<<aSqMaxVar_<<" and the generation restarted."<<std::endl;
 		}

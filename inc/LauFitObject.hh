@@ -26,10 +26,6 @@ Thomas Latham
     \brief File containing declaration of LauFitObject class.
 */
 
-/*! \class LauFitObject
-    \brief The abstract interface for the objects that control the calculation of the likelihood.
-*/
-
 #ifndef LAU_FIT_OBJECT
 #define LAU_FIT_OBJECT
 
@@ -41,11 +37,15 @@ Thomas Latham
 
 #include "LauAbsFitter.hh"
 
+/*! \class LauFitObject
+    \brief The abstract interface for the objects that control the calculation of the likelihood.
+*/
+
 class LauFitObject : public TObject {
 
 	public:
 		//! Destructor
-		virtual ~LauFitObject() {}
+		virtual ~LauFitObject() = default;
 
 		//! Turn on or off the computation of asymmetric errors (e.g. MINOS routine in Minuit)
 		/*!

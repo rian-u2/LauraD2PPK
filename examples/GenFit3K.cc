@@ -138,10 +138,14 @@ int main( int argc, char** argv )
 
 	res = sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
 
-	// Reset the maximum signal DP ASq value
-	// This will be automatically adjusted to avoid bias or extreme
-	// inefficiency if you get the value wrong but best to set this by
-	// hand once you've found the right value through some trial and error.
+	// Set the maximum signal DP ASq value
+	// If you do not provide a value, one will be determined automatically,
+	// which should be close to the true maximum but is not guaranteed to
+	// be optimal.
+	// Any value, whether manually provided or automatically determined,
+	// will be automatically adjusted to avoid bias or extreme inefficiency
+	// but it is best to set this by hand once you've found the right value
+	// through some trial and error.
 	sigModel->setASqMaxValue(15.8);
 
 	// Create the fit model

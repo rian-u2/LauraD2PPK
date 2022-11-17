@@ -26,25 +26,29 @@ Thomas Latham
     \brief File containing declaration of LauFitter class.
 */
 
-/*! \class LauFitter
-    \brief Factory class for creating and providing access to the fitter.
-
-    The fitter type can be set before first access to determine which fitter is used.
-*/
-
 #ifndef LAU_FITTER
 #define LAU_FITTER
+
+#include "LauPrint.hh"
 
 #include "Rtypes.h"
 #include "TString.h"
 
+#include <memory>
+
 class LauAbsFitter;
 
-class LauFitter {
+/*! \class LauFitter
+    \brief Factory class for creating and providing access to the fitter.
+
+    The fitter type and verbosity can be set before first access to determine which fitter is used.
+*/
+
+class LauFitter final {
 
 	public:
 		//! The types of fitter available
-		enum Type {
+		enum class Type {
 			Minuit	/*!< the Minuit fitter */
 		};
 
@@ -52,32 +56,62 @@ class LauFitter {
 		/*!
 		    \param [in] type the type of the fitter (default set to Minuit)
 		*/
-		static void setFitterType( Type type );
+		static void setFitterType( const Type type );
+
+		//! Set the verbosity level of the fitter
+		/*!
+		    \param [in] level the level of verbosity of the fitter (default set to Standard)
+		*/
+		static void setFitterVerbosity( const LauOutputLevel level );
+
+		//! Set the maximum number of parameters for the fitter
+		/*!
+		    \param [in] maxPars the maximum number of parameters for the fitter (default set to 100)
+		*/
+		static void setFitterMaxPars( const UInt_t maxPars );
 
 		//! Method that provides access to the singleton fitter
 		/*!
-		    \return a pointer to a singleton LauAbsFitter object 
+		    \return a reference to a singleton LauAbsFitter object 
 		*/
-		static LauAbsFitter* fitter();
+		static LauAbsFitter& fitter();
+
+		//! Destroy the current fitter
+		/*!
+		    A new fitter will be created on the next call to LauFitter::fitter
+		*/
+		static void destroyFitter();
 
 	private:
 		//! Constructor
-		LauFitter() {}
+		LauFitter() = default;
 
 		//! Destructor
-		virtual ~LauFitter() {}
+		~LauFitter() = default;
 
-		//! Copy constructor (not implemented)
-		LauFitter( const LauFitter& );
+		//! Copy constructor (deleted)
+		LauFitter( const LauFitter& ) = delete;
 
-		//! Copy assignment operator (not implemented)
-		LauFitter& operator=( const LauFitter& );
+		//! Move constructor (deleted)
+		LauFitter( LauFitter&& ) = delete;
+
+		//! Copy assignment operator (deleted)
+		LauFitter& operator=( const LauFitter& ) = delete;
+
+		//! Move assignment operator (deleted)
+		LauFitter& operator=( LauFitter&& ) = delete;
 
 		//! Pointer to the singleton fitter instance
-		static LauAbsFitter* theInstance_;
+		static std::unique_ptr<LauAbsFitter> theInstance_;
 
 		//! The fitter type
 		static Type fitterType_;
+
+		//! The fitter verbosity
+		static LauOutputLevel fitterVerbosity_;
+
+		//! The maximum number of parameters for the fitter
+		static UInt_t fitterMaxPars_;
 
 		ClassDef(LauFitter,0);
 };

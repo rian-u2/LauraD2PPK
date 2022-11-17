@@ -51,6 +51,7 @@ Thomas Latham
 #pragma link C++ class LauAbsResonance+;
 #pragma link C++ class LauAbsRValue+;
 #pragma link C++ class LauArgusPdf+;
+#pragma link C++ class LauASqMaxFinder+;
 #pragma link C++ class LauAsymmCalc+;
 #pragma link C++ class LauBelleCPCoeffSet+;
 #pragma link C++ class LauBelleNR+;

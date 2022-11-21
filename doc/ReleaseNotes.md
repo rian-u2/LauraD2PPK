@@ -1,5 +1,30 @@
 # Laura++ release notes
 
+21st November 2022 Andy Morris
+* Use Minuit to automatically determine ASq max for signal in LauIsobarDynamics
+  - see https://phab.hepforge.org/D85
+
+28th June 2022 Thomas Latham
+* Improvements to Doxygen config
+
+31st May 2022 Thomas Latham
+* Add examples for easily generating toy samples uniformly in any DP or SqDP
+* Very minor updates to related QuasiFlatSqDalitz examples
+
+30th November 2021 Thomas Latham
+* Update CI config to:
+  - Simplify changing compiler version
+  - Disallow dev build failure in scheduled pipelines
+
+7th September 2021 Thomas Latham
+* Update CI to test future ROOT versions in dev3/dev4 LCG builds
+
+1st July 2021 Thomas Latham
+* Add version of QuasiFlatSqDalitz where particle masses can be supplied on command line
+
+28th June 2021 Thomas Latham
+* Fix for compilation with ROOT 6.24
+
 18th May 2021 Mark Whitehead
 * Add new MIPW example
   - see https://phab.hepforge.org/T147

@@ -3017,21 +3017,25 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
   // Routine to provide weights for events that are uniformly distributed
   // in the DP (or square DP) so as to reproduce the given DP model
 
-  if ( posKinematics_->squareDP() ) {
-    std::cout << "INFO in LauCPFitModel::weightEvents : will create weights assuming events were generated flat in the square DP" << std::endl;
+  const Bool_t squareDP { posKinematics_->squareDP() || negKinematics_->squareDP() };
+  if ( squareDP ) {
+    std::cout << "INFO in LauCPFitModel::weightEvents : will store DP model weights and the square DP jacobian\n";
+    std::cout << "                                    : the DP model weights can be used on their own to weight events that were generated flat in phase space\n";
+    std::cout << "                                    : or they can be multiplied by the jacobian to weight events that were generated flat in the square DP\n";
+    std::cout << "                                    : or they can be multiplied by max(1.0, jacobian) to weight events that were generated quasi-flat in the square DP" << std::endl;
   } else {
-    std::cout << "INFO in LauCPFitModel::weightEvents : will create weights assuming events were generated flat in phase space" << std::endl;
+    std::cout << "INFO in LauCPFitModel::weightEvents : will store DP model weights suitable for weighting events that were generated flat in phase space" << std::endl;
   }
 
   // This reads in the given dataFile and creates an input
   // fit data tree that stores them for all events and experiments.
-  Bool_t dataOK = this->verifyFitData(dataFileName,dataTreeName);
-  if (!dataOK) {
+  const Bool_t dataOK { this->verifyFitData( dataFileName, dataTreeName ) };
+  if ( ! dataOK ) {
     std::cerr << "ERROR in LauCPFitModel::weightEvents : Problem caching the data." << std::endl;
     return;
   }
 
-  LauFitDataTree* inputFitData = this->fitData();
+  LauFitDataTree* inputFitData { this->fitData() };
 
   if ( ! inputFitData->haveBranch( "m13Sq_MC" ) || ! inputFitData->haveBranch( "m23Sq_MC" ) ) {
     std::cerr << "WARNING in LauCPFitModel::weightEvents : Cannot find MC truth DP coordinate branches in supplied data, aborting." << std::endl;
@@ -3043,77 +3047,82 @@ void LauCPFitModel::weightEvents( const TString& dataFileName, const TString& da
   }
 
   // Create the ntuple to hold the DP weights
-  TString weightsFileName( dataFileName );
-  Ssiz_t index = weightsFileName.Last('.');
+  TString weightsFileName{ dataFileName };
+  const Ssiz_t index { weightsFileName.Last('.') };
   weightsFileName.Insert( index, "_DPweights" );
-  LauGenNtuple * weightsTuple = new LauGenNtuple( weightsFileName, dataTreeName );
-  weightsTuple->addIntegerBranch("iExpt");
-  weightsTuple->addIntegerBranch("iEvtWithinExpt");
-  weightsTuple->addDoubleBranch("dpModelWeight");
 
-  UInt_t iExpmt = this->iExpt();
-  UInt_t nExpmt = this->nExpt();
-  UInt_t firstExpmt = this->firstExpt();
-  for (iExpmt = firstExpmt; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
+  LauGenNtuple weightsTuple { weightsFileName, dataTreeName };
+  weightsTuple.addIntegerBranch( "iExpt" );
+  weightsTuple.addIntegerBranch( "iEvtWithinExpt" );
+  weightsTuple.addDoubleBranch( "dpModelWeight" );
+  if ( squareDP ) {
+    weightsTuple.addDoubleBranch( "sqDPJacobian" );
+  }
+
+  const UInt_t nExpmt { this->nExpt() };
+  const UInt_t firstExpmt { this->firstExpt() };
+  for (UInt_t iExpmt {firstExpmt}; iExpmt < (firstExpmt+nExpmt); ++iExpmt) {
 
     inputFitData->readExperimentData(iExpmt);
-    UInt_t nEvents = inputFitData->nEvents();
 
-    if (nEvents < 1) {
+    const UInt_t nEvents { inputFitData->nEvents() };
+    if ( nEvents < 1 ) {
       std::cerr << "WARNING in LauCPFitModel::weightEvents : Zero events in experiment " << iExpmt << ", skipping..." << std::endl;
       continue;
     }
 
-    weightsTuple->setIntegerBranchValue( "iExpt", iExpmt );
+    weightsTuple.setIntegerBranchValue( "iExpt", iExpmt );
 
     // Calculate and store the weights for the events in this experiment
-    for ( UInt_t iEvent(0); iEvent < nEvents; ++iEvent ) {
+    for ( UInt_t iEvent{0}; iEvent < nEvents; ++iEvent ) {
 
-      weightsTuple->setIntegerBranchValue( "iEvtWithinExpt", iEvent );
+      weightsTuple.setIntegerBranchValue( "iEvtWithinExpt", iEvent );
 
       const LauFitData& evtData = inputFitData->getData( iEvent );
 
-      Double_t m13Sq_MC = evtData.find("m13Sq_MC")->second;
-      Double_t m23Sq_MC = evtData.find("m23Sq_MC")->second;
-      Int_t charge = evtData.find("charge")->second;
+      const auto m13Sq_MC { evtData.at( "m13Sq_MC" ) };
+      const auto m23Sq_MC { evtData.at( "m23Sq_MC" ) };
+      const auto charge { static_cast<Int_t>( evtData.at( "charge" ) ) };
 
-      Double_t dpModelWeight(0.0);
+      Double_t dpModelWeight{0.0};
+      Double_t jacobian{1.0};
 
-      LauKinematics * kinematics;
-      LauIsobarDynamics * dpModel;
+      LauKinematics * kinematics{nullptr};
+      LauIsobarDynamics * dpModel{nullptr};
 
       if (charge > 0) {
-	kinematics = posKinematics_;
-	dpModel = posSigModel_;
+        kinematics = posKinematics_;
+        dpModel = posSigModel_;
       } else {
-	kinematics = negKinematics_;
-	dpModel = negSigModel_;
+        kinematics = negKinematics_;
+        dpModel = negSigModel_;
       }
 
       if ( kinematics->withinDPLimits( m13Sq_MC, m23Sq_MC ) ) {
 
-	kinematics->updateKinematics( m13Sq_MC, m23Sq_MC );
-	dpModelWeight = dpModel->getEventWeight();
+        kinematics->updateKinematics( m13Sq_MC, m23Sq_MC );
+        dpModelWeight = dpModel->getEventWeight();
 
-	if ( kinematics->squareDP() ) {
-	  dpModelWeight *= kinematics->calcSqDPJacobian();
-	}
+        if ( squareDP ) {
+          jacobian = kinematics->calcSqDPJacobian();
+        }
 
-	const Double_t norm = (negSigModel_->getDPNorm() + posSigModel_->getDPNorm())/2.0;
-	dpModelWeight /= norm;
+        const Double_t norm { 0.5 * ( negSigModel_->getDPNorm() + posSigModel_->getDPNorm() ) };
+        dpModelWeight /= norm;
       }
 
-      weightsTuple->setDoubleBranchValue( "dpModelWeight", dpModelWeight );
-      weightsTuple->fillBranches();
+      weightsTuple.setDoubleBranchValue( "dpModelWeight", dpModelWeight );
+      if ( squareDP ) {
+        weightsTuple.setDoubleBranchValue( "sqDPJacobian", jacobian );
+      }
+      weightsTuple.fillBranches();
     }
 
   }
 
-  weightsTuple->buildIndex( "iExpt", "iEvtWithinExpt" );
-  weightsTuple->addFriendTree(dataFileName, dataTreeName);
-  weightsTuple->writeOutGenResults();
-
-  delete weightsTuple;
+  weightsTuple.buildIndex( "iExpt", "iEvtWithinExpt" );
+  weightsTuple.addFriendTree( dataFileName, dataTreeName );
+  weightsTuple.writeOutGenResults();
 }
 
 

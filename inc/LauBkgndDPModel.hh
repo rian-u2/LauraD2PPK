@@ -166,7 +166,6 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		//! Flag to track whether a warning has been issued for bin values less than zero
 		mutable Bool_t lowBinWarningIssued_;
 
-		ClassDef(LauBkgndDPModel,0) // DP background model
 };
 
 #endif

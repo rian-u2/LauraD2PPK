@@ -983,7 +983,6 @@ class LauIsobarDynamics {
 		//! Whether to calculate separate rho and omega fit fractions from the LauRhoOmegaMix model
 		Bool_t calculateRhoOmegaFitFractions_;
 
-		ClassDef(LauIsobarDynamics,0)
 };
 
 #endif

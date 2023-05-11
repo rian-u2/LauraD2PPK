@@ -38,7 +38,6 @@ Thomas Latham
 
 #include "Lau2DCubicSpline.hh"
 
-ClassImp(Lau2DCubicSpline)
 
 
 Lau2DCubicSpline::~Lau2DCubicSpline()

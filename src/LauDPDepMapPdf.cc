@@ -42,7 +42,6 @@ using std::endl;
 #include "LauParameter.hh"
 #include "LauDPDepMapPdf.hh"
 
-ClassImp(LauDPDepMapPdf)
 
 
 LauDPDepMapPdf::LauDPDepMapPdf(const std::vector<LauAbsPdf*>& pdfs, 

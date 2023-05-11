@@ -38,7 +38,6 @@ using std::endl;
 #include "LauParticlePDG.hh"
 
 
-ClassImp(LauParticlePDG)
 
 LauParticlePDG::LauParticlePDG(const TParticlePDG* particle) :
 	theParticle_(particle),

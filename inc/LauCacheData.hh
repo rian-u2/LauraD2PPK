@@ -248,7 +248,6 @@ class LauCacheData {
 		//! The intensities of the incoherent contributions
 		std::vector<Double_t> incohIntensities_;
 
-		ClassDef(LauCacheData,0) // Cached Data Class
 };
 
 #endif

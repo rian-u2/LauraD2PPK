@@ -32,7 +32,6 @@ Thomas Latham
 #include "LauSigmaRes.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauSigmaRes)
 
 
 LauSigmaRes::LauSigmaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

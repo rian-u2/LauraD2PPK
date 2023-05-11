@@ -79,7 +79,6 @@ class LauIntegrals {
 		//! The precision to which the weights should be calculated
 		Double_t weightsPrecision_;
 
-		ClassDef(LauIntegrals,0)
 };
 
 #endif

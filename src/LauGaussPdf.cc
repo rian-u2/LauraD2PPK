@@ -39,7 +39,6 @@ using std::vector;
 #include "LauConstants.hh"
 #include "LauGaussPdf.hh"
 
-ClassImp(LauGaussPdf)
 
 
 LauGaussPdf::LauGaussPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

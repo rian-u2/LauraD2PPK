@@ -40,7 +40,6 @@ using std::endl;
 // the singleton instance
 LauKMatrixPropFactory* LauKMatrixPropFactory::theFactory_ = 0;
 
-ClassImp(LauKMatrixPropFactory)
 
 LauKMatrixPropFactory::LauKMatrixPropFactory()
 {

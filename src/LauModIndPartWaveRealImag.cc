@@ -35,7 +35,6 @@ Thomas Latham
 #include "LauModIndPartWaveRealImag.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauModIndPartWaveRealImag)
 
 
 LauModIndPartWaveRealImag::LauModIndPartWaveRealImag(LauResonanceInfo* resInfo, Int_t resPairAmpInt, const LauDaughters* daughters) :

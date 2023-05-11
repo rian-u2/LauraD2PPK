@@ -546,7 +546,6 @@ class LauAbsPdf {
 		//! The normalisation weights
 		std::vector<Double_t> normWeights_;
 
-		ClassDef(LauAbsPdf,0) // Define the abstract PDF class
 };
 
 #endif

@@ -171,7 +171,6 @@ class LauBelleCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP asymmetry
 		LauParameter acp_;
 
-		ClassDef(LauBelleCPCoeffSet, 0)
 };
 
 #endif

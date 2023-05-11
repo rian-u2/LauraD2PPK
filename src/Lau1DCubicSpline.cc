@@ -35,7 +35,6 @@ Thomas Latham
 
 #include "Lau1DCubicSpline.hh"
 
-ClassImp(Lau1DCubicSpline)
 
 
 Lau1DCubicSpline::Lau1DCubicSpline(const std::vector<Double_t>& xs, const std::vector<Double_t>& ys,

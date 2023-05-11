@@ -110,7 +110,6 @@ class LauCruijffPdf : public LauAbsPdf {
 		//! Alpha of right Gaussian
 		LauAbsRValue* alphaR_;
 
-		ClassDef(LauCruijffPdf,0) // Define the Cruijff PDF
 };
 
 #endif

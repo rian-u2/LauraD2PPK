@@ -30,7 +30,6 @@ Thomas Latham
 
 #include "LauAsymmCalc.hh"
 
-ClassImp(LauAsymmCalc)
 
 
 LauAsymmCalc::LauAsymmCalc(Double_t negValue, Double_t posValue) :

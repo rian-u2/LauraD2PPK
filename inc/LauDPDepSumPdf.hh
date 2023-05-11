@@ -161,7 +161,6 @@ class LauDPDepSumPdf : public LauAbsPdf {
 		//! Cached values of fractions
 		std::vector<Double_t> fractions_;
 
-		ClassDef(LauDPDepSumPdf,0) // Define the sum PDF
 };
 
 #endif

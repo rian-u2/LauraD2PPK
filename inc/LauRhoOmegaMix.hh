@@ -278,7 +278,6 @@ private:
     //! Which amplitude to calculate for rho/omega fit fractions
     Int_t whichAmpSq_;
 
-    ClassDef(LauRhoOmegaMix,0) // Rho-omega mixing model
 
 };
 

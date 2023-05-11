@@ -39,7 +39,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauPrint.hh"
 
-ClassImp(LauMagPhaseCoeffSet)
 
 
 LauMagPhaseCoeffSet::LauMagPhaseCoeffSet(const TString& compName, Double_t magnitude, Double_t phase, Bool_t magFixed, Bool_t phaseFixed) :

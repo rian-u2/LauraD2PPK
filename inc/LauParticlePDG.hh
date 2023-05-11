@@ -182,7 +182,6 @@ class LauParticlePDG {
 		//! Flag whether the particle is a B
 		Bool_t B_;
 
-		ClassDef(LauParticlePDG,0)
 
 };
 

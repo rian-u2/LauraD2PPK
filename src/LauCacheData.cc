@@ -28,7 +28,6 @@ Thomas Latham
 
 #include "LauCacheData.hh"
 
-ClassImp(LauCacheData)  
 
 
 LauCacheData::LauCacheData() :

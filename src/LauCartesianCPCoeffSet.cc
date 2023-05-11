@@ -39,7 +39,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauPrint.hh"
 
-ClassImp(LauCartesianCPCoeffSet)
 
 
 LauCartesianCPCoeffSet::LauCartesianCPCoeffSet(const TString& compName, Double_t x, Double_t y, Double_t deltaX, Double_t deltaY,

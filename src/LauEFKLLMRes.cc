@@ -35,7 +35,6 @@ Thomas Latham
 #include "LauTextFileParser.hh"
 
 
-ClassImp(LauEFKLLMRes);
 
 
 Lau1DCubicSpline* LauEFKLLMRes::magSpline_   = 0;

@@ -165,7 +165,6 @@ class LauLASSBWRes : public LauAbsResonance {
 		//! LASS scattering length parameter
 		LauParameter* a_;
 
-		ClassDef(LauLASSBWRes,0)
 };
 
 #endif

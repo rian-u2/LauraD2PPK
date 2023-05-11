@@ -40,7 +40,6 @@ using std::endl;
 #include "LauDPDepCruijffPdf.hh"
 #include "LauKinematics.hh"
 
-ClassImp(LauDPDepCruijffPdf)
 
 
 LauDPDepCruijffPdf::LauDPDepCruijffPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,

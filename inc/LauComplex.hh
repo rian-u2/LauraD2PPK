@@ -347,7 +347,6 @@ class LauComplex {
 		//! The imaginary part
 		Double_t im_;
 
-		ClassDef(LauComplex,0) // a non-persistent bare-bones complex class
 };
 
 //! input/output operator formatting of a complex number

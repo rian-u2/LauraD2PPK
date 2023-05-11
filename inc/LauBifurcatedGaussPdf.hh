@@ -95,7 +95,6 @@ class LauBifurcatedGaussPdf : public LauAbsPdf {
 		//! Sigma of right Gaussian
 		LauAbsRValue* sigmaR_;
 
-		ClassDef(LauBifurcatedGaussPdf,0) // Define the Bifurcated Gaussian PDF
 };
 
 #endif

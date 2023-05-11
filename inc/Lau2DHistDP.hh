@@ -144,7 +144,6 @@ class Lau2DHistDP : public Lau2DAbsHistDP {
 		//! Control boolean for using the linear interpolation
 		Bool_t useInterpolation_;
 
-		ClassDef(Lau2DHistDP,0) // 2D Histogram utility class for DP analyses
 };
 
 #endif

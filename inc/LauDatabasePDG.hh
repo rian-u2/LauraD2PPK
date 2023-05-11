@@ -140,7 +140,6 @@ class LauDatabasePDG {
 		//! Debug flag - set in constructor
 		const Bool_t debug_;
 
-		ClassDef(LauDatabasePDG,0)
 
 };
 

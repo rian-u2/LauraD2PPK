@@ -28,7 +28,6 @@ Thomas Latham
 
 #include "LauBreitWignerRes.hh"
 
-ClassImp(LauBreitWignerRes)
 
 
 LauBreitWignerRes::LauBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

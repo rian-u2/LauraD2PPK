@@ -38,7 +38,6 @@ Thomas Latham
 #include "LauIntegrals.hh"
 #include "LauKinematics.hh"
 
-ClassImp(LauAbsPdf)
 
 // Constructor for the abstract PDF class.
 LauAbsPdf::LauAbsPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
@@ -236,7 +235,10 @@ Bool_t LauAbsPdf::checkRange(const LauAbscissas& abscissas) const
 	}
 	if ( nVars != minAbscissas_.size() || nVars != maxAbscissas_.size() ) {
 		std::cerr << "ERROR in LauAbsPdf::checkRange : Unexpected number of absicssas: " << nVars << std::endl;
-		std::cerr << "                               : " << this->IsA()->GetName() << " expects " << minAbscissas_.size() << std::endl;
+		std::cerr << "                               : Expected: " << minAbscissas_.size() << std::endl;
+		for ( auto [ _, varName ] : varNames_ ) {
+			std::cerr << "                               : " << varName << std::endl;
+		}
 		return kFALSE;
 	}
 

@@ -572,7 +572,6 @@ class LauAbsResonance {
 		//! Covariant factor (full spin-dependent expression)
 		Double_t covFactor_{1.0};
 
-		ClassDef(LauAbsResonance,0) // Abstract resonance class
 
 };
 

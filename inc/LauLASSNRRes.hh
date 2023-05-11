@@ -162,7 +162,6 @@ class LauLASSNRRes : public LauAbsResonance {
 		//! LASS cut off
 		Double_t cutOff_;
 
-		ClassDef(LauLASSNRRes,0)
 };
 
 #endif

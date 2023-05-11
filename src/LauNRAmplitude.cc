@@ -32,7 +32,6 @@ Thomas Latham
 #include "LauNRAmplitude.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauNRAmplitude)
 
 LauNRAmplitude::LauNRAmplitude(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),

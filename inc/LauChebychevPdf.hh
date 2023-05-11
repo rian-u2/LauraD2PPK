@@ -102,7 +102,6 @@ class LauChebychevPdf : public LauAbsPdf {
 		//! Coefficients of polynomial
 		std::vector<LauAbsRValue*> coeffs_;
 
-		ClassDef(LauChebychevPdf,0) // Chebychev PDF
 };
 
 #endif

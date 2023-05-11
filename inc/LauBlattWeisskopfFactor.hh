@@ -140,7 +140,6 @@ class LauBlattWeisskopfFactor final {
 		//! Rest frame
 		const RestFrame restFrame_;
 
-		ClassDef(LauBlattWeisskopfFactor, 0)
 };
 
 #endif

@@ -151,7 +151,6 @@ class LauRealImagCoeffSet : public LauAbsCoeffSet {
 		//! The complex coefficient
 		LauComplex coeff_;
 
-		ClassDef(LauRealImagCoeffSet, 0)
 };
 
 #endif

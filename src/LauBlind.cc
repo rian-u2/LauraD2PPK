@@ -31,7 +31,6 @@ Thomas Latham
 #include "TMath.h"
 #include "TRandom3.h"
 
-ClassImp(LauBlind)
 
 
 LauBlind::LauBlind() :

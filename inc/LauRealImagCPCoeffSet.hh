@@ -166,7 +166,6 @@ class LauRealImagCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP asymmetry
 		LauParameter acp_;
 
-		ClassDef(LauRealImagCPCoeffSet, 0)
 };
 
 #endif

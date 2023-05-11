@@ -267,7 +267,6 @@ class LauDPPartialIntegralInfo {
 		//! The incoherent intensity values at each 2D grid point
 		std::vector< std::vector< std::vector<Double_t> > > incohIntensities_;
 
-		ClassDef(LauDPPartialIntegralInfo, 0)
 };
 
 std::ostream& operator<<( std::ostream& stream, const LauDPPartialIntegralInfo& infoRecord );

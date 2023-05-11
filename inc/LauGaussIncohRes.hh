@@ -86,7 +86,6 @@ class LauGaussIncohRes : public LauAbsIncohRes {
 		//! Copy assignment operator (not implemented)
 		LauGaussIncohRes& operator=(const LauGaussIncohRes& rhs);
 
-		ClassDef(LauGaussIncohRes,0) // Gaussian incoherent resonance model
 };
 
 #endif

@@ -705,7 +705,6 @@ class LauCPFitModel : public LauAbsFitModel {
 		//! Total background likelihood(s)
 		std::vector<Double_t> bkgndTotalLike_;
 
-		ClassDef(LauCPFitModel,0) //  CP fit/ToyMC model
 
 };
 

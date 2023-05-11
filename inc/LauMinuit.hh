@@ -163,7 +163,6 @@ class LauMinuit : public LauAbsFitter {
 		//! The covariance matrix
 		TMatrixD covMatrix_;
 
-		ClassDef(LauMinuit,0);
 };
 
 #endif

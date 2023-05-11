@@ -138,7 +138,6 @@ class LauDPDepGaussPdf : public LauAbsPdf {
 		//! The DP axis we depend on
 		DPAxis dpAxis_;
 
-		ClassDef(LauDPDepGaussPdf,0) // Define the Gaussian PDF
 };
 
 #endif

@@ -140,7 +140,6 @@ class LauEmbeddedData {
 		//! Used events
 		std::set<UInt_t> usedEvents_;
 
-		ClassDef(LauEmbeddedData, 0) // a non-persistent bare-bones complex class
 };
 
 #endif

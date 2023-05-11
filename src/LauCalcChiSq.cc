@@ -64,7 +64,6 @@ Thomas Latham
 #include <cstdlib>
 #include <cmath>
 
-ClassImp(LauCalcChiSq)
 
 
 LauCalcChiSq::LauCalcChiSq(const TString& inputFileName) :

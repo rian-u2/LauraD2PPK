@@ -32,7 +32,6 @@ Thomas Latham
 
 #include <iostream>
 
-ClassImp(LauKMatrixProdPole)
 
 LauKMatrixProdPole::LauKMatrixProdPole(	const TString& poleName, Int_t poleIndex, Int_t resPairAmpInt,
 										LauKMatrixPropagator* propagator, const LauDaughters* daughters,

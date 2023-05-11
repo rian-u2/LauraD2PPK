@@ -125,7 +125,6 @@ class LauParametricStepFuncPdf : public LauAbsPdf {
 		//! limits of the bins
 		std::vector<Double_t> limits_;
 
-		ClassDef(LauParametricStepFuncPdf,0) // Define the PSF PDF
 };
 
 #endif

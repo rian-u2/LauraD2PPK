@@ -40,7 +40,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauParamFixed.hh"
 
-ClassImp(LauFitNtuple)
 
 
 LauFitNtuple::LauFitNtuple(const TString& fileName, Bool_t storeAsymErrors) :

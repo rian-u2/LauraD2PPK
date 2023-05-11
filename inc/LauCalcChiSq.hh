@@ -159,5 +159,4 @@ class LauCalcChiSq {
 		//! Verbose flag
 		Bool_t verbose_;
 
-		ClassDef(LauCalcChiSq,0)
 };

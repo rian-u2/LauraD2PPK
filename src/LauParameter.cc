@@ -38,7 +38,6 @@ using std::map;
 #include "LauParameter.hh"
 #include "LauRandom.hh"
 
-ClassImp(LauParameter)
 
 
 LauParameter::LauParameter() :

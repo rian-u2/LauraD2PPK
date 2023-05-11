@@ -76,7 +76,6 @@ class LauAbsIncohRes : public LauAbsResonance {
 		//! Copy assignment operator (not implemented)
 		LauAbsIncohRes& operator=(const LauAbsIncohRes& rhs);
 
-		ClassDef(LauAbsIncohRes,0) // Abstract incoherent resonance class
 };
 
 #endif

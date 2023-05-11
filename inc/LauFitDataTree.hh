@@ -218,7 +218,6 @@ class LauFitDataTree {
 		//! The fake events, which are not from the tree
 		std::vector<LauEventData> fakeEvents_;
 
-		ClassDef(LauFitDataTree, 0)
 };
 
 #endif

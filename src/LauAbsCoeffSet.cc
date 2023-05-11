@@ -35,7 +35,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauRandom.hh"
 
-ClassImp(LauAbsCoeffSet);
 
 TRandom* LauAbsCoeffSet::randomiser_ = 0;
 Double_t LauAbsCoeffSet::minMagnitude_ = -10.0;

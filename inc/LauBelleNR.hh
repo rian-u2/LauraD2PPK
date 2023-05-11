@@ -149,7 +149,6 @@ class LauBelleNR : public LauAbsResonance {
 		//! Force use of Legendre spin factors
 		Bool_t forceLegendre_;
 
-		ClassDef(LauBelleNR,0)
 };
 
 #endif

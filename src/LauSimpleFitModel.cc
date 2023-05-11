@@ -59,7 +59,6 @@ Thomas Latham
 #include "TStyle.h"
 #include "TCanvas.h"
 
-ClassImp(LauSimpleFitModel)
 
 
 LauSimpleFitModel::LauSimpleFitModel(LauIsobarDynamics* sigModel) : LauAbsFitModel(),

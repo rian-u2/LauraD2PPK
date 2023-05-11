@@ -49,7 +49,6 @@ Thomas Latham
 #include "LauSimFitCoordinator.hh"
 
 
-ClassImp(LauSimFitCoordinator)
 
 
 LauSimFitCoordinator::LauSimFitCoordinator( UInt_t numTasks, UInt_t port ) :

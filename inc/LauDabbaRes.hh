@@ -175,7 +175,6 @@ class LauDabbaRes : public LauAbsResonance {
 		//! Constant factor
 		LauParameter* beta_;
 
-		ClassDef(LauDabbaRes,0) // Dabba resonance model
 
 };
 

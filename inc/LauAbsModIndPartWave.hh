@@ -242,7 +242,6 @@ class LauAbsModIndPartWave : public LauAbsResonance {
 		//! The current value of the amplitude
 		LauComplex amp_;
 
-		ClassDef(LauAbsModIndPartWave,0) // model independent partial wave
 
 };
 

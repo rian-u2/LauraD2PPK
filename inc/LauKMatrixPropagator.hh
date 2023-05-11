@@ -593,8 +593,6 @@ class LauKMatrixPropagator {
 		const Double_t m2EtaSq_{4.0*LauConstants::mEtaSq};
 		//! Defined as (mEta+mEta')^2
 		const Double_t mEtaEtaPSumSq_{(LauConstants::mEta + LauConstants::mEtaPrime)*(LauConstants::mEta + LauConstants::mEtaPrime)};
-		//! Defined as (mEta-mEta')^2
-		const Double_t mEtaEtaPDiffSq_{(LauConstants::mEta - LauConstants::mEtaPrime)*(LauConstants::mEta - LauConstants::mEtaPrime)};
 		//! Defined as (mK+mPi)^2
 		const Double_t mKpiSumSq_{(LauConstants::mK + LauConstants::mPi)*(LauConstants::mK + LauConstants::mPi)};
 		//! Defined as (mK-mPi)^2
@@ -631,7 +629,6 @@ class LauKMatrixPropagator {
 		//! Control if scattering constants are channel symmetric: f_ji = f_ij
 		Bool_t scattSymmetry_{kFALSE};
 
-		ClassDef(LauKMatrixPropagator,0) // K-matrix amplitude model
 };
 
 #endif

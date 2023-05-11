@@ -263,7 +263,6 @@ class LauEffModel : public LauAbsEffModel {
 		//! Flag to track whether a warning has been issued for bin values greater than one
 		mutable Bool_t highBinWarningIssued_;
 
-		ClassDef(LauEffModel, 0)   // Implement the signal efficiency across the DP
 
 };
 

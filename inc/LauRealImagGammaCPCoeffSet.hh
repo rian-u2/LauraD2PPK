@@ -183,7 +183,6 @@ class LauRealImagGammaCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP asymmetry
 		LauParameter acp_;
 
-		ClassDef(LauRealImagGammaCPCoeffSet, 0)
 };
 
 #endif

@@ -114,7 +114,6 @@ class LauSumPdf : public LauAbsPdf {
 		//! Fractional contribution of first PDF to the final PDF
 		LauAbsRValue* frac_;
 
-		ClassDef(LauSumPdf,0) // Define the sum PDF
 };
 
 #endif

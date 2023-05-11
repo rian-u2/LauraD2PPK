@@ -34,7 +34,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauBlattWeisskopfFactor)
 
 
 // Constructor

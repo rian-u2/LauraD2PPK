@@ -140,7 +140,6 @@ class Lau2DAbsHistDP : public Lau2DAbsDP {
 		//! Boolean for using square DP variables
 		Bool_t squareDP_;
 
-		ClassDef(Lau2DAbsHistDP,0) // Abstract base class for 2D DP variations based on a histogram
 };
 
 #endif

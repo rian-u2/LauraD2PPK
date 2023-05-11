@@ -169,7 +169,6 @@ class LauDPDepBifurGaussPdf : public LauAbsPdf {
 		//! Scaling method information
 		ScaleMethod scaleMethod_;
 
-		ClassDef(LauDPDepBifurGaussPdf,0) // Define the MVA PDF
 };
 
 #endif

@@ -33,7 +33,6 @@ Thomas Latham
 #include "LauPolNR.hh"
 #include "LauDaughters.hh"
 
-ClassImp(LauPolNR)
 
 
 LauPolNR::LauPolNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

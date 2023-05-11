@@ -90,7 +90,6 @@ class LauSigmoidPdf : public LauAbsPdf {
 		//! Parameter b
 		LauAbsRValue* b_;
 
-		ClassDef(LauSigmoidPdf,0) // Define the Sigmoid PDF
 };
 
 #endif

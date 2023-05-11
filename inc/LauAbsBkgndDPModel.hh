@@ -149,7 +149,6 @@ class LauAbsBkgndDPModel {
 		//! Vetoes within the Dalitz plot
 		LauVetoes* vetoes_;
 
-		ClassDef(LauAbsBkgndDPModel,0) // Abstract DP background model
 };
 
 #endif

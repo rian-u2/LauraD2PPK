@@ -130,7 +130,6 @@ class Lau1DHistPdf : public LauAbsPdf {
 		//! The histogram axis range
 		Double_t axisRange_;
 
-		ClassDef(Lau1DHistPdf,0) // 1D histogram pdf class
 };
 
 #endif

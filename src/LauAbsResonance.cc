@@ -37,7 +37,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauAbsResonance)
 
 bool LauAbsResonance::isIncoherentModel(LauResonanceModel model) {
 	switch(model) {

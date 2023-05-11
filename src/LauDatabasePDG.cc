@@ -38,7 +38,6 @@ using std::endl;
 
 LauDatabasePDG* LauDatabasePDG::theInstance_ = 0;
 
-ClassImp(LauDatabasePDG)
 
 // Constructor
 

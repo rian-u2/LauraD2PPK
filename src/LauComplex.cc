@@ -46,7 +46,6 @@ Thomas Latham
 
 #include "LauComplex.hh"
 
-ClassImp(LauComplex);
 
 
 void LauComplex::print() const

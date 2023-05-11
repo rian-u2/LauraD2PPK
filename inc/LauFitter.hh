@@ -113,7 +113,6 @@ class LauFitter final {
 		//! The maximum number of parameters for the fitter
 		static UInt_t fitterMaxPars_;
 
-		ClassDef(LauFitter,0);
 };
 
 #endif

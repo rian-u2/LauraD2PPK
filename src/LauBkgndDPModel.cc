@@ -41,7 +41,6 @@ Thomas Latham
 #include "LauRandom.hh"
 #include "LauVetoes.hh"
 
-ClassImp(LauBkgndDPModel)
 
 
 LauBkgndDPModel::LauBkgndDPModel(LauDaughters* daughters, LauVetoes* vetoes) :

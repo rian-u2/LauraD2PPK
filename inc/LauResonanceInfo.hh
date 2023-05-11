@@ -195,7 +195,6 @@ class LauResonanceInfo {
 		//! Extra parameters
 		std::set<LauParameter*> extraPars_;
 
-		ClassDef(LauResonanceInfo, 0)   // Specify each allowed resonance
 
 };
 

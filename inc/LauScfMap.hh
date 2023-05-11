@@ -129,7 +129,6 @@ class LauScfMap {
 		//! Number of bins in a 2D histogram (nBinsX_*nBinsY_)
 		Int_t numberOfBins_;
 
-		ClassDef(LauScfMap, 0)
 };
 
 #endif

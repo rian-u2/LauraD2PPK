@@ -36,7 +36,6 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauRandom.hh"
 
-ClassImp(LauKinematics)
 
 
 LauKinematics::LauKinematics(const Double_t m1, const Double_t m2, const Double_t m3, const Double_t mParent, const Bool_t calcSquareDPCoords, const Bool_t symmetricalDP, const Bool_t fullySymmetricDP) :

@@ -88,7 +88,6 @@ class LauASqMaxFinder : public LauFitObject {
 		//! The fit parameters in a form to be passed to the minimiser
 		std::vector<LauParameter*> params_;
 
-		ClassDefOverride(LauASqMaxFinder,0)
 };
 
 #endif

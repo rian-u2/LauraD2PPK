@@ -523,7 +523,6 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		//! Total background likelihood(s)
 		std::vector<Double_t> bkgndTotalLike_;
 
-		ClassDef(LauSimpleFitModel,0) // Total fit/ToyMC model
 
 };
 

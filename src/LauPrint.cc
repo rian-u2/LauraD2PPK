@@ -32,7 +32,6 @@ Thomas Latham
 
 #include "LauPrint.hh"
 
-ClassImp(LauPrint)
 
 
 LauPrint::LauPrint()

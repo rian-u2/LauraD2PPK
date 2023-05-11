@@ -31,7 +31,6 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauFlatNR.hh"
 
-ClassImp(LauFlatNR)
 
 LauFlatNR::LauFlatNR(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters)

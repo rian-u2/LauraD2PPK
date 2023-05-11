@@ -106,7 +106,6 @@ class Lau2DSplineDPPdf: public Lau2DAbsHistDPPdf {
 		//! A 2D cubic spline generated from the histogram
 		Lau2DCubicSpline* spline_;
 	
-		ClassDef(Lau2DSplineDPPdf,0) // 2D Spline utility class for DP analyses
 };
 
 #endif

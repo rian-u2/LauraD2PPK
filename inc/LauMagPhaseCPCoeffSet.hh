@@ -168,7 +168,6 @@ class LauMagPhaseCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP asymmetry
 		LauParameter acp_;
 
-		ClassDef(LauMagPhaseCPCoeffSet, 0)
 };
 
 #endif

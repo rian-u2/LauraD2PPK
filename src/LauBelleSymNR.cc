@@ -35,7 +35,6 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauBelleSymNR)
 
 
 LauBelleSymNR::LauBelleSymNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,

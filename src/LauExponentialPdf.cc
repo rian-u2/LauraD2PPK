@@ -39,7 +39,6 @@ using std::vector;
 #include "LauConstants.hh"
 #include "LauExponentialPdf.hh"
 
-ClassImp(LauExponentialPdf)
 
 
 LauExponentialPdf::LauExponentialPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

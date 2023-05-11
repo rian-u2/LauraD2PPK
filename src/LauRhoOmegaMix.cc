@@ -36,7 +36,6 @@ Thomas Latham
 #include "LauResonanceInfo.hh"
 #include "LauResonanceMaker.hh"
 
-ClassImp(LauRhoOmegaMix)
 
 
 LauRhoOmegaMix::LauRhoOmegaMix(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,

@@ -82,7 +82,6 @@ class LauFlatNR : public LauAbsResonance {
 		//! Copy assignment operator (not implemented)
 		LauFlatNR& operator=(const LauFlatNR& rhs);
 
-		ClassDef(LauFlatNR,0) // Uniform non-resonant model
 };
 
 #endif

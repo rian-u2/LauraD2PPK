@@ -212,7 +212,6 @@ class LauDaughters {
 		//! Flavour-conjugate Dalitz plot
 		Bool_t flavourConjugateDP_;
 
-		ClassDef(LauDaughters, 0)
 
 };
 

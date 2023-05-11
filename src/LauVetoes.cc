@@ -31,7 +31,6 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauVetoes.hh"
 
-ClassImp(LauVetoes)
 
 
 LauVetoes::LauVetoes() :

@@ -43,7 +43,6 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
-ClassImp(LauKMatrixPropagator)
 
 LauKMatrixPropagator::LauKMatrixPropagator(const TString& name, const TString& paramFile, 
 						Int_t resPairAmpInt, Int_t nChannels,

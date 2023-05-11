@@ -36,7 +36,6 @@ using std::endl;
 #include "LauIntegrals.hh"
 
 
-ClassImp(LauIntegrals)
 
 
 LauIntegrals::LauIntegrals(Double_t weightsPrecision) :

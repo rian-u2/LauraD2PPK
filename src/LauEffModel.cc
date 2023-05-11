@@ -37,7 +37,6 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauVetoes.hh"
 
-ClassImp(LauEffModel)
 
 
 LauEffModel::LauEffModel(const LauDaughters* daughters, const LauVetoes* vetoes) :

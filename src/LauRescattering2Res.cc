@@ -32,7 +32,6 @@ Thomas Latham
 #include "LauRescattering2Res.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauRescattering2Res)
 
 LauRescattering2Res::LauRescattering2Res(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsResonance(resInfo, resPairAmpInt, daughters),

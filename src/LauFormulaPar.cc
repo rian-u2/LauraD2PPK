@@ -39,7 +39,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauRandom.hh"
 
-ClassImp(LauFormulaPar)
 
 
 LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, const std::vector<LauParameter*>& params) :

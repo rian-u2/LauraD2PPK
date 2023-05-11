@@ -254,7 +254,6 @@ class LauPolarGammaCPCoeffSet : public LauAbsCoeffSet {
 		//! The CP asymmetry
 		LauParameter acp_;
 
-		ClassDef(LauPolarGammaCPCoeffSet, 0)
 };
 
 #endif

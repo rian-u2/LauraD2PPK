@@ -121,6 +121,5 @@ class LauResultsExtractor
 		//! Histograms of the NLL values for each experiment
 		std::map< Int_t, TH1* > nllHistos_;
 
-		ClassDef(LauResultsExtractor,0)
 };
 

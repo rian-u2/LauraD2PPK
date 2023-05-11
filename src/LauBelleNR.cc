@@ -35,7 +35,6 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauBelleNR)
 
 
 LauBelleNR::LauBelleNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType,

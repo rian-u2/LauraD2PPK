@@ -37,7 +37,6 @@ Thomas Latham
 
 #include "LauFitDataTree.hh"
 
-ClassImp(LauFitDataTree)
 
 
 LauFitDataTree::LauFitDataTree(const TString& rootFileName, const TString& rootTreeName) :

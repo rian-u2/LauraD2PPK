@@ -50,7 +50,6 @@ Thomas Latham
 
 #include "LauChebychevPdf.hh"
 
-ClassImp(LauChebychevPdf)
 
 LauChebychevPdf::LauChebychevPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),

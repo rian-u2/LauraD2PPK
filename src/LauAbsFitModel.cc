@@ -47,7 +47,6 @@ Thomas Latham
 #include "LauPrint.hh"
 #include "LauSPlot.hh"
 
-ClassImp(LauAbsFitModel)
 
 
 LauAbsFitModel::LauAbsFitModel() :

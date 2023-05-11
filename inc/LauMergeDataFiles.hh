@@ -122,6 +122,5 @@ class LauMergeDataFiles
 		//! Experiment -> first and last tree entry for tree 2
 		ExptsMap tree2Expts_;
 
-		ClassDef(LauMergeDataFiles,0)
 };
 

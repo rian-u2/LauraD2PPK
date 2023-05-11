@@ -30,7 +30,6 @@ Thomas Latham
 #include "LauDaughters.hh"
 #include "LauResonanceInfo.hh"
 
-ClassImp(LauAbsIncohRes)
 
 
 // Constructor

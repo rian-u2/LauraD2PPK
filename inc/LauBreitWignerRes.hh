@@ -86,7 +86,6 @@ class LauBreitWignerRes : public LauAbsResonance {
 		//! Copy assignment operator (not implemented)
 		LauBreitWignerRes& operator=(const LauBreitWignerRes& rhs);
 
-		ClassDef(LauBreitWignerRes,0) // Breit-Wigner resonance model
 
 };
 

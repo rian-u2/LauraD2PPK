@@ -42,7 +42,6 @@ Thomas Latham
 #include "LauSimFitTask.hh"
 #include "LauRooFitTask.hh"
 
-ClassImp(LauRooFitTask)
 
 
 LauRooFitTask::LauRooFitTask( RooAbsPdf& model, const Bool_t extended, const RooArgSet& vars, const TString& weightVarName ) :

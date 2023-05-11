@@ -38,7 +38,6 @@ using std::endl;
 #include "LauNovosibirskPdf.hh"
 #include "LauConstants.hh"
 
-ClassImp(LauNovosibirskPdf)
 
 LauNovosibirskPdf::LauNovosibirskPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),

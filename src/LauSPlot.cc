@@ -57,7 +57,6 @@ using std::vector;
 
 extern void Yields(Int_t &, Double_t *, Double_t &f, Double_t *x, Int_t iflag);
 
-ClassImp(LauSPlot)
 
 
 LauSPlot::LauSPlot(const TString& fileName, const TString& treeName,

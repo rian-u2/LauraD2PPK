@@ -768,7 +768,7 @@ class LauAbsFitModel : public LauSimFitTask {
 		//! Extra variables that aren't in the fit but are stored in the ntuple
 		LauParameterList extraVars_;
 
-		//! Internal vectors of Gaussian  parameters
+		//! Internal vectors of Gaussian parameters
 		LauAbsRValuePList conVars_;
 
 		// Input data and output ntuple

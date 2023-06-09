@@ -34,6 +34,7 @@ Thomas Latham
 #include "TMatrixD.h"
 #include "TObject.h"
 #include "TString.h"
+#include "TVectorD.h"
 
 #include "LauAbsFitter.hh"
 
@@ -135,6 +136,21 @@ class LauFitObject : public TObject {
 		*/	
 		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
+		//! Store n-dimensional constraint information for fit parameters
+		/*!
+			\param [in] pars a vector of LauParameter names to be used in the constraint
+			\param [in] means the values of the means of the Gaussian constraint 
+			\param [in] covMat the covariance matrix of the parameters of the Gaussian constraint 
+		*/	
+		virtual void addNDConstraint(const std::vector<TString>& pars, const TVectorD& means, const TMatrixD& covMat);
+
+		//! Check if parameters names for constraints have already been used elsewhere
+		/*!
+			\param [in] names a vector of parameter names
+			\return kTRUE if no repetitions found, kFALSE if one or more repetitions found
+		*/
+		virtual Bool_t checkRepetition(const std::vector<TString>& names);
+
 	protected:
 		//! Constructor
 		LauFitObject();
@@ -154,12 +170,36 @@ class LauFitObject : public TObject {
 		  	//! The width of the Gaussian constraint to be applied
 			Double_t width_;
 		};
+		
+		// Setup a struct to store information on n-dimensional constrained fit parameters
+		/*!
+		  \struct StoreNDConstraints
+		  \brief Struct to store n-dimensional constraint information until the fit is run
+		*/ 
+		struct StoreNDConstraints {
+		  	//! The list of LauParameter names to be used in the constraint
+			std::vector<TString> conPars_;
+		  	//! The mean value of the Gaussian constraints to be applied
+			TVectorD means_;
+		  	//! The inverse covariance matrix of the parameters of the Gaussian constraint to be applied
+			TMatrixD invCovMat_;
+			//! The LauParameters used in the constraints
+			std::vector<LauParameter*> conLauPars_;
+			//! The values of the LauParameters
+			TVectorD values_;
+		};
 
 		//! Const access to the constraints store
 		const std::vector<StoreConstraints>& constraintsStore() const {return storeCon_;}
 
 		//! Access to the constraints store
 		std::vector<StoreConstraints>& constraintsStore() {return storeCon_;}
+
+		//! Const access to the ND constraints store
+		const std::vector<StoreNDConstraints>& NDConstraintsStore() const {return storeNDCon_;}
+
+		//! Access to the ND constraints store
+		std::vector<StoreNDConstraints>& NDConstraintsStore() {return storeNDCon_;}
 
 		//! Reset the good/bad fit counters
 		void resetFitCounters();
@@ -233,6 +273,9 @@ class LauFitObject : public TObject {
 		//! Store the constraints for fit parameters until initialisation is complete
 		std::vector<StoreConstraints> storeCon_;
 
+		//! Store the ND constraints for fit parameters until initialisation is complete
+		std::vector<StoreNDConstraints> storeNDCon_;
+
 		//! Option to perform a two stage fit
 		Bool_t twoStageFit_; 
 
@@ -279,4 +322,3 @@ class LauFitObject : public TObject {
 };
 
 #endif
-

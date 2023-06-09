@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+9th June 2023 Mark Whitehead
+* Added functionality to include n-dimensional Gaussian constraints
+  - see https://phab.hepforge.org/T214
+
 21st November 2022 Andy Morris
 * Use Minuit to automatically determine ASq max for signal in LauIsobarDynamics
   - see https://phab.hepforge.org/D85

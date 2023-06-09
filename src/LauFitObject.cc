@@ -26,6 +26,11 @@ Thomas Latham
     \brief File containing implementation of LauFitObject class.
 */
 
+#include <iostream>
+
+#include "TMatrixD.h"
+#include "TSystem.h"
+#include "TVectorD.h"
 
 #include "LauFitObject.hh"
 
@@ -90,6 +95,11 @@ void LauFitObject::storeFitStatus( const LauAbsFitter::FitStatus& status, const 
 
 void LauFitObject::addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width)
 {
+	if ( ! this->checkRepetition(pars) ){
+		std::cerr << "ERROR in LauFitObject::addConstraint : Parameter(s) added to multiple constraints!" << std::endl;
+		gSystem->Exit( EXIT_FAILURE );
+	}
+
 	StoreConstraints newCon;
 	newCon.formula_ = formula;
 	newCon.conPars_ = pars;
@@ -97,5 +107,70 @@ void LauFitObject::addConstraint(const TString& formula, const std::vector<TStri
 	newCon.width_ = width;
 
 	storeCon_.push_back(newCon);
+	
+	std::cout << "INFO in LauFitObject::addConstraint : Added formula to constrain" << std::endl;
 }
 
+void LauFitObject::addNDConstraint( const std::vector<TString>& pars, const TVectorD& means, const TMatrixD& covMat)
+{
+	if ( covMat.GetNcols() != covMat.GetNrows() ){
+		std::cerr << "ERROR in LauFitObject::addNDConstraint : Covariance matrix is not square!" << std::endl;
+		gSystem->Exit( EXIT_FAILURE );
+	}
+
+	if ( ( pars.size() != static_cast<std::size_t>(means.GetNrows()) ) || ( pars.size() != static_cast<std::size_t>(covMat.GetNcols()) ) ){
+		std::cerr << "ERROR in LauFitObject::addNDConstraint : Different number of elements in vectors/covariance matrix!" << std::endl; 
+		gSystem->Exit( EXIT_FAILURE );
+	}
+
+	if ( ! this->checkRepetition(pars) ){
+		std::cerr << "ERROR in LauFitObject::addNDConstraint : Parameter(s) added to multiple constraints!" << std::endl;
+		gSystem->Exit( EXIT_FAILURE );
+	}
+
+	TMatrixD invCovMat {TMatrixD::kInverted, covMat};
+	// Check invertion was successful
+	if ( invCovMat == covMat ){
+		std::cerr << "ERROR in LauFitObject::addNDConstraint : covariance matrix inversion failed, check your input!" << std::endl; 
+		gSystem->Exit( EXIT_FAILURE );
+	}
+
+	TVectorD values(means.GetNrows());
+	StoreNDConstraints newCon { pars, means, invCovMat, {}, values };
+	storeNDCon_.emplace_back( newCon );
+
+	std::cout << "INFO in LauFitObject::addNDConstraint : Added list of parameters to constrain" << std::endl;
+}
+
+Bool_t LauFitObject::checkRepetition( const std::vector<TString>& names )
+{
+	Bool_t allOK(kTRUE);
+
+	if ( storeCon_.size()==0 && storeNDCon_.size()==0  ) {
+		return allOK;
+	}
+
+	//Check in formula constraints	
+	for ( auto& constraint : storeCon_ ){
+		for ( auto& parname : constraint.conPars_ ){
+			for ( auto& newname : names ){
+				if ( parname == newname ){
+					std::cerr << "WARNING in LauFitObject::checkRepetition: named parameter " << newname << " already used in a constraint" << std::endl;
+					allOK = kFALSE;
+				}
+			}
+		}
+	}	 	
+	//Check in ND constraints	
+	for ( auto& constraint : storeNDCon_ ){
+		for ( auto& parname : constraint.conPars_ ){
+			for ( auto& newname : names ){
+				if ( parname == newname ){
+					std::cerr << "WARNING in LauFitObject::checkRepetition: named parameter " << newname << " already used in a constraint" << std::endl;
+					allOK = kFALSE;
+				}
+			}
+		}
+	}	 
+	return allOK;	
+}

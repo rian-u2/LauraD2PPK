@@ -744,7 +744,8 @@ Double_t LauAbsFitModel::getTotNegLogLikelihood()
 	}
 
 	// Calculate any penalty terms from Gaussian constrained variables
-	if ( ! conVars_.empty() ){
+	const std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
+	if ( ! conVars_.empty() || ! storeNDCon.empty() ){
 		logLike -= this->getLogLikelihoodPenalty();
 	}
 
@@ -756,13 +757,25 @@ Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 {
 	Double_t penalty(0.0);
 
-	for ( LauAbsRValuePList::const_iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter ) {
-		Double_t val = (*iter)->unblindValue();
-		Double_t mean = (*iter)->constraintMean();
-		Double_t width = (*iter)->constraintWidth();
+	for ( LauAbsRValue* par : conVars_ ) {
+		Double_t val = par->unblindValue();
+		Double_t mean = par->constraintMean();
+		Double_t width = par->constraintWidth();
 
 		Double_t term = ( val - mean )*( val - mean );
 		penalty += term/( 2*width*width );
+	}
+
+	std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
+	for ( ULong_t i = 0; i<storeNDCon.size(); ++i ){
+		LauParameterPList& params = storeNDCon[i].conLauPars_;
+
+		for ( ULong_t j = 0; j<params.size(); ++j ){
+			LauParameter* param = params[j];
+			storeNDCon[i].values_[j] = param->unblindValue();
+		}
+		TVectorD diff = storeNDCon[i].values_-storeNDCon[i].means_;
+		penalty += 0.5*storeNDCon[i].invCovMat_.Similarity(diff);
 	}
 
 	return penalty;
@@ -914,6 +927,26 @@ void LauAbsFitModel::addConParameters()
 		}
 	}
 
+	// Add n-dimensional constraints 
+	std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
+	for ( auto& constraint : storeNDCon ){
+		for ( auto& parname : constraint.conPars_ ){
+			for ( auto& fitPar : fitVars_ ){
+				if ( parname == fitPar->name() ){
+					// Check parameters do not have a 1D Gaussian constraint applied
+					if ( fitPar->gaussConstraint() ){
+						std::cerr << "ERROR in LauAbsFitModel::addConParameters: parameter in n-dimensional constraint already has a 1d constraint applied" << std::endl;
+						gSystem->Exit(EXIT_FAILURE);
+					}
+					constraint.conLauPars_.push_back(fitPar);
+				}
+			}
+		}
+		if ( constraint.conLauPars_.size() != constraint.conPars_.size() ){
+			std::cerr << "Error in LauAbsFitModel::addConParameters : Could not match parameter names for n-dimensional constraint" << std::endl;
+			gSystem->Exit(EXIT_FAILURE);
+		}
+	}
 }
 
 void LauAbsFitModel::updateFitParameters(LauPdfList& pdfList)

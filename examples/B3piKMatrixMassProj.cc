@@ -270,6 +270,7 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
     Bool_t fixNSigEvents = kTRUE;
     Int_t nExpt = 1;
     Int_t firstExpt = 0;
+    Bool_t isToy = kTRUE;
 
     LauIsobarDynamics* theSigModel = new LauIsobarDynamics(theDaughters, theEffModel);
     theSigModel->setASqMaxValue(aSqMaxValue);
@@ -337,7 +338,7 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
     LauParameter* signalEvents = new LauParameter("signalEvents", nSigEvents, -2.0*nSigEvents,
 						  2.0*nSigEvents, fixNSigEvents);
     fitModel->setNSigEvents(signalEvents);
-    fitModel->setNExpts(nExpt, firstExpt);
+    fitModel->setNExpts(nExpt, firstExpt, isToy);
 
     // Execute the generation/fit
     TString treeName("");

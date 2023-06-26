@@ -65,6 +65,7 @@ int main( int argc, char** argv )
 	Int_t iFit(0);
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
+	Bool_t isToy(kTRUE);
 	if ( command == "gen" ) {
 		if ( argc > 2 ) {
 			nExpt = atoi( argv[2] );
@@ -183,7 +184,7 @@ int main( int argc, char** argv )
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
-	fitModel->setNExpts( nExpt, firstExpt );
+	fitModel->setNExpts( nExpt, firstExpt, isToy );
 
 
 	// Set up a background model

@@ -74,6 +74,7 @@ int main( int argc, char** argv )
 	TString hostname("localhost");
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
+	Bool_t isToy(kTRUE);
 	if ( command == "gen" ) {
 		if ( argc > 3 ) {
 			nExpt = atoi( argv[3] );
@@ -178,7 +179,7 @@ int main( int argc, char** argv )
 
 	// Set the number of experiments to generate or fit and which
 	// experiment to start with
-	fitModel->setNExpts( nExpt, firstExpt );
+	fitModel->setNExpts( nExpt, firstExpt, isToy );
 
 	// Optionally load in continuum background DP model histogram
 	// (example syntax given in commented-out section)

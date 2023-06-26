@@ -239,17 +239,11 @@ class LauParameter : public TObject, public LauAbsRValue {
 		*/
 		inline Bool_t gaussConstraint() const {return gaussConstraint_;}
 
-		//! The mean of the Gaussian constraint
+		//! The penalty term from the Gaussian constraint
 		/*!
-		    \return the mean value of the Gaussian constraint
+		  \return the penalty term from the Gaussian constraint
 		*/
-		inline Double_t constraintMean() const {return constraintMean_;}
-
-		//! The width of the Gaussian constraint
-		/*!
-		    \return the width of the Gaussian constraint
-		*/
-		inline Double_t constraintWidth() const {return constraintWidth_;}
+		Double_t constraintPenalty() const;
 
 		//! The parameter global correlation coefficient
 		/*!
@@ -397,6 +391,9 @@ class LauParameter : public TObject, public LauAbsRValue {
 		//! Remove the Gaussian constraint
 		void removeGaussianConstraint();
 
+		//! Generate per-experiment constraint mean
+		void generateConstraintMean();
+
 		//! Blind the parameter
 		/*!
 		    See LauBlind documentation for details of blinding procedure
@@ -522,6 +519,8 @@ class LauParameter : public TObject, public LauAbsRValue {
 
 		//! Choice to use Gaussian constraint
 		Bool_t gaussConstraint_;
+		//! True mean of the Gaussian constraint
+		Double_t constraintTrueMean_;
 		//! Mean value of the Gaussian constraint
 		Double_t constraintMean_;
 		//! Width of the Gaussian constraint
@@ -547,7 +546,7 @@ class LauParameter : public TObject, public LauAbsRValue {
 		//! The blinding engine
 		LauBlind* blinder_;
 
-		ClassDef(LauParameter, 3)
+		ClassDef(LauParameter, 4)
 
 };
 

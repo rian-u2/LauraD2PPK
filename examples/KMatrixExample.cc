@@ -65,6 +65,7 @@ int main( int argc, char** argv )
 	Int_t iFit(0);
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
+	Bool_t isToy(kTRUE);
 	if ( command == "gen" ) {
 		if ( argc > 2 ) {
 			nExpt = atoi( argv[2] );
@@ -165,7 +166,7 @@ int main( int argc, char** argv )
 	Bool_t fixSigEvents = kTRUE;
 	LauParameter* nSig = new LauParameter("signalEvents",nSigEvents,-1.0*nSigEvents,2.0*nSigEvents,fixSigEvents);
 	fitModel->setNSigEvents(nSig);
-	fitModel->setNExpts(nExpt, firstExpt);
+	fitModel->setNExpts(nExpt, firstExpt, isToy);
 
 
 	// Configure various fit options

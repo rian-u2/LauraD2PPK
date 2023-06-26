@@ -67,6 +67,7 @@ int main( int argc, char** argv )
 	Int_t iFit(0);
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
+	Bool_t isToy(kTRUE);
 	if ( command == "gen" ) {
 		if ( argc > 2 ) {
 			nExpt = atoi( argv[2] );
@@ -140,7 +141,7 @@ int main( int argc, char** argv )
 	fitModel->setNSigEvents(nSig);
 	fitModel->setNBkgndEvents( nCombBkg );
 	fitModel->setNBkgndEvents( nPartBkg );
-	fitModel->setNExpts(nExpt, firstExpt);
+	fitModel->setNExpts(nExpt, firstExpt, isToy);
 
 	// Signal mB PDF parameter values
 	Double_t sig_mb_mean1_value      =  5.279;

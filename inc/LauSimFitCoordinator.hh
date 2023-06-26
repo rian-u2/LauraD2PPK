@@ -168,9 +168,6 @@ class LauSimFitCoordinator : public LauFitObject {
 		//! Copy assignment operator (not implemented)
 		LauSimFitCoordinator& operator=(const LauSimFitCoordinator& rhs);
 
-		//! Store the constraints for fit parameters until initialisation is complete
-		std::vector<StoreConstraints> storeCon_;
-
 		//! The number of tasks
 		const UInt_t nTasks_;
 

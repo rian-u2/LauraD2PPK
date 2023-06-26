@@ -32,8 +32,6 @@ Thomas Latham
 
 #include "TMessage.h"
 #include "TMonitor.h"
-#include "TServerSocket.h"
-#include "TSocket.h"
 #include "TSystem.h"
 #include "TVirtualFitter.h"
 
@@ -89,14 +87,6 @@ LauAbsFitModel::~LauAbsFitModel()
 	delete inputFitData_; inputFitData_ = 0;
 	delete genNtuple_; genNtuple_ = 0;
 	delete sPlotNtuple_; sPlotNtuple_ = 0;
-
-	// Remove the components created to apply constraints to fit parameters
-	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
-		if ( !(*iter)->isLValue() ){
-			delete (*iter);
-			(*iter) = 0;
-		}
-	}
 }
 
 void LauAbsFitModel::run(const TString& applicationCode, const TString& dataFileName, const TString& dataTreeName,
@@ -467,6 +457,9 @@ void LauAbsFitModel::fit(const TString& dataFileName, const TString& dataTreeNam
 			this->cacheInputSWeights();
 		}
 
+		// If we're fitting toy experiments then re-generate the means of any constraints
+		this->generateConstraintMeans( conVars_ );
+
 		// Do the fit for this experiment
 		this->fitExpt();
 
@@ -631,6 +624,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 	const UInt_t oldNExpt(this->nExpt());
 	const UInt_t oldFirstExpt(this->firstExpt());
 	const UInt_t oldIExpt(this->iExpt());
+	const Bool_t oldToyExpt(this->toyExpts());
 
 	// Turn off Poisson smearing if required
 	const Bool_t poissonSmearing(this->doPoissonSmearing());
@@ -692,7 +686,7 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 
 			// Set number of experiments and first experiment to generate
 			UInt_t nExp = ((firstExp + 100)>totalExpts) ? totalExpts-firstExp : 100;
-			this->setNExpts(nExp, firstExp);
+			this->setNExpts(nExp, firstExp, kTRUE);
 
 			// Create a unique filename and generate the events
 			fileName = fileNameBase;
@@ -703,13 +697,13 @@ void LauAbsFitModel::createFitToyMC(const TString& mcFileName, const TString& ta
 		}
 	} else {
 		// Set number of experiments to new value
-		this->setNExpts(fitToyMCScale_, 0);
+		this->setNExpts(fitToyMCScale_, 0, kTRUE);
 		// Generate the toy
 		this->generate(fileName, "genResults", "dummy.root", tableFileName);
 	}
 
 	// Reset number of experiments to original value
-	this->setNExpts(oldNExpt, oldFirstExpt);
+	this->setNExpts(oldNExpt, oldFirstExpt, oldToyExpt);
 	this->setCurrentExperiment(oldIExpt);
 
 	// Restore the Poisson smearing to its former value
@@ -744,8 +738,8 @@ Double_t LauAbsFitModel::getTotNegLogLikelihood()
 	}
 
 	// Calculate any penalty terms from Gaussian constrained variables
-	const std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
-	if ( ! conVars_.empty() || ! storeNDCon.empty() ){
+	const auto& multiDimCons = this->multiDimConstraints();
+	if ( ! conVars_.empty() || ! multiDimCons.empty() ){
 		logLike -= this->getLogLikelihoodPenalty();
 	}
 
@@ -755,27 +749,15 @@ Double_t LauAbsFitModel::getTotNegLogLikelihood()
 
 Double_t LauAbsFitModel::getLogLikelihoodPenalty()
 {
-	Double_t penalty(0.0);
+	Double_t penalty{0.0};
 
 	for ( LauAbsRValue* par : conVars_ ) {
-		Double_t val = par->unblindValue();
-		Double_t mean = par->constraintMean();
-		Double_t width = par->constraintWidth();
-
-		Double_t term = ( val - mean )*( val - mean );
-		penalty += term/( 2*width*width );
+		penalty += par->constraintPenalty();
 	}
 
-	std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
-	for ( ULong_t i = 0; i<storeNDCon.size(); ++i ){
-		LauParameterPList& params = storeNDCon[i].conLauPars_;
-
-		for ( ULong_t j = 0; j<params.size(); ++j ){
-			LauParameter* param = params[j];
-			storeNDCon[i].values_[j] = param->unblindValue();
-		}
-		TVectorD diff = storeNDCon[i].values_-storeNDCon[i].means_;
-		penalty += 0.5*storeNDCon[i].invCovMat_.Similarity(diff);
+	auto& multiDimCons = this->multiDimConstraints();
+	for ( auto& constraint : multiDimCons ) {
+		penalty += constraint.constraintPenalty();
 	}
 
 	return penalty;
@@ -890,46 +872,49 @@ UInt_t LauAbsFitModel::addFitParameters(LauPdfList& pdfList)
 
 void LauAbsFitModel::addConParameters()
 {
-	for ( LauParameterPList::const_iterator iter = fitVars_.begin(); iter != fitVars_.end(); ++iter ) {
-		if ( (*iter)->gaussConstraint() ) {
-			conVars_.push_back( *iter );
-			std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+	// Add penalties from the constraints to fit parameters
+
+	// First, constraints on the fit parameters themselves
+	for ( LauParameter* param : fitVars_ ) {
+		if ( param->gaussConstraint() ) {
+			conVars_.push_back( param );
+			std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to parameter "<< param->name() << std::endl;
 		}
 	}
 
-	// Add penalties from the constraints to fit parameters
-	const std::vector<StoreConstraints>& storeCon = this->constraintsStore();
-	for ( std::vector<StoreConstraints>::const_iterator iter = storeCon.begin(); iter != storeCon.end(); ++iter ) {
-		const std::vector<TString>& names = (*iter).conPars_;
+	// Second, constraints on arbitrary combinations
+	auto& conStore = this->formulaConstraints();
+	for ( auto& constraint : conStore ) {
 		std::vector<LauParameter*> params;
-		for ( std::vector<TString>::const_iterator iternames = names.begin(); iternames != names.end(); ++iternames ) {
-			for ( LauParameterPList::const_iterator iterfit = fitVars_.begin(); iterfit != fitVars_.end(); ++iterfit ) {
-				if ( (*iternames) == (*iterfit)->name() ){
-					params.push_back(*iterfit);
+		for ( const auto& name : constraint.conPars_ ) {
+			for ( LauParameter* par : fitVars_ ) {
+				if ( par->name() == name ){
+					params.push_back( par );
 				}
 			}
 		}
 
 		// If the parameters are not found, skip it
-		if ( params.size() != (*iter).conPars_.size() ) {
+		if ( params.size() != constraint.conPars_.size() ) {
 			std::cerr << "WARNING in LauAbsFitModel::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
 			continue;
 		}
 
-		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_, (*iter).formula_, params );
-		formPar->addGaussianConstraint( (*iter).mean_, (*iter).width_ );
-		conVars_.push_back(formPar);
+		constraint.formulaPar_ = std::make_unique<LauFormulaPar>( constraint.formula_, constraint.formula_, params );
+		constraint.formulaPar_->addGaussianConstraint( constraint.mean_, constraint.width_ );
+
+		conVars_.push_back( constraint.formulaPar_.get() );
 
 		std::cout << "INFO in LauAbsFitModel::addConParameters : Added Gaussian constraint to formula\n";
-		std::cout << "                                         : Formula: " << (*iter).formula_ << std::endl;
-		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
-			std::cout << "                                         : Parameter: " << (*iterparam)->name() << std::endl;
+		std::cout << "                                         : Formula: " << constraint.formula_ << std::endl;
+		for ( LauParameter* param : params ) {
+			std::cout << "                                         : Parameter: " << param->name() << std::endl;
 		}
 	}
 
 	// Add n-dimensional constraints 
-	std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
-	for ( auto& constraint : storeNDCon ){
+	auto& multiDimCons = this->multiDimConstraints();
+	for ( auto& constraint : multiDimCons ){
 		for ( auto& parname : constraint.conPars_ ){
 			for ( auto& fitPar : fitVars_ ){
 				if ( parname == fitPar->name() ){

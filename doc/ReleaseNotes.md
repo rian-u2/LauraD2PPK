@@ -1,5 +1,9 @@
 # Laura++ release notes
 
+22nd June 2023 Thomas Latham
+* Added functionality to properly manage Gaussian constraints in toy generation
+  - see https://phab.hepforge.org/T45
+
 9th June 2023 Mark Whitehead
 * Added functionality to include n-dimensional Gaussian constraints
   - see https://phab.hepforge.org/T214

@@ -132,17 +132,11 @@ class LauFormulaPar : public LauAbsRValue {
 		*/
 		inline Bool_t gaussConstraint() const {return gaussConstraint_;}
 
-		//! The mean of the Gaussian constraint
+		//! The penalty term from the Gaussian constraint
 		/*!
-		  \return the mean value of the Gaussian constraint
+		  \return the penalty term from the Gaussian constraint
 		*/
-		inline Double_t constraintMean() const {return constraintMean_;}
-
-		//! The width of the Gaussian constraint
-		/*!
-		  \return the width of the Gaussian constraint
-		*/
-		inline Double_t constraintWidth() const {return constraintWidth_;}
+		Double_t constraintPenalty() const;
 
 		//! Add a Gaussian constraint (or modify an existing one)
 		/*!
@@ -153,6 +147,9 @@ class LauFormulaPar : public LauAbsRValue {
 
 		//! Remove the Gaussian constraint
 		void removeGaussianConstraint();
+
+		//! Generate per-experiment constraint mean
+		void generateConstraintMean();
 
 	protected:
 
@@ -171,6 +168,8 @@ class LauFormulaPar : public LauAbsRValue {
 
 		//! Choice to use Gaussian constraint
 		Bool_t gaussConstraint_;
+		//! True mean of the Gaussian constraint
+		Double_t constraintTrueMean_;
 		//! Mean value of the Gaussian constraint
 		Double_t constraintMean_;
 		//! Width of the Gaussian constraint

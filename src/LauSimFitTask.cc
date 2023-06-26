@@ -75,7 +75,7 @@ void LauSimFitTask::runTask(const TString& dataFileName, const TString& dataTree
 	// LauAbsFitModel::run() since this has to be dealt with by the coordinator
 	// to avoid multiple inclusions of each penalty term
 	// Print a warning if constraints on combinations of parameters have been specified
-	const std::vector<StoreConstraints>& storeCon = this->constraintsStore();
+	const auto& storeCon = this->formulaConstraints();
 	if ( ! storeCon.empty() ) {
 		std::cerr << "WARNING in LauSimFitTask::runTask : Constraints have been added but these will be ignored - they should have been added to the coordinator process" << std::endl;
 	}

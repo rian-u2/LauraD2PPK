@@ -37,6 +37,7 @@ Thomas Latham
 #include "TVectorD.h"
 
 #include "LauAbsFitter.hh"
+#include "LauFormulaPar.hh"
 
 /*! \class LauFitObject
     \brief The abstract interface for the objects that control the calculation of the likelihood.
@@ -88,15 +89,17 @@ class LauFitObject : public TObject {
 		*/
 		Bool_t withinAsymErrorCalc() const {return withinAsymErrorCalc_;}
 
-		//! Set the number of experiments and the first experiment
+		//! Set the number of experiments, the first experiment, and whether this is toy
 		/*!
+			The default settings are nExperiments = 1, firstExperiment = 0, toyExpts = kFALSE,
+			i.e. the settings for fitting a single data sample.
+			As such, this function only needs to be called if generating/fitting toy samples.
+
 			\param [in] nExperiments the number of experiments
 			\param [in] firstExperiment the number of the first experiment
+			\param [in] toyExpts whether this is toy - determines whether to generate per-experiment means for each Gaussian constraint, as per arXiv:1210.7141
 		*/	
-		void setNExpts(UInt_t nExperiments, UInt_t firstExperiment = 0) {
-			nExpt_ = nExperiments;
-			firstExpt_ = firstExperiment;
-		}
+		void setNExpts(UInt_t nExperiments, UInt_t firstExperiment, Bool_t toyExpts);
 
 		//! Obtain the total number of events in the current experiment
 		UInt_t eventsPerExpt() const {return evtsPerExpt_;}
@@ -109,6 +112,9 @@ class LauFitObject : public TObject {
 
 		//! Obtain the number of the current experiment
 		UInt_t iExpt() const {return iExpt_;}
+
+		//! Obtain whether this is toy
+		Bool_t toyExpts() const {return toyExpts_;}
 
 		//! This function sets the parameter values from Minuit
 		/*! 
@@ -129,20 +135,31 @@ class LauFitObject : public TObject {
 
 		//! Store constraint information for fit parameters
 		/*!
+			\deprecated Renamed to addFormulaConstraint, please switch to use this.  Will be dropped in next major release.
+
 			\param [in] formula the formula to be used in the LauFormulaPar
 			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
-			\param [in] mean the value of the mean of the Gaussian constraint 
-			\param [in] width the value of the width of the Gaussian constraint 
-		*/	
+			\param [in] mean the value of the mean of the Gaussian constraint
+			\param [in] width the value of the width of the Gaussian constraint
+		*/
 		virtual void addConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
+
+		//! Store constraint information for fit parameters
+		/*!
+			\param [in] formula the formula to be used in the LauFormulaPar
+			\param [in] pars a vector of LauParameter names to be used in the Formula, in the order specified by the formula
+			\param [in] mean the value of the mean of the Gaussian constraint
+			\param [in] width the value of the width of the Gaussian constraint
+		*/
+		virtual void addFormulaConstraint(const TString& formula, const std::vector<TString>& pars, const Double_t mean, const Double_t width);
 
 		//! Store n-dimensional constraint information for fit parameters
 		/*!
 			\param [in] pars a vector of LauParameter names to be used in the constraint
-			\param [in] means the values of the means of the Gaussian constraint 
-			\param [in] covMat the covariance matrix of the parameters of the Gaussian constraint 
-		*/	
-		virtual void addNDConstraint(const std::vector<TString>& pars, const TVectorD& means, const TMatrixD& covMat);
+			\param [in] means the values of the means of the Gaussian constraint
+			\param [in] covMat the covariance matrix of the parameters of the Gaussian constraint
+		*/
+		virtual void addMultiDimConstraint(const std::vector<TString>& pars, const TVectorD& means, const TMatrixD& covMat);
 
 		//! Check if parameters names for constraints have already been used elsewhere
 		/*!
@@ -157,10 +174,10 @@ class LauFitObject : public TObject {
 
 		// Setup a struct to store information on constrained fit parameters
 		/*!
-		  \struct StoreConstraints
-		  \brief Struct to store constraint information until the fit is run
-		*/ 
-		struct StoreConstraints {
+		  \struct FormulaConstraint
+		  \brief Struct to store formula-based constraint information
+		*/
+		struct FormulaConstraint {
 		  	//! The formula to be used in the LauFormulaPar
 			TString formula_;
 		  	//! The list of LauParameter names to be used in the LauFormulaPar
@@ -169,37 +186,66 @@ class LauFitObject : public TObject {
 			Double_t mean_;
 		  	//! The width of the Gaussian constraint to be applied
 			Double_t width_;
+			//! The LauFormulaPar pointer
+			std::unique_ptr<LauFormulaPar> formulaPar_;
 		};
-		
-		// Setup a struct to store information on n-dimensional constrained fit parameters
+
+		// Setup a class to store information on n-dimensional constrained fit parameters
 		/*!
-		  \struct StoreNDConstraints
-		  \brief Struct to store n-dimensional constraint information until the fit is run
-		*/ 
-		struct StoreNDConstraints {
-		  	//! The list of LauParameter names to be used in the constraint
-			std::vector<TString> conPars_;
-		  	//! The mean value of the Gaussian constraints to be applied
-			TVectorD means_;
-		  	//! The inverse covariance matrix of the parameters of the Gaussian constraint to be applied
-			TMatrixD invCovMat_;
-			//! The LauParameters used in the constraints
-			std::vector<LauParameter*> conLauPars_;
-			//! The values of the LauParameters
-			TVectorD values_;
+		  \class MultiDimConstraint
+		  \brief Class to store n-dimensional constraint information
+		*/
+		class MultiDimConstraint {
+			public:
+				//! Default constructor
+				MultiDimConstraint() = default;
+
+				//! Constructor
+				MultiDimConstraint( const std::vector<TString>& parNames, const TVectorD& means, const TMatrixD& covMat );
+
+				//! Get the penalty term
+				Double_t constraintPenalty() const;
+
+				//! Generate per-experiment constraint means
+				void generateConstraintMeans();
+
+		  		//! The list of LauParameter names to be used in the constraint
+				std::vector<TString> conPars_;
+		  		//! The true mean values of the constraint
+				TVectorD trueMeans_;
+		  		//! The per-experiment mean values of the constraint
+				TVectorD means_;
+		  		//! The inverse covariance matrix of the parameters
+				TMatrixD invCovMat_;
+		  		//! The Cholesky Decomposition of the covariance matrix of the parameters
+				TMatrixD sqrtCovMat_;
+				//! The LauParameters used in the constraints
+				std::vector<LauParameter*> conLauPars_;
 		};
+
+		//! Generate per-experiment mean for each Gaussian constraint
+		/*!
+			Generates a new mean for all Gaussian constraints.
+			The constraints on a single fit parameter and the
+			formula-based constraints are provided as the argument,
+			while the multi-dimensional constraints are already a
+			member variable.
+
+			\param [in,out] conVars the fit parameter and formula-based constraints
+		*/
+		void generateConstraintMeans( std::vector<LauAbsRValue*>& conVars );
 
 		//! Const access to the constraints store
-		const std::vector<StoreConstraints>& constraintsStore() const {return storeCon_;}
+		const std::vector<FormulaConstraint>& formulaConstraints() const {return formulaConstraints_;}
 
 		//! Access to the constraints store
-		std::vector<StoreConstraints>& constraintsStore() {return storeCon_;}
+		std::vector<FormulaConstraint>& formulaConstraints() {return formulaConstraints_;}
 
 		//! Const access to the ND constraints store
-		const std::vector<StoreNDConstraints>& NDConstraintsStore() const {return storeNDCon_;}
+		const std::vector<MultiDimConstraint>& multiDimConstraints() const {return multiDimConstraints_;}
 
 		//! Access to the ND constraints store
-		std::vector<StoreNDConstraints>& NDConstraintsStore() {return storeNDCon_;}
+		std::vector<MultiDimConstraint>& multiDimConstraints() {return multiDimConstraints_;}
 
 		//! Reset the good/bad fit counters
 		void resetFitCounters();
@@ -271,10 +317,10 @@ class LauFitObject : public TObject {
 		LauFitObject& operator=(const LauFitObject& rhs);
 
 		//! Store the constraints for fit parameters until initialisation is complete
-		std::vector<StoreConstraints> storeCon_;
+		std::vector<FormulaConstraint> formulaConstraints_;
 
 		//! Store the ND constraints for fit parameters until initialisation is complete
-		std::vector<StoreNDConstraints> storeNDCon_;
+		std::vector<MultiDimConstraint> multiDimConstraints_;
 
 		//! Option to perform a two stage fit
 		Bool_t twoStageFit_; 
@@ -290,6 +336,10 @@ class LauFitObject : public TObject {
 
 		//! Flag to indicate if the asymmetric error calculation (e.g. MINOS) is currently running
 		Bool_t withinAsymErrorCalc_;
+
+		//! Flag to indicate whether this is toy
+		/*! Determines whether to generate per-experiment means for each Gaussian constraint, as per arXiv:1210.7141 */
+		Bool_t toyExpts_;
 
 		//! The number of the first experiment to consider 
 		UInt_t firstExpt_; 

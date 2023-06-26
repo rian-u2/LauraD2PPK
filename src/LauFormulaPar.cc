@@ -48,6 +48,7 @@ LauFormulaPar::LauFormulaPar(const TString& forName, const TString& formula, con
 	paramVec_(params),
 	paramArray_(nullptr),
 	gaussConstraint_(kFALSE),
+	constraintTrueMean_(0.0),
 	constraintMean_(0.0),
 	constraintWidth_(0.0)
 {
@@ -78,6 +79,7 @@ LauFormulaPar::LauFormulaPar(const LauFormulaPar& rhs) : LauAbsRValue(rhs),
 	paramVec_(rhs.paramVec_),
 	paramArray_(nullptr),
 	gaussConstraint_(rhs.gaussConstraint_),
+	constraintTrueMean_(rhs.constraintTrueMean_),
 	constraintMean_(rhs.constraintMean_),
 	constraintWidth_(rhs.constraintWidth_)
 {
@@ -113,6 +115,7 @@ LauFormulaPar& LauFormulaPar::operator=(const LauFormulaPar& rhs)
 		}
 
 		gaussConstraint_ = rhs.gaussConstraint_;
+		constraintTrueMean_ = rhs.constraintTrueMean_;
 		constraintMean_ = rhs.constraintMean_;
 		constraintWidth_ = rhs.constraintWidth_;
 	}
@@ -186,6 +189,7 @@ Bool_t LauFormulaPar::blind() const
 void LauFormulaPar::addGaussianConstraint(Double_t newGaussMean, Double_t newGaussWidth)
 {
 	gaussConstraint_ = kTRUE;
+	constraintTrueMean_ = newGaussMean;
 	constraintMean_ = newGaussMean;
 	constraintWidth_ = newGaussWidth;
 }
@@ -193,5 +197,19 @@ void LauFormulaPar::addGaussianConstraint(Double_t newGaussMean, Double_t newGau
 void LauFormulaPar::removeGaussianConstraint()
 {
 	gaussConstraint_ = kFALSE;
+}
+
+void LauFormulaPar::generateConstraintMean()
+{
+	constraintMean_ = LauRandom::randomFun()->Gaus( constraintTrueMean_, constraintWidth_ );
+}
+
+Double_t LauFormulaPar::constraintPenalty() const
+{
+	const Double_t val { this->unblindValue() };
+	const Double_t diff { val - constraintMean_ };
+	const Double_t term { diff * diff };
+
+	return term / ( 2.0 * constraintWidth_ * constraintWidth_ );
 }
 

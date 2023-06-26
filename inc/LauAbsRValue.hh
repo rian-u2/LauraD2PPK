@@ -97,17 +97,14 @@ class LauAbsRValue {
 		*/
 		virtual Bool_t gaussConstraint() const =0;
 
-		//! The mean of the Gaussian constraint
+		//! The penalty term from the Gaussian constraint
 		/*!
-		  \return the mean value of the Gaussian constraint
+		  \return the penalty term from the Gaussian constraint
 		*/
-		virtual Double_t constraintMean() const =0;
+		virtual Double_t constraintPenalty() const =0;
 
-		//! The width of the Gaussian constraint
-		/*!
-		  \return the width of the Gaussian constraint
-		*/
-		virtual Double_t constraintWidth() const =0;
+		//! Generate per-experiment constraint mean
+		virtual void generateConstraintMean() =0;
 
 		//! Return the list of LauParameters on which the LauAbsRValue depends
 		/*!

@@ -80,15 +80,6 @@ LauSimFitCoordinator::~LauSimFitCoordinator()
 	}
 	socketTasks_.clear();
 
-	// Remove the components created to apply constraints to fit parameters
-	for (std::vector<LauAbsRValue*>::iterator iter = conVars_.begin(); iter != conVars_.end(); ++iter){
-		if ( !(*iter)->isLValue() ){
-			delete (*iter);
-			(*iter) = 0;
-		}
-	}
-	conVars_.clear();
-
 	// Remove all fit parameters
 	for ( std::vector<LauParameter*>::iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
 		delete *iter;
@@ -468,6 +459,9 @@ void LauSimFitCoordinator::runSimFit( const TString& fitNtupleFileName, const UI
 		// Instruct the tasks to perform the caching
 		this->cacheInputData();
 
+		// If we're fitting toy experiments then re-generate the means of any constraints
+		this->generateConstraintMeans( conVars_ );
+
 		// Do the fit
 		this->fitExpt();
 
@@ -756,7 +750,8 @@ Double_t LauSimFitCoordinator::getTotNegLogLikelihood()
 	} 
 
 	// Calculate any penalty terms from Gaussian constrained variables
-	if ( ! conVars_.empty() ){
+	const auto& multiDimCons = this->multiDimConstraints();
+	if ( ! conVars_.empty() || ! multiDimCons.empty() ){
 		negLogLike += this->getLogLikelihoodPenalty();
 	}
 
@@ -774,27 +769,15 @@ Double_t LauSimFitCoordinator::getTotNegLogLikelihood()
 
 Double_t LauSimFitCoordinator::getLogLikelihoodPenalty()
 {
-	Double_t penalty(0.0);
+	Double_t penalty{0.0};
 
 	for ( LauAbsRValue* par : conVars_ ) {
-		Double_t val = par->unblindValue();
-		Double_t mean = par->constraintMean();
-		Double_t width = par->constraintWidth();
-
-		Double_t term = ( val - mean )*( val - mean );
-		penalty += term/( 2*width*width );
+		penalty += par->constraintPenalty();
 	}
 
-	std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
-	for ( ULong_t i = 0; i<storeNDCon.size(); ++i ){
-		std::vector<LauParameter*>& params = storeNDCon[i].conLauPars_;
-
-		for ( ULong_t j = 0; j<params.size(); ++j ){
-			LauParameter* param = params[j];
-			storeNDCon[i].values_[j] = param->unblindValue();
-		}
-		TVectorD diff = storeNDCon[i].values_-storeNDCon[i].means_;
-		penalty += 0.5*storeNDCon[i].invCovMat_.Similarity(diff);
+	auto& multiDimCons = this->multiDimConstraints();
+	for ( auto& constraint : multiDimCons ) {
+		penalty += constraint.constraintPenalty();
 	}
 
 	return penalty;
@@ -805,46 +788,46 @@ void LauSimFitCoordinator::addConParameters()
 	// Add penalties from the constraints to fit parameters
 
 	// First, constraints on the fit parameters themselves
-	for ( std::vector<LauParameter*>::const_iterator iter = params_.begin(); iter != params_.end(); ++iter ) {
-		if ( (*iter)->gaussConstraint() ) {
-			conVars_.push_back( *iter );
-			std::cout << "INFO in LauSimFitCoordinator::addConParameters : Added Gaussian constraint to parameter "<< (*iter)->name() << std::endl;
+	for ( LauParameter* param : params_ ) {
+		if ( param->gaussConstraint() ) {
+			conVars_.push_back( param );
+			std::cout << "INFO in LauSimFitCoordinator::addConParameters : Added Gaussian constraint to parameter "<< param->name() << std::endl;
 		}
 	}
 
 	// Second, constraints on arbitrary combinations
-	const std::vector<StoreConstraints>& storeCon = this->constraintsStore();
-	for ( std::vector<StoreConstraints>::const_iterator iter = storeCon.begin(); iter != storeCon.end(); ++iter ) {
-		const std::vector<TString>& names = (*iter).conPars_;
+	auto& conStore = this->formulaConstraints();
+	for ( auto& constraint : conStore ) {
 		std::vector<LauParameter*> params;
-		for ( std::vector<TString>::const_iterator iternames = names.begin(); iternames != names.end(); ++iternames ) { 
-			for ( std::vector<LauParameter*>::const_iterator iterfit = params_.begin(); iterfit != params_.end(); ++iterfit ) {
-				if ( (*iternames) == (*iterfit)->name() ){
-					params.push_back(*iterfit);
+		for ( const auto& name : constraint.conPars_ ) {
+			for ( LauParameter* par : params_ ) {
+				if ( par->name() == name ){
+					params.push_back( par );
 				}
 			}
 		}
 
 		// If the parameters are not found, skip it
-		if ( params.size() != (*iter).conPars_.size() ) {
+		if ( params.size() != constraint.conPars_.size() ) {
 			std::cerr << "WARNING in LauSimFitCoordinator::addConParameters: Could not find parameters to constrain in the formula... skipping" << std::endl;
 			continue;
 		}
 
-		LauFormulaPar* formPar = new LauFormulaPar( (*iter).formula_, (*iter).formula_, params );
-		formPar->addGaussianConstraint( (*iter).mean_, (*iter).width_ );
-		conVars_.push_back(formPar);
+		constraint.formulaPar_ = std::make_unique<LauFormulaPar>( constraint.formula_, constraint.formula_, params );
+		constraint.formulaPar_->addGaussianConstraint( constraint.mean_, constraint.width_ );
+
+		conVars_.push_back( constraint.formulaPar_.get() );
 
 		std::cout << "INFO in LauSimFitCoordinator::addConParameters : Added Gaussian constraint to formula\n";
-		std::cout << "                                          : Formula: " << (*iter).formula_ << std::endl;
-		for ( std::vector<LauParameter*>::iterator iterparam = params.begin(); iterparam != params.end(); ++iterparam ) {
-			std::cout << "                                          : Parameter: " << (*iterparam)->name() << std::endl;
+		std::cout << "                                               : Formula: " << constraint.formula_ << std::endl;
+		for ( LauParameter* param : params ) {
+			std::cout << "                                               : Parameter: " << param->name() << std::endl;
 		}
 	}
 
-	// Add n-dimensional constraints 
-	std::vector<StoreNDConstraints>& storeNDCon = this->NDConstraintsStore();
-	for ( auto& constraint : storeNDCon ){
+	// Thirdly, add n-dimensional constraints 
+	auto& multiDimCons = this->multiDimConstraints();
+	for ( auto& constraint : multiDimCons ){
 		for ( auto& parname : constraint.conPars_ ){
 			for ( auto& fitPar : params_ ){
 				if ( parname == fitPar->name() ){

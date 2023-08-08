@@ -35,6 +35,9 @@ set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 # Control verbosity of the build
 set(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL "Control verbosity of generated Makefiles")
 
+# Control verbosity of the install - suppresses 'up-to-date' messages
+set(CMAKE_INSTALL_MESSAGE LAZY)
+
 # C++ standard settings
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard")

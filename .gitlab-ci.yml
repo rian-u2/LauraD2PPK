@@ -10,10 +10,19 @@ variables:
   BUILD_ROOFIT_TASK: "OFF"
   BUILD_DOCS: "OFF"
 
+.future_os_image:
+  variables:
+    LCG_OS: x86_64-el9
+    GCC_VERSION: "13"
+    CLANG_VERSION: "16"
+  image: gitlab-registry.cern.ch/lhcb-docker/os-base/alma9-devel:latest
+  tags:
+    - cvmfs
+
 .production_image:
   variables:
     LCG_OS: x86_64-centos7
-  image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
+  image: gitlab-registry.cern.ch/lhcb-docker/os-base/centos7-devel:latest
   tags:
     - cvmfs
 
@@ -73,7 +82,7 @@ build_dev3LCG_gcc_opt:
     LCG_COMPILER: "gcc$GCC_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
-    - .production_image
+    - .future_os_image
     - .build_template
   rules:
     - !reference [.dev_rules, rules]
@@ -84,7 +93,7 @@ build_dev4LCG_gcc_opt:
     LCG_COMPILER: "gcc$GCC_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
-    - .production_image
+    - .future_os_image
     - .build_template
   rules:
     - !reference [.dev_rules, rules]
@@ -95,7 +104,7 @@ build_dev3LCG_clang_opt:
     LCG_COMPILER: "clang$CLANG_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
-    - .production_image
+    - .future_os_image
     - .build_template
   rules:
     - !reference [.dev_rules, rules]
@@ -106,7 +115,7 @@ build_dev4LCG_clang_opt:
     LCG_COMPILER: "clang$CLANG_VERSION-opt"
     BUILD_ROOFIT_TASK: "ON"
   extends:
-    - .production_image
+    - .future_os_image
     - .build_template
   rules:
     - !reference [.dev_rules, rules]

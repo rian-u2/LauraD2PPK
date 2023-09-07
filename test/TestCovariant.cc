@@ -134,7 +134,7 @@ int main( int argc, char** argv )
 	// experiment to start with
 	Int_t nExpt(1);
 	Int_t firstExpt(0);
-	fitModel->setNExpts( nExpt, firstExpt );
+	fitModel->setNExpts( nExpt, firstExpt, kTRUE );
 
 	// Switch on/off calculation of asymmetric errors.
 	fitModel->useAsymmFitErrors(kFALSE);

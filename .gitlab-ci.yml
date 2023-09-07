@@ -1,4 +1,5 @@
 stages:
+  - checks
   - build
   - test
 
@@ -13,6 +14,7 @@ variables:
 .future_os_image:
   variables:
     LCG_OS: x86_64-el9
+    LCG_VERSION: "LCG_104"
     GCC_VERSION: "13"
     CLANG_VERSION: "16"
   image: gitlab-registry.cern.ch/lhcb-docker/os-base/alma9-devel:latest
@@ -29,6 +31,14 @@ variables:
 .lcg_setup:
   before_script:
     - set +e && source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh $LCG_VERSION $LCG_OS-$LCG_COMPILER; set -e
+
+.check_template:
+  stage: checks
+  variables:
+    LCG_COMPILER: "clang$CLANG_VERSION-opt"
+  extends:
+    - .future_os_image
+    - .lcg_setup
 
 .build_template:
   stage: build
@@ -47,6 +57,15 @@ variables:
       allow_failure: false
     - if: '$CI_PIPELINE_SOURCE == "push"'
       allow_failure: true
+
+#check_formatting:
+#  extends:
+#    - .check_template
+#  script:
+#    - bash applyFormatting.sh > /dev/null
+#    - git status --porcelain | grep '^ M' || exit 0
+#    - echo "The above files do not comply with formatting requirements"
+#    - exit 1
 
 build_clang_opt:
   variables:

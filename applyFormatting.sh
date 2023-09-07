@@ -25,3 +25,9 @@ find . \( -name "*.hh" -o -name "*.cc" -o -name "*.C" \) -exec clang-format -i '
 # fix comment sections in all source files (clang-format does not touch these)
 find . \( -name "*.hh" -o -name "*.cc" -o -name "*.C" \) -exec bash fix-comments.sh '{}' \;
 
+# remove tabs from CMake files
+find . \( -name CMakeLists.txt -o -name "*.cmake" \) -exec sed -i -e 's/\t/    /g' '{}' \;
+
+# remove trailing whitespace in all Markdown files
+find . -name "*.md" -exec sed -i -e 's/[[:space:]]\+$//' '{}' \;
+

@@ -243,7 +243,7 @@
 * Add note to README file about compilation issue on Ubuntu 16.04 LTS
 
 21st July 2017 Thomas Latham
-* Create public functions to update the kinematics based on one invariant mass and the corresponding helicity angle 
+* Create public functions to update the kinematics based on one invariant mass and the corresponding helicity angle
 
 20th June 2017 Daniel O'Hanlon
 * Terminate when asked to read a non-existent K-matrix parameter file
@@ -362,14 +362,14 @@
 
 25th August 2016 John Back
 * Modified LauRhoOmegaMix to allow either a RelBW or GS lineshape for the rho, as well as
-  allowing the option to set the second-order denominator term to be equal to unity. 
+  allowing the option to set the second-order denominator term to be equal to unity.
   Also fixed the bug where the spinTerm was not included in the rho-omega amplitude.
   Changed the LauAbsResonance enum from RhoOmegaMix to RhoOmegaMix_GS, RhoOmegaMix_RBW,
   RhoOmegaMix_GS_1 and RhoOmegaMix_RBW_1, where _1 sets the denominator term to unity and
   _GS or _RBW sets the appropriate rho lineshape. The omega is always a RelBW.
 
 * Added to LauAbsResonance: ignoreSpin and ignoreBarrierScaling boolean flags, which ignore
-  either the spin terms or the barrier scaling factors for the amplitude. The latter does not 
+  either the spin terms or the barrier scaling factors for the amplitude. The latter does not
   turn off the resonance barrier factor for mass-dependent widths
 
 * Added to LauResonanceMaker: getResInfo(resonanceName), which retrieves the resonance information.
@@ -440,7 +440,7 @@
 * Added LauBlind class for blinding and unblinding a value with an offset based on a blinding string
 
 26th May 2015 Daniel Craik
-* Stopped LauCPFitModel passing fixed signal/background yields or 
+* Stopped LauCPFitModel passing fixed signal/background yields or
   asymmetries to Minuit to avoid hitting limit of 101 fixed parameters
 
 22nd April 2015 Daniel Craik
@@ -460,12 +460,12 @@
 * Calculate effective masses for virtual resonances above the upper kinematic limit
 
 10th December 2014 Daniel Craik
-* Added coefficient sets to extract gamma from a simultaneous fit to CP and nonCP final states, 
+* Added coefficient sets to extract gamma from a simultaneous fit to CP and nonCP final states,
   such as the B0->D_CP K pi and B0->D0bar K pi Dalitz plots, as proposed in Phys. Rev. D79, 051301 (2009)
   - LauPolarGammaCPCoeffSet uses the CP parameters r, delta and gamma directly
   - LauRealImagGammaCPCoeffSet parameterises CPV as X_CP+/- and Y_CP+/-
   - LauCartesianGammaCPCoeffSet parameterises CPV as X_CP, Y_CP DeltaX_CP DeltaY_CP
-  - Fixed CP parameters are not passed to the fitter so the same coefficient sets can be used for both the 
+  - Fixed CP parameters are not passed to the fitter so the same coefficient sets can be used for both the
     CP and nonCP Dalitz plots
   - LauPolarGammaCPCoeffSet allows for a single gamma parameter to be shared between multiple resonances
   - LauAbsCoeffSet::adjustName made virtual to allow global variables such as gamma to not receive a prefix
@@ -492,7 +492,7 @@
 17th October 2014 John Back
 * Added the ability to calculate the transition amplitude matrix T in LauKMatrixPropagator,
   as well as a few other minor speed-up changes and code checks. Example/PlotKMatrixTAmp.cc
-  can be used to check the T amplitude variation, phase shift and inelasticity, for a given 
+  can be used to check the T amplitude variation, phase shift and inelasticity, for a given
   K matrix channel, as a function of the invariant mass squared variable s
 
 15th October 2014 Thomas Latham
@@ -724,7 +724,7 @@
 (in branch for release in v3r0)
 * Extended ability to float mass and width to other resonance lineshapes (Flatte, LASS and G-S)
 
-11th March 2014 Mark Whitehead 
+11th March 2014 Mark Whitehead
 (in branch for release in v2r1)
 * Added the functionality to make LauFormulaPars usable in fits
   - Added a new class LauAbsRValue which LauParameter and LauFormularPar inherit from
@@ -796,7 +796,7 @@
 27th January 2014 Daniel Craik
 * Added spline interpolation to DP backgrounds
   - Added Lau2DSplineDPPdf which uses a spline to model a normalised PDF across a DP
-  - Added pABC, Lau2DAbsDPPdf, for Lau2DHistDPPdf and Lau2DSplineDPPdf and moved common 
+  - Added pABC, Lau2DAbsDPPdf, for Lau2DHistDPPdf and Lau2DSplineDPPdf and moved common
     code in Lau2DHistDPPdf and Lau2DSplineDPPdf into ABC Lau2DAbsHistDPPdf
   - LauBkgndDPModel, modified to use Lau2DAbsDPPdf instead of Lau2DHistDPPdf
   - setBkgndSpline method added to LauBkgndDPModel to allow use of splines
@@ -814,11 +814,11 @@
 20th December 2013 Daniel Craik
 * Added Lau2DCubicSpline which provides cubic spline interpolation of a histogram
   - Added Lau2DSplineDP which uses a spline to model variation across a DP (eg efficiency)
-  - Added pABC, Lau2DAbsDP, for Lau2DHistDP and Lau2DSplineDP and moved common code 
+  - Added pABC, Lau2DAbsDP, for Lau2DHistDP and Lau2DSplineDP and moved common code
     in Lau2DHistDP and Lau2DSplineDP into ABC Lau2DAbsHistDP
-  - LauEffModel, LauDPDepSumPdf and LauDPDepMapPdf modified to use Lau2DAbsDP instead of 
+  - LauEffModel, LauDPDepSumPdf and LauDPDepMapPdf modified to use Lau2DAbsDP instead of
     Lau2DHistDP
-  - setEffSpline method added to LauEffModel and useSpline flag added to constructor for 
+  - setEffSpline method added to LauEffModel and useSpline flag added to constructor for
     LauDPDepSumPdf to allow use of splines
 
 18th December 2013 Mark Whitehead

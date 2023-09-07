@@ -4,6 +4,7 @@
 This package is a C++ development of LAURA, the FORTRAN "Likelihood Analysis
 Unofficial RooFitDalitz Alternative" code written by Paul Harrison for
 performing Dalitz plot analyses of 3-body decays of B mesons at BaBar.
+
 This C++ version was originally developed by John Back and is now mainly
 developed by Tom Latham with continuting contributions from John Back and
 others.
@@ -388,13 +389,11 @@ $ make
 $ make install
 Install the project...
 ... verbose output ...
-$ 
+$
 ```
 
 Again, the exact output will be system specific, but you should see the
 `Laura++` target built without error and that the installation was successful.
-
-If compiling with gcc 5, see [the corresponding note](#notes).
 
 
 ## Examples and documentation
@@ -436,40 +435,29 @@ target_link_libraries(MyExe PRIVATE Laura::Laura++)
 
 ## Authors and contributors
 
-As mentioned in the Introduction above, the authors of the package are:  
-Thomas Latham  
-John Back  
+As mentioned in the Introduction above, the authors of the package are:\
+Thomas Latham\
+John Back\
 Paul Harrison
 
 The authors would also like to thank the following people for their invaluable
-contributions:  
-Sian Morgan  
-Tim Gershon  
-Pablo del Amo Sanchez  
-Jelena Ilic  
-Eugenia Puccio  
-Mark Whitehead  
-Daniel Craik  
-Rafael Coutinho  
-Charlotte Wallace  
-Juan Otalora  
-Wenbin Qian  
-Daniel O'Hanlon
+contributions:\
+Sian Morgan\
+Tim Gershon\
+Pablo del Amo Sanchez\
+Jelena Ilic\
+Eugenia Puccio\
+Mark Whitehead\
+Daniel Craik\
+Rafael Coutinho\
+Charlotte Wallace\
+Juan Otalora\
+Wenbin Qian\
+Daniel O'Hanlon\
 Daniel Johnson
 
 Many thanks also go to numerous members of the BaBar, Belle, and LHCb
-collaborations for their helpful input. 
+collaborations for their helpful input.
 
 Contact: Tom Latham (laura@projects.hepforge.org)
-
-
-## Notes {#notes}
-
-* [It has been reported](https://laura.hepforge.org/trac/ticket/67) that when
-  compiling on Ubuntu 16.04 LTS with gcc 5.4.0 the build will fail due to,
-  apparently spurious, "variable defined but not used" errors related to the
-  constants defined in the `LauConstants.hh` header file.  
-  The workaround is to add the option `-Wno-error=unused-variable` to the
-  `CMAKE_CXX_FLAGS` variable in the file:  
-  cmake/Modules/LauraCompilerFlags.cmake
 

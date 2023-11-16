@@ -57,6 +57,24 @@ class LauAbsBkgndDPModel {
 		*/
 		virtual Bool_t generate() = 0;
 
+		//! Get likelihood for a given DP position
+		/*!
+		    \param [in] m13Sq the invariant mass squared of children 1 and 3
+		    \param [in] m23Sq the invariant mass squared of children 2 and 3
+		    \return the likelihood value
+		 */
+		virtual Double_t getLikelihood( const Double_t m13Sq,
+						const Double_t m23Sq ) = 0;
+
+		//! Get unnormalised likelihood for a given DP position
+		/*!
+		    \param [in] m13Sq the invariant mass squared of children 1 and 3
+		    \param [in] m23Sq the invariant mass squared of children 2 and 3
+		    \return the unnormalised likelihood value
+		 */
+		virtual Double_t getUnNormValue( const Double_t m13Sq,
+						 const Double_t m23Sq ) = 0;
+
 		//! Get likelihood for a given event
 		/*!
 		    \param [in] iEvt the event number

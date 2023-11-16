@@ -2915,6 +2915,80 @@ void LauCPFitModel::storePerEvtLlhds()
 	std::cout << "INFO in LauCPFitModel::storePerEvtLlhds : Finished storing per-event likelihood values." << std::endl;
 }
 
+std::map<TString, LauComplex> LauCPFitModel::getDPAmps(const Double_t m13Sq, const Double_t m23Sq)
+{
+	// Initialise the DP model, if not already done
+	if ( negCoeffs_.empty() || posCoeffs_.empty() ) {
+		this->updateCoeffs();
+		this->initialiseDPModels();
+	}
+
+	if ( ! posKinematics_->withinDPLimits( m13Sq, m23Sq ) ) {
+		return { { "signal_" + negParent_, {} },
+			 { "signal_" + posParent_, {} } };
+	}
+
+	negSigModel_->calcLikelihoodInfo( m13Sq, m23Sq );
+	posSigModel_->calcLikelihoodInfo( m13Sq, m23Sq );
+
+	return { { "signal_" + negParent_, negSigModel_->getEvtDPAmp() },
+		 { "signal_" + posParent_, posSigModel_->getEvtDPAmp() } };
+}
+
+std::map<TString, Double_t> LauCPFitModel::getDPLikelihoods(const Double_t m13Sq, const Double_t m23Sq)
+{
+	// Initialise the DP model, if not already done
+	if ( negCoeffs_.empty() || posCoeffs_.empty() ) {
+		this->updateCoeffs();
+		this->initialiseDPModels();
+	}
+
+	std::map<TString, Double_t> likelihoods;
+
+	if ( ! posKinematics_->withinDPLimits( m13Sq, m23Sq ) ) {
+		likelihoods.emplace( "signal_" + negParent_, 0.0 );
+		likelihoods.emplace( "signal_" + posParent_, 0.0 );
+		if ( usingBkgnd_ ) {
+			const UInt_t nBkgnds { this->nBkgndClasses() };
+			for ( UInt_t bkgndID( 0 ); bkgndID < nBkgnds; ++bkgndID ) {
+				likelihoods.emplace( this->bkgndClassName( bkgndID ) + "_" + negParent_, 0.0 );
+				likelihoods.emplace( this->bkgndClassName( bkgndID ) + "_" + posParent_, 0.0 );
+			}
+		}
+		return likelihoods;
+	}
+
+	negSigModel_->calcLikelihoodInfo( m13Sq, m23Sq );
+	posSigModel_->calcLikelihoodInfo( m13Sq, m23Sq );
+
+	// See comment in getEvtDPLikelihood for explanation of the 2.0 factor
+	const Double_t norm { 2.0 / ( negSigModel_->getDPNorm() + posSigModel_->getDPNorm() ) };
+
+	likelihoods.emplace( "signal_" + negParent_, negSigModel_->getEvtIntensity() * norm );
+	likelihoods.emplace( "signal_" + posParent_, posSigModel_->getEvtIntensity() * norm );
+
+	// TODO - SCF signal
+	static bool warningIssued { false };
+	if ( useSCF_ && ! warningIssued ) {
+		warningIssued = true;
+		std::cerr << "WARNING in LauCPFitModel::getDPLikelihoods : calculation of SCF likelihoods not currently implemented in this function\n";
+		std::cerr << "                                           : signal likelihood will just be the truth-matched value";
+		std::cerr << std::endl;
+	}
+
+	if ( usingBkgnd_ ) {
+		const UInt_t nBkgnds { this->nBkgndClasses() };
+		for ( UInt_t bkgndID( 0 ); bkgndID < nBkgnds; ++bkgndID ) {
+			likelihoods.emplace( this->bkgndClassName( bkgndID ) + "_" + negParent_,
+					     negBkgndDPModels_[bkgndID]->getLikelihood( m13Sq, m23Sq ) );
+			likelihoods.emplace( this->bkgndClassName( bkgndID ) + "_" + posParent_,
+					     posBkgndDPModels_[bkgndID]->getLikelihood( m13Sq, m23Sq ) );
+		}
+	}
+
+	return likelihoods;
+}
+
 void LauCPFitModel::embedNegSignal(const TString& fileName, const TString& treeName,
 		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
 		Bool_t useReweighting)

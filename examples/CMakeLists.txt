@@ -22,6 +22,7 @@ list(APPEND EXAMPLE_SOURCES
     MergeDataFiles
     mixedSampleTest
     PlotKMatrixTAmp
+    PlotLikelihood
     PlotResults
     point2PointTestSample
     QuasiFlatSqDalitz

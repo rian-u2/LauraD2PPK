@@ -2015,6 +2015,67 @@ void LauSimpleFitModel::storePerEvtLlhds()
 	std::cout << "INFO in LauSimpleFitModel::storePerEvtLlhds : Finished storing per-event likelihood values." << std::endl;
 }
 
+std::map<TString, LauComplex> LauSimpleFitModel::getDPAmps(const Double_t m13Sq, const Double_t m23Sq)
+{
+	// Initialise the DP model, if not already done
+	if ( coeffs_.empty() ) {
+		this->updateCoeffs();
+		this->initialiseDPModels();
+	}
+
+	if ( ! kinematics_->withinDPLimits( m13Sq, m23Sq ) ) {
+		return { { "signal", {} } };
+	}
+
+	sigDPModel_->calcLikelihoodInfo( m13Sq, m23Sq );
+
+	return { { "signal", sigDPModel_->getEvtDPAmp() } };
+}
+
+std::map<TString, Double_t> LauSimpleFitModel::getDPLikelihoods(const Double_t m13Sq, const Double_t m23Sq)
+{
+	// Initialise the DP model, if not already done
+	if ( coeffs_.empty() ) {
+		this->updateCoeffs();
+		this->initialiseDPModels();
+	}
+
+	std::map<TString, Double_t> likelihoods;
+
+	if ( ! kinematics_->withinDPLimits( m13Sq, m23Sq ) ) {
+		likelihoods.emplace( "signal", 0.0 );
+		if ( usingBkgnd_ ) {
+			const UInt_t nBkgnds { this->nBkgndClasses() };
+			for ( UInt_t bkgndID( 0 ); bkgndID < nBkgnds; ++bkgndID ) {
+				likelihoods.emplace( this->bkgndClassName( bkgndID ), 0.0 );
+			}
+		}
+		return likelihoods;
+	}
+
+	sigDPModel_->calcLikelihoodInfo( m13Sq, m23Sq );
+	likelihoods.emplace( "signal", sigDPModel_->getEvtLikelihood() );
+
+	// TODO - SCF signal
+	static bool warningIssued { false };
+	if ( useSCF_ && ! warningIssued ) {
+		warningIssued = true;
+		std::cerr << "WARNING in LauSimpleFitModel::getDPLikelihoods : calculation of SCF likelihoods not currently implemented in this function\n";
+		std::cerr << "                                               : signal likelihood will just be the truth-matched value";
+		std::cerr << std::endl;
+	}
+
+	if ( usingBkgnd_ ) {
+		const UInt_t nBkgnds { this->nBkgndClasses() };
+		for ( UInt_t bkgndID( 0 ); bkgndID < nBkgnds; ++bkgndID ) {
+			likelihoods.emplace( this->bkgndClassName( bkgndID ),
+					     bkgndDPModels_[bkgndID]->getLikelihood( m13Sq, m23Sq ) );
+		}
+	}
+
+	return likelihoods;
+}
+
 void LauSimpleFitModel::embedSignal(const TString& fileName, const TString& treeName,
 		Bool_t reuseEventsWithinEnsemble, Bool_t reuseEventsWithinExperiment,
 		Bool_t useReweighting)

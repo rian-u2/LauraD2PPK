@@ -71,6 +71,7 @@ Thomas Latham
 #include <set>
 #include <vector>
 
+#include "LauComplex.hh"
 #include "LauFitObject.hh"
 #include "LauFormulaPar.hh"
 #include "LauSimFitTask.hh"
@@ -293,6 +294,24 @@ class LauAbsFitModel : public LauSimFitTask {
 			\param [in] fix whether to fix (set constant) the loaded parameters, or leave them floating
 		*/
 		void setParametersFileFallback(const TString& fileName, const TString& treeName, const std::map<TString, Double_t>& parameters, const Bool_t fix);
+
+                //! Calculate the DP amplitude(s) for a given DP position
+                /*!
+                    If not already done, this function will initialise the DP models
+                    \param [in] m13Sq the invariant mass squared of children 1 and 3
+                    \param [in] m23Sq the invariant mass squared of children 2 and 3
+                    \return a container of complex amplitudes, labelled to indicate to which component they belong
+                 */
+                virtual std::map<TString, LauComplex> getDPAmps( const Double_t m13Sq, const Double_t m23Sq ) = 0;
+
+                //! Calculate the DP likelihood(s) for a given DP position
+                /*!
+                    If not already done, this function will initialise the DP models
+                    \param [in] m13Sq the invariant mass squared of children 1 and 3
+                    \param [in] m23Sq the invariant mass squared of children 2 and 3
+                    \return a container of likelihood values, labelled to indicate to which component they belong
+                 */
+                virtual std::map<TString, Double_t> getDPLikelihoods( const Double_t m13Sq, const Double_t m23Sq ) = 0;
 
 	protected:
 

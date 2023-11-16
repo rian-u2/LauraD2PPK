@@ -91,6 +91,31 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		*/
 		virtual Bool_t generate();
 		
+		//! Get likelihood for a given DP position
+		/*!
+		    \param [in] m13Sq the invariant mass squared of children 1 and 3
+		    \param [in] m23Sq the invariant mass squared of children 2 and 3
+		    \return the likelihood value
+		 */
+		virtual Double_t getLikelihood( const Double_t m13Sq,
+						const Double_t m23Sq );
+
+		//! Get unnormalised likelihood for a given DP position
+		/*!
+		    \param [in] m13Sq the invariant mass squared of children 1 and 3
+		    \param [in] m23Sq the invariant mass squared of children 2 and 3
+		    \return the unnormalised likelihood value
+		 */
+		virtual Double_t getUnNormValue( const Double_t m13Sq,
+						 const Double_t m23Sq );
+
+		//! Get likelihood for a given event
+		/*!
+		    \param [in] iEvt the event number
+		    \return the likelihood value
+		*/
+		virtual Double_t getLikelihood(UInt_t iEvt);
+		
 		//! Get unnormalised likelihood for a given event
 		/*!
 		    \param [in] iEvt the event number
@@ -103,13 +128,6 @@ class LauBkgndDPModel : public LauAbsBkgndDPModel {
 		    \return the PDF normalisation constant
 		*/
 		virtual Double_t getPdfNorm() const {return pdfNorm_;}
-		
-		//! Get likelihood for a given event
-		/*!
-		    \param [in] iEvt the event number
-		    \return the likelihood value
-		*/
-		virtual Double_t getLikelihood(UInt_t iEvt);
 		
 		//! Cache the input data and (if appropriate) the per-event likelihood values
 		/*!

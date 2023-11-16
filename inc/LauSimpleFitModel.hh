@@ -173,6 +173,24 @@ class LauSimpleFitModel : public LauAbsFitModel {
 		*/	
 		virtual void setAmpCoeffSet(LauAbsCoeffSet* coeffSet);
 
+                //! Calculate the DP amplitude(s) for a given DP position
+                /*!
+                    If not already done, this function will initialise the DP models
+                    \param [in] m13Sq the invariant mass squared of children 1 and 3
+                    \param [in] m23Sq the invariant mass squared of children 2 and 3
+                    \return a container of complex amplitudes, labelled to indicate to which component they belong
+                */
+                virtual std::map<TString, LauComplex> getDPAmps( const Double_t m13Sq, const Double_t m23Sq );
+
+                //! Calculate the DP likelihood(s) for a given DP position
+                /*!
+                    If not already done, this function will initialise the DP models
+                    \param [in] m13Sq the invariant mass squared of children 1 and 3
+                    \param [in] m23Sq the invariant mass squared of children 2 and 3
+                    \return a container of likelihood values, labelled to indicate to which component they belong
+                */
+                virtual std::map<TString, Double_t> getDPLikelihoods( const Double_t m13Sq, const Double_t m23Sq );
+
 	protected:
 		//! Define a map to be used to store a category name and numbers
 		typedef std::map< TString, std::pair<Int_t,Double_t> > LauGenInfo;

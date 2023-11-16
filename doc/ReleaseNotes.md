@@ -1,5 +1,13 @@
 # Laura++ release notes
 
+16th Nov 2023 Thomas Latham
+* Add functions to fit models that return:
+  - signal DP amplitudes
+  - signal and background DP likelihood(s)
+* Add example to plot histograms of likelihood values
+* Caveat: SCF signal is not currently handled - an appropriate warning is printed
+* See https://phab.hepforge.org/T227 for more details
+
 16th Oct 2023 Thomas Latham
 * Remove all uses of deprecated ROOT ClassImp macro
 * Generate ROOT dictionary only for classes: LauAbsRValue, LauBlind and LauParameter

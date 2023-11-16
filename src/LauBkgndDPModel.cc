@@ -246,36 +246,45 @@ void LauBkgndDPModel::fillDataTree(const LauFitDataTree& inputFitTree)
 		return;
 	}
 
-	Double_t m13Sq(0.0), m23Sq(0.0), mPrime(0.0), thetaPrime(0.0);
-
-	UInt_t nEvents = inputFitTree.nEvents();
-	LauKinematics* kinematics = this->getKinematics();
+        const UInt_t nEvents { inputFitTree.nEvents() };
 
 	// clear and resize the data vector
 	bgData_.clear();
 	bgData_.resize(nEvents);
 
+        Double_t m13Sq { 0.0 }, m23Sq { 0.0 };
+
 	for (UInt_t iEvt = 0; iEvt < nEvents; iEvt++) {
 
 		const LauFitData& dataValues = inputFitTree.getData(iEvt);
-		LauFitData::const_iterator iter = dataValues.find("m13Sq");
-		m13Sq = iter->second;
-		iter = dataValues.find("m23Sq");
-		m23Sq = iter->second;
+		m13Sq = dataValues.at("m13Sq");
+		m23Sq = dataValues.at("m23Sq");
 
-		// Update the kinematics. This will also update m' and theta' if squareDP = true
-		kinematics->updateKinematics(m13Sq, m23Sq);
+                bgData_[iEvt] = this->getUnNormValue( m13Sq, m23Sq );
+        }
+}
 
-		if (squareDP_ == kTRUE) {
-			mPrime = kinematics->getmPrime();
-			thetaPrime = kinematics->getThetaPrime();
-			curEvtHistVal_ = this->calcHistValue(mPrime, thetaPrime);
-		} else {
-			curEvtHistVal_ = this->calcHistValue(m13Sq, m23Sq);
-		}
+Double_t LauBkgndDPModel::getUnNormValue(const Double_t m13Sq, const Double_t m23Sq)
+{
+        // Update the kinematics. This will also update m' and theta' if squareDP = true
+        LauKinematics* kinematics = this->getKinematics();
+        kinematics->updateKinematics(m13Sq, m23Sq);
 
-		bgData_[iEvt] = curEvtHistVal_;
-	}
+        if (squareDP_) {
+                const Double_t mPrime { kinematics->getmPrime() };
+                const Double_t thetaPrime { kinematics->getThetaPrime() };
+                curEvtHistVal_ = this->calcHistValue(mPrime, thetaPrime);
+        } else {
+                curEvtHistVal_ = this->calcHistValue(m13Sq, m23Sq);
+        }
+
+        return curEvtHistVal_;
+}
+
+Double_t LauBkgndDPModel::getLikelihood(const Double_t m13Sq, const Double_t m23Sq)
+{
+        this->getUnNormValue( m13Sq, m23Sq );
+        return curEvtHistVal_ / this->getPdfNorm();
 }
 
 Double_t LauBkgndDPModel::getUnNormValue(UInt_t iEvt)

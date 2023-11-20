@@ -40,7 +40,15 @@ set(CMAKE_INSTALL_MESSAGE LAZY)
 
 # C++ standard settings
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard")
+set(LAURA_CXX_STANDARD 17)
+if(DEFINED ENV{CMAKE_CXX_STANDARD})
+    if($ENV{CMAKE_CXX_STANDARD} GREATER ${LAURA_CXX_STANDARD})
+        set(LAURA_CXX_STANDARD $ENV{CMAKE_CXX_STANDARD})
+    elseif($ENV{CMAKE_CXX_STANDARD} LESS ${LAURA_CXX_STANDARD})
+        message(WARNING "Laura++: Version of C++ standard requested via CMAKE_CXX_STANDARD environment variable, C++$ENV{CMAKE_CXX_STANDARD}, is below required minimum of C++${LAURA_CXX_STANDARD}, not changing it")
+    endif()
+endif()
+set(CMAKE_CXX_STANDARD ${LAURA_CXX_STANDARD} CACHE STRING "C++ standard")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 message(STATUS "Laura++: Using C++${CMAKE_CXX_STANDARD} standard")
 

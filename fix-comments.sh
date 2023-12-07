@@ -19,9 +19,21 @@
 # Paul Harrison
 # Thomas Latham
 
-# apply clang-format to all source files
-find . \( -name "*.hh" -o -name "*.cc" -o -name "*.C" \) -exec clang-format -i '{}' \;
+if [ $# -ne 1 ]
+then
+    echo "Usage: $0 <filename>"
+    exit 1
+fi
 
-# fix comment sections in all source files (clang-format does not touch these)
-find . \( -name "*.hh" -o -name "*.cc" -o -name "*.C" \) -exec bash fix-comments.sh '{}' \;
+filename=$1
+
+sed -i -e 's/\t/    /g' $filename
+sed -i -e 's/[[:space:]]\+$//' $filename
+sed -i -e 's%\/param %\\param %' $filename
+sed -i -e 's%\/return %\\return %' $filename
+python3 fix-comments.py $filename
+if [ -e $filename.new ]
+then
+    mv $filename.new $filename
+fi
 

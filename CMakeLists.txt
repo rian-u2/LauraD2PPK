@@ -82,7 +82,7 @@ configure_package_config_file(cmake/Templates/LauraConfig.cmake.in
     )
 
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/LauraConfigVersion.cmake
-    COMPATIBILITY AnyNewerVersion
+    COMPATIBILITY SameMajorVersion
     )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LauraConfig.cmake

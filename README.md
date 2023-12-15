@@ -17,6 +17,7 @@ laura.git
 ├── CMakeLists.txt - the top-level CMake configuration file
 ├── LICENSE-2.0 - the Apache License, Version 2.0
 ├── README.md - this README file
+├── applyFormatting.sh - script to apply formatting style to source files
 ├── cmake - directory containing custom CMake modules and templates
 │   ├── Modules
 │   │   ├── LauraCompilerFlags.cmake
@@ -39,11 +40,16 @@ laura.git
 │   ├── CalcChiSq.cc
 │   ├── DToKspipiKMatrixCoeff.dat
 │   ├── FOCUSD3pi.dat
+│   ├── FlatPhaseSpace-CustomMasses.cc
+│   ├── FlatPhaseSpace.cc
+│   ├── FlatSqDalitz-CustomMasses.cc
+│   ├── FlatSqDalitz.cc
 │   ├── GenFit3K.cc
 │   ├── GenFit3KS.cc
 │   ├── GenFit3pi.cc
-│   ├── GenFit3pi.py
+│   ├── GenFit3pi.py.in
 │   ├── GenFitBelleCPKpipi.cc
+│   ├── GenFitDpipi.cc
 │   ├── GenFitDs2KKpi.cc
 │   ├── GenFitEFKLLM.cc
 │   ├── GenFitKpipi.cc
@@ -55,7 +61,10 @@ laura.git
 │   ├── LauKMatrixCoeff2.dat
 │   ├── MergeDataFiles.cc
 │   ├── PlotKMatrixTAmp.cc
+│   ├── PlotLikelihood.cc
 │   ├── PlotResults.cc
+│   ├── QuasiFlatSqDalitz-CustomMasses.cc
+│   ├── QuasiFlatSqDalitz.cc
 │   ├── ResultsExtractor.cc
 │   ├── SimFitCoordinator.cc
 │   ├── SimFitTask.cc
@@ -67,6 +76,8 @@ laura.git
 │   ├── runCoordinatorTask.sh
 │   ├── runPoint2PointTest.sh
 │   └── usfactor.dat
+├── fix-comments.py
+├── fix-comments.sh
 ├── inc - directory containing the header files for the Laura++ library
 │   ├── CMakeLists.txt
 │   ├── Lau1DCubicSpline.hh
@@ -81,6 +92,7 @@ laura.git
 │   ├── Lau2DHistPdf.hh
 │   ├── Lau2DSplineDP.hh
 │   ├── Lau2DSplineDPPdf.hh
+│   ├── LauASqMaxFinder.hh
 │   ├── LauAbsBkgndDPModel.hh
 │   ├── LauAbsCoeffSet.hh
 │   ├── LauAbsEffModel.hh
@@ -209,6 +221,7 @@ laura.git
 │   ├── Lau2DHistPdf.cc
 │   ├── Lau2DSplineDP.cc
 │   ├── Lau2DSplineDPPdf.cc
+│   ├── LauASqMaxFinder.cc
 │   ├── LauAbsBkgndDPModel.cc
 │   ├── LauAbsCoeffSet.cc
 │   ├── LauAbsFitModel.cc
@@ -325,14 +338,17 @@ laura.git
 ### Prerequisites
 Compilation of Laura++ on a UNIX operating system requires:
 * the [CMake](https://www.cmake.org) build tool
-* a C++14 compatible compiler ([GCC](https://gcc.gnu.org) 8 or better, [Clang](https://clang.llvm.org) 8 or better are recommended)
+* a C++17 compatible compiler ([GCC](https://gcc.gnu.org) 8 or better, [Clang](https://clang.llvm.org) 8 or better are recommended)
 * [GNU Make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org) (not currently tested)
 
 The package depends only on [ROOT](https://root.cern.ch).
 Before building the code, it is necessary that the ROOT package be findable by CMake, which can be achieved by doing one of the following:
-- the `ROOTSYS` environment variable is set to the directory of the ROOT package
+- the installation prefix of the ROOT package is in the `CMAKE_PREFIX_PATH` environment variable
+- the `ROOT_DIR` environment variable is set to the installation prefix of the ROOT package
+- the `ROOTSYS` environment variable is set to the installation prefix of the ROOT package
 - the directory containing the `root-config` program is in the `PATH` environment variable
-- the ROOT cmake directory is in the `CMAKE_PREFIX_PATH` environment variable
+
+Since ROOT depends on the [nlohmann\_json](https://json.nlohmann.me) package, this must be similarly locatable by CMake.
 
 In order to setup an environment that satifies all of the above requirements we highly recommend use of the [LCG views](https://lcginfo.cern.ch).
 For example, on a machine with the [CVMFS client](https://cvmfs.readthedocs.io/en/stable/) installed, one can do:
@@ -341,12 +357,12 @@ source /cvmfs/sft.cern.ch/lcg/views/setupViews.(c)sh <LCG release> <arch-os-comp
 ```
 for example:
 ```
-source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_96b x86_64-centos7-gcc9-opt
+source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_104 x86_64-el9-clang16-opt
 ```
 
 ### Build procedure
-To build from a clone of this repository, open a terminal window
-and change directory into that holding this README file.
+To build from a clone of this repository, open a terminal and change directory
+into that holding this README file.
 Create a build directory in which to run `cmake` and the build, and change into
 it by doing the following:
 
@@ -364,11 +380,12 @@ instructions):
 $ mkdir ../laura.install
 ```
 
-Run `cmake` in this directory, pointing it to the directory holding this
-README, and consequently the top level CMake script for the project:
+Run `cmake` in the build directory, pointing it to the directory (referred to
+as `<source dir>` in the following) holding this README, and consequently the
+top level CMake script for the project:
 
 ```
-$ cmake ../<this dir> -DCMAKE_INSTALL_PREFIX=../laura.install
+$ cmake ../<source dir> -DCMAKE_INSTALL_PREFIX=../laura.install
 ... system specific output ...
 -- Configuring done
 -- Generating done
@@ -423,9 +440,8 @@ your web browser.
 If you wish to build your own code that uses the Laura++ library you should add the Laura++ installation area to the `CMAKE_PREFIX_PATH` environment variable.
 You can then add lines like the following to your own `CMakeLists.txt` file:
 ```cmake
-# Find ROOT and Laura++
+# Find Laura++ - all dependencies will automatically be searched for as well
 find_package(Laura REQUIRED)
-find_package(ROOT REQUIRED)
 
 # Now build the executable
 add_executable(MyExe MyExe.cc)
@@ -454,7 +470,8 @@ Charlotte Wallace\
 Juan Otalora\
 Wenbin Qian\
 Daniel O'Hanlon\
-Daniel Johnson
+Daniel Johnson\
+Andy Morris
 
 Many thanks also go to numerous members of the BaBar, Belle, and LHCb
 collaborations for their helpful input.

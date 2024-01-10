@@ -36,6 +36,8 @@ Thomas Latham
 #ifndef LAU_ABSRVALUE
 #define LAU_ABSRVALUE
 
+#include "TString.h"
+
 #include <vector>
 
 class LauParameter;

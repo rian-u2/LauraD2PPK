@@ -29,9 +29,11 @@ Thomas Latham
 #include <iostream>
 #include <vector>
 
-#include "RooFormulaVar.h"
-#include "RooRealVar.h"
+#include "RooAbsPdf.h"
 #include "RooDataSet.h"
+#include "RooFormulaVar.h"
+#include "RooNLLVar.h"
+#include "RooRealVar.h"
 #include "TFile.h"
 #include "TString.h"
 #include "TSystem.h"
@@ -319,8 +321,8 @@ UInt_t LauRooFitTask::readExperimentData()
 	if ( iExptSet_.empty() ) {
 		exptData_ = new RooDataSet( TString::Format("expt%dData",exptIndex), "", dataTree_, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
 	} else {
-		const TString selectionString = TString::Format("iExpt==%d",exptIndex);
-		TTree* exptTree = dataTree_->CopyTree(selectionString);
+		const TString selectionString { TString::Format("iExpt==%d",exptIndex) };
+		TTree* exptTree { dataTree_->CopyTree(selectionString) };
 		exptData_ = new RooDataSet( TString::Format("expt%dData",exptIndex), "", exptTree, dataVars_, "", (weightVarName_ != "") ? weightVarName_.Data() : 0 );
 		delete exptTree;
 	}

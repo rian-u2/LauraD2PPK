@@ -56,6 +56,10 @@ Thomas Latham
 #ifndef LAU_2DCUBICSPLINE
 #define LAU_2DCUBICSPLINE
 
+#include "Rtypes.h"
+
+#include <vector>
+
 class TH2;
 
 class Lau2DCubicSpline

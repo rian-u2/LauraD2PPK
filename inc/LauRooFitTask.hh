@@ -39,16 +39,20 @@ Thomas Latham
 #include <utility>
 #include <vector>
 
-#include "RooAbsPdf.h"
-#include "RooAbsData.h"
-#include "RooCategory.h"
-#include "RooNLLVar.h"
+#include "RooArgSet.h"
 #include "TMatrixDfwd.h"
 #include "TString.h"
 
 #include "LauSimFitTask.hh"
 
 class LauParameter;
+class RooAbsData;
+class RooAbsPdf;
+class RooFormulaVar;
+class RooNLLVar;
+class RooRealVar;
+class TFile;
+class TTree;
 
 
 class LauRooFitTask : public LauSimFitTask {

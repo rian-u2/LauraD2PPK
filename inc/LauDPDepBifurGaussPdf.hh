@@ -42,6 +42,8 @@ Thomas Latham
 #include "LauAbsPdf.hh"
 
 
+class LauDaughters;
+
 class LauDPDepBifurGaussPdf : public LauAbsPdf {
 
 	public:

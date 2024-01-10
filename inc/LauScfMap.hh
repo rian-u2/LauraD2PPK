@@ -35,6 +35,8 @@ Thomas Latham
 #ifndef LAU_SCF_MAP
 #define LAU_SCF_MAP
 
+#include "Rtypes.h"
+
 #include <vector>
 #include <map>
 

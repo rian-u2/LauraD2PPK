@@ -135,6 +135,7 @@ class LauPolarFormFactorNR : public LauAbsResonance {
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;
 
+		ClassDef(LauPolarFormFactorNR,0)
 };
 
 #endif

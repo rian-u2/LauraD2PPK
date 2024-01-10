@@ -55,6 +55,7 @@ using std::vector;
 #include "LauConstants.hh"
 #include "LauCrystalBallPdf.hh"
 
+ClassImp(LauCrystalBallPdf)
 
 
 LauCrystalBallPdf::LauCrystalBallPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

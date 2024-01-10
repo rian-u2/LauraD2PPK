@@ -41,6 +41,7 @@ using std::endl;
 
 #include "LauScfMap.hh"
 
+ClassImp(LauScfMap)
 
 
 LauScfMap::LauScfMap():

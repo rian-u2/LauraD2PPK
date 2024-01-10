@@ -175,6 +175,7 @@ class LauFormulaPar : public LauAbsRValue {
 		//! Width of the Gaussian constraint
 		Double_t constraintWidth_;
 
+		ClassDef(LauFormulaPar, 0)
 
 };
 

@@ -200,6 +200,7 @@ class Lau1DCubicSpline {
 		//! The gradient at the right boundary for a clamped spline
 		Double_t dydxn_;
 
+		ClassDef(Lau1DCubicSpline, 0); // Class for defining a 1D cubic spline
 };
 
 #endif

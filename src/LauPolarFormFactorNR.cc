@@ -36,6 +36,7 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauResonanceInfo.hh"
 
+ClassImp(LauPolarFormFactorNR)
 
 
 LauPolarFormFactorNR::LauPolarFormFactorNR(LauResonanceInfo* resInfo, const LauAbsResonance::LauResonanceModel resType, const Int_t resPairAmpInt, const LauDaughters* daughters) :

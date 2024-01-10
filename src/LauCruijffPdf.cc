@@ -55,6 +55,7 @@ using std::vector;
 #include "LauCruijffPdf.hh"
 #include "LauConstants.hh"
 
+ClassImp(LauCruijffPdf)
 
 LauCruijffPdf::LauCruijffPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),

@@ -40,6 +40,7 @@ Thomas Latham
 #include <iostream>
 #include <memory>
 
+ClassImp( LauASqMaxFinder )
 
 LauASqMaxFinder::LauASqMaxFinder(LauIsobarDynamics& iso) :
 	iso_{iso}

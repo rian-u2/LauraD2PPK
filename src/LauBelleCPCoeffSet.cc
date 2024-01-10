@@ -39,6 +39,7 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauPrint.hh"
 
+ClassImp(LauBelleCPCoeffSet)
 
 
 LauBelleCPCoeffSet::LauBelleCPCoeffSet(const TString& compName, Double_t a, Double_t delta, Double_t b, Double_t phi,

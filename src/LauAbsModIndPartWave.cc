@@ -34,6 +34,7 @@ Thomas Latham
 #include "LauAbsModIndPartWave.hh"
 #include "LauResonanceInfo.hh"
 
+ClassImp(LauAbsModIndPartWave)
 
 
 LauAbsModIndPartWave::LauAbsModIndPartWave(LauResonanceInfo* resInfo, Int_t resPairAmpInt, const LauDaughters* daughters) :

@@ -140,6 +140,7 @@ class LauAbsFitter {
 		//! Move assignment operator - private and not implemented
 		LauAbsFitter& operator=( LauAbsFitter&& rhs ) = delete;
 
+		ClassDef(LauAbsFitter,0);
 };
 
 #endif

@@ -64,6 +64,7 @@ Thomas Latham
 #include "LauRandom.hh"
 #include "LauScfMap.hh"
 
+ClassImp(LauCPFitModel)
 
 
 LauCPFitModel::LauCPFitModel(LauIsobarDynamics* negModel, LauIsobarDynamics* posModel, Bool_t tagged, const TString& tagVarName) : LauAbsFitModel(),

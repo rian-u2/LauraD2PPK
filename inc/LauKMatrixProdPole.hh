@@ -100,6 +100,7 @@ class LauKMatrixProdPole : public LauAbsResonance {
 		//! Boolean to turn on/off the production Adler zero factor
 		Bool_t useProdAdler_;
 
+		ClassDef(LauKMatrixProdPole, 0) // K-matrix production pole
 
 };
 

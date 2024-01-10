@@ -127,6 +127,7 @@ class LauFitNtuple {
 		//! Experiment number
 		Int_t iExpt_;
 
+		ClassDef(LauFitNtuple,0) // Fit/toyMC results ntuple
 
 };
 

@@ -35,6 +35,7 @@ Thomas Latham
 #include "LauModIndPartWaveMagPhase.hh"
 #include "LauResonanceInfo.hh"
 
+ClassImp(LauModIndPartWaveMagPhase)
 
 
 LauModIndPartWaveMagPhase::LauModIndPartWaveMagPhase(LauResonanceInfo* resInfo, Int_t resPairAmpInt, const LauDaughters* daughters) :

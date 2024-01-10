@@ -89,6 +89,7 @@ class LauNovosibirskPdf : public LauAbsPdf {
 		//! Gaussian tail
 		LauAbsRValue* tail_;
 
+		ClassDef(LauNovosibirskPdf,0) // Define the Novosibirsk PDF
 };
 
 #endif

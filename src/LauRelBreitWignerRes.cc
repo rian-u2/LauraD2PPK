@@ -31,6 +31,7 @@ Thomas Latham
 #include "LauConstants.hh"
 #include "LauRelBreitWignerRes.hh"
 
+ClassImp(LauRelBreitWignerRes)
 
 
 LauRelBreitWignerRes::LauRelBreitWignerRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

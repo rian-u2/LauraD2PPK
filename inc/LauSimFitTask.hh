@@ -183,6 +183,7 @@ class LauSimFitTask : public LauFitObject {
 		//! The fit ntuple
 		LauFitNtuple* fitNtuple_;
 
+		ClassDef(LauSimFitTask,0);
 };
 
 #endif

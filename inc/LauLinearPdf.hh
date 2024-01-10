@@ -88,6 +88,7 @@ class LauLinearPdf : public LauAbsPdf {
 
 		Bool_t posflag_;
 
+		ClassDef(LauLinearPdf,0) // Define the Linear PDF
 };
 
 #endif

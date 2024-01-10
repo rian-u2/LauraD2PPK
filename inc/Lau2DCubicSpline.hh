@@ -212,6 +212,7 @@ class Lau2DCubicSpline
 	*/
 	Double_t evalXY(Double_t x1, Double_t x2, Double_t y1, Double_t y2) const;
 
+	ClassDef(Lau2DCubicSpline, 0); // Class for defining a 2D cubic spline based on an input histogram
 };
 
 #endif

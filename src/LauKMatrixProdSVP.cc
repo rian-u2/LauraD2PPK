@@ -31,6 +31,7 @@ Thomas Latham
 
 #include <iostream>
 
+ClassImp(LauKMatrixProdSVP)
 
 LauKMatrixProdSVP::LauKMatrixProdSVP(	const TString& SVPName, Int_t channelIndex, Int_t resPairAmpInt,
 										LauKMatrixPropagator* propagator, const LauDaughters* daughters,

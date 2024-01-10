@@ -181,6 +181,7 @@ class LauRescattering2Res : public LauAbsResonance {
 		Double_t sqr_tmin[3], sqr_tmax[3];
 		Double_t B0_, C0_, F0_;
 
+		ClassDef(LauRescattering2Res,0) // pipi S wave model by Schechter amplitude model
 };
 
 #endif

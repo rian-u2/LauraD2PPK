@@ -193,6 +193,7 @@ class LauResonanceMaker {
 		//! Boolean flag to control printing a summary of the formalism to be used when the first resonance is created
 		Bool_t summaryPrinted_;
 
+		ClassDef(LauResonanceMaker,0) // Kinematic routines
 };
 
 #endif

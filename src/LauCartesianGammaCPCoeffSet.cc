@@ -39,6 +39,7 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauPrint.hh"
 
+ClassImp(LauCartesianGammaCPCoeffSet)
 
 
 LauCartesianGammaCPCoeffSet::LauCartesianGammaCPCoeffSet(const TString& compName, const Double_t x, const Double_t y, const Double_t xCP, const Double_t yCP, const Double_t deltaXCP, const Double_t deltaYCP,

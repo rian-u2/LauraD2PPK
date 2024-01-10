@@ -40,6 +40,7 @@ Thomas Latham
 #include "LauFitNtuple.hh"
 
 
+ClassImp(LauSimFitTask)
 
 
 LauSimFitTask::LauSimFitTask() :

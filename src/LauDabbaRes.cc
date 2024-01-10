@@ -34,6 +34,7 @@ Thomas Latham
 #include "LauDabbaRes.hh"
 #include "LauResonanceInfo.hh"
 
+ClassImp(LauDabbaRes)
 
 
 LauDabbaRes::LauDabbaRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

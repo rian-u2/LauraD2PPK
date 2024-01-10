@@ -326,6 +326,7 @@ class LauAbsCoeffSet {
 		//! The index number of the coefficient set
 		UInt_t index_;
 
+		ClassDef(LauAbsCoeffSet, 0)
 
 };
 

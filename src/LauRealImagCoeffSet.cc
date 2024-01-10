@@ -39,6 +39,7 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauPrint.hh"
 
+ClassImp(LauRealImagCoeffSet)
 
 
 LauRealImagCoeffSet::LauRealImagCoeffSet(const TString& compName, Double_t x, Double_t y, Bool_t xFixed, Bool_t yFixed) :

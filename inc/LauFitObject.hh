@@ -368,6 +368,7 @@ class LauFitObject : public TObject {
 		//! The number of fit failures
 		UInt_t numberBadFits_;
 
+		ClassDef(LauFitObject,0)
 };
 
 #endif

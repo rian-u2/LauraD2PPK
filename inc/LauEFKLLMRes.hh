@@ -140,6 +140,7 @@ class LauEFKLLMRes : public LauAbsResonance {
 		//! The power of the mass dependence
 		LauParameter* massFactor_;
 
+		ClassDef(LauEFKLLMRes,0) // EFKLLM resonance model
 
 };
 

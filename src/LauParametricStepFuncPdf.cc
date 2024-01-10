@@ -56,6 +56,7 @@ using std::vector;
 #include "LauConstants.hh"
 #include "LauParametricStepFuncPdf.hh"
 
+ClassImp(LauParametricStepFuncPdf)
 
 
 LauParametricStepFuncPdf::LauParametricStepFuncPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, const vector<Double_t>& limits, NormBin normalisationBin) :

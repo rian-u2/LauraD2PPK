@@ -35,6 +35,7 @@ Thomas Latham
 #include "LauBifurcatedGaussPdf.hh"
 #include "LauConstants.hh"
 
+ClassImp(LauBifurcatedGaussPdf)
 
 
 LauBifurcatedGaussPdf::LauBifurcatedGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

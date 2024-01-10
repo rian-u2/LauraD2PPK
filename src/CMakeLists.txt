@@ -1,11 +1,35 @@
-# Use glob to find the sources
+# Set the include directory (unfortunately this old-style stuff is necessary for the ROOT_GENERATE_DICTIONARY macro)
+include_directories(${PROJECT_SOURCE_DIR}/inc)
+
+# Use glob to find the headers and sources
+file(GLOB LAURA_HEADERS ${PROJECT_SOURCE_DIR}/inc/*.hh)
 file(GLOB LAURA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
 if (NOT LAURA_BUILD_ROOFIT_TASK)
+    list(REMOVE_ITEM LAURA_HEADERS ${PROJECT_SOURCE_DIR}/inc/LauRooFitTask.hh)
 	list(REMOVE_ITEM LAURA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/LauRooFitTask.cc)
 endif()
 
+# Generate the rootcint file
+set(LAURA_LINKDEF ${PROJECT_SOURCE_DIR}/inc/Laura++_LinkDef.h)
+set(LAURA_DICTIONARY_ROOT G__Laura++)
+set(LAURA_DICTIONARY ${LAURA_DICTIONARY_ROOT}.cxx)
+if (LAURA_BUILD_ROOFIT_TASK)
+    ROOT_GENERATE_DICTIONARY(
+        ${LAURA_DICTIONARY_ROOT}
+        ${LAURA_HEADERS}
+        LINKDEF ${LAURA_LINKDEF}
+        OPTIONS -DDOLAUROOFITTASK
+        )
+else()
+    ROOT_GENERATE_DICTIONARY(
+        ${LAURA_DICTIONARY_ROOT}
+        ${LAURA_HEADERS}
+        LINKDEF ${LAURA_LINKDEF}
+        )
+endif()
+
 # Build the shared library
-add_library(Laura++ SHARED ${LAURA_SOURCES})
+add_library(Laura++ SHARED ${LAURA_SOURCES} ${LAURA_DICTIONARY})
 set_target_properties(Laura++ PROPERTIES OUTPUT_NAME Laura++)
 set_target_properties(Laura++ PROPERTIES VERSION ${CMAKE_PROJECT_VERSION} SOVERSION ${CMAKE_PROJECT_VERSION_MAJOR})
 set_target_properties(Laura++ PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
@@ -14,21 +38,6 @@ target_link_libraries(Laura++ ROOT::Core ROOT::Hist ROOT::Matrix ROOT::Physics R
 if (LAURA_BUILD_ROOFIT_TASK)
     target_link_libraries(Laura++ ROOT::RooFit ROOT::RooFitCore)
 endif()
-
-# Generate the dictionary file for those classes that require I/O
-list(APPEND LAURA_DICT_HEADERS
-    LauAbsRValue.hh
-    LauBlind.hh
-    LauParameter.hh
-    )
-set(LAURA_LINKDEF ${PROJECT_SOURCE_DIR}/inc/Laura++_LinkDef.h)
-set(LAURA_DICTIONARY G__Laura++)
-ROOT_GENERATE_DICTIONARY(
-    ${LAURA_DICTIONARY}
-    ${LAURA_DICT_HEADERS}
-    MODULE Laura++
-    LINKDEF ${LAURA_LINKDEF}
-    )
 
 # Install the libraries
 install(

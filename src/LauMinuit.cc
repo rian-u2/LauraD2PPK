@@ -48,6 +48,7 @@ Thomas Latham
 // and use the member functions to access the parameters/variables.
 extern void logLikeFun(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
+ClassImp(LauMinuit)
 
 
 LauMinuit::LauMinuit( const UInt_t maxPar, const LauOutputLevel verbosity ) : LauAbsFitter(),

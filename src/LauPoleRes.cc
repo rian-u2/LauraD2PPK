@@ -28,6 +28,7 @@ Thomas Latham
 
 #include "LauPoleRes.hh"
 
+ClassImp(LauPoleRes)
 
 
 LauPoleRes::LauPoleRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

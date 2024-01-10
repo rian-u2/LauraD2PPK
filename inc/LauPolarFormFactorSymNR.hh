@@ -143,6 +143,7 @@ class LauPolarFormFactorSymNR : public LauAbsResonance {
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;
 
+		ClassDef(LauPolarFormFactorSymNR,0)
 };
 
 #endif

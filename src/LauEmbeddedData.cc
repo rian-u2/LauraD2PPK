@@ -38,6 +38,7 @@ using std::endl;
 #include "LauKinematics.hh"
 #include "LauRandom.hh"
 
+ClassImp(LauEmbeddedData)
 
 
 LauEmbeddedData::LauEmbeddedData(const TString& fileName, const TString& treeName, Bool_t allowReuseOfEvents) :

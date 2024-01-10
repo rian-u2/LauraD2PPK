@@ -221,6 +221,7 @@ class LauNRAmplitude : public LauAbsResonance {
 		//! Parameter from arXiv:0709.0075v1 [hep-ph]
 		LauParameter* p2_;
 
+		ClassDef(LauNRAmplitude,0) // Non-resonant amplitude model
 };
 
 #endif

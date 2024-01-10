@@ -39,6 +39,7 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauRandom.hh"
 
+ClassImp(Lau2DAbsHistDP)
 
 
 Lau2DAbsHistDP::Lau2DAbsHistDP(const LauDaughters* daughters, Bool_t useUpperHalfOnly, Bool_t squareDP) :

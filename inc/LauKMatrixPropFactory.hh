@@ -85,6 +85,7 @@ class LauKMatrixPropFactory {
 		//! The map used to store the propagator information
 		KMatrixPropMap map_;
 
+		ClassDef(LauKMatrixPropFactory,0)
 };
 
 #endif

@@ -42,6 +42,7 @@ using std::vector;
 #include "LauParameter.hh"
 #include "LauDPDepSumPdf.hh"
 
+ClassImp(LauDPDepSumPdf)
 
 
 LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,

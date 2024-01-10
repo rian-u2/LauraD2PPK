@@ -40,6 +40,7 @@ using std::vector;
 #include "LauConstants.hh"
 #include "LauSigmoidPdf.hh"
 
+ClassImp(LauSigmoidPdf)
 
 
 LauSigmoidPdf::LauSigmoidPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

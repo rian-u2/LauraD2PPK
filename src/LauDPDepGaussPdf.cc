@@ -40,6 +40,7 @@ using std::endl;
 #include "LauDPDepGaussPdf.hh"
 #include "LauKinematics.hh"
 
+ClassImp(LauDPDepGaussPdf)
 
 
 LauDPDepGaussPdf::LauDPDepGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,

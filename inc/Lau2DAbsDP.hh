@@ -68,6 +68,7 @@ class Lau2DAbsDP {
 		//! Copy assignment operator - not implemented
 		Lau2DAbsDP& operator=(const Lau2DAbsDP& rhs);
 
+		ClassDef(Lau2DAbsDP,0) // Abstract base class for 2D DP variation
 };
 
 #endif

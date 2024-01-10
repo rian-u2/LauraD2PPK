@@ -157,6 +157,7 @@ class Lau2DAbsHistDPPdf : public Lau2DAbsDPPdf {
 		//! Boolean for using square DP variables
 		Bool_t squareDP_;
 		
+		ClassDef(Lau2DAbsHistDPPdf,0) // Abstract base class for 2D DP variations based on a histogram
 };
 
 #endif

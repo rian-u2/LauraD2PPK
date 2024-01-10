@@ -165,6 +165,7 @@ class LauFlatteRes : public LauAbsResonance {
 		//! Flag to specify whether the couplings absorb the m_0 factor
 		Bool_t absorbM0_;
 
+		ClassDef(LauFlatteRes,0)
 };
 
 #endif

@@ -35,6 +35,7 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauParticlePDG.hh"
 
+ClassImp(LauDaughters)
 
 
 LauDaughters::LauDaughters(Int_t codeParent, Int_t code1, Int_t code2, Int_t code3, Bool_t useSquareDP) :

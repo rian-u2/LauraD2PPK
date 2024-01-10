@@ -31,6 +31,7 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauResonanceInfo.hh"
 
+ClassImp(LauResonanceInfo)
 
 
 LauResonanceInfo::LauResonanceInfo(const TString& name, const Double_t mass, const Double_t width, const Int_t spin, const Int_t charge, const LauBlattWeisskopfFactor::BlattWeisskopfCategory bwCategory, const Double_t bwRadius) :

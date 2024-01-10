@@ -155,6 +155,7 @@ class LauDPDepMapPdf : public LauAbsPdf {
 		//! Cached indices values
 		std::vector<UInt_t> indices_;
 
+		ClassDef(LauDPDepMapPdf,0) // Define the sum PDF
 };
 
 #endif

@@ -212,6 +212,7 @@ class Lau2DHistPdf : public LauAbsPdf {
 		//! Control boolean for performing the fluctuation of the histogram bin contents
 		Bool_t fluctuateBins_;
 
+		ClassDef(Lau2DHistPdf,0) // 2D histogram pdf class
 };
 
 #endif

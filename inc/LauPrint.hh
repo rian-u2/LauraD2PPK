@@ -75,6 +75,7 @@ class LauPrint {
 		//! Copy assignment operator (not implemented)
 		LauPrint& operator=(const LauPrint& rhs);
 
+		ClassDef(LauPrint,0)
 
 };
 

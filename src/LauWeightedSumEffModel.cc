@@ -37,6 +37,7 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauVetoes.hh"
 
+ClassImp(LauWeightedSumEffModel)
 
 
 LauWeightedSumEffModel::LauWeightedSumEffModel(const LauDaughters* daughters) :

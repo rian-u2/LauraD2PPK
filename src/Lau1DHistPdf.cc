@@ -40,6 +40,7 @@ Thomas Latham
 
 class LauParameter;
 
+ClassImp(Lau1DHistPdf)
 
 
 Lau1DHistPdf::Lau1DHistPdf(const TString& theVarName, const TH1* hist, Double_t minAbscissa, Double_t maxAbscissa,

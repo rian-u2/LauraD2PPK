@@ -118,6 +118,7 @@ class LauCrystalBallPdf : public LauAbsPdf {
 		//! Power for tail (goes as 1/x^n)
 		LauAbsRValue* n_;
 
+		ClassDef(LauCrystalBallPdf,0) // Define the Crystal Ball PDF
 };
 
 #endif

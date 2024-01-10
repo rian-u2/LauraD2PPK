@@ -847,6 +847,7 @@ class LauAbsFitModel : public LauSimFitTask {
 		//! Control the verbosity of the sFit
 		TString sPlotVerbosity_;
 
+		ClassDef(LauAbsFitModel,0) // Abstract interface to fit/toyMC model
 };
 
 #endif

@@ -78,6 +78,7 @@ class LauAsymmCalc {
 		//! The asymmetry
 		Double_t asymm_;
 
+		ClassDef(LauAsymmCalc,0) // Calculate asymmetry between two variables
 };
 
 #endif

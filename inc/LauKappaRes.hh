@@ -196,6 +196,7 @@ class LauKappaRes : public LauAbsResonance {
 		//! Factor from BES data
 		LauParameter* m0_; 
 
+		ClassDef(LauKappaRes,0) // Kappa resonance model
 
 };
 

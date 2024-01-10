@@ -36,6 +36,7 @@ Thomas Latham
 #include "LauParameter.hh"
 #include "LauSumPdf.hh"
 
+ClassImp(LauSumPdf)
 
 
 LauSumPdf::LauSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2, LauParameter* frac) :

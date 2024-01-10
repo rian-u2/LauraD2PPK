@@ -35,6 +35,7 @@ Thomas Latham
 #include "LauArgusPdf.hh"
 #include "LauConstants.hh"
 
+ClassImp(LauArgusPdf)
 
 
 LauArgusPdf::LauArgusPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

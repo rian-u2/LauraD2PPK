@@ -60,6 +60,7 @@ Thomas Latham
 #include "LauRhoOmegaMix.hh"
 #include "LauASqMaxFinder.hh"
 
+ClassImp(LauIsobarDynamics)
 
 // for Kpipi: only one scfFraction 2D histogram is needed
 LauIsobarDynamics::LauIsobarDynamics(LauDaughters* daughters, LauAbsEffModel* effModel, LauAbsEffModel* scfFractionModel) :

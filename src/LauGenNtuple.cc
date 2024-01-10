@@ -36,6 +36,7 @@ using std::endl;
 
 #include "LauGenNtuple.hh"
 
+ClassImp(LauGenNtuple)
 
 
 LauGenNtuple::LauGenNtuple(const TString& rootFileName, const TString& rootTreeName) :

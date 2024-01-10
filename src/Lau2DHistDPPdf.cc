@@ -37,6 +37,7 @@ Thomas Latham
 #include "LauRandom.hh"
 #include "LauVetoes.hh"
 
+ClassImp(Lau2DHistDPPdf)
 
 
 Lau2DHistDPPdf::Lau2DHistDPPdf(const TH2* hist, LauKinematics* kinematics, const LauVetoes* vetoes,

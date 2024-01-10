@@ -90,6 +90,7 @@ class LauGaussPdf : public LauAbsPdf {
 		//! Gaussian sigma
 		LauAbsRValue* sigma_;
 
+		ClassDef(LauGaussPdf,0) // Define the Gaussian PDF
 };
 
 #endif

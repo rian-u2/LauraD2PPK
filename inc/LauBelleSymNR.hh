@@ -140,6 +140,7 @@ class LauBelleSymNR : public LauAbsResonance {
 		//! The model to use
 		LauAbsResonance::LauResonanceModel model_;
 
+		ClassDef(LauBelleSymNR,0) // Belle Non-resonant model
 
 };
 

@@ -182,6 +182,7 @@ class LauGenNtuple {
 		//! Double variables
 		DoubleVarMap doubleVars_;
 
+		ClassDef(LauGenNtuple,0) // Generated toyMC ntuple
 
 };
 

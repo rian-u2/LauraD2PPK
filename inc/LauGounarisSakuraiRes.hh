@@ -119,6 +119,7 @@ class LauGounarisSakuraiRes : public LauAbsResonance {
 		//! Value of the form factor for resonance decay (at pole mass)
 		Double_t FR0_; 
 
+		ClassDef(LauGounarisSakuraiRes,0) // Gounaris-Sakurai resonance model
 
 };
 

@@ -121,6 +121,7 @@ class LauRelBreitWignerRes : public LauAbsResonance {
 		//! Value of the form factor for resonance decay (at pole mass)
 		Double_t FR0_;
 
+		ClassDef(LauRelBreitWignerRes,0) // Relativistic Breit-Wigner resonance model
 
 };
 

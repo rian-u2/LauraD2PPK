@@ -180,6 +180,7 @@ class LauDPDepCruijffPdf : public LauAbsPdf {
 		//! The DP axis we depend on
 		DPAxis dpAxis_;
 
+		ClassDef(LauDPDepCruijffPdf,0) // Define the Cruijff PDF
 };
 
 #endif

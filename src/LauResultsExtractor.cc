@@ -41,6 +41,7 @@ Thomas Latham
 #include "TObjArray.h"
 #include "TSystem.h"
 
+ClassImp(LauResultsExtractor)
 
 
 LauResultsExtractor::LauResultsExtractor(const TString& inputFileName, const TString& outputFileName, const TString& treeName) :

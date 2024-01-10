@@ -195,6 +195,7 @@ class LauSigmaRes : public LauAbsResonance {
 		//! Factor from BES data
 		LauParameter* m0_; 
 
+		ClassDef(LauSigmaRes,0) // Sigma resonance model
 
 };
 

@@ -41,6 +41,7 @@ Thomas Latham
 
 class LauParameter;
 
+ClassImp(Lau2DHistPdf)
 
 
 Lau2DHistPdf::Lau2DHistPdf(const std::vector<TString>& theVarNames, const TH2* hist,

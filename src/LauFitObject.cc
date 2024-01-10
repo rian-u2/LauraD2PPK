@@ -37,6 +37,7 @@ Thomas Latham
 #include "LauFitObject.hh"
 #include "LauRandom.hh"
 
+ClassImp(LauFitObject)
 
 LauFitObject::LauFitObject() : TObject(),
 	twoStageFit_(kFALSE),

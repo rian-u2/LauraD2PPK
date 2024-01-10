@@ -39,6 +39,7 @@ using std::vector;
 #include "LauConstants.hh"
 #include "LauLinearPdf.hh"
 
+ClassImp(LauLinearPdf)
 
 
 	LauLinearPdf::LauLinearPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :

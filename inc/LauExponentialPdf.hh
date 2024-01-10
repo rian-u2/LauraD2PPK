@@ -90,6 +90,7 @@ class LauExponentialPdf : public LauAbsPdf {
 		//! Exponential slope ie exp(slope*x)
 		LauAbsRValue* slope_;
 
+		ClassDef(LauExponentialPdf,0) // Define the Exponential PDF
 };
 
 #endif

@@ -225,6 +225,7 @@ class LauSimFitCoordinator : public LauFitObject {
 		//! The fit results ntuple
 		LauFitNtuple* fitNtuple_;
 
+		ClassDef(LauSimFitCoordinator,0);
 };
 
 #endif

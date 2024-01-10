@@ -141,6 +141,7 @@ class LauVetoes {
 		//! The maximum mass-squared for each veto
 		std::vector<Double_t> vetoMaxMass_;
 
+		ClassDef(LauVetoes,0) // Vetoes in the Dalitz plot
 };
 
 #endif

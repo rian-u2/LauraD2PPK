@@ -38,6 +38,7 @@ Thomas Latham
 #include "LauKinematics.hh"
 #include "LauRandom.hh"
 
+ClassImp(Lau2DHistDP)
 
 
 Lau2DHistDP::Lau2DHistDP(const TH2* hist, const LauDaughters* daughters,

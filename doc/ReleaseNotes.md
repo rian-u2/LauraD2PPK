@@ -8,15 +8,6 @@
 * Caveat: SCF signal is not currently handled - an appropriate warning is printed
 * See https://phab.hepforge.org/T227 for more details
 
-16th Oct 2023 Thomas Latham
-* Remove all uses of deprecated ROOT ClassImp macro
-* Generate ROOT dictionary only for classes: LauAbsRValue, LauBlind and LauParameter
-  - Remove ClassDef macro from all other classes
-  - Remove all other classes from from LinkDef file and dictionary generation command
-* Take advantage of related improvements in the ROOT CMake
-  - Consequently bump the minimum ROOT version to 6.18
-* See https://phab.hepforge.org/T213 for more details
-
 22nd June 2023 Thomas Latham
 * Added functionality to properly manage Gaussian constraints in toy generation
   - see https://phab.hepforge.org/T45
@@ -24,13 +15,6 @@
 9th June 2023 Mark Whitehead
 * Added functionality to include n-dimensional Gaussian constraints
   - see https://phab.hepforge.org/T214
-
-10th February 2023 Thomas Latham
-* Store the sqDP jacobian separately in weightEvents routines
-  - Previously the weight was multiplied by the jacobian
-  - Now the jacobian is stored in a separate branch
-  - New info messages give instructions on what to do depending on how the
-    input sample was generated
 
 21st November 2022 Andy Morris
 * Use Minuit to automatically determine ASq max for signal in LauIsobarDynamics

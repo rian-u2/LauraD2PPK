@@ -43,6 +43,7 @@ LauParameter* LauPolarGammaCPCoeffSet::gammaGlobal_ = 0;
 LauParameter* LauPolarGammaCPCoeffSet::rDGlobal_ = 0;
 LauParameter* LauPolarGammaCPCoeffSet::deltaDGlobal_ = 0;
 
+ClassImp(LauPolarGammaCPCoeffSet)
 
 
 LauPolarGammaCPCoeffSet::LauPolarGammaCPCoeffSet(const TString& compName, const DecayType decayType,

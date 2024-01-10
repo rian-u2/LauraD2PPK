@@ -368,6 +368,7 @@ class LauSPlot : public TObject {
 		//! The extended sPlot coefficients (for each species and for each combination of excluded vars)
 		std::map<TString,NumbMap> cN_;
 
+		ClassDef(LauSPlot, 0)
 };
 
 #endif

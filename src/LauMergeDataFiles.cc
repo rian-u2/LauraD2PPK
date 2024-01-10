@@ -35,6 +35,7 @@ Thomas Latham
 #include "TObjArray.h"
 #include "TSystem.h"
 
+ClassImp(LauMergeDataFiles)
 
 
 LauMergeDataFiles::LauMergeDataFiles(const TString& fileName1, const TString& fileName2, const TString& treeName) :

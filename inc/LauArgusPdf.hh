@@ -92,6 +92,7 @@ class LauArgusPdf : public LauAbsPdf {
 		//! Endpoint of curve
 		LauAbsRValue* m0_;
 
+		ClassDef(LauArgusPdf,0) // Define the ARGUS PDF
 };
 
 #endif

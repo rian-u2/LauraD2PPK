@@ -100,6 +100,7 @@ class LauPolNR : public LauAbsResonance {
 		//! The order in the mass
 		UInt_t order_;
 
+		ClassDef(LauPolNR,0) // Polynomial Non-resonant model
 };
 
 #endif

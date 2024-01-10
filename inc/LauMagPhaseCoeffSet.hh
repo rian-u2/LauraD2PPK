@@ -151,6 +151,7 @@ class LauMagPhaseCoeffSet : public LauAbsCoeffSet {
 		//! The complex coefficient
 		LauComplex coeff_;
 
+		ClassDef(LauMagPhaseCoeffSet, 0)
 };
 
 #endif

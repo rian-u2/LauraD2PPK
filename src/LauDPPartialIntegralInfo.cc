@@ -32,6 +32,7 @@ Thomas Latham
 #include "LauIntegrals.hh"
 #include "LauKinematics.hh"
 
+ClassImp(LauDPPartialIntegralInfo)
 
 
 LauDPPartialIntegralInfo::LauDPPartialIntegralInfo(const Double_t minm13, const Double_t maxm13,

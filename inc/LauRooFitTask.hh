@@ -167,6 +167,7 @@ class LauRooFitTask : public LauSimFitTask {
 		//! The fit parameters (as LauParameter's)
 		std::vector<LauParameter*> fitPars_;
 
+		ClassDef(LauRooFitTask,0);
 };
 
 #endif

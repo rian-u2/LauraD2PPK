@@ -31,6 +31,7 @@ Thomas Latham
 #include "LauConstants.hh"
 #include "LauGounarisSakuraiRes.hh"
 
+ClassImp(LauGounarisSakuraiRes)
 
 
 LauGounarisSakuraiRes::LauGounarisSakuraiRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

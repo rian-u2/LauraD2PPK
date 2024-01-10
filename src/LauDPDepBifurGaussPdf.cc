@@ -45,6 +45,7 @@ using std::vector;
 #include "LauKinematics.hh"
 #include "LauDPDepBifurGaussPdf.hh"
 
+ClassImp(LauDPDepBifurGaussPdf)
 
 
 LauDPDepBifurGaussPdf::LauDPDepBifurGaussPdf(const TString& theVarName, const vector<LauAbsRValue*>& params,

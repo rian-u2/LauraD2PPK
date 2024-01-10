@@ -58,6 +58,7 @@ Thomas Latham
 #include "LauRhoOmegaMix.hh"
 #include "LauSigmaRes.hh"
 
+ClassImp(LauResonanceMaker);
 
 
 LauResonanceMaker* LauResonanceMaker::resonanceMaker_ = 0;

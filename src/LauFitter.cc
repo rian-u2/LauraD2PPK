@@ -40,6 +40,7 @@ LauFitter::Type LauFitter::fitterType_ = LauFitter::Type::Minuit;
 LauOutputLevel LauFitter::fitterVerbosity_ = LauOutputLevel::Standard;
 UInt_t LauFitter::fitterMaxPars_ = 100;
 
+ClassImp(LauFitter)
 
 void LauFitter::setFitterType( const Type type )
 {

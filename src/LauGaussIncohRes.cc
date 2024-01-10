@@ -32,6 +32,7 @@ Thomas Latham
 #include "LauGaussIncohRes.hh"
 #include "LauKinematics.hh"
 
+ClassImp(LauGaussIncohRes)
 
 LauGaussIncohRes::LauGaussIncohRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :
 	LauAbsIncohRes(resInfo, resPairAmpInt, daughters)

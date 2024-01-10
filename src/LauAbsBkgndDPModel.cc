@@ -29,6 +29,7 @@ Thomas Latham
 #include "LauAbsBkgndDPModel.hh"
 #include "LauDaughters.hh"
 
+ClassImp(LauAbsBkgndDPModel)
 
 
 LauAbsBkgndDPModel::LauAbsBkgndDPModel(LauDaughters* daughters, LauVetoes* vetoes) :

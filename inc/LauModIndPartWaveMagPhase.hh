@@ -118,6 +118,7 @@ class LauModIndPartWaveMagPhase : public LauAbsModIndPartWave {
 		virtual void createAmpParameters(const UInt_t iKnot);
 
 	private:
+		ClassDef(LauModIndPartWaveMagPhase,0) // model independent partial wave
 
 };
 

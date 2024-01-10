@@ -34,6 +34,7 @@ Thomas Latham
 
 #include "TSystem.h"
 
+ClassImp(LauFlatteRes)
 
 
 LauFlatteRes::LauFlatteRes(LauResonanceInfo* resInfo, const Int_t resPairAmpInt, const LauDaughters* daughters) :

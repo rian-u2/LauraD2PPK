@@ -87,6 +87,7 @@ class LauPoleRes : public LauAbsResonance {
 		//! Copy assignment operator (not implemented)
 		LauPoleRes& operator=(const LauPoleRes& rhs);
 
+		ClassDef(LauPoleRes,0) // Pole resonance model
 
 };
 

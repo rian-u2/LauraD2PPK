@@ -48,16 +48,16 @@ include(LauraCompilerFlags)
 # External dependencies
 include(LauraExternalDependencies)
 
+# Build and install the library
+add_subdirectory(src)
+
+# Build the ROOT dictionary and install the headers
+add_subdirectory(inc)
+
 # Create the documentation
 if(LAURA_BUILD_DOCS)
     add_subdirectory(doc)
 endif()
-
-# Install the headers
-add_subdirectory(inc)
-
-# Now build and install the library
-add_subdirectory(src)
 
 # Build and install the executables in the examples directory
 if(LAURA_BUILD_EXAMPLES)

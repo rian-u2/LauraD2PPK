@@ -39,6 +39,7 @@ command = command.lower()
 iFit = 0
 nExpt = 1
 firstExpt = 0
+isToy = True
 if command == 'gen' :
     if len(sys.argv) > 2 :
         nExpt = int( sys.argv[2] )
@@ -162,7 +163,7 @@ signalEvents = ROOT.LauParameter('signalEvents',nSigEvents,-1.0*nSigEvents,2.0*n
 fitModel.setNSigEvents(signalEvents)
 
 # Set the number of experiments to generate or fit and which experiment to start with
-fitModel.setNExpts( nExpt, firstExpt )
+fitModel.setNExpts( nExpt, firstExpt, isToy )
 
 
 # Set up a background model

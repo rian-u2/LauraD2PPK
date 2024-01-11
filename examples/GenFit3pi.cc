@@ -141,13 +141,14 @@ int main( int argc, char** argv )
 	// modifying some resonance parameters
 	LauAbsResonance* reson(0);
 	// addResonance arguments: resName, resPairAmpInt, resType
-	reson = sigModel->addResonance("rho0(770)",  1, LauAbsResonance::GS);		// resPairAmpInt = 1 => resonance mass is m23.
+        // resPairAmpInt = 1 => resonance mass is m23.
+	reson = sigModel->addResonance("rho0(770)",  1, LauAbsResonance::GS);	
 	reson = sigModel->addResonance("rho0(1450)", 1, LauAbsResonance::RelBW);
 	reson = sigModel->addResonance("f_0(980)",   1, LauAbsResonance::Flatte);
 	reson->setResonanceParameter("g1",0.2);
 	reson->setResonanceParameter("g2",1.0);
 	reson = sigModel->addResonance("f_2(1270)",  1, LauAbsResonance::RelBW);
-	const TString nrName = "BelleNR_Swave";
+	const TString nrName { "BelleNR_Swave" };
 	reson = sigModel->addResonance(nrName,   0, LauAbsResonance::BelleSymNRNoInter);
 	reson->setResonanceParameter("alpha", 0.2);
 

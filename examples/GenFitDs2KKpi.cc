@@ -106,9 +106,11 @@ int main( int argc, char** argv )
 	LauEffModel* effModel = new LauEffModel(daughters, vetoes);
 
 	// Create the isobar model
+        // resPairAmpInt = 1 => resonance mass is m23.
+        // resPairAmpInt = 2 => resonance mass is m13.
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 	//LauAbsResonance* reson(0);
-	/*reson =*/ sigModel->addResonance("phi(1020)",  1, LauAbsResonance::RelBW);		// resPairAmpInt = 1 => resonance mass is m23.
+	/*reson =*/ sigModel->addResonance("phi(1020)",  1, LauAbsResonance::RelBW);
 	/*reson =*/ sigModel->addResonance("K*0(892)",   2, LauAbsResonance::RelBW);
 	/*reson =*/ sigModel->addResonance("NonReson",   0, LauAbsResonance::FlatNR);
 

@@ -123,6 +123,7 @@ void doKScattPlots() {
 	    label += "_"; label += jChannel;
 
 	    TString multiName("KMatrix"); multiName += label;
+
 	    TMultiGraph* multiGraph = new TMultiGraph();
 	    multiGraph->SetName(multiName.Data());
 
@@ -254,6 +255,7 @@ void doKScattPlots() {
 	xAxis->SetTitleOffset(0.9);
 
 	TString yLabel("K(1,"); yLabel += (iL+1); yLabel += ")";
+
 	TAxis* yAxis = graphs->GetYaxis();
 	yAxis->SetTitleOffset(0.9);
 	yAxis->SetTitle(yLabel.Data());
@@ -293,6 +295,7 @@ void doKScattPlots() {
 	xAxis->SetTitleOffset(0.9);
 
 	TString yLabel("K(2,"); yLabel += (iL+2); yLabel += ")";
+
 	TAxis* yAxis = graphs->GetYaxis();
 	yAxis->SetTitleOffset(0.9);
 	yAxis->SetTitle(yLabel.Data());
@@ -327,7 +330,6 @@ void doKScattPlots() {
 	xAxis->SetTitleOffset(0.9);
 
 	TString yLabel("K(");
-
 	if (iL == 0) {
 	    yLabel += "3,3)";
 	} else if (iL == 1) {
@@ -677,11 +679,10 @@ void doPropagatorPlots() {
 	    xAxis->CenterTitle(kTRUE);
 	    xAxis->SetTitleOffset(0.9);
 
-	    TAxis* yAxis = ampGraphs->GetYaxis();
-
 	    TString yLabel("Propagator("); yLabel += iChannel+1;
 	    yLabel += ","; yLabel += jChannel+1; yLabel += ")";
 
+	    TAxis* yAxis = ampGraphs->GetYaxis();
 	    yAxis->SetTitleOffset(0.9);
 	    yAxis->SetTitle(yLabel.Data());
 	    yAxis->SetLabelSize(0.05);
@@ -823,8 +824,10 @@ void doProdPolePlots(Bool_t useProdAdler) {
     for (iPole = 0; iPole < nPoles; iPole++) {
 
 	TString poleName("Pole"); poleName += iPole;
+
 	LauKMatrixProdPole* thePole = new LauKMatrixProdPole(poleName, iPole+1, resPairInt,
 							     propFull, theDaughters, useProdAdler);
+
 	poleVect.push_back(thePole);
 
     }
@@ -1039,10 +1042,9 @@ void doProdPolePlots(Bool_t useProdAdler) {
 	xAxis->CenterTitle(kTRUE);
 	xAxis->SetTitleOffset(0.9);
 
-	TAxis* yAxis = ampGraphs->GetYaxis();
-
 	TString yLabel("Production Pole "); yLabel += iPole+1;
 
+	TAxis* yAxis = ampGraphs->GetYaxis();
 	yAxis->SetTitleOffset(0.9);
 	yAxis->SetTitle(yLabel.Data());
 	yAxis->SetLabelSize(0.05);
@@ -1166,8 +1168,10 @@ void doProdSVPPlots(Bool_t useProdAdler) {
     for (iSVP = 0; iSVP < nSVPs; iSVP++) {
 
 	TString SVPName("SVP"); SVPName += iSVP;
+
 	LauKMatrixProdSVP* theSVP = new LauKMatrixProdSVP(SVPName, iSVP+1, resPairInt,
 							  propFull, theDaughters, useProdAdler);
+
 	SVPVect.push_back(theSVP);
 
     }

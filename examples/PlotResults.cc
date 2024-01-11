@@ -433,6 +433,7 @@ void plotDists(const TString& fileName, const TString& treeName, Int_t numExpts)
 
 		// plot the true value as an arrow
 		TString trueName(name);  trueName += "_True";
+
 		Double_t maxTrueVal = tree->GetMaximum(trueName);
 		Double_t minTrueVal = tree->GetMinimum(trueName);
 		Bool_t goodTrueVal = kTRUE;

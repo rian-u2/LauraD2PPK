@@ -102,12 +102,14 @@ int main( int argc, char** argv )
 	// Create the isobar models
 	LauAbsResonance* res(0);
 	LauIsobarDynamics* negSigModel = new LauIsobarDynamics(negDaughters, 0);
-	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW); // resPairAmpInt = 2 => resonance mass is m13.
+        // resPairAmpInt = 1 => resonance mass is m23.
+        // resPairAmpInt = 2 => resonance mass is m13.
+	res = negSigModel->addResonance("K*0(892)",    2, LauAbsResonance::RelBW);
 	res = negSigModel->addResonance("K*0_0(1430)", 2, LauAbsResonance::LASS_BW);
 	res->floatResonanceParameter("a");
 	res->floatResonanceParameter("r");
 	res = negSigModel->addResonance("LASSNR0",     2, LauAbsResonance::LASS_NR);
-	res = negSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW); // resPairAmpInt = 1 => resonance mass is m23.
+	res = negSigModel->addResonance("rho0(770)",   1, LauAbsResonance::RelBW);
 	res = negSigModel->addResonance("f_0(980)",    1, LauAbsResonance::Flatte);
 	res = negSigModel->addResonance("chi_c0",      1, LauAbsResonance::RelBW);
 	res = negSigModel->addResonance("NonReson",    1, LauAbsResonance::BelleNR);

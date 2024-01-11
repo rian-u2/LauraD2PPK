@@ -160,7 +160,8 @@ int main( int argc, char** argv )
 	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
 
 	coeffset.push_back( new LauMagPhaseCoeffSet("D*0",  0.55,  -0.38,  kFALSE,  kFALSE) );	
-	coeffset.push_back( new LauMagPhaseCoeffSet("D*0_0",  1.26,  -0.28,  kFALSE,  kFALSE) ); // Still need a total mag/phase for the MIPW shape	
+        // Still need a total mag/phase for the MIPW shape	
+	coeffset.push_back( new LauMagPhaseCoeffSet("D*0_0",  1.26,  -0.28,  kFALSE,  kFALSE) );
 	coeffset.push_back( new LauMagPhaseCoeffSet("D*0_2",  1.00,  0.00,  kTRUE,  kTRUE) );	
 	coeffset.push_back( new LauMagPhaseCoeffSet("D*0_1(2680)",  0.48,  2.47,  kFALSE,  kFALSE) );	
 	coeffset.push_back( new LauMagPhaseCoeffSet("B*0",  0.27,  0.14,  kFALSE,  kFALSE) );	

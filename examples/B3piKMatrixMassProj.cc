@@ -356,27 +356,27 @@ std::vector<TH1*> genMassHistos(Int_t index, Int_t NSignal) {
 
     // Histogram of the invariant mass for pi+ pi- pairs: m13 & m23
     TString m13Name(theName); m13Name += "_m13";
+
     TH1D* m13Hist = new TH1D(m13Name.Data(), "", 100, 0.0, 5.5);
     m13Hist->SetXTitle("m(#pi^{+}#pi^{-})");
-
     m13Hist->SetDirectory(0);
     histVect.push_back(m13Hist);
 
     // Histogram of the wrong sign invariant mass pi+ pi+: m12
     TString m12Name(theName); m12Name += "_m12";
+
     TH1D* m12Hist = new TH1D(m12Name.Data(), "", 100, 0.0, 5.5);
     m12Hist->SetXTitle("m(#pi^{+}#pi^{+})");
-
     m12Hist->SetDirectory(0);
     histVect.push_back(m12Hist);
 
     // Dalitz plot 2d histogram
     TString DPName(theName); DPName += "_DP";
+
     TH2D* DPHist = new TH2D(DPName.Data(), "", 100, 0.0, 14.0, 100, 0.0, 28.0);
     //TH2D* DPHist = new TH2D("DPHist", "", 100, 0.0, 28.0, 100, 0.0, 28.0);
     DPHist->SetXTitle("m^{2}(#pi^{+}#pi^{-})_{min}");
     DPHist->SetYTitle("m^{2}(#pi^{+}#pi^{-})_{max}");
-
     DPHist->SetDirectory(0);
     histVect.push_back(DPHist);
 

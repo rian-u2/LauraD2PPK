@@ -1,12 +1,44 @@
 # Laura++ release notes
 
-16th Nov 2023 Thomas Latham
+10th January 2024 Thomas Latham
+* Take advantage of improvements in ROOT dictionary generation
+  - Consequently bump the minimum ROOT version to 6.18
+* See https://phab.hepforge.org/T213 for more details
+
+10th January 2024 Thomas Latham
+* Fix python example
+
+14th December 2023 Thomas Latham
+* Fix missing includes / fwd declarations
+* Fix issues with Doxygen documentation
+* Minor formatting fixes for examples
+* Minor improvements to CMake config
+
+7th December 2023 Thomas Latham
+* Create clang-format (version 16) style file
+* Create scripts to:
+  - Apply clang-format to all source files
+  - Check and fix indentation of Doxygen comment blocks
+  - Fix common issues in formatting of CMake and Markdown files
+* See https://phab.hepforge.org/T111 for more details
+
+20th November 2023 Thomas Latham
+* Allow increase of C++ standard via environment variable
+* See https://phab.hepforge.org/D105 for more details
+
+16th November 2023 Thomas Latham
 * Add functions to fit models that return:
   - signal DP amplitudes
   - signal and background DP likelihood(s)
 * Add example to plot histograms of likelihood values
 * Caveat: SCF signal is not currently handled - an appropriate warning is printed
 * See https://phab.hepforge.org/T227 for more details
+
+9th August 2023 Thomas Latham
+* Update CI config to use el9 for LCG dev builds
+
+8th August 2023 Andy Morris
+* Suppress 'up-to-date' messages in install step
 
 22nd June 2023 Thomas Latham
 * Added functionality to properly manage Gaussian constraints in toy generation
@@ -15,6 +47,13 @@
 9th June 2023 Mark Whitehead
 * Added functionality to include n-dimensional Gaussian constraints
   - see https://phab.hepforge.org/T214
+
+10th February 2023 Thomas Latham
+* Store the sqDP jacobian separately in weightEvents routines
+  - Previously the weight was multiplied by the jacobian
+  - Now the jacobian is stored in a separate branch
+  - New info messages give instructions on what to do depending on how the
+    input sample was generated
 
 21st November 2022 Andy Morris
 * Use Minuit to automatically determine ASq max for signal in LauIsobarDynamics

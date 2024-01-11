@@ -42,7 +42,6 @@ Thomas Latham
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::vector;
 
 #include "TEventList.h"
 #include "TFile.h"
@@ -892,7 +891,7 @@ Bool_t LauSPlot::calcCovMatrix()
 	TMatrixD invMatrix(nFreeSpecies_,nFreeSpecies_);
 
 	// First calculate the denominator, which is common to all elements
-	vector<Double_t> denominator(nEvents_);
+        std::vector<Double_t> denominator(nEvents_);
 	for (Int_t iEvt(0); iEvt<nEvents_; ++iEvt) {
 		denominator[iEvt] = 0.0;
 		for (NumbMap::const_iterator spec_iter = freeSpecies_.begin(); spec_iter != freeSpecies_.end(); ++spec_iter) {

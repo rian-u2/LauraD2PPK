@@ -199,6 +199,7 @@ class LauResonanceInfo {
 
 };
 
+//! output operator formatting of an info record
 std::ostream& operator<<( std::ostream& stream, const LauResonanceInfo& infoRecord );
 
 #endif

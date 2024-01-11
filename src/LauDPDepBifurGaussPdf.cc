@@ -31,7 +31,6 @@ Thomas Latham
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::vector;
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -48,12 +47,12 @@ using std::vector;
 ClassImp(LauDPDepBifurGaussPdf)
 
 
-LauDPDepBifurGaussPdf::LauDPDepBifurGaussPdf(const TString& theVarName, const vector<LauAbsRValue*>& params,
+LauDPDepBifurGaussPdf::LauDPDepBifurGaussPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params,
 		Double_t minAbscissa, Double_t maxAbscissa,
 		const LauDaughters* daughters,
-		const vector<Double_t>& meanCoeffs,
-		const vector<Double_t>& sigmaLCoeffs,
-		const vector<Double_t>& sigmaRCoeffs,
+		const std::vector<Double_t>& meanCoeffs,
+		const std::vector<Double_t>& sigmaLCoeffs,
+		const std::vector<Double_t>& sigmaRCoeffs,
 		DPAxis dpAxis) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	kinematics_(daughters ? daughters->getKinematics() : 0),
@@ -193,21 +192,21 @@ void LauDPDepBifurGaussPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 void LauDPDepBifurGaussPdf::scalePars_poly(Double_t dpPos)
 {
 	Int_t power = 1;
-	for (vector<Double_t>::const_iterator iter = meanCoeffs_.begin(); iter != meanCoeffs_.end(); ++iter) {
+	for (std::vector<Double_t>::const_iterator iter = meanCoeffs_.begin(); iter != meanCoeffs_.end(); ++iter) {
 		Double_t coeff = (*iter);
 		meanVal_ += coeff * TMath::Power(dpPos,power);
 		++power;
 	}
 
 	power = 1;
-	for (vector<Double_t>::const_iterator iter = sigmaLCoeffs_.begin(); iter != sigmaLCoeffs_.end(); ++iter) {
+	for (std::vector<Double_t>::const_iterator iter = sigmaLCoeffs_.begin(); iter != sigmaLCoeffs_.end(); ++iter) {
 		Double_t coeff = (*iter);
 		sigmaLVal_ += coeff * TMath::Power(dpPos,power);
 		++power;
 	}
 
 	power = 1;
-	for (vector<Double_t>::const_iterator iter = sigmaRCoeffs_.begin(); iter != sigmaRCoeffs_.end(); ++iter) {
+	for (std::vector<Double_t>::const_iterator iter = sigmaRCoeffs_.begin(); iter != sigmaRCoeffs_.end(); ++iter) {
 		Double_t coeff = (*iter);
 		sigmaRVal_ += coeff * TMath::Power(dpPos,power);
 		++power;
@@ -217,21 +216,21 @@ void LauDPDepBifurGaussPdf::scalePars_poly(Double_t dpPos)
 void LauDPDepBifurGaussPdf::scalePars_polyNegPower(Double_t dpPos)
 {
 	Int_t power = -1;
-	for (vector<Double_t>::const_iterator iter = meanCoeffs_.begin(); iter != meanCoeffs_.end(); ++iter) {
+	for (std::vector<Double_t>::const_iterator iter = meanCoeffs_.begin(); iter != meanCoeffs_.end(); ++iter) {
 		Double_t coeff = (*iter);
 		meanVal_ += coeff * TMath::Power(dpPos,power);
 		--power;
 	}
 
 	power = -1;
-	for (vector<Double_t>::const_iterator iter = sigmaLCoeffs_.begin(); iter != sigmaLCoeffs_.end(); ++iter) {
+	for (std::vector<Double_t>::const_iterator iter = sigmaLCoeffs_.begin(); iter != sigmaLCoeffs_.end(); ++iter) {
 		Double_t coeff = (*iter);
 		sigmaLVal_ += coeff * TMath::Power(dpPos,power);
 		--power;
 	}
 
 	power = -1;
-	for (vector<Double_t>::const_iterator iter = sigmaRCoeffs_.begin(); iter != sigmaRCoeffs_.end(); ++iter) {
+	for (std::vector<Double_t>::const_iterator iter = sigmaRCoeffs_.begin(); iter != sigmaRCoeffs_.end(); ++iter) {
 		Double_t coeff = (*iter);
 		sigmaRVal_ += coeff * TMath::Power(dpPos,power);
 		--power;

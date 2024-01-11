@@ -624,6 +624,29 @@ Double_t LauKinematics::genm12Sq() const
 	return m12Sq;
 }
 
+Double_t dal(Double_t* x, Double_t* par)
+{
+	Double_t mParent = par[0];
+	Double_t mi = par[1];
+	Double_t mj = par[2];
+	Double_t mk = par[3];
+
+	Double_t mikSq=x[0];
+	Double_t mjkSq=x[1];
+	Double_t mik = TMath::Sqrt(mikSq);
+	Double_t mjk = TMath::Sqrt(mjkSq);
+
+	Double_t ejcmsik = (mParent*mParent-mj*mj-mik*mik)/(2.0*mik);
+	Double_t ekcmsik = (mik*mik+mk*mk-mi*mi)/(2.0*mik);
+	if (ekcmsik<mk || ejcmsik<mj) return 2.0;
+
+	Double_t pj = TMath::Sqrt(ejcmsik*ejcmsik-mj*mj);
+	Double_t pk = TMath::Sqrt(ekcmsik*ekcmsik-mk*mk);
+	Double_t coshelik = (mjk*mjk - mk*mk - mj*mj - 2.0*ejcmsik*ekcmsik)/(2.0*pj*pk);
+
+	Double_t coshelikSq = coshelik*coshelik;
+	return coshelikSq;
+}
 
 void LauKinematics::drawDPContour(Int_t orientation, Int_t nbins)
 {
@@ -716,29 +739,5 @@ void LauKinematics::drawDPContour(Int_t orientation, Int_t nbins)
 	f2->DrawCopy("same");
 
 	delete f2;
-}
-
-Double_t dal(Double_t* x, Double_t* par)
-{
-	Double_t mParent = par[0];
-	Double_t mi = par[1];
-	Double_t mj = par[2];
-	Double_t mk = par[3];
-
-	Double_t mikSq=x[0];
-	Double_t mjkSq=x[1];
-	Double_t mik = TMath::Sqrt(mikSq);
-	Double_t mjk = TMath::Sqrt(mjkSq);
-
-	Double_t ejcmsik = (mParent*mParent-mj*mj-mik*mik)/(2.0*mik);
-	Double_t ekcmsik = (mik*mik+mk*mk-mi*mi)/(2.0*mik);
-	if (ekcmsik<mk || ejcmsik<mj) return 2.0;
-
-	Double_t pj = TMath::Sqrt(ejcmsik*ejcmsik-mj*mj);
-	Double_t pk = TMath::Sqrt(ekcmsik*ekcmsik-mk*mk);
-	Double_t coshelik = (mjk*mjk - mk*mk - mj*mj - 2.0*ejcmsik*ekcmsik)/(2.0*pj*pk);
-
-	Double_t coshelikSq = coshelik*coshelik;
-	return coshelikSq;
 }
 

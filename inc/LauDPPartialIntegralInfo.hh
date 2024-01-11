@@ -270,6 +270,7 @@ class LauDPPartialIntegralInfo {
 		ClassDef(LauDPPartialIntegralInfo, 0)
 };
 
+//! output operator formatting
 std::ostream& operator<<( std::ostream& stream, const LauDPPartialIntegralInfo& infoRecord );
 
 #endif

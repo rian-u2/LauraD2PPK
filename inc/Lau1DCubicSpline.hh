@@ -105,6 +105,7 @@ class Lau1DCubicSpline {
 		/*!
 		    /param [in] xs the x-values of the knots
 		    /param [in] ys the y-values of the knots
+                    /param [in] type the type of the spline (e.g. StandardSpline, AkimaSpline, LinearInterpolation)
 		    /param [in] leftBound the left-hand boundary condition
 		    /param [in] rightBound the right-hand boundary condition
 		    /param [in] dydx0 the gradient at the left-hand boundary of a clamped spline

@@ -670,6 +670,4 @@ class LauKinematics {
 		ClassDef(LauKinematics,0)
 };
 
-Double_t dal(Double_t* x, Double_t* par);
-
 #endif

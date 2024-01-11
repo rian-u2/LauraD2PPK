@@ -42,9 +42,9 @@ Thomas Latham
 
     A sample config file is provided. The fields are:
 
-        <name of file containing data histogram> <name of data tree> <name of the x axis variable in data> <name of the y axis variable in data>
-        <name of file containing toy MC histogram> <name of toy MC tree> <name of the x axis variable in toy MC> <name of the y axis variable in toy MC>
-        <the minimum content for any bin> <the number of free parameter in the fit> <the scalefactor by which the toy MC bin content should be multiplied> <minimum x value> <maximum x value> <minimum y value> <maximum y value>
+        \<name of file containing data histogram\> \<name of data tree\> \<name of the x axis variable in data\> \<name of the y axis variable in data\><br>
+        \<name of file containing toy MC histogram\> \<name of toy MC tree\> \<name of the x axis variable in toy MC\> \<name of the y axis variable in toy MC\><br>
+        \<the minimum content for any bin\> \<the number of free parameter in the fit\> \<the scalefactor by which the toy MC bin content should be multiplied\> \<minimum x value\> \<maximum x value\> \<minimum y value\> \<maximum y value\>
 */
 
 class LauCalcChiSq {

@@ -31,7 +31,6 @@ Thomas Latham
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::map;
 
 #include "TRandom.h"
 
@@ -585,7 +584,7 @@ void LauParameter::blindParameter(const TString& blindingString, const Double_t 
 
 	blinder_ = new LauBlind(blindingString,width);
 
-	for (map<LauParameter*,Double_t>::iterator iter = clones_.begin(); iter != clones_.end(); ++iter) {
+	for (std::map<LauParameter*,Double_t>::iterator iter = clones_.begin(); iter != clones_.end(); ++iter) {
 			LauParameter* clonePar = iter->first;
 			if ( clonePar->blinder_ != 0 ) {
 				std::cerr << "WARNING in LauParameter::blindParameter : blinding has already been set up for a clone of this parameter - it will be replaced!" << std::endl;

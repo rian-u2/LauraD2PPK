@@ -31,7 +31,6 @@ Thomas Latham
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::vector;
 
 #include "TMath.h"
 #include "TSystem.h"
@@ -42,7 +41,7 @@ using std::vector;
 ClassImp(LauLinearPdf)
 
 
-	LauLinearPdf::LauLinearPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+	LauLinearPdf::LauLinearPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 		LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 		slope_(0),posflag_(kTRUE)
 {
@@ -91,9 +90,9 @@ void LauLinearPdf::calcLikelihoodInfo(const LauAbscissas& abscissas)
 	if ( value < 0.0 ) {
 		if ( posflag_ ) {
 			std::cerr << "WARNING in LauLinearPdf::calcLikelihoodInfo : The PDF is negative, setting to zero" << std::endl;
+			posflag_= kFALSE;
 		}
 		value = 0.0;
-		posflag_= kFALSE;
 	}
 
 	this->setUnNormPDFVal(value);

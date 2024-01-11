@@ -138,6 +138,7 @@ class LauPolarFormFactorSymNR : public LauAbsResonance {
 		//! Copy assignment operator (not implemented)
 		LauPolarFormFactorSymNR& operator=(const LauPolarFormFactorSymNR& rhs);
 
+                //! The NR shape parameter
 		LauParameter* lambda_;
 
 		//! The model to use

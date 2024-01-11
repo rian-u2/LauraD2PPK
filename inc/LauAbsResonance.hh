@@ -406,9 +406,11 @@ class LauAbsResonance {
 
 		//! Get the centrifugal barrier for the parent decay
 		LauBlattWeisskopfFactor* getParBWFactor() {return parBWFactor_;}
+		//! Get the centrifugal barrier for the parent decay
 		const LauBlattWeisskopfFactor* getParBWFactor() const {return parBWFactor_;}
 		//! Get the centrifugal barrier for the resonance decay
 		LauBlattWeisskopfFactor* getResBWFactor() {return resBWFactor_;}
+		//! Get the centrifugal barrier for the resonance decay
 		const LauBlattWeisskopfFactor* getResBWFactor() const {return resBWFactor_;}
 
 		//! Access the resonance info object
@@ -503,7 +505,7 @@ class LauAbsResonance {
 		Double_t massDaug1_{0.0};
 		//! Daughter 2 mass 
 		Double_t massDaug2_{0.0};
-		// Bachelor mass
+		//! Bachelor mass
 		Double_t massBachelor_{0.0};
 
 		//! Resonance name

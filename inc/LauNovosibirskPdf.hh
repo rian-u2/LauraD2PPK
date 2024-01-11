@@ -42,8 +42,6 @@ Thomas Latham
 
 #include <vector>
 
-using std::vector;
-
 class LauNovosibirskPdf : public LauAbsPdf {
 
 	public:
@@ -54,7 +52,7 @@ class LauNovosibirskPdf : public LauAbsPdf {
 		    \param [in] minAbscissa the minimum value of the abscissa
 		    \param [in] maxAbscissa the maximum value of the abscissa
 		*/
-		LauNovosibirskPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
+		LauNovosibirskPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa);
 
 		//! Destructor
 		virtual ~LauNovosibirskPdf();

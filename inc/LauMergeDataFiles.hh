@@ -33,7 +33,7 @@ Thomas Latham
     \brief File containing declaration of LauMergeDataFiles class.
 */
 
-/*! \class LauResultsExtractor
+/*! \class LauMergeDataFiles
   \brief Utility class to allow the merging of data files on a expt-by-expt basis
 
   The files are merged such that events for expt 0 from tree 1 will be followed

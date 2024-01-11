@@ -86,6 +86,7 @@ class LauLinearPdf : public LauAbsPdf {
 		//! Line slope
 		LauAbsRValue* slope_;
 
+                //! Flag to control printing of warnings about the PDF going negative
 		Bool_t posflag_;
 
 		ClassDef(LauLinearPdf,0) // Define the Linear PDF

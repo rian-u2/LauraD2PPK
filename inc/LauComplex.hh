@@ -350,8 +350,9 @@ class LauComplex {
 		ClassDef(LauComplex,0) // a non-persistent bare-bones complex class
 };
 
-//! input/output operator formatting of a complex number
+//! input operator formatting of a complex number
 std::istream& operator>>(std::istream& os, LauComplex& z);
+//! output operator formatting of a complex number
 std::ostream& operator<<(std::ostream& os, const LauComplex& z);
 
 #endif

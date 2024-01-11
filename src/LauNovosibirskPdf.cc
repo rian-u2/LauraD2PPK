@@ -40,7 +40,7 @@ using std::endl;
 
 ClassImp(LauNovosibirskPdf)
 
-LauNovosibirskPdf::LauNovosibirskPdf(const TString& theVarName, const vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
+LauNovosibirskPdf::LauNovosibirskPdf(const TString& theVarName, const std::vector<LauAbsRValue*>& params, Double_t minAbscissa, Double_t maxAbscissa) :
 	LauAbsPdf(theVarName, params, minAbscissa, maxAbscissa),
 	mean_(0),
 	sigma_(0),

@@ -479,7 +479,9 @@ class LauCPFitModel : public LauAbsFitModel {
 		*/
 		void appendBinCentres( LauFitDataTree* inputData );
 
+                //! Retrieve the signal DP model for the B-
 		LauIsobarDynamics* getNegSigModel() {return negSigModel_;}
+                //! Retrieve the signal DP model for the B+
 		LauIsobarDynamics* getPosSigModel() {return posSigModel_;}
 
 		//! Retrieve a named parameter from a TTree

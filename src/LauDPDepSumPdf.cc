@@ -31,7 +31,6 @@ Thomas Latham
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::vector;
 
 #include "TMath.h"
 #include "TSystem.h"
@@ -48,7 +47,7 @@ ClassImp(LauDPDepSumPdf)
 LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 		const LauDaughters* daughters,
 		const TH2* dpHisto, Bool_t upperHalf, Bool_t useSpline) :
-	LauAbsPdf(pdf1 ? pdf1->varNames() : vector<TString>(), vector<LauAbsRValue*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
+	LauAbsPdf(pdf1 ? pdf1->varNames() : std::vector<TString>(), std::vector<LauAbsRValue*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
 	daughters_( new LauDaughters(*daughters) ),
 	pdf1_(pdf1),
 	pdf2_(pdf2),
@@ -102,13 +101,13 @@ LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 	// This is so that when we are asked for them they can be put into the fit.
 	// The number of parameters is the number in PDF1 + the number in PDF2.
 	UInt_t nPar(pdf1->nParameters()+pdf2->nParameters());
-	vector<LauAbsRValue*> params;  params.reserve(nPar);
-	vector<LauAbsRValue*>& pdf1pars = pdf1->getParameters();
-	vector<LauAbsRValue*>& pdf2pars = pdf2->getParameters();
-	for (vector<LauAbsRValue*>::iterator iter = pdf1pars.begin(); iter != pdf1pars.end(); ++iter) {
+        std::vector<LauAbsRValue*> params;  params.reserve(nPar);
+        std::vector<LauAbsRValue*>& pdf1pars = pdf1->getParameters();
+        std::vector<LauAbsRValue*>& pdf2pars = pdf2->getParameters();
+	for (std::vector<LauAbsRValue*>::iterator iter = pdf1pars.begin(); iter != pdf1pars.end(); ++iter) {
 		params.push_back(*iter);
 	}
-	for (vector<LauAbsRValue*>::iterator iter = pdf2pars.begin(); iter != pdf2pars.end(); ++iter) {
+	for (std::vector<LauAbsRValue*>::iterator iter = pdf2pars.begin(); iter != pdf2pars.end(); ++iter) {
 		params.push_back(*iter);
 	}
 	this->addParameters(params);
@@ -122,7 +121,7 @@ LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 		const LauDaughters* daughters,
 		const std::vector<Double_t>& fracCoeffs,
 		DPAxis dpAxis) :
-	LauAbsPdf(pdf1 ? pdf1->varNames() : vector<TString>(), vector<LauAbsRValue*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
+	LauAbsPdf(pdf1 ? pdf1->varNames() : std::vector<TString>(), std::vector<LauAbsRValue*>(), pdf1 ? pdf1->getMinAbscissas() : LauFitData(), pdf1 ? pdf1->getMaxAbscissas() : LauFitData()),
 	daughters_( new LauDaughters(*daughters) ),
 	pdf1_(pdf1),
 	pdf2_(pdf2),
@@ -176,14 +175,14 @@ LauDPDepSumPdf::LauDPDepSumPdf(LauAbsPdf* pdf1, LauAbsPdf* pdf2,
 	// This is so that when we are asked for them they can be put into the fit.
 	// The number of parameters is the number in PDF1 + the number in PDF2.
 	UInt_t nPar( pdf1->nParameters() + pdf2->nParameters() + 1 );
-	vector<LauAbsRValue*> params;  params.reserve(nPar);
+        std::vector<LauAbsRValue*> params;  params.reserve(nPar);
 	params.push_back(frac);
-	vector<LauAbsRValue*>& pdf1pars = pdf1->getParameters();
-	vector<LauAbsRValue*>& pdf2pars = pdf2->getParameters();
-	for (vector<LauAbsRValue*>::iterator iter = pdf1pars.begin(); iter != pdf1pars.end(); ++iter) {
+        std::vector<LauAbsRValue*>& pdf1pars = pdf1->getParameters();
+        std::vector<LauAbsRValue*>& pdf2pars = pdf2->getParameters();
+	for (std::vector<LauAbsRValue*>::iterator iter = pdf1pars.begin(); iter != pdf1pars.end(); ++iter) {
 		params.push_back(*iter);
 	}
-	for (vector<LauAbsRValue*>::iterator iter = pdf2pars.begin(); iter != pdf2pars.end(); ++iter) {
+	for (std::vector<LauAbsRValue*>::iterator iter = pdf2pars.begin(); iter != pdf2pars.end(); ++iter) {
 		params.push_back(*iter);
 	}
 	this->addParameters(params);

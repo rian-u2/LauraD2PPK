@@ -1,0 +1,14 @@
+
+
+#Para compilar o arquivo de Fit D2PiPiKFit
+g++ -o D2PiPiKFit D2PiPiKFit.cpp     -I$HOME/laura/inc     -L$HOME/laura/build/lib     $(root-config --cflags --libs)     -lLaura++
+
+#Para compilar o arquivo de Fit fitD2PKP
+g++ -o fitD2PKP fitD2PKP.cc     -I$HOME/laura/inc     -L$HOME/laura/build/lib     $(root-config --cflags --libs)     -lLaura++
+
+#Para compilar um arquivo qualquer
+g++ -o NomeDoArquivoExecutavel NomeDoArquivoTexto.cpp     -I$HOME/laura/inc     -L$HOME/laura/build/lib     $(root-config --cflags --libs)     -lLaura++
+
+
+#Para compilar bash
+chmod +x arquivo.sh

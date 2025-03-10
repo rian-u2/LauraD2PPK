@@ -973,7 +973,7 @@ Bool_t LauSimpleFitModel::genExpt()
 			++evtNum;
 
 			this->fillGenNtupleBranches();
-			if ( !blind && (iEvt%500 == 0) ) {
+			if ( !blind && (iEvt%10000 == 0) ) {
 				std::cout << "INFO in LauSimpleFitModel::genExpt : Generated event number " << iEvt << " out of " << nEvtsGen << " " << type << " events." << std::endl;
 			}
 		}

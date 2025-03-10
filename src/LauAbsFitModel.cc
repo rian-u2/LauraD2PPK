@@ -47,6 +47,12 @@ Thomas Latham
 #include "LauPrint.hh"
 #include "LauSPlot.hh"
 
+
+// Variável global para armazenar eventos problemáticos
+std::vector<Int_t> problematicEvents;
+
+
+
 ClassImp(LauAbsFitModel)
 
 
@@ -788,6 +794,7 @@ Double_t LauAbsFitModel::getLogLikelihood( UInt_t iStart, UInt_t iEnd )
 		} else {
 			ok = kFALSE;
 			std::cerr << "WARNING in LauAbsFitModel::getLogLikelihood : Strange likelihood value for event " << iEvt << ": " << likelihood << "\n";
+			problematicEvents.push_back(iEvt);
 			this->printEventInfo(iEvt);
 			this->printVarsInfo();	//Write the values of the floated variables for which the likelihood is zero
 			break;

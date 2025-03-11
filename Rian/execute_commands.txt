@@ -12,3 +12,13 @@ g++ -o NomeDoArquivoExecutavel NomeDoArquivoTexto.cpp     -I$HOME/laura/inc     
 
 #Para compilar bash
 chmod +x arquivo.sh
+
+
+#Github
+cd ~/laura/Rian                  # Navegue até o diretório do repositório
+git add .                        # Adiciona todas as mudanças (arquivos novos, modificados, removidos)
+git commit -m "Descrição das mudanças"  # Crie um commit descrevendo as mudanças
+git push origin main             # Envia as mudanças para o repositório remoto
+
+cd ~/laura/Rian
+git pull origin main

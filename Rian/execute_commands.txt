@@ -22,5 +22,3 @@ git push origin main             # Envia as mudanças para o repositório remoto
 
 cd ~/laura/Rian
 git pull origin main
-
-export LD_LIBRARY_PATH=$HOME/laura/build/lib:$LD_LIBRARY_PATH

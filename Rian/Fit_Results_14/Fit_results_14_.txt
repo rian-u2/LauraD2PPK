@@ -1,0 +1,73 @@
+rho0(770)
+Amp: 1 Fixed
+Phase: 0 Fixed
+Fit Fraction: 0.482519
+           
+omega(782)
+Amp: 0.0429906 ± 0.00272137
+Phase: -0.632412 ± 0.0678726
+Fit Fraction: 0.000891789
+           
+rho0(1450)
+Amp: 0.198794 ± 0.00691495
+Phase: -2.12884 ± 0.0218079
+Fit Fraction: 0.0190688
+           
+f_2(1270)
+Amp: 0.156875 ± 0.00623204
+Phase: 0.392237 ± 0.0403321
+Fit Fraction: 0.0118747
+           
+f'_2(1525)
+Amp: 0.0984141 ± 0.00859996
+Phase: -1.23938 ± 0.0706999
+Fit Fraction: 0.00467337
+           
+f_0(1370)
+Amp: 0.107257 ± 0.00825457
+Phase: -0.587851 ± 0.0950909
+Fit Fraction: 0.00555089
+           
+f_0(1500)
+Amp: 0.246749 ± 0.00951771
+Phase: -0.0804594 ± 0.045675
+Fit Fraction: 0.0293783
+           
+sigma0
+Amp: 0.21726 ± 0.00693037
+Phase: 2.23313 ± 0.0264126
+Fit Fraction: 0.0227758
+           
+f_0(980)
+Amp: 0.248756 ± 0.00445586
+Phase: 2.17754 ± 0.0280975
+Fit Fraction: 0.0298581
+           
+K*0(892)
+Amp: 0.932094 ± 0.00464405
+Phase: -2.62921 ± 0.00896291
+Fit Fraction: 0.419213
+           
+K*0_2(1430)
+Amp: 0.0355029 ± 0.00403584
+Phase: -2.04377 ± 0.100318
+Fit Fraction: 0.000608196
+           
+K*0_0(1430)
+Amp: 0.398772 ± 0.00639863
+Phase: 2.27595 ± 0.0167839
+Fit Fraction: 0.0767299
+           
+K*0(1410)
+Amp: 0.179792 ± 0.00508622
+Phase: -0.264253 ± 0.0347589
+Fit Fraction: 0.0155975
+           
+kappa0
+Amp: 0.0785143 ± 0.00742081
+Phase: -3.25896 ± 0.0593635
+Fit Fraction: 0.00297449
+           
+Sum Diagonal Fit Fractions: 1.12171
+           
+Obs: Fit com f0_980 Flatte, kappa Kappa, restante RelBW, sem NR.

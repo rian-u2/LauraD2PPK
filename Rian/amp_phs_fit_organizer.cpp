@@ -72,7 +72,7 @@ int amp_phs_fit_organizer(int indice = 0) {
         file->Close();
         return 1;
     }
-    
+    Double_t sum_FitFrac;
 
     std::cout << "Fit Results:"<< std::endl;
     std::cout << "        "<< std::endl;
@@ -99,6 +99,7 @@ int amp_phs_fit_organizer(int indice = 0) {
 
     
         tree->GetEntry(0);
+        sum_FitFrac+=FitFrac;
 
         // Exibe os valores no terminal
         std::cout <<  res << std::endl;
@@ -129,8 +130,11 @@ int amp_phs_fit_organizer(int indice = 0) {
         i++;
     }
 
-    
+    std::cout << "Sum Diagonal Fit Fractions: " << sum_FitFrac << std::endl;
+    std::cout << "           " << std::endl;
 
+    outFile << "Sum Diagonal Fit Fractions: " << sum_FitFrac << std::endl;
+    outFile << "           " << std::endl;
 
 
     // Fecha o arquivo de texto

@@ -309,15 +309,15 @@ int main( int argc, char** argv )
 	LauAbsResonance * f0_1370 = sigModel->addResonance("f_0(1370)",  2, LauAbsResonance::RelBW);
 	LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
 	LauAbsResonance * sigma = sigModel->addResonance("sigma0",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
+	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
+	LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
 
 	LauAbsResonance * K_892 = sigModel->addResonance("K*0(892)",  1, LauAbsResonance::RelBW);
 	LauAbsResonance * K2_1430 = sigModel->addResonance("K*0_2(1430)",  1, LauAbsResonance::RelBW);
 	LauAbsResonance * K0_1430 = sigModel->addResonance("K*0_0(1430)",  1, LauAbsResonance::RelBW);
 	LauAbsResonance * K_1410 = sigModel->addResonance("K*0(1410)",  1, LauAbsResonance::RelBW);
-	LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::RelBW);
-	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::Kappa);
+	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::RelBW);
+	LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::Kappa);
 
 	sigModel->addResonance("NonReson", 0, LauAbsResonance :: FlatNR);
 
@@ -330,7 +330,7 @@ int main( int argc, char** argv )
 	f0_1370->changeResonance(1.250, 0.3, 0);
 	f0_1500->changeResonance(1.522, 0.108, 0);
 	sigma->changeResonance(0.37, 0.400, 0);
-	f0_980->changeResonance(0.990, 0.04, 0);
+	// f0_980->changeResonance(0.990, 0.04, 0);
 	
 
 
@@ -338,7 +338,7 @@ int main( int argc, char** argv )
 	K2_1430->changeResonance(1.4324 , 0.109 , 2);
 	K0_1430->changeResonance(1.425, 0.270 , 0);
 	K_1410->changeResonance(1.414, 0.232 , 1);
-	kappa->changeResonance(0.845, 0.468 , 0);
+	// kappa->changeResonance(0.845, 0.468 , 0);
 
 
 			// O NUMERO REPRESENTA ONDE NAO FICA A RESSONANCIA

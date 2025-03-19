@@ -14,8 +14,8 @@ g++ -o NomeDoArquivoExecutavel NomeDoArquivoTexto.cpp     -I$HOME/laura/inc     
 chmod +x arquivo.sh
 
 #Para compilar o arquivo de Fit fitD2PKP na focus
-export LD_LIBRARY_PATH=$HOME/charmosinhos/Rian/Laura3/laura/build/lib:$LD_LIBRARY_PATH
-g++ -o fitD2PKP fitD2PKP.cc     -I$HOME/charmosinhos/Rian/Laura3/laura/inc     -L$HOME/charmosinhos/Rian/Laura3/laurabuild/lib     $(root-config --cflags --libs)     -lLaura++
+export LD_LIBRARY_PATH=$HOME/Rian/Laura3/laura/build/lib:$LD_LIBRARY_PATH
+g++ -o fitD2PKP fitD2PKP.cc     -I$HOME/Rian/Laura3/laura/inc     -L$HOME/Rian/Laura3/laurabuild/lib     $(root-config --cflags --libs)     -lLaura++
 
 #Github
 cd ~/laura/Rian                  # Navegue até o diretório do repositório

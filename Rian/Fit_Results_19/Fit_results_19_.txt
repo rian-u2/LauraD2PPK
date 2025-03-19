@@ -1,0 +1,73 @@
+rho0(770)
+Amp: 1 Fixed
+Phase: 0 Fixed
+Fit Fraction: 0.510387
+           
+omega(782)
+Amp: 0.450901 ± 0.00265833
+Phase: -2.97452 ± 0.00588587
+Fit Fraction: 0.103767
+           
+rho0(1450)
+Amp: 0.115035 ± 0.00555481
+Phase: 1.14452 ± 0.0398618
+Fit Fraction: 0.00675399
+           
+f_2(1270)
+Amp: 0.0980613 ± 0.0055269
+Phase: 1.03883 ± 0.0630263
+Fit Fraction: 0.00490789
+           
+f'_2(1525)
+Amp: 0.0744482 ± 0.00689158
+Phase: -0.52049 ± 0.0830862
+Fit Fraction: 0.00282884
+           
+f_0(1370)
+Amp: 0.236302 ± 0.00881676
+Phase: 0.642336 ± 0.0313324
+Fit Fraction: 0.0284994
+           
+f_0(1500)
+Amp: 0.639116 ± 0.00854557
+Phase: -0.119055 ± 0.0201766
+Fit Fraction: 0.208477
+           
+sigma0
+Amp: 0.672078 ± 0.0055336
+Phase: 0.856961 ± 0.0112331
+Fit Fraction: 0.230536
+           
+f_0(980)
+Amp: 0.302124 ± 0.00521917
+Phase: 1.80665 ± 0.0237812
+Fit Fraction: 0.0465877
+           
+K*0(892)
+Amp: 0.830124 ± 0.00466076
+Phase: -2.8701 ± 0.00862677
+Fit Fraction: 0.35171
+           
+K*0_2(1430)
+Amp: 0.0548752 ± 0.0036189
+Phase: 0.250681 ± 0.053116
+Fit Fraction: 0.00153692
+           
+K*0_0(1430)
+Amp: 0.263506 ± 0.00477794
+Phase: 2.16615 ± 0.01903
+Fit Fraction: 0.0354389
+           
+K*0(1410)
+Amp: 0.172006 ± 0.00407123
+Phase: 2.80049 ± 0.0219636
+Fit Fraction: 0.0151004
+           
+kappa0
+Amp: 0.0785961 ± 0.00587087
+Phase: -2.53106 ± 0.0771267
+Fit Fraction: 0.00315283
+           
+Sum Diagonal Fit Fractions: 1.54968
+           
+Obs: Mudando massa e largura do sigma. (sem NR) f0 flatte etc.

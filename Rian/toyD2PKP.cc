@@ -369,13 +369,13 @@ int main( int argc, char** argv )
 	// coeffset.push_back( new LauMagPhaseCoeffSet("sigma0", 			0.608306, 	-0.232464, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)", 		0.133243, 	3.05403, kFALSE, kFALSE) );
 
-	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", 		0.924958, 	-3.06648, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", 		1.01192, 	-2.61656, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_2(1430)",		0.0990001, 	0.689738, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_0(1430)",		0.332363, 	2.06983, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0(1410)", 		0.216015, 	2.81874, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("kappa0", 			0.18911, 	-0.250233, kFALSE, kFALSE) );
 
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	1, 	1, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	0.670715, 	-1.79705, kFALSE, kFALSE) );
 	
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);

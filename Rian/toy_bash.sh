@@ -4,45 +4,34 @@ start=$(date +%s)
 
 . /home/oryan/root-6.30.06-install/bin/thisroot.sh
 
-
-
-echo "building fitD2PKP"
-g++ -o fitD2PKP fitD2PKP.cc     -I$HOME/laura/inc     -L$HOME/laura/build/lib     $(root-config --cflags --libs)     -lLaura++
+echo "building toyD2PKP"
+g++ -o toyD2PKP toyD2PKP.cc     -I$HOME/laura/inc     -L$HOME/laura/build/lib     $(root-config --cflags --libs)     -lLaura++
 wait
-echo "fitD2PKP built"
-
+echo "toyD2PKP built"
 
 # Definir o valor de i
 i=$1  # Passar i como argumento na execução do script
 
-inputFile="/home/oryan/laura/Rian/data/HighPurity_signal_m13m23_v5069.root"
-# inputFile="/home/oryan/laura/Rian/data/HighPurity_signal_m13m23.root"
-
-echo "Running fitD2PKP, fit $i"
-/home/oryan/laura/Rian/fitD2PKP fit $inputFile $i 1 0 
+echo "Running toyD2PKP, toy $i"
+/home/oryan/laura/Rian/toyD2PKP gen 1 
 wait
 
-dir_name="Fit_Results_${i}"
+dir_name="Toy_MC_${i}"
 # Cria a pasta (se já não existir)
 mkdir -p "$dir_name"
-echo "Pasta 'Fit_Results_${i}' criada!"
+echo "Pasta 'Toy_MC_${i}' criada!"
 
-
-# Executar o script ROOT
-root -l -b -q "/home/oryan/laura/Rian/amp_phs_fit_organizer.cpp($i)"
-wait
-
-fitfile="/home/oryan/laura/Rian/fitToyMC_${i}_expt0.root"
+toyfile="/home/oryan/laura/Rian/data.root"
 Tree1="DecayTree"
-Tree2="genResults"
-mode="Fit_Results_"
+Tree2="DecayTree"
+mode="Toy_MC_"
 echo "Saving Plots"
 # Executar o script ROOT
 root -l -b -q "/home/oryan/laura/Rian/compare_plot.cpp(\"$inputFile\",\"$fitfile\",\"$Tree1\",\"$Tree2\",\"$mode\",$i)"
 wait
 
 # Move os arquivos para a pasta
-mv "fitDpipiK_${i}_expt_0-0.root" "fitToyMC_${i}_expt0.root" "$dir_name" 2>/dev/null
+mv "/home/oryan/laura/Rian/data.root" "$dir_name" 2>/dev/null
 
 # Mensagem de confirmação
 echo "Arquivos movidos para '$dir_name'."
@@ -57,4 +46,4 @@ echo "                                                     "
 echo "==================================================="
 echo "||    Execution time: $minutes minutes and $seconds seconds   ||"
 echo "==================================================="
-echo "                                                     "
+echo "                                                      "

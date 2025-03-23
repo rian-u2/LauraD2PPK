@@ -7,13 +7,13 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 
-void compare_plot(const char* file1="/home/oryan/laura/Rian/data/HighPurity_signal_m13m23_v5069.root",
-                  const char* file2="/home/oryan/laura/Rian/fitToyMC_0_expt0.root",
-                  int indice=0)
+void compare_plot(const char* file1="/home/oryan/laura/Rian/Toy_MC_1/data.root",
+                  const char* file2="/home/oryan/laura/Rian/Toy_MC_1/data.root",const char* tree1 = "DecayTree", const char* tree2 = "DecayTree",
+                  const char* mode = "Toy_MC_",int indice=1)
 {   const char* m13Sq = "m13Sq";
     const char* m23Sq = "m23Sq";
-    const char* tree1 = "DecayTree";
-    const char* tree2 = "genResults";
+    // const char* tree1 = "DecayTree";
+    // const char* tree2 = "genResults";
     // Abrindo os arquivos ROOT
     TFile *f1 = TFile::Open(file1);
     TFile *f2 = TFile::Open(file2);
@@ -93,7 +93,7 @@ void compare_plot(const char* file1="/home/oryan/laura/Rian/data/HighPurity_sign
     legend1->AddEntry(h2m13Sq, "Fit", "F");
     legend1->Draw();
 
-    std::string output1 = "Fit_Results_" + std::to_string(indice) + "/s13_fit_" + std::to_string(indice) + "_.png";
+    std::string output1 = mode + std::to_string(indice) + "/s13_fit_" + std::to_string(indice) + "_.png";
     // Salvando o histograma
     c->SaveAs(output1.c_str());
 
@@ -118,18 +118,18 @@ void compare_plot(const char* file1="/home/oryan/laura/Rian/data/HighPurity_sign
     legend2->AddEntry(h2m23Sq, "Fit", "F");
     legend2->Draw();
 
-    std::string output2 ="Fit_Results_" + std::to_string(indice) + "/s23_fit_" + std::to_string(indice) + "_.png";
+    std::string output2 =mode + std::to_string(indice) + "/s23_fit_" + std::to_string(indice) + "_.png";
     // Salvando o histograma
     c->SaveAs(output2.c_str());
 
 
     t1->Draw("m23Sq:m13Sq >> dalitz_data_hist","","COLZ");
-    std::string output3 = "Fit_Results_" + std::to_string(indice) + "/Dalitz_data_hist.png";
+    std::string output3 = mode + std::to_string(indice) + "/Dalitz_data_hist.png";
     // Salvando o histograma
     c->SaveAs(output3.c_str());
 
     t2->Draw("m23Sq:m13Sq >> dalitz_pdf_hist","","COLZ");
-    std::string output4 = "Fit_Results_" + std::to_string(indice) + "/Dalitz_pdf_hist_fit_" + std::to_string(indice) + "_.png";
+    std::string output4 = mode + std::to_string(indice) + "/Dalitz_pdf_hist_fit_" + std::to_string(indice) + "_.png";
     // Salvando o histograma
     c->SaveAs(output4.c_str());
 

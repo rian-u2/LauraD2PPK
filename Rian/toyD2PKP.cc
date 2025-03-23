@@ -302,44 +302,44 @@ int main( int argc, char** argv )
 	
 
 	LauAbsResonance * rho_770 = sigModel->addResonance("rho0(770)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * omega = sigModel->addResonance("omega(782)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * rho_1450 = sigModel->addResonance("rho0(1450)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * f2_1270 = sigModel->addResonance("f_2(1270)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * f2_1525 = sigModel->addResonance("f'_2(1525)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * f0_1370 = sigModel->addResonance("f_0(1370)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * sigma = sigModel->addResonance("sigma0",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * omega = sigModel->addResonance("omega(782)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * rho_1450 = sigModel->addResonance("rho0(1450)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * f2_1270 = sigModel->addResonance("f_2(1270)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * f2_1525 = sigModel->addResonance("f'_2(1525)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * f0_1370 = sigModel->addResonance("f_0(1370)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * sigma = sigModel->addResonance("sigma0",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
-	LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
+	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
 
 	LauAbsResonance * K_892 = sigModel->addResonance("K*0(892)",  1, LauAbsResonance::RelBW);
-	LauAbsResonance * K2_1430 = sigModel->addResonance("K*0_2(1430)",  1, LauAbsResonance::RelBW);
-	LauAbsResonance * K0_1430 = sigModel->addResonance("K*0_0(1430)",  1, LauAbsResonance::RelBW);
-	LauAbsResonance * K_1410 = sigModel->addResonance("K*0(1410)",  1, LauAbsResonance::RelBW);
+	// LauAbsResonance * K2_1430 = sigModel->addResonance("K*0_2(1430)",  1, LauAbsResonance::RelBW);
+	// LauAbsResonance * K0_1430 = sigModel->addResonance("K*0_0(1430)",  1, LauAbsResonance::RelBW);
+	// LauAbsResonance * K_1410 = sigModel->addResonance("K*0(1410)",  1, LauAbsResonance::RelBW);
 	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::RelBW);
-	LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::Kappa);
+	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::Kappa);
 
-	// sigModel->addResonance("NonReson", 0, LauAbsResonance :: FlatNR);
+	sigModel->addResonance("NonReson", 0, LauAbsResonance :: FlatNR);
 
 	// Mass and Width values from PDG Live 2025
 	rho_770->changeResonance(0.77526 , 0.1474, 1); rho_770->changeBWBarrierRadii(1.5, 5.0);
-	omega->changeResonance(0.78266, 0.00868, 1); omega->changeBWBarrierRadii(1.5, 5.0);
-	rho_1450->changeResonance(1.465, 0.400, 1); rho_1450->changeBWBarrierRadii(1.5, 5.0);
-	f2_1270->changeResonance(1.2754, 0.1866, 2); f2_1270->changeBWBarrierRadii(1.5, 5.0);
-	f2_1525->changeResonance(1.51743 , 0.072, 2); f2_1525->changeBWBarrierRadii(1.5, 5.0);
-	f0_1370->changeResonance(1.250, 0.3, 0); f0_1370->changeBWBarrierRadii(1.5, 5.0);
-	f0_1500->changeResonance(1.522, 0.108, 0); f0_1500->changeBWBarrierRadii(1.5, 5.0);
-	// sigma->changeResonance(0.37, 0.400, 0); 
-	sigma->changeResonance(0.505, 0.409, 0);  sigma->changeBWBarrierRadii(1.5, 5.0); // From Goofit 
-	// f0_980->changeResonance(0.990, 0.04, 0); rho_770->changeBWBarrierRadii(1.5, 5.0);
+	// omega->changeResonance(0.78266, 0.00868, 1);
+	// rho_1450->changeResonance(1.465, 0.400, 1);
+	// f2_1270->changeResonance(1.2754, 0.1866, 2);
+	// f2_1525->changeResonance(1.51743 , 0.072, 2);
+	// f0_1370->changeResonance(1.250, 0.3, 0);
+	// f0_1500->changeResonance(1.522, 0.108, 0);
+	// sigma->changeResonance(0.37, 0.400, 0);
+	// sigma->changeResonance(0.505, 0.409, 0); // From Goofit
+	// f0_980->changeResonance(0.990, 0.04, 0);
 	
 
 
-	K_892->changeResonance(0.89555 , 0.0473, 1); K_892->changeBWBarrierRadii(1.5, 5.0); 
-	K2_1430->changeResonance(1.4324 , 0.109 , 2); K2_1430->changeBWBarrierRadii(1.5, 5.0);
-	K0_1430->changeResonance(1.425, 0.270 , 0); K0_1430->changeBWBarrierRadii(1.5, 5.0);
-	K_1410->changeResonance(1.414, 0.232 , 1); K_1410->changeBWBarrierRadii(1.5, 5.0);
-	// kappa->changeResonance(0.845, 0.468 , 0); rho_770->changeBWBarrierRadii(1.5, 5.0);
+	K_892->changeResonance(0.89555 , 0.0473, 1); 	K_892->changeBWBarrierRadii(1.5, 5.0);
+	// K2_1430->changeResonance(1.4324 , 0.109 , 2);
+	// K0_1430->changeResonance(1.425, 0.270 , 0);
+	// K_1410->changeResonance(1.414, 0.232 , 1);
+	// kappa->changeResonance(0.845, 0.468 , 0);
 
 
 			// O NUMERO REPRESENTA ONDE NAO FICA A RESSONANCIA
@@ -360,22 +360,22 @@ int main( int argc, char** argv )
 	std::vector<LauAbsCoeffSet*> coeffset;
 
 	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",		1.00,	0.00,  kTRUE,  kTRUE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("omega(782)",		0.0682962, 	-1.15797, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)",		0.221829, 	0.503647, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)", 		0.115391, 	0.270249, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 		0.0340333, 	-2.28327, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1370)",		0.247342, 	-1.91523, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1500)",		0.320451, 	-0.674077, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("sigma0", 			0.608306, 	-0.232464, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)", 		0.133243, 	3.05403, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("omega(782)",		0.0682962, 	-1.15797, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)",		0.221829, 	0.503647, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)", 		0.115391, 	0.270249, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 		0.0340333, 	-2.28327, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1370)",		0.247342, 	-1.91523, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1500)",		0.320451, 	-0.674077, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("sigma0", 			0.608306, 	-0.232464, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)", 		0.133243, 	3.05403, kFALSE, kFALSE) );
 
 	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", 		0.924958, 	-3.06648, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("K*0_2(1430)",		0.0990001, 	0.689738, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("K*0_0(1430)",		0.332363, 	2.06983, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(1410)", 		0.216015, 	2.81874, kFALSE, kFALSE) );
-	coeffset.push_back( new LauMagPhaseCoeffSet("kappa0", 			0.18911, 	-0.250233, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_2(1430)",		0.0990001, 	0.689738, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_0(1430)",		0.332363, 	2.06983, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0(1410)", 		0.216015, 	2.81874, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("kappa0", 			0.18911, 	-0.250233, kFALSE, kFALSE) );
 
-	// coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	1, 	1, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	1, 	1, kFALSE, kFALSE) );
 	
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
@@ -464,7 +464,10 @@ int main( int argc, char** argv )
 		tableFileName = "fitDpipiKResults_"; tableFileName += iFit; tableFileName +=".txt";
 		// tableFileName = "fitDpipiK_"; tableFileName += iFit;
 	} else {
-		rootFileName = "dummy.root";
+		rootFileName = "toyDpipiK_"; rootFileName += iFit;
+		rootFileName += "_expt_"; rootFileName += firstExpt;
+		rootFileName += "-"; rootFileName += (firstExpt+nExpt-1);
+		rootFileName += ".root";
 		tableFileName = "genDPiPiKResults";
 	}
 	

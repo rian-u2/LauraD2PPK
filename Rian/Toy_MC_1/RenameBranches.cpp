@@ -29,12 +29,12 @@ void RenameBranches(const char* inputFile = "/home/oryan/laura/Rian/Toy_MC_1/dat
     Double_t m12Sq, m13Sq;  // Variáveis para armazenar os valores das branches originais
     Double_t new_m13Sq, new_m23Sq;  // Variáveis para armazenar os valores das novas branches
 
-    oldTree->SetBranchAddress("m12Sq", &m12Sq);
-    oldTree->SetBranchAddress("m13Sq", &m13Sq);
+    oldTree->SetBranchAddress("m13Sq", &m12Sq);
+    oldTree->SetBranchAddress("m23Sq", &m13Sq);
 
     // Criar novas branches com os nomes desejados
-    newTree->Branch("m13Sq", &new_m13Sq);
-    newTree->Branch("m23Sq", &new_m23Sq);
+    newTree->Branch("m12Sq", &new_m13Sq);
+    newTree->Branch("m13Sq", &new_m23Sq);
 
     // Loop sobre as entradas da árvore original para copiar os dados
     Long64_t nEntries = oldTree->GetEntries();

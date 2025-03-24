@@ -5,7 +5,7 @@
 #define MAX_LINE 50
 #define MAX_NAME 50
 
-// Função para contar linhas de um arquivo
+// FunÃ§Ã£o para contar linhas de um arquivo
 int countLines(FILE* file) {
     int lines = 0;
     char buffer[MAX_LINE];
@@ -13,17 +13,17 @@ int countLines(FILE* file) {
     while (fgets(buffer, MAX_LINE, file) != NULL) {
         lines++;
     }
-    rewind(file); // Volta para o início do arquivo
+    rewind(file); // Volta para o inÃ­cio do arquivo
     return lines;
 }
 
-// Função para extrair nome antes do _
+// FunÃ§Ã£o para extrair nome antes do _
 char* getNameBeforeUnderscore(char* str) {
     char* result = strtok(str, "_");
     return strdup(result);
 }
 
-int main() {
+int fraction_organizer(int iteration = 0) {
     FILE* file1, * file2, * output;
     char line[MAX_LINE];
     char* names[MAX_LINE];
@@ -83,14 +83,14 @@ int main() {
         j++;
     }
 
-    // Cria arquivo de saída
+    // Cria arquivo de saÃ­da
     output = fopen("saida.txt", "w");
     if (output == NULL) {
-        printf("Erro ao criar arquivo de saída\n");
+        printf("Erro ao criar arquivo de saÃ­da\n");
         goto cleanup;
     }
     double sum=0;
-    // Escreve no arquivo de saída
+    // Escreve no arquivo de saÃ­da
     for (int k = 0; k < i && k < lineCount1; k++) {
         fprintf(output, "%s\t%.2f\n", names[k], diagonal_values[k]);
         sum+= diagonal_values[k];
@@ -98,9 +98,9 @@ int main() {
     fprintf(output, "\nSum\t%.2f\n",sum);
 
 
-    printf("Arquivo de saída criado com sucesso!\n");
+    printf("Arquivo de saÃ­da criado com sucesso!\n");
 
-    // Libera memória e fecha arquivos
+    // Libera memÃ³ria e fecha arquivos
 cleanup:
     for (int k = 0; k < i; k++) {
         free(names[k]);

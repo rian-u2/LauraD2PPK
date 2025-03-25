@@ -7,7 +7,7 @@
 #include "TTree.h"
 
 
-int amp_phs_fit_organizer(int indice = 0) {
+int amp_phs_fit_organizer(int indice = 0,const char* mode = "Toy_MC_") {
     // Abre o arquivo integ.dat
     std::ifstream inputFile("integ.dat");
     if (!inputFile.is_open()) {
@@ -66,7 +66,7 @@ int amp_phs_fit_organizer(int indice = 0) {
     }
 
     // Abre o arquivo de texto para salvar os dados
-    std::ofstream outFile( "Fit_Results_" + std::to_string(indice) +"/Fit_results_" + std::to_string(indice) + "_.txt");
+    std::ofstream outFile( mode + (std::string) "/Fit_results_" + std::to_string(indice) + "_.txt");
     if (!outFile.is_open()) {
         std::cerr << "Erro ao criar o arquivo de saída." << std::endl;
         file->Close();

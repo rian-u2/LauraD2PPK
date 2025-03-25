@@ -1,0 +1,52 @@
+rho0(770)
+Amp: 1 Fixed
+Phase: 0 Fixed
+Fit Fraction: 0.445974
+           
+omega(782)
+Amp: 0.0421945 ± 0.00281962
+Phase: -0.643729 ± 0.0700932
+Fit Fraction: 0.000794001
+           
+f_0(1370)
+Amp: 0.218783 ± 0.0184392
+Phase: 0.770899 ± 0.0521552
+Fit Fraction: 0.0213469
+           
+f_0(1500)
+Amp: 0.719362 ± 0.0157968
+Phase: 0.730161 ± 0.0473047
+Fit Fraction: 0.230783
+           
+sigma0
+Amp: 0.19719 ± 0.00869462
+Phase: 2.03055 ± 0.0400178
+Fit Fraction: 0.0173413
+           
+f_0(980)
+Amp: 0.291715 ± 0.00565829
+Phase: 2.017 ± 0.0220381
+Fit Fraction: 0.0379514
+           
+K*0(892)
+Amp: 1.00551 ± 0.00425958
+Phase: -2.60222 ± 0.00848874
+Fit Fraction: 0.450905
+           
+K*0_0(1430)
+Amp: 0.389422 ± 0.0051054
+Phase: 2.17943 ± 0.0131565
+Fit Fraction: 0.0676318
+           
+K*0(1410)
+Amp: 0.180031 ± 0.00475528
+Phase: -0.333385 ± 0.0278804
+Fit Fraction: 0.0144545
+           
+NonReson
+Amp: 0.661099 ± 0.0192846
+Phase: -1.71109 ± 0.0531467
+Fit Fraction: 0.194914
+           
+Sum Diagonal Fit Fractions: 1.4821
+           

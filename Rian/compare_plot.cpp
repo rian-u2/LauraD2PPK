@@ -93,7 +93,7 @@ void compare_plot(const char* file1="/home/oryan/laura/Rian/Toy_MC_1/data.root",
     legend1->AddEntry(h2m13Sq, "Fit", "F");
     legend1->Draw();
 
-    std::string output1 = mode + std::to_string(indice) + "/s13_fit_" + std::to_string(indice) + "_.png";
+    std::string output1 = mode +  (std::string) "/s13_fit_" + std::to_string(indice) + "_.png";
     // Salvando o histograma
     c->SaveAs(output1.c_str());
 
@@ -118,18 +118,18 @@ void compare_plot(const char* file1="/home/oryan/laura/Rian/Toy_MC_1/data.root",
     legend2->AddEntry(h2m23Sq, "Fit", "F");
     legend2->Draw();
 
-    std::string output2 =mode + std::to_string(indice) + "/s23_fit_" + std::to_string(indice) + "_.png";
+    std::string output2 =mode + (std::string) "/s23_fit_" + std::to_string(indice) + "_.png";
     // Salvando o histograma
     c->SaveAs(output2.c_str());
 
 
     t1->Draw("m23Sq:m13Sq >> dalitz_data_hist","","COLZ");
-    std::string output3 = mode + std::to_string(indice) + "/Dalitz_data_hist.png";
+    std::string output3 = mode + (std::string) "/Dalitz_data_hist.png";
     // Salvando o histograma
     c->SaveAs(output3.c_str());
 
     t2->Draw("m23Sq:m13Sq >> dalitz_pdf_hist","","COLZ");
-    std::string output4 = mode + std::to_string(indice) + "/Dalitz_pdf_hist_fit_" + std::to_string(indice) + "_.png";
+    std::string output4 = mode + (std::string) "/Dalitz_pdf_hist_fit_" + std::to_string(indice) + "_.png";
     // Salvando o histograma
     c->SaveAs(output4.c_str());
 

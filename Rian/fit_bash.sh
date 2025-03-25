@@ -16,6 +16,7 @@ echo "fitD2PKP built"
 i=$1  # Passar i como argumento na execução do script
 
 inputFile="/home/oryan/laura/Rian/data/HighPurity_signal_m13m23_v5069.root"
+# inputFile="/home/oryan/laura/Rian/Toy_MC_$i/data.root"
 # inputFile="/home/oryan/laura/Rian/data/HighPurity_signal_m13m23.root"
 
 echo "Running fitD2PKP, fit $i"
@@ -29,16 +30,16 @@ echo "Pasta 'Fit_Results_${i}' criada!"
 
 
 # Executar o script ROOT
-root -l -b -q "/home/oryan/laura/Rian/amp_phs_fit_organizer.cpp($i)"
+root -l -b -q "/home/oryan/laura/Rian/amp_phs_fit_organizer.cpp($i,\"$dir_name\")"
 wait
 
 fitfile="/home/oryan/laura/Rian/fitToyMC_${i}_expt0.root"
 Tree1="DecayTree"
 Tree2="genResults"
-mode="Fit_Results_"
+
 echo "Saving Plots"
 # Executar o script ROOT
-root -l -b -q "/home/oryan/laura/Rian/compare_plot.cpp(\"$inputFile\",\"$fitfile\",\"$Tree1\",\"$Tree2\",\"$mode\",$i)"
+root -l -b -q "/home/oryan/laura/Rian/compare_plot.cpp(\"$inputFile\",\"$fitfile\",\"$Tree1\",\"$Tree2\",\"$dir_name\",$i)"
 wait
 
 # Move os arquivos para a pasta

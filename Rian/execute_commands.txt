@@ -25,4 +25,3 @@ git push origin main             # Envia as mudanças para o repositório remoto
 
 cd ~/laura/Rian
 git pull origin main
-

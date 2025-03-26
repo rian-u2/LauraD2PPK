@@ -13,7 +13,7 @@ def read_truncated_names(filename):
         lines = file.readlines()
         for i in range(1, len(lines), 2):  # Pega a cada 2 linhas
             first_column = lines[i].split()[0]  # Pega a primeira coluna
-            truncated_name = first_column.split('_')[0]  # Trunca no primeiro '_'
+            truncated_name = first_column.split('_AMP')[0]  # Trunca no primeiro '_'
             truncated_names.append(truncated_name)
     return truncated_names
 

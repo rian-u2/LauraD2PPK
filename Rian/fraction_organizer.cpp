@@ -50,7 +50,7 @@ int fraction_organizer(const char* outfile="Laura_v1") {
             std::string element;
             iss >> element; // Pega a primeira coluna
 
-            size_t pos = element.find('_');
+            size_t pos = element.find('_AMP');
             if (pos != std::string::npos) {
                 element = element.substr(0, pos); // Truncar no primeiro '_'
             }

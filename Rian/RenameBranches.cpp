@@ -3,7 +3,8 @@
 #include <iostream>
 
 void RenameBranches(const char* inputFile = "/home/oryan/laura/Rian/data/HighPurity_signal_s12s13.root",
-                          const char* outputFile = "/home/oryan/laura/Rian/data/HighPurity_signal_m13m23.root") {
+                    const char* outputFile = "/home/oryan/laura/Rian/data/HighPurity_signal_m13m23.root",
+                const char* Tree1 = "DecayTree",const char* Tree2 = "DecayTree") {
     // Abrir o arquivo de entrada
     TFile *inFile = TFile::Open(inputFile, "READ");
     if (!inFile || inFile->IsZombie()) {
@@ -12,7 +13,7 @@ void RenameBranches(const char* inputFile = "/home/oryan/laura/Rian/data/HighPur
     }
 
     // Obter a árvore original
-    TTree *oldTree = (TTree*) inFile->Get("DecayTree");
+    TTree *oldTree = (TTree*) inFile->Get(Tree1);
     if (!oldTree) {
         std::cerr << "Erro: TTree não encontrada!\n";
         inFile->Close();
@@ -23,7 +24,7 @@ void RenameBranches(const char* inputFile = "/home/oryan/laura/Rian/data/HighPur
     TFile *outFile = new TFile(outputFile, "RECREATE");
 
     // Criar uma nova árvore
-    TTree *newTree = new TTree("DecayTree", "Árvore com branches renomeadas");
+    TTree *newTree = new TTree(Tree2, "Árvore com branches renomeadas");
 
     // Definir os nomes das branches antigas e os novos nomes
     Double_t m12Sq, m13Sq;  // Variáveis para armazenar os valores das branches originais

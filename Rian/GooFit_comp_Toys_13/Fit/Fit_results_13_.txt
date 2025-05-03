@@ -1,0 +1,7 @@
+K*0(1410)
+Amp: 4.49724 Fixed
+Phase: -1.3038 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

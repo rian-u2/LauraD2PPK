@@ -1,0 +1,7 @@
+omega(782)
+Amp: 3.73159 Fixed
+Phase: -1.81416 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

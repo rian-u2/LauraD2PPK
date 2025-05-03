@@ -1,0 +1,7 @@
+f'_2(1525)
+Amp: 1.60163 Fixed
+Phase: -1.46843 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

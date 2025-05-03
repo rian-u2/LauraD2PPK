@@ -1,0 +1,7 @@
+kappa0
+Amp: 2.09857 Fixed
+Phase: -3.57014 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

@@ -1,0 +1,7 @@
+rho0(1450)
+Amp: 1.02561 Fixed
+Phase: -4.74962 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

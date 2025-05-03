@@ -1,0 +1,7 @@
+NonReson
+Amp: 4.55111 Fixed
+Phase: -4.82167 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

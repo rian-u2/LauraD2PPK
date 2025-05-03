@@ -1,0 +1,7 @@
+f_2(1270)
+Amp: 4.28873 Fixed
+Phase: -1.56248 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

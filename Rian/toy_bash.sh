@@ -16,10 +16,10 @@ echo "Running toyD2PKP, toy $i"
 /home/oryan/laura/Rian/toyD2PKP gen 1 
 wait
 
-dir_name="Toy_MC_${i}"
+dir_name="GooFit_comp_Toys_${i}"
 # Cria a pasta (se já não existir)
 mkdir -p "$dir_name"
-echo "Pasta 'Toy_MC_${i}' criada!"
+echo "Pasta 'GooFit_comp_Toys_${i}' criada!"
 
 toyfile="/home/oryan/laura/Rian/data.root"
 Tree1="DecayTree"
@@ -30,10 +30,10 @@ root -l -b -q "/home/oryan/laura/Rian/compare_plot.cpp(\"$toyfile\",\"$toyfile\"
 wait
 
 
-dir_name2="Toy_MC_${i}/Fit"
+dir_name2="GooFit_comp_Toys_${i}/Fit"
 # Cria a pasta (se já não existir)
 mkdir -p "$dir_name2"
-echo "Pasta 'Toy_MC_${i}/Fit' criada!"
+echo "Pasta 'GooFit_comp_Toys_${i}/Fit' criada!"
 
 
 echo "Running toyD2PKP, fit $i"

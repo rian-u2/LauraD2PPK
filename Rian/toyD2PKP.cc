@@ -51,7 +51,7 @@ void plotSH(Int_t iFit) {
 
 	double M_D = 1.86966;
     double M_K = 0.49368;
-    double M_P = 0.13957;
+    double M_P = 0.13957;//13957018;
 
     double s13_min = (M_P + M_P)*(M_P + M_P);
     double s13_max = (M_D - M_K)*(M_D - M_K);
@@ -307,7 +307,7 @@ int main( int argc, char** argv )
 	// LauAbsResonance * f2_1270 = sigModel->addResonance("f_2(1270)",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * f2_1525 = sigModel->addResonance("f'_2(1525)",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * f0_1370 = sigModel->addResonance("f_0(1370)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
+	LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * sigma = sigModel->addResonance("sigma0",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
@@ -328,7 +328,7 @@ int main( int argc, char** argv )
 	// f2_1270->changeResonance(1.2754, 0.1866, 2); f2_1270->changeBWBarrierRadii(1.5, 5.0);
 	// f2_1525->changeResonance(1.51743 , 0.072, 2); f2_1525->changeBWBarrierRadii(1.5, 5.0);
 	// f0_1370->changeResonance(1.250, 0.3, 0); f0_1370->changeBWBarrierRadii(1.5, 5.0);
-	// f0_1500->changeResonance(1.522, 0.108, 0); f0_1500->changeBWBarrierRadii(1.5, 5.0);
+	f0_1500->changeResonance(1.522, 0.108, 0); f0_1500->changeBWBarrierRadii(1.5, 5.0);
 	// sigma->changeResonance(0.37, 0.400, 0); sigma->changeBWBarrierRadii(1.5, 5.0);
 	// sigma->changeResonance(0.505, 0.409, 0);  sigma->changeBWBarrierRadii(1.5, 5.0); // From Goofit 
 	// f0_980->changeResonance(0.990, 0.04, 0); f0_980->changeBWBarrierRadii(1.5, 5.0);
@@ -363,9 +363,9 @@ int main( int argc, char** argv )
 	// coeffset.push_back( new LauMagPhaseCoeffSet("omega(782)",		0.0429906, 	-0.632412, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)",		0.198794, 	-2.12884, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)", 		0.156875, 	0.392237, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 		0.0984141, 	-1.23938, kFALSE, kFALSE) );
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 		1, 	0, kFALSE, kFALSE) );//0.0984141, 	-1.23938
 	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1370)",		0.107257, 	-0.587851, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1500)",		0.246749, 	-0.0804594, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1500)",		1, 	0, kFALSE, kFALSE) ); //0.246749, 	-0.0804594
 	// coeffset.push_back( new LauMagPhaseCoeffSet("sigma0", 			0.21726, 	2.23313, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)", 		0.248756, 	2.17754, kFALSE, kFALSE) );
 
@@ -375,7 +375,7 @@ int main( int argc, char** argv )
 	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0(1410)", 		0.179792, 	-0.264253, kFALSE, kFALSE) );
 	// coeffset.push_back( new LauMagPhaseCoeffSet("kappa0", 			0.0785143, 	-3.25896, kFALSE, kFALSE) );
 
-	// coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	0.670715, 	-1.79705, kFALSE, kFALSE) );
+	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	0.670715, 	-1.79705, kFALSE, kFALSE) );
 	
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);

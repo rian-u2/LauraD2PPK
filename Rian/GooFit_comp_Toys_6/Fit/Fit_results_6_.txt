@@ -1,0 +1,7 @@
+f_0(1370)
+Amp: 1.94683 Fixed
+Phase: 1.04118 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

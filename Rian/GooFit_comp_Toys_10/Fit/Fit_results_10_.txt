@@ -1,0 +1,7 @@
+K*0(892)
+Amp: 3.55124 Fixed
+Phase: -3.37827 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           

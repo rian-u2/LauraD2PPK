@@ -284,65 +284,8 @@ int main( int argc, char** argv )
 	LauIsobarDynamics* sigModel = new LauIsobarDynamics(daughters, effModel);
 	// Add various components to the isobar model,
 	// modifying some resonance parameters
-	// LauAbsFance* reson(0);
-	// addResonance arguments: resName, resPairAmpInt, resType
-	
-	// LauAbsResonance *reson(0);
-	// sigModel->addResonance("rho0(770)",  2, LauAbsResonance::RelBW);
-	// sigModel->addResonance("K*0(892)",  2, LauAbsResonance::RelBW);
-	// reson = sigModel->addResonance("kappa0",  2, LauAbsResonance::Kappa);
-    // reson->changeResonance(0.8, 0.4, -1);
-	// //printf("MUDOU PQ TA AQUI O NEGOGIO: %f", (Double_t)reson->getResonanceParameter("wi"));
 
-	// sigModel->addResonance("K*0_0(1430)",  2, LauAbsResonance::RelBW);
-	// sigModel->addResonance("K*0_2(1430)",  2, LauAbsResonance::RelBW);
-	// sigModel->addResonance("K*0(1680)",  2, LauAbsResonance::RelBW);
-
-
-	
-
-	LauAbsResonance * rho_770 = sigModel->addResonance("rho0(770)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * omega = sigModel->addResonance("omega(782)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * rho_1450 = sigModel->addResonance("rho0(1450)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f2_1270 = sigModel->addResonance("f_2(1270)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f2_1525 = sigModel->addResonance("f'_2(1525)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f0_1370 = sigModel->addResonance("f_0(1370)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * sigma = sigModel->addResonance("sigma0",  2, LauAbsResonance::RelBW);
-	// // LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
-	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
-
-	LauAbsResonance * K_892 = sigModel->addResonance("K*0(892)",  1, LauAbsResonance::RelBW);
-	// LauAbsResonance * K2_1430 = sigModel->addResonance("K*0_2(1430)",  1, LauAbsResonance::RelBW);
-	// LauAbsResonance * K0_1430 = sigModel->addResonance("K*0_0(1430)",  1, LauAbsResonance::RelBW);
-	// LauAbsResonance * K_1410 = sigModel->addResonance("K*0(1410)",  1, LauAbsResonance::RelBW);
-	// // LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::RelBW);
-	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::Kappa);
-
-	sigModel->addResonance("NonReson", 0, LauAbsResonance :: FlatNR);
-
-	// Mass and Width values from PDG Live 2025
-	rho_770->changeResonance(0.77526 , 0.1474, 1); rho_770->changeBWBarrierRadii(1.5, 5.0);
-	// omega->changeResonance(0.78266, 0.00868, 1); omega->changeBWBarrierRadii(1.5, 5.0);
-	// rho_1450->changeResonance(1.465, 0.400, 1); rho_1450->changeBWBarrierRadii(1.5, 5.0);
-	// f2_1270->changeResonance(1.2754, 0.1866, 2); f2_1270->changeBWBarrierRadii(1.5, 5.0);
-	// f2_1525->changeResonance(1.51743 , 0.072, 2); f2_1525->changeBWBarrierRadii(1.5, 5.0);
-	// f0_1370->changeResonance(1.250, 0.3, 0); f0_1370->changeBWBarrierRadii(1.5, 5.0);
-	// f0_1500->changeResonance(1.522, 0.108, 0); f0_1500->changeBWBarrierRadii(1.5, 5.0);
-	// // sigma->changeResonance(0.37, 0.400, 0); 
-	// sigma->changeResonance(0.505, 0.409, 0);  sigma->changeBWBarrierRadii(1.5, 5.0); // From Goofit 
-	// f0_980->changeResonance(0.990, 0.04, 0); f0_980->changeBWBarrierRadii(1.5, 5.0);
-	
-
-
-	K_892->changeResonance(0.89555 , 0.0473, 1); K_892->changeBWBarrierRadii(1.5, 5.0); 
-	// K2_1430->changeResonance(1.4324 , 0.109 , 2); K2_1430->changeBWBarrierRadii(1.5, 5.0);
-	// K0_1430->changeResonance(1.425, 0.270 , 0); K0_1430->changeBWBarrierRadii(1.5, 5.0);
-	// K_1410->changeResonance(1.414, 0.232 , 1); K_1410->changeBWBarrierRadii(1.5, 5.0);
-	// kappa->changeResonance(0.845, 0.468 , 0); kappa->changeBWBarrierRadii(1.5, 5.0);
-
-
-			// O NUMERO REPRESENTA ONDE NAO FICA A RESSONANCIA
+	// O NUMERO REPRESENTA ONDE NAO FICA A RESSONANCIA
 
 	// Reset the maximum signal DP ASq value
 	// This will be automatically adjusted to avoid bias or extreme
@@ -351,32 +294,148 @@ int main( int argc, char** argv )
 
 	// sigModel->setASqMaxValue(0.35);
 
-	// Create the fit model
-	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
+	
 
 	// Create the complex coefficients for the isobar model
 	// Here we're using the magnitude and phase form:
 	// c_j = a_j exp(i*delta_j)
 	std::vector<LauAbsCoeffSet*> coeffset;
 
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",		1.00,	0.00,  kTRUE,  kTRUE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("omega(782)",		0.0682962, 	-1.15797, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)",		0.221829, 	0.503647, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)", 		0.115391, 	0.270249, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)", 		0.0340333, 	-2.28327, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1370)",		0.247342, 	-1.91523, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1500)",		0.320451, 	-0.674077, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("sigma0", 			0.608306, 	-0.232464, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)", 		0.133243, 	3.05403, kFALSE, kFALSE) );
+	// Mass and Width values from PDG Live 2025
 
-	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", 		0.924958, 	-3.06648, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_2(1430)",		0.0990001, 	0.689738, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_0(1430)",		0.332363, 	2.06983, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0(1410)", 		0.216015, 	2.81874, kFALSE, kFALSE) );
-	// coeffset.push_back( new LauMagPhaseCoeffSet("kappa0", 			0.18911, 	-0.250233, kFALSE, kFALSE) );
+	// s13 Resonances
 
-	coeffset.push_back( new LauMagPhaseCoeffSet("NonReson", 	1, 	1, kFALSE, kFALSE) );
+	LauAbsResonance * rho_770 = sigModel->addResonance("rho0(770)",  2, LauAbsResonance::RelBW);
+	rho_770->changeResonance(0.77526 , 0.1474, 1);
+	rho_770->changeBWBarrierRadii(1.5, 5.0); 
+	Double_t rho_770_AMP = 1.00;
+	Double_t rho_770_PHS = 0.00;
+	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",rho_770_AMP,rho_770_PHS,  kTRUE,  kTRUE) );
+
+
+	// LauAbsResonance * omega = sigModel->addResonance("omega(782)",  2, LauAbsResonance::RelBW);
+	// omega->changeResonance(0.78266, 0.00868, 1);
+	//omega->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t omega_AMP = 0.0429906;
+	// Double_t omega_PHS = -0.632412;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("omega(782)",omega_AMP,omega_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * rho_1450 = sigModel->addResonance("rho0(1450)",  2, LauAbsResonance::RelBW);
+	// rho_1450->changeResonance(1.465, 0.400, 1); 
+	// rho_1450->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t rho_1450_AMP = 0.198794;
+	// Double_t rho_1450_PHS = -2.12884;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("rho0(1450)",rho_1450_AMP,rho_1450_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * f2_1270 = sigModel->addResonance("f_2(1270)",  2, LauAbsResonance::RelBW);
+	// f2_1270->changeResonance(1.2754, 0.1866, 2); 
+	// f2_1270->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t f2_1270_AMP = 0.156875;
+	// Double_t f2_1270_PHS = 0.392237;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_2(1270)", f2_1270_AMP, f2_1270_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * f2_1525 = sigModel->addResonance("f'_2(1525)",  2, LauAbsResonance::RelBW);
+	// f2_1525->changeResonance(1.51743 , 0.072, 2); 
+	// f2_1525->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t f2_1525_AMP = 0.0984141;
+	// Double_t f2_1525_PHS = -1.23938;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f'_2(1525)",f2_1525_AMP,f2_1525_PHS, kFALSE, kFALSE) );	
+
+
+	// LauAbsResonance * f0_1370 = sigModel->addResonance("f_0(1370)",  2, LauAbsResonance::RelBW);
+	// f0_1370->changeResonance(1.250, 0.3, 0); 
+	// f0_1370->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t f0_1370_AMP = 0.107257;
+	// Double_t f0_1370_PHS = -0.587851;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1370)",f0_1370_AMP,f0_1370_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * f0_1500 = sigModel->addResonance("f_0(1500)",  2, LauAbsResonance::RelBW);
+	// f0_1500->changeResonance(1.522, 0.108, 0); 
+	// f0_1500->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t f0_1500_AMP = 0.246749;
+	// Double_t f0_1500_PHS = -0.0804594;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(1500)",f0_1500_AMP,f0_1500_PHS, kFALSE, kFALSE) ); 
+
+
+	// LauAbsResonance * sigma = sigModel->addResonance("sigma0",  2, LauAbsResonance::RelBW);
+	// sigma->changeResonance(0.37, 0.400, 0); 
+	// sigma->changeResonance(0.505, 0.409, 0);  // From Goofit
+	//sigma->changeBWBarrierRadii(1.5, 5.0);  
+	// Double_t sigma_AMP = 0.21726;
+	// Double_t sigma_PHS = 2.23313;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("sigma0",sigma_AMP,sigma_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
+	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
+	// f0_980->changeResonance(0.990, 0.04, 0); 
+	// f0_980->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t f0_980_AMP = 0.248756;
+	// Double_t f0_980_PHS = 2.17754;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",f0_980_AMP,f0_980_PHS, kFALSE, kFALSE) );
+
+
+
+	// s23 Resonances
+
+	LauAbsResonance * K_892 = sigModel->addResonance("K*0(892)",  1, LauAbsResonance::RelBW);
+	K_892->changeResonance(0.89555 , 0.0473, 1); 
+	K_892->changeBWBarrierRadii(1.5, 5.0); 
+	Double_t K_892_AMP = 1.00;//0.932094
+	Double_t K_892_PHS = 0.00;//-2.62921
+	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", K_892_AMP, K_892_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * K2_1430 = sigModel->addResonance("K*0_2(1430)",  1, LauAbsResonance::RelBW);
+	// K2_1430->changeResonance(1.4324 , 0.109 , 2); 
+	// K2_1430->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t K2_1430_AMP = 0.0355029;
+	// Double_t K2_1430_PHS = -2.04377;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_2(1430)",K2_1430_AMP,K2_1430_PHS, kFALSE, kFALSE) );
 	
+
+	// LauAbsResonance * K0_1430 = sigModel->addResonance("K*0_0(1430)",  1, LauAbsResonance::RelBW);
+	// K0_1430->changeResonance(1.425, 0.270 , 0); 
+	// K0_1430->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t K0_1430_AMP = 0.398772;
+	// Double_t K0_1430_PHS = 2.27595;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0_0(1430)",K0_1430_AMP,K0_1430_PHS, kFALSE, kFALSE) );
+
+	
+	// LauAbsResonance * K_1410 = sigModel->addResonance("K*0(1410)",  1, LauAbsResonance::RelBW);
+	// K_1410->changeResonance(1.414, 0.232 , 1); 
+	// K_1410->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t K_1410_AMP = 0.179792;
+	// Double_t K_1410_PHS = -0.264253;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0(1410)",K_1410_AMP,K_1410_PHS, kFALSE, kFALSE) );
+
+
+	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::RelBW);
+	// LauAbsResonance * kappa = sigModel->addResonance("kappa0",  1, LauAbsResonance::Kappa);
+	// kappa->changeResonance(0.845, 0.468 , 0); 
+	// kappa->changeBWBarrierRadii(1.5, 5.0);
+	// Double_t kappa_AMP = 0.0785143;
+	// Double_t kappa_PHS = -3.25896;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("kappa0",kappa_AMP,kappa_PHS, kFALSE, kFALSE) );
+
+
+	// Non Resonant
+
+	// sigModel->addResonance("NonReson", 0, LauAbsResonance :: FlatNR);
+	// Double_t NonReson_AMP = 0.670715;
+	// Double_t NonReson_PHS = -1.79705;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("NonReson",NonReson_AMP,NonReson_PHS, kFALSE, kFALSE) );
+	
+	
+
+
+	// Create the fit model
+	LauSimpleFitModel* fitModel = new LauSimpleFitModel(sigModel);
+
 	for (std::vector<LauAbsCoeffSet*>::iterator iter=coeffset.begin(); iter!=coeffset.end(); ++iter) {
 		fitModel->setAmpCoeffSet(*iter);
 	}

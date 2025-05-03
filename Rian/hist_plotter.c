@@ -7,7 +7,7 @@
 void hist_plotter() {
     
 
-    int j = 17;
+    int j = 2;
 
     // Abrir os arquivos ROOT
     std::string rootFileName1 = "/home/oryan/laura/Rian/GooFit_comp_Toys_" + std::to_string(j) + "/data.root";
@@ -34,6 +34,8 @@ void hist_plotter() {
     // Criar histogramas
     TH1F *hist1 = new TH1F("hist1", "", 200, s13_min, s13_max); // Ajustar range conforme necessário
     TH1F *hist2 = new TH1F("hist2", "", 200, s13_min, s13_max); // Ajustar range conforme necessário
+    // TH1F *hist1 = new TH1F("hist1", "", 200, 0.5, 0.75); // Ajustar range conforme necessário
+    // TH1F *hist2 = new TH1F("hist2", "", 200, 0.5, 0.75); // Ajustar range conforme necessário
 
     // Preencher histogramas com branches específicas
     tree1->Draw("m13Sq>>hist1"); // Substituir branch_name1 pelo nome real

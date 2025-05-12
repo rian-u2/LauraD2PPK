@@ -1,0 +1,12 @@
+rho0(770)
+Amp: 1 Fixed
+Phase: 0 Fixed
+Fit Fraction: 0.449206
+           
+K*0(892)
+Amp: 0.99904 ± 0.00289074
+Phase: -0.00709396 ± 0.00863885
+Fit Fraction: 0.448344
+           
+Sum Diagonal Fit Fractions: 0.89755
+           

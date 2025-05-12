@@ -30,11 +30,10 @@ echo "Saving Plots"
 root -l -b -q "/home/oryan/laura/Rian/compare_plot.cpp(\"$toyfile\",\"$toyfile\",\"$Tree1\",\"$Tree2\",\"$dir_name\",$i)"
 wait
 
-
-dir_name2="GooFit_comp_Toys_${i}/Fit"
+dir_name2="$dir_name/Fit"
 # Cria a pasta (se já não existir)
 mkdir -p "$dir_name2"
-echo "Pasta 'GooFit_comp_Toys_${i}/Fit' criada!"
+echo "Pasta $dir_name2 criada!"
 
 
 echo "Running toyD2PKP, fit $i"

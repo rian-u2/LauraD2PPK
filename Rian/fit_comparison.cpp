@@ -45,14 +45,20 @@ int main(int argc, char* argv[]) {
 
     int N = atoi(argv[1]);
     
+    // // Input file paths
+    // string diagonal_fractions_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/diagonal_fractions.txt";
+    // string fit_result_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/fit_result.txt";
+    // string laura_results_path = "/data1000/charmosinhos/Rian/Laura3/laura/Rian/Toy_MC_" + to_string(N) + "/Fit/Fit_results_" + to_string(N) + "_.txt";
+
     // Input file paths
-    string diagonal_fractions_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/diagonal_fractions.txt";
-    string fit_result_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/fit_result.txt";
-    string laura_results_path = "/data1000/charmosinhos/Rian/Laura3/laura/Rian/Toy_MC_" + to_string(N) + "/Fit/Fit_results_" + to_string(N) + "_.txt";
+    string diagonal_fractions_path = "/home/oryan/laura/Rian/GooFit_comp_Toys_18/GooFit_Fits/rho770_K892_Laura_v" + to_string(N) + "/diagonal_fractions.txt";
+    string fit_result_path = "/home/oryan/laura/Rian/GooFit_comp_Toys_18/GooFit_Fits/rho770_K892_Laura_v" + to_string(N) + "/fit_result.txt";
+    string laura_results_path = "/home/oryan/laura/Rian/GooFit_comp_Toys_18/Fit/Fit_results_18_.txt";
     
     // Output file path
     //string output_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/fit_comparison.txt";
-    string output_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/rho770_K892_Laura_v" + to_string(N) + "/fit_comparison.txt";
+    //string output_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/rho770_K892_Laura_v" + to_string(N) + "/fit_comparison.txt";
+    string output_path = "/home/oryan/laura/Rian/GooFit_comp_Toys_18/GooFit_Fits/rho770_K892_Laura_v" + to_string(N) + "/fit_comparison.txt";
 
     
     vector<ResonanceData> resonances;
@@ -141,16 +147,28 @@ int main(int argc, char* argv[]) {
     // Write header with tabs
     output_file << "Resonance \t Frac_Goofit \t Frac_Laura \t Amp_Goofit \t Amp_Laura \t Phs_Goofit \t Phs_Laura" << endl;
     
+    // // Write data with tabs and consistent formatting
+    // for (const auto& res : resonances) {
+    //     output_file << res.name << "\t\t "
+    //                << res.fraction_goofit << "\t\t "
+    //                << res.fraction_laura << "\t\t "
+    //                << res.amp_goofit << "\t\t "
+    //                << res.amp_laura << "\t "
+    //                << res.phs_goofit << "\t\t "
+    //                << res.phs_laura << endl;
+    // }
+
     // Write data with tabs and consistent formatting
     for (const auto& res : resonances) {
         output_file << res.name << "\t\t "
                    << res.fraction_goofit << "\t\t "
                    << res.fraction_laura << "\t\t "
                    << res.amp_goofit << "\t\t "
-                   << res.amp_laura << "\t "
+                   << 1.00 << "\t "
                    << res.phs_goofit << "\t\t "
-                   << res.phs_laura << endl;
+                   << 0.00 << endl;
     }
+    
     
     output_file.close();
     

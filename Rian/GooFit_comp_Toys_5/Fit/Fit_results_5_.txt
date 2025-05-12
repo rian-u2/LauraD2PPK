@@ -1,7 +1,12 @@
-f'_2(1525)
-Amp: 1.60163 Fixed
-Phase: -1.46843 Fixed
-Fit Fraction: 1
+rho0(770)
+Amp: 1 Fixed
+Phase: 0 Fixed
+Fit Fraction: 0.449205
            
-Sum Diagonal Fit Fractions: 1
+K*0(892)
+Amp: 0.999044 ± 0.00289068
+Phase: -0.00707184 ± 0.00863838
+Fit Fraction: 0.448346
+           
+Sum Diagonal Fit Fractions: 0.897551
            

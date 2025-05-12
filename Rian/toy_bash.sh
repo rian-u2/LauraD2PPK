@@ -16,10 +16,11 @@ echo "Running toyD2PKP, toy $i"
 /home/oryan/laura/Rian/toyD2PKP gen 1 
 wait
 
-dir_name="GooFit_comp_Toys_${i}"
+#dir_name="GooFit_comp_Toys_${i}"
+dir_name="rho770_K892_v${i}"
 # Cria a pasta (se já não existir)
 mkdir -p "$dir_name"
-echo "Pasta 'GooFit_comp_Toys_${i}' criada!"
+echo "Pasta $dir_name criada!"
 
 toyfile="/home/oryan/laura/Rian/data.root"
 Tree1="DecayTree"

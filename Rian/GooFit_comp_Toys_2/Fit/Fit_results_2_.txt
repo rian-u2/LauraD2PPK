@@ -1,7 +1,12 @@
-omega(782)
-Amp: 3.73159 Fixed
-Phase: -1.81416 Fixed
-Fit Fraction: 1
+rho0(770)
+Amp: 1 Fixed
+Phase: 0 Fixed
+Fit Fraction: 0.449205
            
-Sum Diagonal Fit Fractions: 1
+K*0(892)
+Amp: 0.999042 ± 0.00289046
+Phase: -0.00709127 ± 0.00863816
+Fit Fraction: 0.448345
+           
+Sum Diagonal Fit Fractions: 0.89755
            

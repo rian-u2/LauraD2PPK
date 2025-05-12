@@ -1,0 +1,3 @@
+Resonance 	 Frac_Goofit 	 Frac_Laura 	 Amp_Goofit 	 Amp_Laura 	 Phs_Goofit 	 Phs_Laura
+rho770		 45.282800		 44.920600		 1.000000		 1.000000	 0.000000		 0.000000
+Ks892		 44.338700		 44.834400		 0.908912		 1.000000	 -3.167000		 0.000000

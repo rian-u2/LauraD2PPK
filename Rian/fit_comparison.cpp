@@ -51,7 +51,9 @@ int main(int argc, char* argv[]) {
     string laura_results_path = "/data1000/charmosinhos/Rian/Laura3/laura/Rian/Toy_MC_" + to_string(N) + "/Fit/Fit_results_" + to_string(N) + "_.txt";
     
     // Output file path
-    string output_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/fit_comparison.txt";
+    //string output_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/Laura_v" + to_string(N) + "/fit_comparison.txt";
+    string output_path = "/data1000/charmosinhos/Rian/Goofit3/GooFit/build/examples/D2PPK/Fit/rho770_K892_Laura_v" + to_string(N) + "/fit_comparison.txt";
+
     
     vector<ResonanceData> resonances;
     

@@ -7,7 +7,7 @@
 void hist_plotter() {
     
 
-    int j = 2;
+    int j = 15;
 
     // Abrir os arquivos ROOT
     std::string rootFileName1 = "/home/oryan/laura/Rian/GooFit_comp_Toys_" + std::to_string(j) + "/data.root";

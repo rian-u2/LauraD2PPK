@@ -30,7 +30,8 @@ void compare_plot(const char* file1="/home/oryan/laura/Rian/Toy_MC_1/data.root",
         return;
     }
     
-    double M_D = 1.86966;
+    // double M_D = 1.86966;
+    double M_D = 1.96835;
     double M_K = 0.49368;
     double M_P = 0.13957;
 

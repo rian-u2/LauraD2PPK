@@ -17,7 +17,8 @@ echo "Running toyD2PKP, toy $i"
 wait
 
 #dir_name="GooFit_comp_Toys_${i}"
-dir_name="rho770_K892_v${i}"
+# dir_name="f0_980_v${i}"
+dir_name="f0_980_RBW"
 # Cria a pasta (se já não existir)
 mkdir -p "$dir_name"
 echo "Pasta $dir_name criada!"

@@ -41,6 +41,8 @@ Thomas Latham
 #include "LauMagPhaseCoeffSet.hh"
 #include "LauResonanceMaker.hh"
 #include "LauVetoes.hh"
+#include "LauParticlePDG.hh"
+#include "LauDatabasePDG.hh"
 
 // Variável global para armazenar eventos problemáticos
 std::vector<Int_t> problematicEvents;
@@ -240,7 +242,12 @@ int main( int argc, char** argv )
 	// Particle 2 = pi+
 	// Particle 3 = k-
 	// The DP is defined in terms of m13Sq and m23Sq
+
+
+
 	LauDaughters* daughters = new LauDaughters("D+", "pi+", "K+", "pi-", squareDP);
+
+
 
 	// Optionally apply some vetoes to the DP
 	// (example syntax given but commented-out)
@@ -304,12 +311,12 @@ int main( int argc, char** argv )
 
 	// s13 Resonances
 
-	LauAbsResonance * rho_770 = sigModel->addResonance("rho0(770)",  2, LauAbsResonance::RelBW);
-	rho_770->changeResonance(0.77526 , 0.1474, 1);
-	rho_770->changeBWBarrierRadii(1.5, 5.0); 
-	Double_t rho_770_AMP = 1.00;
-	Double_t rho_770_PHS = 0.00;
-	coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",rho_770_AMP,rho_770_PHS,  kTRUE,  kTRUE) );
+	// LauAbsResonance * rho_770 = sigModel->addResonance("rho0(770)",  2, LauAbsResonance::RelBW);
+	// rho_770->changeResonance(0.77526 , 0.1474, 1);
+	// rho_770->changeBWBarrierRadii(1.5, 5.0); 
+	// Double_t rho_770_AMP = 1.00;
+	// Double_t rho_770_PHS = 0.00;
+	// coeffset.push_back( new LauMagPhaseCoeffSet("rho0(770)",rho_770_AMP,rho_770_PHS,  kTRUE,  kTRUE) );
 
 
 	// LauAbsResonance * omega = sigModel->addResonance("omega(782)",  2, LauAbsResonance::RelBW);
@@ -369,24 +376,24 @@ int main( int argc, char** argv )
 	// coeffset.push_back( new LauMagPhaseCoeffSet("sigma0",sigma_AMP,sigma_PHS, kFALSE, kFALSE) );
 
 
-	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
+	LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::RelBW);
 	// LauAbsResonance * f0_980 = sigModel->addResonance("f_0(980)",  2, LauAbsResonance::Flatte);
-	// f0_980->changeResonance(0.990, 0.04, 0); 
-	// f0_980->changeBWBarrierRadii(1.5, 5.0);
-	// Double_t f0_980_AMP = 0.248756;
-	// Double_t f0_980_PHS = 2.17754;
-	// coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",f0_980_AMP,f0_980_PHS, kFALSE, kFALSE) );
+	f0_980->changeResonance(0.990, 0.04, 0); 
+	f0_980->changeBWBarrierRadii(1.5, 5.0);
+	Double_t f0_980_AMP = 0.248756;
+	Double_t f0_980_PHS = 2.17754;
+	coeffset.push_back( new LauMagPhaseCoeffSet("f_0(980)",f0_980_AMP,f0_980_PHS, kFALSE, kFALSE) );
 
 
 
 	// s23 Resonances
 
-	LauAbsResonance * K_892 = sigModel->addResonance("K*0(892)",  1, LauAbsResonance::RelBW);
-	K_892->changeResonance(0.89555 , 0.0473, 1); 
-	K_892->changeBWBarrierRadii(1.5, 5.0); 
-	Double_t K_892_AMP = 1.00;//0.932094
-	Double_t K_892_PHS = 0.00;//-2.62921
-	coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", K_892_AMP, K_892_PHS, kFALSE, kFALSE) );
+	// LauAbsResonance * K_892 = sigModel->addResonance("K*0(892)",  1, LauAbsResonance::RelBW);
+	// K_892->changeResonance(0.89555 , 0.0473, 1); 
+	// K_892->changeBWBarrierRadii(1.5, 5.0); 
+	// Double_t K_892_AMP = 1.00;//0.932094
+	// Double_t K_892_PHS = 0.00;//-2.62921
+	// coeffset.push_back( new LauMagPhaseCoeffSet("K*0(892)", K_892_AMP, K_892_PHS, kFALSE, kFALSE) );
 
 
 	// LauAbsResonance * K2_1430 = sigModel->addResonance("K*0_2(1430)",  1, LauAbsResonance::RelBW);

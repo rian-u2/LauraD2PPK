@@ -1,0 +1,7 @@
+f_0(980)
+Amp: 3.9159 Fixed
+Phase: 3.53861 Fixed
+Fit Fraction: 1
+           
+Sum Diagonal Fit Fractions: 1
+           
